@@ -1,0 +1,32 @@
+{
+  "updated_at": "2026-09-16T00:00:00+03:00",
+  "products": [
+    {
+      "id": "svetilnik-01",
+      "name": "Светильник из оникса",
+      "category": "svetilniki",
+      "price_rub": null,
+      "description": null,
+      "photos": [],
+      "available": true
+    },
+    {
+      "id": "stol-01",
+      "name": "Эксклюзивный стол",
+      "category": "stoly",
+      "price_rub": null,
+      "description": null,
+      "photos": [],
+      "available": true
+    },
+    {
+      "id": "rakushka-01",
+      "name": "Декоративная ракушка",
+      "category": "rakushki",
+      "price_rub": null,
+      "description": null,
+      "photos": [],
+      "available": true
+    }
+  ]
+}
