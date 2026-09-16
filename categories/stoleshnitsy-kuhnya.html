@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="/calculator/">
+<title>Столешницы на кухню — Саянмрамор</title>
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="site-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
+  <nav class="site-nav">
+    <a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a>
+    <a href="/sayanmramor-site/categories/panno.html">Панно</a>
+    <a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a>
+    <a href="/sayanmramor-site/categories/poly.html">Полы</a>
+    <a href="/sayanmramor-site/categories/steny.html">Стены</a>
+    <a href="/sayanmramor-site/categories/fasady.html">Фасады</a>
+    <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Столешницы в ванную</a>
+    <a class="active" href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Столешницы на кухню</a>
+    <a href="/sayanmramor-site/categories/stupeni.html">Ступени</a>
+    <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
+    <a class="calculator-link" href="/calculator/sayanmramor-calculator.html">Калькулятор</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>Столешницы на кухню из камня</h1>
+  <p class="subtitle">Кухонные столешницы из мрамора и гранита на заказ — рассчитайте ориентировочную стоимость по своим размерам.</p>
+</div>
+
+<section class="portfolio-section">
+  <div class="portfolio-grid" id="portfolioGrid"></div>
+</section>
+
+<div class="wrap">
+  <div class="card">
+    <div class="form-side">
+      <div class="field">
+        <label id="materialLabel" for="materialField">Материал</label>
+        <button type="button" class="material-field" id="materialField"
+                aria-labelledby="materialLabel materialFieldText" aria-haspopup="dialog" disabled>
+          <span class="material-field-thumb" id="materialFieldThumb" hidden><img alt=""></span>
+          <span class="material-field-text" id="materialFieldText">Загрузка материалов…</span>
+          <span class="material-field-chevron" aria-hidden="true">▾</span>
+        </button>
+      </div>
+
+      <div class="field">
+        <label>Размеры, м</label>
+        <div class="dims">
+          <input type="number" id="width" placeholder="Ширина" min="0" step="0.01">
+          <input type="number" id="length" placeholder="Длина" min="0" step="0.01">
+        </div>
+        <div class="error" id="dimError">Укажите ширину и длину больше нуля</div>
+      </div>
+
+      <div class="checkboxes">
+        <label class="checkbox-row"><input type="checkbox" id="opt-complex"> Сложная форма / фигурный рез</label>
+        <label class="checkbox-row"><input type="checkbox" id="opt-polish"> Дополнительная полировка</label>
+        <label class="checkbox-row"><input type="checkbox" id="opt-install"> Монтаж на объекте</label>
+      </div>
+    </div>
+
+    <div class="result-panel">
+      <div>
+        <div class="result-label">Ориентировочная стоимость</div>
+        <div class="result-price placeholder" id="priceOut">Выберите материал и укажите размеры, чтобы увидеть расчёт</div>
+        <div class="warning-box" id="warningOut" style="display:none"></div>
+        <div class="result-breakdown" id="breakdown"></div>
+        <div class="remainder-line" id="remainderOut"></div>
+        <div class="info-block" id="infoBlock">Стоимость указана за весь слэб — остаток после раскроя бесплатно хранится на складе компании, клиент может использовать его для другого проекта или забрать себе.</div>
+      </div>
+      <div>
+        <button class="cta-btn" id="ctaBtn">Получить точный расчёт</button>
+        <div class="disclaimer" id="updatedAtOut"></div>
+        <div class="disclaimer">Расчёт ориентировочный. Финальная цена зависит от партии камня, сложности рисунка и логистики.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="pricing.js"></script>
+<script src="material-picker.js"></script>
+<script src="product-types.js"></script>
+<script src="/sayanmramor-site/js/site.js"></script>
+<script src="/sayanmramor-site/js/category-calculator.js"></script>
+<script>
+  SiteCommon.loadPortfolio('stoleshnitsa_kuhnya', document.getElementById('portfolioGrid'));
+  CategoryCalculator.init('stoleshnitsa_kuhnya');
+</script>
+</body>
+</html>
