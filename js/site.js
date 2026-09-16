@@ -71,6 +71,7 @@
       img.src = item.image;
       img.alt = item.caption || '';
       img.loading = 'lazy';
+      img.addEventListener('error', () => { figure.classList.add('image-broken'); img.remove(); });
       figure.appendChild(img);
       if (item.caption) {
         const caption = document.createElement('figcaption');

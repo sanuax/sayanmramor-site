@@ -214,7 +214,7 @@ D:\sayanmramor-site\
 ```json
 {
   "pol": [
-    { "image": "assets/portfolio/pol/placeholder-1.jpg", "caption": "Фото проекта появится позже" }
+    { "image": "/sayanmramor-site/assets/portfolio/pol/placeholder-1.jpg", "caption": "Фото проекта появится позже" }
   ]
 }
 ```
