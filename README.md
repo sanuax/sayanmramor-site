@@ -75,10 +75,31 @@ DOM-контракт в `material-picker.js` изменятся, копии в �
 отрендериться неправильно или сломаться). Если меняете эти файлы в
 `D:\calculator`, не забудьте вручную перенести изменения сюда.
 
+## Шоурум (`showroom.html`)
+
+Интерактивный 3D-дом: фасад, холл, гостиная, кухня, лестница, ванная. На
+реальных каменных поверхностях дома — точки; карточка изделия ведёт в
+конфигуратор по неизменному контракту
+`/calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
+Код калькулятора шоурум не использует — только эту ссылку.
+
+- `js/showroom/showroom-data.js` — направления (9 product keys), зоны дома,
+  объекты шоурума (что, где, какой product key, текст карточки), сборка URL.
+- `js/showroom/showroom-state.js` — состояние (зона, карточка, «Все
+  изделия») как чистый reducer, режим раскладки, fallback без WebGL.
+- `js/showroom/house-model.js` — сам дом как данные (детали, материалы,
+  группы видимости для «разреза» комнат).
+- `showroom-scene.js`, `-materials.js`, `-camera.js`, `-markers.js`,
+  `-ui.js`, `-app.js` — отрисовка (Three.js r160, `vendor/three/`, MIT).
+
+Без WebGL/JavaScript страница показывает статический список всех 9
+направлений с теми же ссылками. `showroom.html#kitchen` (и другие зоны)
+открывает сразу нужную зону.
+
 ## Тесты
 
 ```
-node --test tests/site.test.js tests/category-calculator.test.js tests/catalog.test.js
+node --test tests/site.test.js tests/category-calculator.test.js tests/catalog.test.js tests/showroom.test.js
 ```
 
 Эти тесты используют реальные `D:\calculator\pricing.js` и

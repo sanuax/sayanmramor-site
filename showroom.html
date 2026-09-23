@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Шоурум — Саянмрамор</title>
+<meta name="description" content="Интерактивный дом из натурального камня: фасад, холл, гостиная, кухня, лестница и ванная. Выберите изделие и создайте своё.">
+<link rel="stylesheet" href="/sayanmramor-site/css/showroom.css">
+</head>
+<body class="sr-page">
+
+<header class="sr-top">
+  <a class="sr-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
+  <span class="sr-top-title">Шоурум</span>
+  <div class="sr-top-actions">
+    <button type="button" class="sr-btn sr-btn-ghost" id="srPanelBtn" aria-controls="srPanel" aria-expanded="false">Все изделия</button>
+    <a class="sr-btn sr-btn-ghost sr-hide-compact" href="/calculator/sayanmramor-calculator.html">Калькулятор</a>
+  </div>
+</header>
+
+<main class="sr-stage" id="srStage">
+  <canvas class="sr-canvas" id="srCanvas" aria-label="Интерактивный 3D-дом. Перетаскивайте, чтобы осмотреться; выберите точку на изделии, чтобы узнать о нём." role="img"></canvas>
+  <div class="sr-markers" id="srMarkers" aria-label="Изделия в этой зоне"></div>
+  <div class="sr-loading" id="srLoading" role="status">
+    <span class="sr-loading-mark"></span>
+    <span>Собираем дом…</span>
+  </div>
+</main>
+
+<button type="button" class="sr-back" id="srBack" hidden>← На улицу</button>
+
+<section class="sr-caption" id="srCaption" aria-live="polite">
+  <div class="sr-eyebrow">Шоурум · <span id="srCaptionZone">Дом</span></div>
+  <h1 class="sr-caption-title" id="srCaptionTitle">Дом снаружи</h1>
+  <p class="sr-caption-text" id="srCaptionText"></p>
+  <div class="sr-caption-products">
+    <span class="sr-caption-label">Здесь можно создать</span>
+    <div class="sr-chips" id="srChips"></div>
+  </div>
+</section>
+
+<nav class="sr-zones" id="srZones" aria-label="Зоны дома"></nav>
+
+<p class="sr-hint" id="srHint" hidden>Перетаскивайте, чтобы осмотреться · колесо или щипок — приблизить</p>
+
+<aside class="sr-card" id="srCard" hidden role="dialog" aria-labelledby="srCardTitle" aria-modal="false">
+  <button type="button" class="sr-close" id="srCardClose" aria-label="Закрыть">✕</button>
+  <div class="sr-eyebrow" id="srCardProduct"></div>
+  <h2 class="sr-card-title" id="srCardTitle"></h2>
+  <p class="sr-card-text" id="srCardText"></p>
+  <div class="sr-card-context" id="srCardContext"></div>
+  <div class="sr-card-actions">
+    <a class="sr-cta" id="srCardCta" href="#">Создать изделие →</a>
+    <a class="sr-link" id="srCardExamples" href="#">Примеры работ</a>
+  </div>
+</aside>
+
+<aside class="sr-panel" id="srPanel" hidden role="dialog" aria-labelledby="srPanelTitle" aria-modal="false">
+  <div class="sr-panel-head">
+    <h2 class="sr-panel-title" id="srPanelTitle">Все изделия</h2>
+    <button type="button" class="sr-close" id="srPanelClose" aria-label="Закрыть">✕</button>
+  </div>
+  <p class="sr-panel-sub">Выберите направление — покажем его в доме.</p>
+  <ul class="sr-panel-list" id="srPanelList"></ul>
+  <a class="sr-link sr-panel-foot" href="/sayanmramor-site/katalog.html">Эксклюзивные и готовые изделия →</a>
+</aside>
+
+<!-- Shown when WebGL/JavaScript is unavailable or the scene fails to load:
+     the same 9 directions, same configurator links, no 3D. -->
+<section class="sr-fallback" id="srFallback" hidden>
+  <div class="sr-fallback-inner">
+    <div class="sr-eyebrow">Шоурум</div>
+    <h1 class="sr-fallback-title">Изделия из натурального камня для дома</h1>
+    <p class="sr-fallback-text" id="srFallbackText">Интерактивный 3D-дом недоступен в этом браузере. Все направления — ниже: выберите изделие и создайте своё.</p>
+    <ul class="sr-fallback-list">
+      <li><span>Лестницы</span><a href="/calculator/sayanmramor-calculator.html?product=lestnitsa">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/lestnitsy.html">Примеры</a></li>
+      <li><span>Панно</span><a href="/calculator/sayanmramor-calculator.html?product=panno">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/panno.html">Примеры</a></li>
+      <li><span>Подоконники</span><a href="/calculator/sayanmramor-calculator.html?product=podokonnik">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/podokonniki.html">Примеры</a></li>
+      <li><span>Полы</span><a href="/calculator/sayanmramor-calculator.html?product=pol">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/poly.html">Примеры</a></li>
+      <li><span>Стены</span><a href="/calculator/sayanmramor-calculator.html?product=stena">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/steny.html">Примеры</a></li>
+      <li><span>Фасады</span><a href="/calculator/sayanmramor-calculator.html?product=fasad">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/fasady.html">Примеры</a></li>
+      <li><span>Столешницы в ванную</span><a href="/calculator/sayanmramor-calculator.html?product=stoleshnitsa_vannaya">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Примеры</a></li>
+      <li><span>Столешницы на кухню</span><a href="/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Примеры</a></li>
+      <li><span>Ступени</span><a href="/calculator/sayanmramor-calculator.html?product=stupeni">Создать изделие →</a><a class="sr-link" href="/sayanmramor-site/categories/stupeni.html">Примеры</a></li>
+    </ul>
+    <a class="sr-link" href="/sayanmramor-site/index.html">← На главную</a>
+  </div>
+</section>
+<noscript><style>.sr-fallback { display: block !important; } .sr-stage, .sr-caption, .sr-zones, .sr-top-actions { display: none !important; }</style></noscript>
+
+<script src="/sayanmramor-site/js/showroom/showroom-data.js"></script>
+<script src="/sayanmramor-site/js/showroom/showroom-state.js"></script>
+<script src="/sayanmramor-site/js/showroom/house-model.js"></script>
+<script type="module" src="/sayanmramor-site/js/showroom/showroom-app.js"></script>
+</body>
+</html>

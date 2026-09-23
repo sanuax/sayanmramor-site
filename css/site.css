@@ -558,3 +558,16 @@
   font-size: 14px; transition: box-shadow 0.15s;
 }
 .home-grid a:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+/* ---- Главная: вход в 3D-шоурум ------------------------------------------ */
+.home-showroom {
+  display: grid; gap: 6px; max-width: 900px; margin: 0 auto 28px; padding: 30px 32px;
+  border-radius: 10px; background: #231f1b; color: #f1ece4; text-decoration: none;
+  transition: background-color 0.2s;
+}
+.home-showroom:hover { background: #2c2722; }
+.home-showroom-eyebrow { font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; color: #b9ae9f; }
+.home-showroom-title { font-size: 24px; font-weight: 700; }
+.home-showroom-text { font-size: 14px; color: #cfc6b9; max-width: 560px; line-height: 1.5; }
+.home-showroom-cta { margin-top: 10px; font-size: 14px; font-weight: 700; color: #f1ece4; }
+.home-showroom:hover .home-showroom-cta { text-decoration: underline; }
