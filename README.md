@@ -13,20 +13,43 @@
 
 ## Локальный запуск
 
-Поднимите один сервер из `D:\` (родитель и `calculator`, и
-`sayanmramor-site`):
+Сайт и калькулятор раздаются ОДНИМ сервером, корень которого — `D:\`
+(общий родитель `calculator` и `sayanmramor-site`). Команда работает из
+любой текущей папки:
 
 ```
-cd D:\
-python -m http.server 8000
+python -m http.server 8000 --directory D:\
 ```
 
-Откройте `http://localhost:8000/sayanmramor-site/index.html`.
+Откройте:
 
-Пути вида `/calculator/data/slabs.json` и
-`/sayanmramor-site/css/site.css` работают только при таком запуске —
-открытие файлов напрямую (`file://`) не работает, потому что `fetch()`
-данных о камне требует http(s).
+- `http://localhost:8000/sayanmramor-site/index.html` — главная;
+- `http://localhost:8000/sayanmramor-site/showroom.html` — 3D-шоурум.
+
+**Не запускайте сервер из `D:\sayanmramor-site`** (`--directory
+D:\sayanmramor-site` или `cd D:\sayanmramor-site`): тогда сервер
+считает корнем сам сайт, и КАЖДАЯ страница получает 404 на свои
+CSS/JS (`/sayanmramor-site/...`), а страницы категорий — ещё и на
+файлы калькулятора (`/calculator/...`), которых в этой папке физически
+нет. Это не ошибка путей: сайт намеренно адресует свои файлы как
+`/sayanmramor-site/...`, а калькулятор как `/calculator/...` на том же
+хосте — страницы категорий подключают `pricing.js`,
+`material-picker.js`, `product-types.js` и `data/slabs.json` из
+калькулятора, а шоурум и каталог ведут в
+`/calculator/sayanmramor-calculator.html?product=...`. Поэтому сайт
+нельзя поднять «отдельно от калькулятора», и заменять
+`/sayanmramor-site/` на `/` нельзя.
+
+Открытие файлов напрямую (`file://`) тоже не работает: `fetch()` данных
+о камне и ES-модули шоурума требуют http(s).
+
+**Какая версия калькулятора отвечает на `/calculator/`.** Это то, что
+сейчас лежит в `D:\calculator` (сейчас там ветка `master`). Контракт
+`?product=<key>&stone=<id>` (предвыбор изделия и камня при переходе из
+шоурума/каталога) есть только в ветке калькулятора
+`rate-catalog-subcategories`; на `master` конфигуратор откроется, но
+параметры проигнорирует. Для проверки переходов сайт → калькулятор в
+`D:\calculator` должна быть версия с этим контрактом.
 
 ## `<base href="/calculator/">` на страницах категорий
 
