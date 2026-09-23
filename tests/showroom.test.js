@@ -16,11 +16,11 @@ function inside(point, bounds, pad) {
 
 // ---- products / URL contract ------------------------------------------------
 
-test('the showroom covers exactly the 9 product directions, with the calculator\'s own product keys', () => {
+// The configurator's 9 public product keys -- part of the URL contract, so
+// they are pinned here rather than read from the calculator's code.
+test('the showroom covers exactly the 9 product directions, with the configurator\'s public product keys', () => {
   const expected = ['lestnitsa', 'panno', 'podokonnik', 'pol', 'stena', 'fasad', 'stoleshnitsa_vannaya', 'stoleshnitsa_kuhnya', 'stupeni'];
   assert.deepEqual(Data.PRODUCT_KEYS, expected);
-  const ProductTypes = require('../../calculator/product-types.js');
-  assert.deepEqual(Object.keys(ProductTypes.PRODUCTS).sort(), expected.slice().sort());
 });
 
 test('every product has at least one object in the house and exactly one primary object', () => {

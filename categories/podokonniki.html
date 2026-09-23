@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<base href="/calculator/">
 <title>Подоконники из камня — Саянмрамор</title>
 <link rel="stylesheet" href="/sayanmramor-site/css/site.css">
 </head>
@@ -28,68 +27,43 @@
 
 <div class="wrap">
   <h1>Подоконники из камня</h1>
-  <p class="subtitle">Подоконники из мрамора и гранита на заказ — рассчитайте ориентировочную стоимость по своим размерам.</p>
+  <p class="subtitle">Подоконники из мрамора и гранита на заказ — выберите камень и рассчитайте стоимость в конфигураторе.</p>
 </div>
 
 <section class="portfolio-section">
   <div class="portfolio-grid" id="portfolioGrid"></div>
 </section>
 
-<div class="wrap">
-  <div class="card">
-    <div class="form-side">
-      <div class="field">
-        <label id="materialLabel" for="materialField">Материал</label>
-        <button type="button" class="material-field" id="materialField"
-                aria-labelledby="materialLabel materialFieldText" aria-haspopup="dialog" disabled>
-          <span class="material-field-thumb" id="materialFieldThumb" hidden><img alt=""></span>
-          <span class="material-field-text" id="materialFieldText">Загрузка материалов…</span>
-          <span class="material-field-chevron" aria-hidden="true">▾</span>
-        </button>
-      </div>
+<section class="stone-section" aria-labelledby="stoneTitle">
+  <div class="stone-head">
+    <h2 id="stoneTitle">Камень</h2>
+    <p>Выберите камень — он будет выбран в конфигураторе. Размеры, форму, кромку и стоимость вы зададите там.</p>
+  </div>
+  <div class="stone-controls">
+    <input type="search" id="stoneSearch" placeholder="Поиск по названию или типу камня" aria-label="Поиск камня" autocomplete="off" disabled>
+    <div class="stone-types" id="stoneTypes" role="group" aria-label="Тип камня"></div>
+  </div>
+  <p class="stone-status" id="stoneStatus" aria-live="polite">Загрузка камня…</p>
+  <ul class="stone-grid" id="stoneGrid"></ul>
+  <button type="button" class="stone-more" id="stoneMore" hidden>Показать ещё</button>
+</section>
 
-      <div class="field">
-        <label>Размеры, м</label>
-        <div class="dims">
-          <input type="number" id="width" placeholder="Ширина" min="0" step="0.01">
-          <input type="number" id="length" placeholder="Длина" min="0" step="0.01">
-        </div>
-        <div class="error" id="dimError">Укажите ширину и длину больше нуля</div>
-      </div>
-
-      <div class="checkboxes">
-        <label class="checkbox-row"><input type="checkbox" id="opt-complex"> Сложная форма / фигурный рез</label>
-        <label class="checkbox-row"><input type="checkbox" id="opt-polish"> Дополнительная полировка</label>
-        <label class="checkbox-row"><input type="checkbox" id="opt-install"> Монтаж на объекте</label>
-      </div>
+<div class="configure-bar">
+  <div class="configure-bar-inner">
+    <div class="configure-choice">
+      <span class="configure-label">Камень</span>
+      <span class="configure-stone is-empty" id="configureStone">Не выбран — подберёте в конфигураторе</span>
     </div>
-
-    <div class="result-panel">
-      <div>
-        <div class="result-label">Ориентировочная стоимость</div>
-        <div class="result-price placeholder" id="priceOut">Выберите материал и укажите размеры, чтобы увидеть расчёт</div>
-        <div class="warning-box" id="warningOut" style="display:none"></div>
-        <div class="result-breakdown" id="breakdown"></div>
-        <div class="remainder-line" id="remainderOut"></div>
-        <div class="info-block" id="infoBlock">Стоимость указана за весь слэб — остаток после раскроя бесплатно хранится на складе компании, клиент может использовать его для другого проекта или забрать себе.</div>
-      </div>
-      <div>
-        <button class="cta-btn" id="ctaBtn">Получить точный расчёт</button>
-        <div class="disclaimer" id="updatedAtOut"></div>
-        <div class="disclaimer">Расчёт ориентировочный. Финальная цена зависит от партии камня, сложности рисунка и логистики.</div>
-      </div>
-    </div>
+    <a class="configure-cta" id="configureCta" href="/calculator/sayanmramor-calculator.html?product=podokonnik">Рассчитать в конфигураторе</a>
   </div>
 </div>
 
-<script src="pricing.js"></script>
-<script src="material-picker.js"></script>
-<script src="product-types.js"></script>
+<script src="/sayanmramor-site/js/showroom/showroom-data.js"></script>
 <script src="/sayanmramor-site/js/site.js"></script>
-<script src="/sayanmramor-site/js/category-calculator.js"></script>
+<script src="/sayanmramor-site/js/category-page.js"></script>
 <script>
   SiteCommon.loadPortfolio('podokonnik', document.getElementById('portfolioGrid'));
-  CategoryCalculator.init('podokonnik');
+  CategoryPage.init('podokonnik');
 </script>
 </body>
 </html>
