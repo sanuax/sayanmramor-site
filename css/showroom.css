@@ -12,8 +12,9 @@
   --sr-panel-solid: #1e1a16;
   --sr-line: rgba(241, 236, 228, 0.12);
   --sr-line-strong: rgba(241, 236, 228, 0.22);
-  --sr-accent: #c8652f;
-  --sr-accent-hover: #b0552a;
+  /* The same restrained copper as the site and the configurator. */
+  --sr-accent: #b4562b;
+  --sr-accent-hover: #9b4824;
   --sr-stage: #2a2621;
   --sr-radius: 14px;
   --sr-ease: cubic-bezier(0.22, 0.68, 0.24, 1);
@@ -160,7 +161,7 @@ body.is-interior .sr-caption { top: 128px; }
 }
 @keyframes sr-pulse { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
 .sr-marker:hover .sr-marker-dot, .sr-marker:focus-visible .sr-marker-dot { transform: scale(1.15); }
-.sr-marker.is-selected .sr-marker-dot { background: var(--sr-accent); box-shadow: 0 0 0 5px rgba(200, 101, 47, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35); }
+.sr-marker.is-selected .sr-marker-dot { background: var(--sr-accent); box-shadow: 0 0 0 5px rgba(180, 86, 43, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35); }
 .sr-marker.is-selected .sr-marker-dot::after { animation: none; opacity: 0; }
 .sr-marker.is-occluded { opacity: 0.4; }
 .sr-marker.is-offscreen { opacity: 0; pointer-events: none; }
@@ -194,7 +195,7 @@ body.is-interior .sr-caption { top: 128px; }
 .sr-card-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .sr-cta {
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px;
-  border-radius: 999px; background: var(--sr-accent); color: #fff; text-decoration: none;
+  border-radius: 6px; background: var(--sr-accent); color: #fff; text-decoration: none;
   font-size: var(--sr-fs-body); font-weight: 700; letter-spacing: 0.2px;
   transition: background-color 0.2s;
 }

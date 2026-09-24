@@ -8,30 +8,33 @@
 </head>
 <body>
 <header class="site-header">
-  <a class="site-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
-  <nav class="site-nav">
-    <a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a>
-    <a href="/sayanmramor-site/categories/panno.html">Панно</a>
-    <a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a>
-    <a href="/sayanmramor-site/categories/poly.html">Полы</a>
-    <a href="/sayanmramor-site/categories/steny.html">Стены</a>
-    <a href="/sayanmramor-site/categories/fasady.html">Фасады</a>
-    <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Столешницы в ванную</a>
-    <a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Столешницы на кухню</a>
-    <a href="/sayanmramor-site/categories/stupeni.html">Ступени</a>
-    <a class="active" href="/sayanmramor-site/katalog.html">Готовые изделия</a>
-    <a class="showroom-link" href="/sayanmramor-site/showroom.html">Шоурум</a>
-    <a class="calculator-link" href="/calculator/sayanmramor-calculator.html">Калькулятор</a>
-  </nav>
+  <div class="site-header-inner">
+    <a class="site-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
+    <nav class="site-nav">
+      <a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a>
+      <a href="/sayanmramor-site/categories/panno.html">Панно</a>
+      <a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a>
+      <a href="/sayanmramor-site/categories/poly.html">Полы</a>
+      <a href="/sayanmramor-site/categories/steny.html">Стены</a>
+      <a href="/sayanmramor-site/categories/fasady.html">Фасады</a>
+      <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Столешницы в ванную</a>
+      <a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Столешницы на кухню</a>
+      <a href="/sayanmramor-site/categories/stupeni.html">Ступени</a>
+      <a class="active" href="/sayanmramor-site/katalog.html">Готовые изделия</a>
+      <a class="showroom-link" href="/sayanmramor-site/showroom.html">Шоурум</a>
+    </nav>
+    <a class="btn btn-primary site-header-cta" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
+  </div>
 </header>
 
-<div class="wrap">
+<div class="wrap page-head">
   <h1>Готовые изделия</h1>
   <p class="subtitle">Изделия из камня в наличии — фиксированная цена, без ожидания расчёта.</p>
 </div>
 
 <div class="catalog-grid" id="catalogGrid"></div>
 
+<script src="/sayanmramor-site/js/site.js"></script>
 <script src="/sayanmramor-site/js/catalog.js"></script>
 <script>
   fetch('/sayanmramor-site/data/products.json')

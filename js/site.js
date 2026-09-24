@@ -33,5 +33,15 @@
       .catch(() => { container.textContent = 'Не удалось загрузить примеры работ.'; });
   }
 
-  return { renderPortfolio, loadPortfolio };
+  // On a phone the sections are one scrollable row: bring the current one
+  // into view instead of leaving it past the right edge.
+  function revealActiveNav(doc) {
+    const nav = doc.querySelector('.site-nav');
+    const active = nav && nav.querySelector('a.active');
+    if (!active || nav.scrollWidth <= nav.clientWidth) return;
+    nav.scrollLeft = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+  }
+  if (typeof document !== 'undefined') revealActiveNav(document);
+
+  return { renderPortfolio, loadPortfolio, revealActiveNav };
 });
