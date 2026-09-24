@@ -25,41 +25,49 @@
 
 ## Локальный запуск
 
-Сайт и калькулятор раздаются ОДНИМ сервером, корень которого — `D:\`
-(общий родитель `calculator` и `sayanmramor-site`). Команда работает из
-любой текущей папки:
+Сайт и калькулятор — два отдельных репозитория, но в браузере они живут
+на ОДНОМ origin, как в продакшене. Одна команда (из любой папки):
 
 ```
-python -m http.server 8000 --directory D:\
+python D:\sayanmramor-site\scripts\dev_server.py
 ```
 
-Откройте:
+Это `scripts/dev_server.py` — маленький dev-сервер на стандартной
+библиотеке Python (только для локальной разработки, не часть сайта):
+
+| URL                                | Откуда отдаётся                                        |
+|------------------------------------|--------------------------------------------------------|
+| `http://localhost:8000/sayanmramor-site/...` | этот репозиторий, `D:\sayanmramor-site`      |
+| `http://localhost:8000/calculator/...`       | актуальный калькулятор — worktree `D:\calculator\.worktrees\rate-catalog-subcategories` |
+| `http://localhost:8000/`                     | редирект на главную сайта                    |
+
+Canonical-адрес для QA — `http://localhost:8000/`:
 
 - `http://localhost:8000/sayanmramor-site/index.html` — главная;
-- `http://localhost:8000/sayanmramor-site/showroom.html` — 3D-шоурум.
+- `http://localhost:8000/sayanmramor-site/showroom.html` — 3D-шоурум;
+- `http://localhost:8000/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown` — конфигуратор.
 
-**Не запускайте сервер из `D:\sayanmramor-site`** (`--directory
-D:\sayanmramor-site` или `cd D:\sayanmramor-site`): тогда сервер
-считает корнем сам сайт, и КАЖДАЯ страница получает 404 на свои
-CSS/JS (`/sayanmramor-site/...`), а страницы категорий — ещё и на
-`/calculator/data/slabs.json`, которого в этой папке физически нет.
-Это не ошибка путей: сайт намеренно адресует свои файлы как
-`/sayanmramor-site/...`, а калькулятор как `/calculator/...` на том же
-хосте — страницы категорий читают каталог камня из
-`/calculator/data/`, а все страницы ведут в
-`/calculator/sayanmramor-calculator.html?product=...`. Поэтому заменять
-`/sayanmramor-site/` на `/` нельзя.
+`D:\calculator` (основной checkout, ветка `master`) для QA НЕ используется:
+в нём нет актуального конфигуратора. Другой checkout калькулятора можно
+подставить параметром `--calculator <папка>` (или переменной
+`SAYAN_CALCULATOR_ROOT`), порт — `--port`. Сервер отвечает с
+`Cache-Control: no-store`, чтобы после правки файла не открывалась
+старая версия.
+
+**Если браузер всё ещё показывает старый калькулятор** (он мог
+запомнить файлы `D:\calculator` master от прежнего способа запуска):
+откройте `http://localhost:8000/` — этот адрес очищает HTTP-кэш сайта
+(`Clear-Site-Data`) — и затем откройте калькулятор в новой вкладке
+(или Ctrl+Shift+R).
+
+Не используйте для этого `python -m http.server`: он умеет раздавать
+только одну папку, и `/calculator/` тогда оказывается либо 404, либо
+`D:\calculator` (master). Пути `/sayanmramor-site/...` и
+`/calculator/...` сайт использует намеренно — это те же адреса, что на
+общем хосте; заменять `/sayanmramor-site/` на `/` нельзя.
 
 Открытие файлов напрямую (`file://`) тоже не работает: `fetch()` данных
 о камне и ES-модули шоурума требуют http(s).
-
-**Какая версия калькулятора отвечает на `/calculator/`.** Это то, что
-сейчас лежит в `D:\calculator` (сейчас там ветка `master`). Контракт
-`?product=<key>&stone=<id>` (предвыбор изделия и камня при переходе из
-шоурума/каталога) есть только в ветке калькулятора
-`rate-catalog-subcategories`; на `master` конфигуратор откроется, но
-параметры проигнорирует. Для проверки переходов сайт → калькулятор в
-`D:\calculator` должна быть версия с этим контрактом.
 
 ## Страницы категорий (`categories/*.html`)
 
