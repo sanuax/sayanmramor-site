@@ -30,7 +30,7 @@ function start() {
 
   const view3d = createShowroomScene(canvas, { House });
   const rig = createCameraRig(canvas, { reducedMotion });
-  let state = State.initialState(State.zoneFromHash(location.hash));
+  let state = State.initialStateFromLocation(location.search, location.hash);
   let size = { width: 1, height: 1 };
   let frame = null;
   let occlusionDue = true;
@@ -94,7 +94,7 @@ function start() {
         duration: zoneChanged ? 1300 : 900,
       });
     }
-    if (zoneChanged) history.replaceState(null, '', state.zone === 'exterior' ? location.pathname : '#' + state.zone);
+    if (zoneChanged) history.replaceState(null, '', location.pathname + State.locationFor(state));
     occlusionDue = true;
     requestRender();
   }
@@ -113,11 +113,13 @@ function start() {
     if (zone && zone !== state.zone) dispatch({ type: 'goToZone', zone });
   });
 
-  // First frame: the arrival zone, then a gentle approach from further out.
+  // First frame: the arrival zone -- or, entering from the configurator,
+  // the product's object with its card open -- then a gentle approach
+  // from further out.
   const initial = State.describe(state);
   view3d.setHiddenGroups(initial.zone.hide);
   resize();
-  const arrival = fit(initial.zone.view);
+  const arrival = fit(initial.cameraView);
   const intro = {
     position: arrival.position.map((p, i) => arrival.target[i] + (p - arrival.target[i]) * 1.35),
     target: arrival.target,
@@ -125,6 +127,8 @@ function start() {
   rig.jumpTo(reducedMotion ? arrival : intro, initial.zone.orbit);
   ui.render(initial);
   markers.setMarkers(initial.markers);
+  markers.setSelected(state.selectedObjectId);
+  view3d.setHighlight(state.selectedObjectId);
   requestRender();
   requestAnimationFrame(() => {
     doc.getElementById('srLoading').classList.add('is-done');

@@ -13,7 +13,10 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function (Data) {
 
-  const INITIAL = Object.freeze({ zone: 'exterior', selectedObjectId: null, panelOpen: false });
+  // stoneId: the stone the client arrived with from the configurator (or
+  // null). It is context, not a selection: every "Создать изделие" link
+  // carries it back, and it survives moving around the house.
+  const INITIAL = Object.freeze({ zone: 'exterior', selectedObjectId: null, panelOpen: false, stoneId: null });
 
   function initialState(zoneId) {
     return Object.assign({}, INITIAL, Data.zoneById(zoneId) ? { zone: zoneId } : {});
@@ -70,7 +73,7 @@
         productLabel: product.label,
         context: 'Натуральный камень · ' + zone.title,
         ctaLabel: 'Создать изделие →',
-        ctaHref: Data.buildConfiguratorUrl(object.productKey),
+        ctaHref: Data.buildConfiguratorUrl(object.productKey, state.stoneId),
         categoryHref: product.categoryHref,
       };
     }
@@ -131,6 +134,29 @@
     return Data.zoneById(id) ? id : null;
   }
 
+  // Entry from the configurator: showroom.html?product=<key>[&stone=<id>].
+  // A known product opens its main object in the house (its zone, camera
+  // on it, its card open) -- only as the starting point, the client can go
+  // anywhere from there. Anything unknown or malformed is ignored and the
+  // showroom opens as usual (or at a #zone deep link).
+  function initialStateFromLocation(search, hash) {
+    const params = new URLSearchParams(search || '');
+    const stone = params.get('stone');
+    const stoneId = Data.isStoneId(stone) ? stone : null;
+    const productKey = params.get('product');
+    const base = Data.productByKey(productKey)
+      ? reduce(INITIAL, { type: 'chooseProduct', productKey })
+      : initialState(zoneFromHash(hash));
+    return Object.assign({}, base, { stoneId });
+  }
+
+  // The address bar while moving around: the zone as #hash (as before) and
+  // the carried stone, so a reload keeps both. The product entry is not
+  // repeated -- it was a starting point, not a place.
+  function locationFor(state) {
+    return (state.stoneId ? '?stone=' + encodeURIComponent(state.stoneId) : '') + (state.zone === 'exterior' ? '' : '#' + state.zone);
+  }
+
   function canUseWebGL(doc) {
     try {
       const canvas = doc.createElement('canvas');
@@ -140,5 +166,5 @@
     }
   }
 
-  return { INITIAL, initialState, reduce, describe, layoutMode, viewInsets, zoneFromHash, canUseWebGL, distanceScale, scaleView, COMPACT_MAX_WIDTH };
+  return { INITIAL, initialState, initialStateFromLocation, locationFor, reduce, describe, layoutMode, viewInsets, zoneFromHash, canUseWebGL, distanceScale, scaleView, COMPACT_MAX_WIDTH };
 });

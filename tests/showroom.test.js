@@ -242,3 +242,81 @@ test('every site page links to the showroom from its main navigation', () => {
     assert.ok(nav.includes('href="/sayanmramor-site/showroom.html"'), page);
   });
 });
+
+// ---- entry from the configurator (?product=&stone=) ------------------------------
+
+test('entry: every product key opens its main object -- its zone, camera on it, its card open', () => {
+  Data.PRODUCT_KEYS.forEach(key => {
+    const state = State.initialStateFromLocation('?product=' + key, '');
+    const primary = Data.primaryObjectFor(key);
+    assert.equal(state.selectedObjectId, primary.id, key);
+    assert.equal(state.zone, primary.zone, key);
+    const d = State.describe(state);
+    assert.equal(d.card.objectId, primary.id);
+    assert.deepEqual(d.cameraView, Data.objectView(primary), key + ': the camera frames the object, not the zone');
+    assert.ok(d.markers.find(m => m.id === primary.id).selected);
+  });
+});
+
+test('entry: the product lands on the honest object for it', () => {
+  const at = key => State.initialStateFromLocation('?product=' + key, '').selectedObjectId;
+  assert.equal(at('stoleshnitsa_kuhnya'), 'kitchen-counter');
+  assert.equal(at('stoleshnitsa_vannaya'), 'bath-counter');
+  assert.equal(at('lestnitsa'), 'staircase');
+  assert.equal(at('stupeni'), 'entrance-steps');
+  assert.equal(at('podokonnik'), 'living-sill');
+  assert.equal(at('panno'), 'living-panno');
+  assert.equal(at('pol'), 'living-floor');
+  assert.equal(at('stena'), 'hall-wall');
+  assert.equal(at('fasad'), 'facade');
+});
+
+test('entry: a valid stone is carried into every "Создать изделие" link, and survives moving around', () => {
+  let state = State.initialStateFromLocation('?product=stoleshnitsa_kuhnya&stone=delicato-brown', '');
+  assert.equal(state.stoneId, 'delicato-brown');
+  assert.equal(State.describe(state).card.ctaHref, '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown');
+  state = State.reduce(state, { type: 'goOutside' });
+  state = State.reduce(state, { type: 'selectObject', id: 'staircase' });
+  assert.equal(State.describe(state).card.ctaHref, '/calculator/sayanmramor-calculator.html?product=lestnitsa&stone=delicato-brown');
+});
+
+test('entry: no stone means none is invented; a malformed stone is dropped', () => {
+  assert.equal(State.initialStateFromLocation('?product=pol', '').stoneId, null);
+  ['', 'Delicato Brown', '../x', '<script>', 'a'.repeat(200), 'UPPER'].forEach(stone => {
+    const state = State.initialStateFromLocation('?product=pol&stone=' + encodeURIComponent(stone), '');
+    assert.equal(state.stoneId, null, stone);
+    assert.equal(State.describe(state).card.ctaHref, '/calculator/sayanmramor-calculator.html?product=pol');
+  });
+});
+
+test('entry: an unknown/empty product opens the showroom as usual; a #zone deep link still works', () => {
+  ['', '?product=', '?product=unknown', '?product=garbage&stone=delicato-brown', '?product=__proto__', '?foo=bar'].forEach(search => {
+    const state = State.initialStateFromLocation(search, '');
+    assert.equal(state.zone, 'exterior', search);
+    assert.equal(state.selectedObjectId, null, search);
+    assert.equal(State.describe(state).card, null, search);
+  });
+  assert.equal(State.initialStateFromLocation('', '#kitchen').zone, 'kitchen');
+  assert.equal(State.initialStateFromLocation('?product=nope', '#bathroom').zone, 'bathroom');
+  assert.equal(State.initialStateFromLocation('?product=lestnitsa', '#kitchen').zone, 'staircase', 'a valid product wins over the hash');
+});
+
+test('entry is only a starting point: the client can leave the object, the zone and go outside', () => {
+  let state = State.initialStateFromLocation('?product=stoleshnitsa_vannaya&stone=delicato-brown', '');
+  state = State.reduce(state, { type: 'closeCard' });
+  assert.equal(state.selectedObjectId, null);
+  state = State.reduce(state, { type: 'goToZone', zone: 'living' });
+  assert.equal(state.zone, 'living');
+  state = State.reduce(state, { type: 'goOutside' });
+  assert.equal(state.zone, 'exterior');
+  assert.equal(state.stoneId, 'delicato-brown');
+});
+
+test('locationFor: zone as #hash, the carried stone as ?stone, the product entry not repeated', () => {
+  assert.equal(State.locationFor(Object.assign({}, State.INITIAL)), '');
+  assert.equal(State.locationFor(Object.assign({}, State.INITIAL, { zone: 'kitchen' })), '#kitchen');
+  assert.equal(State.locationFor(Object.assign({}, State.INITIAL, { zone: 'kitchen', stoneId: 'delicato-brown' })), '?stone=delicato-brown#kitchen');
+  const back = State.initialStateFromLocation('?stone=delicato-brown', '#kitchen');
+  assert.equal(back.zone, 'kitchen');
+  assert.equal(back.stoneId, 'delicato-brown', 'a reload keeps the zone and the stone');
+});

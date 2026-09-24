@@ -187,6 +187,15 @@
     return url;
   }
 
+  // A stone id as the configurator writes it (slabs.json `id`: lowercase
+  // latin, digits, hyphens). The showroom has no stone catalog of its own,
+  // so it only rejects what cannot be an id at all; the configurator's own
+  // URL bootstrap ignores an id it does not know.
+  const STONE_ID = /^[a-z0-9][a-z0-9-]{0,99}$/;
+  function isStoneId(value) {
+    return typeof value === 'string' && STONE_ID.test(value);
+  }
+
   // Camera for a focused object: looking at the anchor from anchor + offset.
   function objectView(object) {
     const a = object.anchor, o = object.offset;
@@ -195,6 +204,6 @@
 
   return {
     CONFIGURATOR_PATH, PRODUCTS, PRODUCT_KEYS, ZONES, OBJECTS,
-    productByKey, zoneById, objectById, objectsInZone, primaryObjectFor, buildConfiguratorUrl, objectView,
+    productByKey, zoneById, objectById, objectsInZone, primaryObjectFor, buildConfiguratorUrl, objectView, isStoneId,
   };
 });
