@@ -1,11 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
   <rect width="400" height="300" fill="#e7e4e0"/>
   <g fill="none" stroke="#a8a49f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="70" y="90" width="260" height="150" rx="8"/>
-    <circle cx="150" cy="150" r="24"/>
-    <path d="M70 210 L160 150 L220 190 L270 140 L330 210"/>
+    <rect x="70" y="75" width="260" height="150" rx="8"/>
+    <circle cx="150" cy="135" r="24"/>
+    <path d="M70 195 L160 135 L220 175 L270 125 L330 195"/>
   </g>
-  <text x="200" y="270" font-family="Arial, sans-serif" font-size="16" fill="#6e6a65" text-anchor="middle">
-    Фото проекта появится позже
-  </text>
 </svg>
