@@ -1,0 +1,5 @@
+Leaflet 1.9.4
+Source: npm package leaflet@1.9.4 (https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz)
+License: BSD-2-Clause (see LICENSE)
+Vendored: 2026-09-25
+Files: leaflet.js, leaflet.css from dist/ (the trailing sourceMappingURL comment is removed from leaflet.js: the .map is not vendored). The default marker images are not vendored either: the site map uses its own marker (L.divIcon).

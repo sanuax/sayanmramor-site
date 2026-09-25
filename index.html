@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Саянмрамор — изделия из камня на заказ</title>
+<link rel="stylesheet" href="/sayanmramor-site/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="/sayanmramor-site/css/site.css">
+<script src="/sayanmramor-site/vendor/leaflet/leaflet.js" defer></script>
+<script src="/sayanmramor-site/js/contacts-map.js" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -56,6 +59,41 @@
       <a href="/sayanmramor-site/categories/fasady.html">Фасады</a>
       <a href="/sayanmramor-site/categories/panno.html">Панно</a>
       <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
+    </div>
+  </section>
+
+  <section class="wrap home-contacts" id="contacts" aria-labelledby="contactsTitle">
+    <div class="contacts-head">
+      <h2 id="contactsTitle">Где мы находимся</h2>
+      <p>Офис продаж и производство</p>
+    </div>
+    <div class="contacts-layout">
+      <div class="contacts-card">
+        <h3>Офис продаж и производство</h3>
+        <address>
+          <span class="contacts-address">МО, г. Ивантеевка,<br>ул. Толмачева, д. 80</span>
+          <a class="contacts-phone" href="tel:+74952155145">+7 (495) 215-51-45</a>
+        </address>
+        <div class="contacts-actions">
+          <a class="btn btn-primary" href="https://yandex.ru/maps/?rtext=~55.960447,37.923215&amp;rtt=auto" target="_blank" rel="noopener">Построить маршрут</a>
+          <a class="btn btn-secondary" href="https://yandex.ru/maps/?whatshere%5Bpoint%5D=37.923215,55.960447&amp;whatshere%5Bzoom%5D=17" target="_blank" rel="noopener">Открыть в картах</a>
+        </div>
+        <p class="contacts-note">Маршрут и карта откроются в Яндекс Картах.</p>
+      </div>
+      <div class="contacts-map-frame">
+        <div class="contacts-map" id="contactsMap" role="region" aria-label="Карта: Саянмрамор, Ивантеевка, ул. Толмачева, 80"></div>
+        <p class="contacts-map-hint" id="contactsMapHint" hidden>Двумя пальцами — переместить карту</p>
+        <div class="contacts-map-fallback" id="contactsMapFallback" hidden>
+          <p>Карта сейчас не загрузилась.</p>
+          <a href="https://yandex.ru/maps/?whatshere%5Bpoint%5D=37.923215,55.960447&amp;whatshere%5Bzoom%5D=17" target="_blank" rel="noopener">Открыть точку в Яндекс Картах</a>
+        </div>
+        <noscript>
+          <div class="contacts-map-fallback">
+            <p>Карта работает с включённым JavaScript.</p>
+            <a href="https://yandex.ru/maps/?whatshere%5Bpoint%5D=37.923215,55.960447&amp;whatshere%5Bzoom%5D=17" target="_blank" rel="noopener">Открыть точку в Яндекс Картах</a>
+          </div>
+        </noscript>
+      </div>
     </div>
   </section>
 
