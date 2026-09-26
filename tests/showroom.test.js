@@ -111,8 +111,91 @@ test('the house reads as one building: two storeys, a cantilevered upper floor, 
   const upper = parts.filter(p => p.group === 'uf-south' && p.kind === 'box');
   const ground = parts.filter(p => p.group === 'gf-south' && p.kind === 'box');
   assert.ok(Math.max(...upper.map(p => p.max[2])) > Math.max(...ground.map(p => p.max[2])) + 1, 'upper floor overhangs the street facade');
-  assert.ok(parts.some(p => p.mat === 'basalt' && p.max[1] === House.LEVELS.FF1));
+  assert.ok(parts.some(p => p.kind === 'box' && p.mat === 'basalt' && p.max[1] === House.LEVELS.FF1), 'a basalt plinth');
   assert.equal(parts.filter(p => p.group === 'stair' && p.mat === 'travertine').length, 36, '18 treads + 18 risers');
+});
+
+const FACADE_GROUPS = ['gf-south', 'gf-west', 'gf-north', 'gf-east', 'uf-south', 'uf-east', 'uf-north', 'uf-west'];
+
+test('the facades are stone: the upper floor is clad in stone slabs, no timber cladding anywhere outside', () => {
+  ['uf-south', 'uf-east', 'uf-north', 'uf-west'].forEach(g => {
+    assert.ok(parts.some(p => p.group === g && p.kind === 'cladding' && p.mat === 'travertine'), g + ' stone panels');
+  });
+  ['gf-west', 'gf-north', 'gf-east'].forEach(g => {
+    assert.ok(parts.some(p => p.group === g && p.kind === 'cladding' && p.mat === 'limestone'), g + ' stone panels');
+  });
+  parts.filter(p => FACADE_GROUPS.includes(p.group) && p.kind !== 'joints').forEach(p => {
+    assert.ok(p.kind !== 'slats', 'no timber slats on ' + p.group);
+    // The only timber on a facade is the entrance door, deep inside the niche.
+    if (p.mat === 'wood' || p.mat === 'wood-dark') assert.ok(p.group === 'gf-south' && p.max[2] < 3.0, p.group + ' ' + p.mat);
+  });
+});
+
+test('facade depth: stone surrounds stand proud of the wall, sills project, the entrance niche is deep', () => {
+  const south = parts.filter(p => p.group === 'uf-south' && p.kind === 'box');
+  const sills = parts.filter(p => p.object === 'exterior-sills');
+  assert.ok(south.some(p => p.mat === 'limestone-light' && p.max[2] >= 6.5 + 0.3), 'upper window surrounds project >= 30 cm');
+  sills.forEach(p => assert.ok(p.max[2] > Math.max(...south.filter(q => q.mat === 'limestone-light').map(q => q.max[2])), 'the sill projects past its frame'));
+  const niche = parts.filter(p => p.group === 'gf-south' && p.mat === 'stone-graphite' && p.kind === 'cladding');
+  assert.ok(niche.length >= 3, 'the niche is lined with stone');
+  assert.ok(5.0 - Math.min(...niche.map(p => House.partBounds(p).min[2])) >= 1.9, 'the niche is ~2 m deep');
+});
+
+test('stone cladding: slabs tile each surface exactly, in whole courses, with no slivers', () => {
+  const clad = parts.filter(p => p.kind === 'cladding');
+  assert.ok(clad.length > 50);
+  clad.forEach(p => {
+    const slabs = House.claddingSlabs(p);
+    const area = (p.a[1] - p.a[0]) * (p.b[1] - p.b[0]);
+    const sum = slabs.reduce((s, q) => s + (q.a1 - q.a0) * (q.b1 - q.b0), 0);
+    assert.ok(Math.abs(sum - area) < 1e-6, p.mat + ' ' + p.group + ' tiles its surface');
+    slabs.forEach(q => {
+      assert.ok(q.a0 >= p.a[0] - 1e-9 && q.a1 <= p.a[1] + 1e-9 && q.b0 >= p.b[0] - 1e-9 && q.b1 <= p.b[1] + 1e-9);
+      const fullA = p.a[1] - p.a[0] < p.module[0] * 0.3, fullB = p.b[1] - p.b[0] < p.module[1] * 0.3;
+      assert.ok(fullA || q.a1 - q.a0 >= p.module[0] * 0.3 - 1e-9, 'no sliver along ' + p.mat);
+      assert.ok(fullB || q.b1 - q.b0 >= p.module[1] * 0.3 - 1e-9, 'no sliver across ' + p.mat);
+    });
+    assert.ok(p.gap > 0 && p.gap < 0.2 && p.depth > 0, 'real joints and thickness');
+  });
+  // Running bond: the vertical joints of neighbouring courses do not line up.
+  const facade = parts.find(p => p.object === 'facade' && p.kind === 'cladding');
+  const slabs = House.claddingSlabs(facade);
+  const joints = b0 => slabs.filter(q => q.b0 === b0 && q.a0 > facade.a[0]).map(q => q.a0);
+  const courses = Array.from(new Set(slabs.map(q => q.b0))).sort((x, y) => x - y);
+  assert.ok(joints(courses[0]).every(a => !joints(courses[1]).some(b => Math.abs(a - b) < 0.01)));
+});
+
+test('the house stands on an island in a calm pond, reached by a bridge', () => {
+  const { WATER, ISLAND, POND, BRIDGE } = House.SITE;
+  const water = parts.filter(p => p.mat === 'water');
+  assert.equal(water.length, 1);
+  assert.equal(water[0].max[1], WATER);
+  assert.ok(WATER < 0, 'the water lies below the island');
+  assert.ok(POND.x0 < ISLAND.x0 - 5 && POND.x1 > ISLAND.x1 + 5 && POND.z0 < ISLAND.z0 - 5 && POND.z1 > ISLAND.z1 + 5, 'a ring of water all round');
+  const house = parts.filter(p => p.kind === 'box' && p.group !== 'site');
+  house.forEach(p => assert.ok(p.min[0] >= ISLAND.x0 && p.max[0] <= ISLAND.x1 && p.min[2] >= ISLAND.z0 && p.max[2] <= ISLAND.z1, p.group + ' on the island'));
+  const deck = parts.find(p => p.kind === 'cladding' && p.plane === 'y' && p.a[0] === BRIDGE.x0 && p.b[0] > ISLAND.z1);
+  assert.ok(deck && deck.b[1] >= POND.z1 - 0.2, 'the bridge spans the water to the far bank');
+  assert.ok(parts.filter(p => p.kind === 'tree').length <= 12, 'a few large trees, not a forest');
+});
+
+test('entrance: wide monolithic steps up to the floor level, even risers, a landing in front of the niche', () => {
+  const steps = parts.filter(p => p.object === 'entrance-steps' && p.kind === 'box').sort((a, b) => b.max[1] - a.max[1]);
+  assert.equal(steps.length, 3);
+  steps.forEach(p => assert.ok(p.max[0] - p.min[0] >= 4.5, 'wider than the niche'));
+  assert.ok(Math.abs(steps[0].max[1] - (House.LEVELS.FF1 + 0.02)) < 1e-9, 'the landing is at the floor level');
+  const risers = [steps[0].max[1] - steps[1].max[1], steps[1].max[1] - steps[2].max[1], steps[2].max[1]];
+  risers.forEach(r => assert.ok(r >= 0.14 && r <= 0.18, 'riser ' + r));
+  assert.ok(steps[0].max[2] - steps[0].min[2] >= 1.2, 'a real landing');
+});
+
+test('the main stair has a landing, a stone stringer and a balustrade', () => {
+  const { landingAfter, landing } = House.STAIR;
+  const treads = parts.filter(p => p.group === 'stair' && p.mat === 'travertine' && p.max[1] - p.min[1] < 0.06).sort((a, b) => a.max[1] - b.max[1]);
+  assert.equal(treads.length, 18);
+  assert.ok(treads[landingAfter].max[2] - treads[landingAfter].min[2] >= landing, 'the landing is a deep tread');
+  assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'stone-graphite' && p.kind === 'beam'), 'a stone stringer');
+  assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'glass'), 'a balustrade');
 });
 
 test('joint lines stay inside their surface and on the requested module', () => {

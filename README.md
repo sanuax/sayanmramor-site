@@ -101,10 +101,15 @@ Canonical-адрес для QA — `http://localhost:8000/`:
   объекты шоурума (что, где, какой product key, текст карточки), сборка URL.
 - `js/showroom/showroom-state.js` — состояние (зона, карточка, «Все
   изделия») как чистый reducer, режим раскладки, fallback без WebGL.
-- `js/showroom/house-model.js` — сам дом как данные (детали, материалы,
-  группы видимости для «разреза» комнат).
-- `showroom-scene.js`, `-materials.js`, `-camera.js`, `-markers.js`,
-  `-ui.js`, `-app.js` — отрисовка (Three.js r160, `vendor/three/`, MIT).
+- `js/showroom/house-model.js` — сам дом как данные: участок-остров в
+  пруду, мост, каменные фасады (облицовка — отдельные плиты со швами,
+  `claddingSlabs`), входная группа, интерьеры, группы видимости для
+  «разреза» комнат, тёплые источники света.
+- `showroom-scene.js`, `-geometry.js` (фаски, плиты, слияние деталей в
+  пакеты), `-materials.js` (процедурные текстуры камня, без картинок),
+  `-camera.js`, `-markers.js`, `-ui.js`, `-app.js` — отрисовка (Three.js
+  r160, `vendor/three/`, MIT). Вода — плоское отражение, рендерится
+  только когда пруд в кадре.
 
 Без WebGL/JavaScript страница показывает статический список всех 9
 направлений с теми же ссылками. `showroom.html#kitchen` (и другие зоны)
