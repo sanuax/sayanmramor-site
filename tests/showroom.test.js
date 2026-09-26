@@ -580,6 +580,22 @@ test('stone assets: every shipped photo is in the manifest and used, with its so
   Object.keys(Photos.PHOTOS).forEach(key => assert.ok(sources.includes(key), 'SOURCES.md lists ' + key));
 });
 
+test('stone photos load zone by zone: the outside needs only Steel Grey, every zone lists the stones of its objects', () => {
+  const photoStones = new Set(Object.values(Photos.PHOTOS).map(p => p.stone));
+  const listed = new Set();
+  Data.ZONES.forEach(z => {
+    assert.ok(Array.isArray(z.stones) && z.stones.length > 0, z.id);
+    z.stones.forEach(s => { assert.ok(photoStones.has(s), z.id + ': ' + s); listed.add(s); });
+    Data.objectsInZone(z.id).forEach(o => ofObject(o.id).forEach(p => {
+      const family = STONE_FAMILY[p.mat];
+      if (family && family !== 'limestone') assert.ok(z.stones.includes(family), z.id + ' / ' + o.id + ': ' + family);
+    }));
+  });
+  assert.deepEqual(Data.zoneById('exterior').stones, ['steel-grey']);
+  // Every stone the house shows is reached by some zone (the background preload loads them all).
+  parts.forEach(p => { const f = STONE_FAMILY[p.mat]; if (f && f !== 'limestone') assert.ok(listed.has(f), f); });
+});
+
 test('floors: wide oak boards in the rooms, large Calacatta Nova slabs in the bathroom', () => {
   const boards = parts.filter(p => p.kind === 'cladding' && p.mat === 'wood-floor');
   assert.ok(boards.some(p => p.object === 'living-floor') && boards.some(p => p.object === 'hall-floor') && boards.some(p => p.group === 'uf-interior'));

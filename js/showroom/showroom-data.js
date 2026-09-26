@@ -36,7 +36,10 @@
   // arrival camera (position/target); `orbit` limits how far the client can
   // look around from there, so a cut-away interior is never seen from a side
   // where its walls are still standing. `hide` lists the house-model groups
-  // removed to open the room up like a section model.
+  // removed to open the room up like a section model. `stones`: the stone
+  // photographs the zone shows (stone-photos.js `stone`), in the order they
+  // load when the client goes there -- the ground floor rooms see each
+  // other through the cut-away, so they share theirs.
   const INTERIOR_GF_HIDE = ['roof', 'gf-roof', 'uf-floor', 'uf-south', 'uf-north', 'uf-east', 'uf-west', 'uf-interior', 'bath-south', 'gf-south'];
   const ZONES = [
     {
@@ -45,6 +48,7 @@
       view: { position: [16.0, 10.2, 23.4], target: [-0.6, 2.2, 1.6] },
       orbit: { minDistance: 13, maxDistance: 40, minPolar: 0.3, maxPolar: 1.42, azimuthRange: null },
       hide: [],
+      stones: ['steel-grey'],
     },
     {
       id: 'hall', label: 'Холл', title: 'Холл',
@@ -52,6 +56,7 @@
       view: { position: [-0.6, 7.0, 6.2], target: [-1.5, 1.5, -2.8] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 1.0 },
       hide: INTERIOR_GF_HIDE,
+      stones: ['steel-grey', 'majestic', 'viscont-white'],
     },
     {
       id: 'living', label: 'Гостиная', title: 'Гостиная',
@@ -59,6 +64,7 @@
       view: { position: [6.6, 8.2, 11.6], target: [3.9, 1.3, 2.3] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.9 },
       hide: INTERIOR_GF_HIDE,
+      stones: ['majestic', 'viscont-white', 'steel-grey'],
     },
     {
       id: 'kitchen', label: 'Кухня', title: 'Кухня',
@@ -66,6 +72,7 @@
       view: { position: [5.2, 8.6, 6.2], target: [3.9, 1.2, -3.0] },
       orbit: { minDistance: 4.5, maxDistance: 14, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.9 },
       hide: INTERIOR_GF_HIDE,
+      stones: ['viscont-white', 'majestic', 'steel-grey'],
     },
     {
       id: 'staircase', label: 'Лестница', title: 'Лестница',
@@ -73,6 +80,7 @@
       view: { position: [-1.6, 7.6, 9.6], target: [-5.9, 1.6, 0.4] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.9 },
       hide: INTERIOR_GF_HIDE,
+      stones: ['steel-grey', 'majestic', 'viscont-white'],
     },
     {
       id: 'bathroom', label: 'Ванная', title: 'Ванная',
@@ -80,6 +88,7 @@
       view: { position: [7.6, 11.2, 0.6], target: [1.0, 4.2, -3.0] },
       orbit: { minDistance: 4.5, maxDistance: 14, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.8 },
       hide: ['roof', 'uf-south', 'uf-east', 'bath-south'],
+      stones: ['calacatta-nova', 'steel-grey'],
     },
   ];
 

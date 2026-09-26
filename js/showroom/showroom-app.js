@@ -3,7 +3,9 @@
 // Entry point: decides between the 3D showroom and the static fallback,
 // then wires the pure state (ShowroomState) to the scene, camera, markers
 // and DOM. Renders only while something moves (camera transition, damping,
-// resize) -- an idle showroom costs nothing.
+// resize) -- an idle showroom costs nothing. The first frame waits until
+// the scene is ready (textures painted, shaders compiled); the stone
+// photographs follow one zone at a time, the zone in view first.
 import { createShowroomScene } from './showroom-scene.js';
 import { createCameraRig } from './showroom-camera.js';
 import { createMarkers } from './showroom-markers.js';
@@ -96,9 +98,30 @@ function start() {
         duration: zoneChanged ? 1300 : 900,
       });
     }
-    if (zoneChanged) history.replaceState(null, '', location.pathname + State.locationFor(state));
+    if (zoneChanged) {
+      history.replaceState(null, '', location.pathname + State.locationFor(state));
+      if (photosStarted) loadZonePhotos(state.zone, true);
+    }
     occlusionDue = true;
     requestRender();
+  }
+
+  // Stone photographs: the zone in view goes first (`first`: ahead of
+  // anything still waiting), the others queue behind it.
+  let photosStarted = false;
+  function loadZonePhotos(zoneId, first) {
+    const zone = Data.zoneById(zoneId);
+    return view3d.loadPhotos(zone && zone.stones ? zone.stones : null, { first });
+  }
+  // Then, once the arrival flight is over and the page is idle, the rest,
+  // zone by zone in the order of the zone bar -- usually done before the
+  // client gets there.
+  function preloadOtherZones() {
+    const stones = [];
+    Data.ZONES.forEach(z => (z.stones || []).forEach(s => { if (!stones.includes(s)) stones.push(s); }));
+    const go = () => view3d.loadPhotos(stones);
+    if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 2000 });
+    else setTimeout(go, 200);
   }
 
   // Wiring.
@@ -131,15 +154,19 @@ function start() {
   markers.setMarkers(initial.markers);
   markers.setSelected(state.selectedObjectId);
   view3d.setHighlight(state.selectedObjectId);
-  requestRender();
-  requestAnimationFrame(() => {
-    doc.getElementById('srLoading').classList.add('is-done');
-    if (!reducedMotion) rig.goTo(arrival, initial.zone.orbit, { duration: 1800 });
-    // The house is up; now fetch the stone photographs in the background.
-    view3d.loadPhotos();
-    ui.showHint();
+  view3d.ready.then(() => {
     requestRender();
-  });
+    requestAnimationFrame(() => {
+      doc.getElementById('srLoading').classList.add('is-done');
+      if (!reducedMotion) rig.goTo(arrival, initial.zone.orbit, { duration: 1800 });
+      // The house is up; now the stone photographs, in the background.
+      photosStarted = true;
+      const arrived = new Promise(resolve => setTimeout(resolve, reducedMotion ? 0 : 1800));
+      Promise.all([loadZonePhotos(state.zone, true), arrived]).then(preloadOtherZones);
+      ui.showHint();
+      requestRender();
+    });
+  }, () => showFallback('error'));
 }
 
 if (!Data || !State || !House || !State.canUseWebGL(doc)) {

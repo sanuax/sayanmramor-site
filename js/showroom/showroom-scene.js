@@ -85,7 +85,10 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
   scene.fog = new THREE.Fog(FOG_COLOR, 60, 160);
   scene.environment = buildEnvironment(renderer);
 
-  const materials = createMaterials({ Photos, anisotropy: renderer.capabilities.getMaxAnisotropy(), onChange });
+  const materials = createMaterials({
+    Photos, anisotropy: renderer.capabilities.getMaxAnisotropy(), onChange,
+    upload: texture => renderer.initTexture(texture),
+  });
 
   // Light: a warm late-afternoon sun from the south-west, raking across the
   // street facade (so piers, frames and joints model), sky fill, and a few
@@ -337,8 +340,28 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     renderer.setSize(width, height, false);
   }
 
-  function render(camera) {
+  // Ready for a first frame once the procedural textures are painted and
+  // every material's shader is compiled -- both off the main thread where
+  // the browser can (workers; KHR_parallel_shader_compile), so the page
+  // does not freeze on the first render. Nothing is drawn before that.
+  // While the painters finish, one draw into a single pixel of the canvas
+  // (still under the loading cover) compiles what compile() cannot reach
+  // -- the shadow pass and the sky background -- and renders the shadow map.
+  function warmUp() {
+    const camera = new THREE.PerspectiveCamera(38, 1.6, 0.1, 400);
+    camera.position.set(16, 10, 23);
+    camera.lookAt(0, 2, 1);
+    renderer.setScissorTest(true);
+    renderer.setScissor(0, 0, 1, 1);
     renderer.render(scene, camera);
+    renderer.setScissorTest(false);
+  }
+  let isReady = false;
+  const ready = Promise.all([materials.ready, renderer.compileAsync(scene, new THREE.PerspectiveCamera()).then(warmUp)])
+    .then(() => { isReady = true; });
+
+  function render(camera) {
+    if (isReady) renderer.render(scene, camera);
   }
 
   function dispose() {
@@ -351,7 +374,7 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
 
   refreshOccluders();
   return {
-    renderer, scene, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose,
+    renderer, scene, ready, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose,
     loadPhotos: materials.loadPhotos, groupNames: () => Array.from(groups.keys()),
   };
 }
