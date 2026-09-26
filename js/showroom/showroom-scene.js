@@ -4,8 +4,7 @@
 // HouseModel parts (batched: one mesh per group + material + object, see
 // showroom-geometry.js), lights them like an architectural photograph (a
 // warm low sun with soft shadows, a sky-dome environment for reflections,
-// a few warm interior lights), renders the pond as calm water with a real
-// planar reflection, and exposes what the app needs: hide/show cut-away
+// a few warm interior lights), and exposes what the app needs: hide/show cut-away
 // groups, highlight an object, test whether a marker is hidden behind
 // something, render.
 import * as THREE from '../../vendor/three/three.module.js';
@@ -53,113 +52,6 @@ function buildEnvironment(renderer) {
   env.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
   pmrem.dispose();
   return texture;
-}
-
-// Calm dark water: a mirror image of the world above it (rendered from a
-// camera mirrored in the water plane, clipped at the surface), darkened and
-// faintly rippled, stronger at grazing angles.
-const WATER_VERTEX = `
-uniform mat4 textureMatrix;
-varying vec4 vUvR;
-varying vec3 vWorld;
-#include <fog_pars_vertex>
-void main() {
-  vec4 world = modelMatrix * vec4(position, 1.0);
-  vWorld = world.xyz;
-  vUvR = textureMatrix * world;
-  vec4 mvPosition = viewMatrix * world;
-  gl_Position = projectionMatrix * mvPosition;
-  #include <fog_vertex>
-}`;
-const WATER_FRAGMENT = `
-uniform sampler2D tReflect;
-uniform vec3 deep;
-uniform vec3 tint;
-varying vec4 vUvR;
-varying vec3 vWorld;
-#include <common>
-#include <fog_pars_fragment>
-void main() {
-  vec2 ripple = vec2(
-    sin(vWorld.x * 3.7 + vWorld.z * 1.3) + 0.5 * sin(vWorld.z * 7.1 - vWorld.x * 2.3),
-    cos(vWorld.z * 3.3 - vWorld.x * 1.1) + 0.5 * cos(vWorld.x * 6.9 + vWorld.z * 2.7)) * 0.0007;
-  vec4 uv = vUvR;
-  uv.xy += ripple * uv.w;
-  vec3 reflected = texture2DProj(tReflect, uv).rgb;
-  vec3 view = normalize(cameraPosition - vWorld);
-  float fresnel = 0.04 + 0.96 * pow(1.0 - max(view.y, 0.0), 5.0);
-  gl_FragColor = vec4(deep + reflected * tint * mix(0.5, 1.0, fresnel), 1.0);
-  #include <tonemapping_fragment>
-  #include <colorspace_fragment>
-  #include <fog_fragment>
-}`;
-
-function createWater(part, renderer, scene) {
-  const y = part.max[1];
-  const w = part.max[0] - part.min[0], d = part.max[2] - part.min[2];
-  const geometry = new THREE.PlaneGeometry(w, d);
-  geometry.rotateX(-Math.PI / 2);
-  const target = new THREE.WebGLRenderTarget(256, 256, { type: THREE.HalfFloatType });
-  const textureMatrix = new THREE.Matrix4();
-  const material = new THREE.ShaderMaterial({
-    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
-      tReflect: { value: null }, textureMatrix: { value: null },
-      deep: { value: new THREE.Color('#0f1618') }, tint: { value: new THREE.Color('#a9b6b4') },
-    }]),
-    vertexShader: WATER_VERTEX, fragmentShader: WATER_FRAGMENT, fog: true,
-  });
-  material.uniforms.tReflect.value = target.texture;
-  material.uniforms.textureMatrix.value = textureMatrix;
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set((part.min[0] + part.max[0]) / 2, y, (part.min[2] + part.max[2]) / 2);
-  mesh.receiveShadow = false;
-  scene.add(mesh);
-
-  const bounds = new THREE.Box3(new THREE.Vector3(part.min[0], y, part.min[2]), new THREE.Vector3(part.max[0], y, part.max[2]));
-  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -y);
-  const mirror = new THREE.PerspectiveCamera();
-  const frustum = new THREE.Frustum(), pv = new THREE.Matrix4();
-  const dir = new THREE.Vector3(), up = new THREE.Vector3(), look = new THREE.Vector3();
-  const bias = new THREE.Matrix4().set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1);
-
-  function update(camera) {
-    pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-    frustum.setFromProjectionMatrix(pv);
-    if (!frustum.intersectsBox(bounds) || camera.position.y <= y) return;
-    const p = camera.position;
-    camera.getWorldDirection(dir);
-    up.set(0, 1, 0).applyQuaternion(camera.quaternion);
-    mirror.position.set(p.x, 2 * y - p.y, p.z);
-    look.set(p.x + dir.x, 2 * y - (p.y + dir.y), p.z + dir.z);
-    mirror.up.set(up.x, -up.y, up.z);
-    mirror.lookAt(look);
-    mirror.projectionMatrix.copy(camera.projectionMatrix);
-    mirror.projectionMatrixInverse.copy(camera.projectionMatrixInverse);
-    mirror.updateMatrixWorld();
-    textureMatrix.copy(bias).multiply(mirror.projectionMatrix).multiply(mirror.matrixWorldInverse);
-    mesh.visible = false;
-    renderer.clippingPlanes = [plane];
-    renderer.setRenderTarget(target);
-    renderer.clear();
-    renderer.render(scene, mirror);
-    renderer.setRenderTarget(null);
-    renderer.clippingPlanes = [];
-    mesh.visible = true;
-  }
-
-  function resize(width, height) {
-    // Three quarters of the screen's resolution: crisp enough for calm water,
-    // cheaper than a second full-size pass.
-    target.setSize(Math.max(1, Math.round(width * 0.75)), Math.max(1, Math.round(height * 0.75)));
-  }
-
-  function dispose() {
-    geometry.dispose();
-    material.dispose();
-    target.dispose();
-  }
-
-  return { mesh, update, resize, dispose };
 }
 
 // A slight, deterministic difference in tone between neighbouring stones:
@@ -234,7 +126,6 @@ export function createShowroomScene(canvas, { House }) {
   const jointBuckets = new Map();
   const blobs = { foliage: [] };
   const trunks = [];
-  let water = null;
 
   function boxStyle(part) {
     const c = [0, 1, 2].map(i => (part.min[i] + part.max[i]) / 2);
@@ -271,7 +162,6 @@ export function createShowroomScene(canvas, { House }) {
 
   House.buildHouse().forEach(part => {
     if (part.kind === 'box') {
-      if (part.mat === 'water') { water = createWater(part, renderer, scene); return; }
       pushBox(batchFor(part), part.min, part.max, boxStyle(part));
     } else if (part.kind === 'cladding') {
       const b = batchFor(part);
@@ -285,6 +175,18 @@ export function createShowroomScene(canvas, { House }) {
         const b0 = s.b0 + (s.b0 > part.b[0] + 1e-6 ? g : 0), b1 = s.b1 - (s.b1 < part.b[1] - 1e-6 ? g : 0);
         pushSlab(b, part.plane, a0, a1, b0, b1, n0, n1, part.chamfer, style);
       });
+    } else if (part.kind === 'slats') {
+      // A row of vertical fins: each one a thin box across the run.
+      const b = batchFor(part), along = part.axis === 'x' ? 0 : 2;
+      const len = part.max[along] - part.min[along];
+      const count = Math.max(1, Math.floor((len - part.width) / part.pitch) + 1);
+      const start = part.min[along] + (len - (count - 1) * part.pitch - part.width) / 2;
+      for (let k = 0; k < count; k++) {
+        const min = part.min.slice(), max = part.max.slice();
+        min[along] = start + k * part.pitch;
+        max[along] = min[along] + part.width;
+        pushBox(b, min, max, { color: WHITE, uvOffset: [0, 0] });
+      }
     } else if (part.kind === 'beam') {
       pushBeam(batchFor(part), part.from, part.to, part.width, part.height, { color: WHITE, uvOffset: [0, 0] });
     } else if (part.kind === 'cyl') {
@@ -302,7 +204,7 @@ export function createShowroomScene(canvas, { House }) {
   batches.forEach(b => {
     const material = b.object ? materials.forObject(b.mat, b.object) : materials.get(b.mat);
     const mesh = new THREE.Mesh(toGeometry(b), material);
-    const isGlass = b.mat === 'glass', isLamp = b.mat === 'lamp';
+    const isGlass = b.mat === 'glass' || b.mat === 'glass-smoke', isLamp = b.mat === 'lamp';
     mesh.castShadow = !isGlass && !isLamp;
     mesh.receiveShadow = !isGlass && !isLamp;
     mesh.userData.role = b.mat;
@@ -358,7 +260,7 @@ export function createShowroomScene(canvas, { House }) {
     groups.forEach(g => {
       if (!g.visible) return;
       g.children.forEach(o => {
-        if (o.isMesh && !o.isInstancedMesh && o.userData.role !== 'glass' && o.userData.role !== 'lamp') occluders.push(o);
+        if (o.isMesh && !o.isInstancedMesh && !['glass', 'glass-smoke', 'lamp'].includes(o.userData.role)) occluders.push(o);
       });
     });
   }
@@ -395,20 +297,15 @@ export function createShowroomScene(canvas, { House }) {
 
   function resize(width, height) {
     renderer.setSize(width, height, false);
-    const pr = renderer.getPixelRatio();
-    if (water) water.resize(width * pr, height * pr);
   }
 
   function render(camera) {
-    camera.updateMatrixWorld();
-    if (water) water.update(camera);
     renderer.render(scene, camera);
   }
 
   function dispose() {
     scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     materials.dispose();
-    if (water) water.dispose();
     background.dispose();
     scene.environment.dispose();
     renderer.dispose();

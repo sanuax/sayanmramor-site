@@ -1,7 +1,8 @@
 // js/showroom/house-model.js
 //
-// The showroom house as data: one modern two-storey stone house on a raised
-// island in a calm reflecting pond. A limestone ground floor on a near-black
+// The showroom house as data: one modern two-storey stone house on a
+// fenced plot (a light stone plinth, dark metal fins, stone pillars). A
+// limestone ground floor on a near-black
 // basalt plinth, a cantilevered upper floor clad in large travertine panels
 // with deep stone window surrounds, a stone belt and cornice, a deep
 // graphite-lined entrance niche reached by wide monolithic steps, a stone
@@ -10,7 +11,7 @@
 // architecture is testable and the renderer (showroom-scene.js) only turns
 // parts into meshes.
 //
-// Units: metres. Y up, grade (the island's lawn) at y = 0. The street side
+// Units: metres. Y up, grade (the plot's lawn) at y = 0. The street side
 // is +Z, east is +X.
 // Part kinds:
 //   box      { min:[x,y,z], max:[x,y,z], bevel? }            (bevel = chamfer on every edge)
@@ -20,6 +21,7 @@
 //              real stone slabs on a surface: laid out by claddingSlabs(), each
 //              one a separate chamfered slab with a real joint around it
 //   joints   { plane, at, a, b, module, stagger, normal, tone }  (drawn joint lines)
+//   slats    { min, max, axis:'x'|'z', pitch, width }      (a row of vertical fins along axis)
 //   cyl      { base:[x,y,z], radius, radiusTop?, height }
 //   tree     { position:[x,0,z], trunk, crown }
 // For cladding/joints the plane's axes are: 'z' -> a = x, b = y; 'x' -> a = z,
@@ -44,11 +46,12 @@
   // Main stair: one straight run of 18 risers with a landing after the 9th.
   const STAIR = { x0: -6.6, x1: -5.3, zStart: 3.4, risers: 18, going: 0.28, landingAfter: 8, landing: 1.2 };
   const RISE = (FF2 - FF1) / STAIR.risers;
-  // The site: the island the house stands on, and the pond around it.
-  const WATER = -0.6;
-  const ISLAND = { x0: -13, x1: 14, z0: -10.5, z1: 12 };
-  const POND = { x0: -21, x1: 22, z0: -18.5, z1: 20 };
-  const BRIDGE = { x0: -3.4, x1: -0.2 };
+  // The site: the fenced plot, the fence line (pillar centres), the path to
+  // the entrance and the gate opening on it.
+  const PLOT = { x0: -13, x1: 14, z0: -10.5, z1: 12 };
+  const FENCE = { x0: -12.7, x1: 13.7, z0: -10.2, z1: 11.7, plinth: 0.4, height: 1.5 };
+  const PATH = { x0: -3.4, x1: -0.2 };
+  const GATE = { x0: -3.95, x1: 0.35 };
 
   function stairFront(i) {
     return STAIR.zStart - i * STAIR.going - (i > STAIR.landingAfter ? STAIR.landing - STAIR.going : 0);
@@ -211,51 +214,88 @@
     parts.push(Object.assign({ kind: 'cyl', base, radius, height, mat, group }, extra || {}));
   }
 
-  // ---- the site: island, pond, bridge, planting ------------------------------
+  // A low stone fence run between two stone pillars' faces (u0..u1) along
+  // `axis` ('x': the run follows x at z = at; 'z': it follows z at x = at):
+  // a light limestone plinth with a coping, dark vertical metal fins above
+  // it with a slim top rail, open enough to see the house through.
+  function fenceRun(parts, axis, at, u0, u1) {
+    const B = (a0, a1, y0, y1, half) => (axis === 'x'
+      ? [[a0, y0, at - half], [a1, y1, at + half]]
+      : [[at - half, y0, a0], [at + half, y1, a1]]);
+    const add = (spec, mat, extra) => parts.push(box(spec[0], spec[1], mat, 'site', extra));
+    add(B(u0, u1, 0, FENCE.plinth, 0.16), 'limestone', { bevel: 0.01 });
+    add(B(u0, u1, FENCE.plinth, FENCE.plinth + 0.06, 0.19), 'limestone-light', { bevel: 0.008 });
+    [-1, 1].forEach(side => joints(parts, {
+      plane: axis === 'x' ? 'z' : 'x', at: at + side * 0.16, normal: side, a: [u0, u1], b: [0, FENCE.plinth],
+      module: [1.2, 1], group: 'site', tone: 'dark',
+    }));
+    const [smin, smax] = B(u0 + 0.06, u1 - 0.06, FENCE.plinth + 0.06, FENCE.height - 0.035, 0.025);
+    parts.push({ kind: 'slats', min: smin, max: smax, axis, pitch: 0.15, width: 0.025, mat: 'metal-dark', group: 'site' });
+    add(B(u0, u1, FENCE.height - 0.035, FENCE.height, 0.035), 'metal-dark');
+  }
+
+  // A stone pillar centred on (x, z); gate pillars are larger and carry a lamp.
+  function pillar(parts, x, z, gate, facing) {
+    const h = gate ? 0.32 : 0.25, top = gate ? FENCE.height + 0.45 : FENCE.height + 0.18;
+    parts.push(box([x - h, 0, z - h], [x + h, top, z + h], 'limestone', 'site', { bevel: 0.012 }));
+    parts.push(box([x - h - 0.04, top, z - h - 0.04], [x + h + 0.04, top + 0.08, z + h + 0.04], 'limestone-light', 'site', { bevel: 0.01 }));
+    if (gate) parts.push(box([x - 0.12, top - 0.55, z + facing * h], [x + 0.12, top - 0.49, z + facing * (h + 0.02)], 'lamp', 'site'));
+  }
+
+  // Pillars at both ends of a straight side and at most every ~3.6 m, with
+  // fence runs between their faces.
+  function fenceSide(parts, axis, at, u0, u1, opts) {
+    const n = Math.max(1, Math.ceil((u1 - u0) / 3.6));
+    const posts = Array.from({ length: n + 1 }, (_, k) => u0 + (u1 - u0) * (k / n));
+    posts.forEach((u, k) => {
+      const end = k === 0 ? 'start' : k === n ? 'end' : null;
+      if (end && opts.skip && opts.skip.includes(end)) return;
+      const gate = end && opts.gate === end;
+      if (axis === 'x') pillar(parts, u, at, gate, 1); else pillar(parts, at, u, gate, 1);
+    });
+    for (let k = 0; k < n; k++) {
+      const a = posts[k] + (k === 0 && opts.gate === 'start' ? 0.32 : 0.25);
+      const b = posts[k + 1] - (k === n - 1 && opts.gate === 'end' ? 0.32 : 0.25);
+      fenceRun(parts, axis, at, a, b);
+    }
+  }
+
+  // ---- the site: plot, fence, path, planting ------------------------------------
   function buildSite(parts) {
-    const I = ISLAND, P = POND, R = 140;
-    const low = WATER - 0.6;
-    // One calm sheet of water; the island and the far banks stand in it.
-    parts.push(box([P.x0, low, P.z0], [P.x1, WATER, P.z1], 'water', 'site'));
+    const P = PLOT, F = FENCE, R = 140, low = -0.5;
+    // The fenced lawn plot, and the quieter meadow round it.
+    parts.push(box([P.x0, low, P.z0], [P.x1, 0, P.z1], 'lawn', 'site'));
     [
       [[-R, low, -R], [R, 0, P.z0]], [[-R, low, P.z1], [R, 0, R]],
       [[-R, low, P.z0], [P.x0, 0, P.z1]], [[P.x1, low, P.z0], [R, 0, P.z1]],
     ].forEach(([min, max]) => parts.push(box(min, max, 'meadow', 'site')));
-    // The island: a lawn plateau held by limestone retaining walls with a
-    // light coping; the far banks have a quieter basalt edge.
-    parts.push(box([I.x0, low, I.z0], [I.x1, 0, I.z1], 'lawn', 'site'));
-    const edge = (plane, at, normal, a, mat) => clad(parts, {
-      plane, at, normal, depth: 0.08, a, b: [WATER - 0.12, 0], origin: [a[0], WATER - 0.12],
-      module: [1.8, 0.72], gap: 0.01, chamfer: 0.012, mat, group: 'site', bed: false,
-    });
-    edge('z', I.z1, 1, [I.x0 - 0.08, I.x1 + 0.08], 'limestone');
-    edge('z', I.z0, -1, [I.x0 - 0.08, I.x1 + 0.08], 'limestone');
-    edge('x', I.x1, 1, [I.z0, I.z1], 'limestone');
-    edge('x', I.x0, -1, [I.z0, I.z1], 'limestone');
-    const c = { bevel: 0.012 };
-    parts.push(box([I.x0 - 0.14, 0, I.z1 - 0.3], [I.x1 + 0.14, 0.05, I.z1 + 0.14], 'limestone-light', 'site', c));
-    parts.push(box([I.x0 - 0.14, 0, I.z0 - 0.14], [I.x1 + 0.14, 0.05, I.z0 + 0.3], 'limestone-light', 'site', c));
-    parts.push(box([I.x0 - 0.14, 0, I.z0 + 0.3], [I.x0 + 0.3, 0.05, I.z1 - 0.3], 'limestone-light', 'site', c));
-    parts.push(box([I.x1 - 0.3, 0, I.z0 + 0.3], [I.x1 + 0.14, 0.05, I.z1 - 0.3], 'limestone-light', 'site', c));
-    edge('z', P.z0, 1, [P.x0 + 0.08, P.x1 - 0.08], 'basalt');
-    edge('z', P.z1, -1, [P.x0 + 0.08, P.x1 - 0.08], 'basalt');
-    edge('x', P.x0, 1, [P.z0, P.z1], 'basalt');
-    edge('x', P.x1, -1, [P.z0, P.z1], 'basalt');
-    parts.push(box([BRIDGE.x0 - 0.3, 0, P.z1 - 0.12], [BRIDGE.x1 + 0.3, 0.05, P.z1 + 0.4], 'basalt', 'site', c));
 
-    // Bridge: monolithic limestone deck slabs over a recessed dark beam.
-    parts.push(box([BRIDGE.x0 + 0.3, WATER - 0.2, I.z1 + 0.14], [BRIDGE.x1 - 0.3, -0.12, P.z1 - 0.12], 'basalt', 'site'));
+    // The fence: north side and the two ends of the street side own the
+    // corner pillars; the street side opens between two gate pillars on
+    // the path.
+    fenceSide(parts, 'x', F.z0, F.x0, F.x1, {});
+    fenceSide(parts, 'x', F.z1, F.x0, GATE.x0, { gate: 'end' });
+    fenceSide(parts, 'x', F.z1, GATE.x1, F.x1, { gate: 'start' });
+    fenceSide(parts, 'z', F.x0, F.z0, F.z1, { skip: ['start', 'end'] });
+    fenceSide(parts, 'z', F.x1, F.z0, F.z1, { skip: ['start', 'end'] });
+    parts.push(box([GATE.x0 + 0.32, 0, F.z1 - 0.2], [GATE.x1 - 0.32, 0.04, F.z1 + 0.2], 'limestone', 'site', { bevel: 0.01 }));
+
+    // Path from the street to the entrance: large slabs with lawn joints,
+    // through the gate; a stone pavement outside the fence.
     clad(parts, {
-      plane: 'y', at: -0.12, normal: 1, depth: 0.17, a: [BRIDGE.x0, BRIDGE.x1], b: [I.z1 + 0.14, P.z1 - 0.12],
-      module: [3.2, 1.1], gap: 0.014, chamfer: 0.012, mat: 'limestone', group: 'site', bed: false,
+      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [PATH.x0, PATH.x1], b: [7.04, F.z1 - 0.2],
+      origin: [PATH.x0, 7.04], module: [3.2, 0.9], gap: 0.1, chamfer: 0.008, mat: 'paving', group: 'site', bed: false,
     });
-    // Path from the bridge to the entrance: large slabs with lawn joints.
     clad(parts, {
-      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [BRIDGE.x0, BRIDGE.x1], b: [7.04, I.z1 - 0.3],
-      origin: [BRIDGE.x0, 7.04], module: [3.2, 0.9], gap: 0.1, chamfer: 0.008, mat: 'paving', group: 'site', bed: false,
+      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [PATH.x0, PATH.x1], b: [F.z1 + 0.2, P.z1 + 0.4],
+      origin: [PATH.x0, F.z1 + 0.2], module: [3.2, 0.9], gap: 0.1, chamfer: 0.008, mat: 'paving', group: 'site', bed: false,
+    });
+    clad(parts, {
+      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [-22, 24], b: [P.z1 + 0.4, P.z1 + 2.4], origin: [-22, P.z1 + 0.4],
+      module: [1.2, 1.0], stagger: 0.5, gap: 0.008, chamfer: 0.006, mat: 'paving', group: 'site', bed: false,
     });
     // Low bollard lights along the path.
-    [8.6, 10.2].forEach(z => [BRIDGE.x0 - 0.35, BRIDGE.x1 + 0.35].forEach(x => {
+    [8.6, 10.2].forEach(z => [PATH.x0 - 0.35, PATH.x1 + 0.35].forEach(x => {
       parts.push(box([x - 0.06, 0, z - 0.06], [x + 0.06, 0.55, z + 0.06], 'metal-dark', 'site'));
       parts.push(box([x - 0.062, 0.44, z - 0.062], [x + 0.062, 0.5, z + 0.062], 'lamp', 'site'));
     }));
@@ -273,7 +313,7 @@
     parts.push(box([bed.x0 + 0.25, 0.16, bed.z0 + 0.25], [bed.x1 - 0.25, 0.8, bed.z0 + 1.05], 'foliage', 'site', { bevel: 0.1 }));
     parts.push(box([bed.x0 + 0.3, 0.16, bed.z0 + 1.35], [bed.x1 - 0.3, 0.5, bed.z1 - 0.3], 'grass', 'site', { bevel: 0.12 }));
 
-    // A few large trees: on the island, framing the house, and on the far banks.
+    // A few large trees: inside the fence, framing the house, and in the meadow.
     [
       [-11.2, -7.6, 3.3, 3.8], [10.8, -6.8, 3.0, 3.6], [-10.4, 8.6, 2.3, 2.8], [11.6, 3.4, 2.1, 2.6],
       [-29, -5, 3.6, 4.2], [-25, 14, 2.8, 3.4], [5, -27, 3.8, 4.4], [-10, -28, 3.0, 3.6], [31, 3, 3.0, 3.6], [28, -19, 3.6, 4.2], [-17, 27, 2.8, 3.4],
@@ -519,12 +559,35 @@
       gap: 0.005, chamfer: 0.004, mat: 'paving', group: 'gf-roof', bed: false,
     });
     parts.push(box([GF.x1 - 0.1, SLAB, GF.z0 - 0.06], [GF.x1 + 0.06, FF2 + 0.1, GF.z1 + 0.06], 'limestone-light', 'gf-roof', belt));
-    parts.push(box([UF.x1 + 0.04, SLAB, GF.z1 - 0.1], [GF.x1 - 0.1, FF2 + 0.1, GF.z1 + 0.06], 'limestone-light', 'gf-roof', belt));
+    parts.push(box([UF.x1, SLAB, GF.z1 - 0.1], [GF.x1 - 0.1, FF2 + 0.1, GF.z1 + 0.06], 'limestone-light', 'gf-roof', belt));
     parts.push(box([UF.x1, SLAB, GF.z0 - 0.06], [GF.x1 - 0.1, FF2 + 0.1, GF.z0 + 0.1], 'limestone-light', 'gf-roof', belt));
-    parts.push(box([UF.x1 + 0.04, FF2 + 0.1, GF.z1 - 0.17], [GF.x1 - 0.1, FF2 + 1.05, GF.z1 - 0.15], 'glass', 'gf-roof'));
-    parts.push(box([GF.x1 - 0.17, FF2 + 0.1, GF.z0 + 0.1], [GF.x1 - 0.15, FF2 + 1.05, GF.z1 - 0.1], 'glass', 'gf-roof'));
-    parts.push(box([UF.x1 + 0.04, FF2 + 1.05, GF.z1 - 0.18], [GF.x1 - 0.1, FF2 + 1.09, GF.z1 - 0.14], 'metal', 'gf-roof'));
-    parts.push(box([GF.x1 - 0.18, FF2 + 1.05, GF.z0 + 0.1], [GF.x1 - 0.14, FF2 + 1.09, GF.z1 - 0.1], 'metal', 'gf-roof'));
+    // Balustrade on every open edge of the terrace (south, east, north; the
+    // west edge is the upper floor's wall): frameless smoky glass panels in
+    // a slim dark metal shoe that sits on the stone coping, a thin dark top
+    // rail, no posts. Centred on the coping, so it never overhangs the facade.
+    const rail = { c: 0.02, shoe: FF2 + 0.1, top: FF2 + 1.12 };
+    const zs = GF.z1 - rail.c, zn = GF.z0 + rail.c, xe = GF.x1 - rail.c;
+    const railRun = (axis, at, u0, u1, capEnds) => {
+      const B = (a0, a1, y0, y1, half) => (axis === 'x'
+        ? [[a0, y0, at - half], [a1, y1, at + half]]
+        : [[at - half, y0, a0], [at + half, y1, a1]]);
+      const push = (spec, mat) => parts.push(box(spec[0], spec[1], mat, 'gf-roof'));
+      const e0 = capEnds[0], e1 = capEnds[1];
+      push(B(u0 + e0 * 0.035, u1 + e1 * 0.035, rail.shoe, rail.shoe + 0.1, 0.035), 'metal-dark');
+      push(B(u0 + e0 * 0.0225, u1 + e1 * 0.0225, rail.top - 0.04, rail.top, 0.0225), 'metal-dark');
+      // Glass stops just short of the neighbouring run's glass at a corner.
+      const g0 = u0 + (e0 ? 0.012 : 0), g1 = u1 - (e1 ? 0.012 : 0);
+      const n = Math.max(1, Math.ceil((g1 - g0) / 1.6)), gap = 0.012, w = (g1 - g0 - gap * (n - 1)) / n;
+      for (let k = 0; k < n; k++) {
+        const a = g0 + k * (w + gap);
+        push(B(a, a + w, rail.shoe + 0.04, rail.top - 0.04, 0.008), 'glass-smoke');
+      }
+    };
+    // South and north runs own the corners (their shoe and rail run past
+    // the east run's centre line); the east run stops between them.
+    railRun('x', zs, UF.x1, xe, [0, 1]);
+    railRun('x', zn, UF.x1, xe, [0, 1]);
+    railRun('z', xe, zn, zs, [1, -1]);
 
     // ---- upper floor: cantilevered stone volume --------------------------------------------
     // Large travertine panels in stack bond, deep limestone window surrounds
@@ -538,7 +601,7 @@
     wall(parts, ufSouth);
     [w1, w2].forEach(o => surround(parts, ufSouth, o, Object.assign({ sill: { h: 0.08, mat: 'granite-black', object: 'exterior-sills' } }, ufFrame)));
     const bathWindow = { u0: -3.6, u1: -1.6, v0: 4.6, v1: 6.1, glass: true };
-    const terraceDoor = { u0: 1.0, u1: 5.8, v0: FF2, v1: 6.45, glass: true };
+    const terraceDoor = { u0: 1.0, u1: 4.6, v0: FF2, v1: 6.45, glass: true };   // opens onto the terrace only
     const ufEast = { axis: 'x', outer: UF.x1, inward: -1, u: [UF.z0, UF.z1], v: [FF2, TOP], group: 'uf-east', layers: ufLayers, cap: true, openings: [bathWindow, terraceDoor] };
     wall(parts, ufEast);
     surround(parts, ufEast, bathWindow, Object.assign({ sill: { h: 0.08, mat: 'granite-black' } }, ufFrame));
@@ -660,7 +723,7 @@
 
   // Axis-aligned bounds of a part.
   function partBounds(part) {
-    if (part.kind === 'box') return { min: part.min, max: part.max };
+    if (part.kind === 'box' || part.kind === 'slats') return { min: part.min, max: part.max };
     if (part.kind === 'beam') {
       const h = Math.max(part.width, part.height) / 2;
       return {
@@ -708,6 +771,6 @@
 
   return {
     buildHouse, partBounds, jointSegments, claddingSlabs, solidRects,
-    LEVELS: { FF1, SLAB, FF2, TOP }, SITE: { WATER, ISLAND, POND, BRIDGE }, STAIR: Object.assign({ end: STAIR_END }, STAIR), LIGHTS,
+    LEVELS: { FF1, SLAB, FF2, TOP }, SITE: { PLOT, FENCE, PATH, GATE }, STAIR: Object.assign({ end: STAIR_END }, STAIR), LIGHTS,
   };
 });

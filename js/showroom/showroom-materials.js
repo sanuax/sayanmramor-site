@@ -212,6 +212,14 @@ export function createMaterials() {
         envMapIntensity: 1.5, depthWrite: false, side: THREE.DoubleSide, vertexColors: true,
       });
     }
+    if (role === 'glass-smoke') {
+      // Balustrade glass: a little darker and denser than the windows, so it
+      // reads as a guard, still clear enough to see the facade through.
+      return new THREE.MeshPhysicalMaterial({
+        color: '#57615f', roughness: 0.05, metalness: 0, transparent: true, opacity: 0.5,
+        envMapIntensity: 1.4, depthWrite: false, side: THREE.DoubleSide, vertexColors: true,
+      });
+    }
     const def = ROLES[role] || ROLES.plaster;
     const [color, roughness, extra] = def;
     const params = { color, roughness, metalness: extra.metalness || 0, vertexColors: true };

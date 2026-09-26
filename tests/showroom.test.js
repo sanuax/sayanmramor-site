@@ -165,18 +165,73 @@ test('stone cladding: slabs tile each surface exactly, in whole courses, with no
   assert.ok(joints(courses[0]).every(a => !joints(courses[1]).some(b => Math.abs(a - b) < 0.01)));
 });
 
-test('the house stands on an island in a calm pond, reached by a bridge', () => {
-  const { WATER, ISLAND, POND, BRIDGE } = House.SITE;
-  const water = parts.filter(p => p.mat === 'water');
-  assert.equal(water.length, 1);
-  assert.equal(water[0].max[1], WATER);
-  assert.ok(WATER < 0, 'the water lies below the island');
-  assert.ok(POND.x0 < ISLAND.x0 - 5 && POND.x1 > ISLAND.x1 + 5 && POND.z0 < ISLAND.z0 - 5 && POND.z1 > ISLAND.z1 + 5, 'a ring of water all round');
+test('the plot is fenced: stone plinth, dark metal fins, stone pillars -- and no water anywhere', () => {
+  const { FENCE, PATH, GATE } = House.SITE;
+  assert.ok(!parts.some(p => p.mat === 'water'), 'no water');
+  assert.ok(!parts.some(p => p.kind !== 'joints' && House.partBounds(p).max[1] < -0.01), 'nothing sunk below grade (no basin)');
   const house = parts.filter(p => p.kind === 'box' && p.group !== 'site');
-  house.forEach(p => assert.ok(p.min[0] >= ISLAND.x0 && p.max[0] <= ISLAND.x1 && p.min[2] >= ISLAND.z0 && p.max[2] <= ISLAND.z1, p.group + ' on the island'));
-  const deck = parts.find(p => p.kind === 'cladding' && p.plane === 'y' && p.a[0] === BRIDGE.x0 && p.b[0] > ISLAND.z1);
-  assert.ok(deck && deck.b[1] >= POND.z1 - 0.2, 'the bridge spans the water to the far bank');
+  house.forEach(p => assert.ok(p.min[0] > FENCE.x0 && p.max[0] < FENCE.x1 && p.min[2] > FENCE.z0 && p.max[2] < FENCE.z1, p.group + ' inside the fence'));
+  const near = (p, axis, at) => { const b = House.partBounds(p); const i = axis === 'x' ? 2 : 0; return b.min[i] <= at + 0.4 && b.max[i] >= at - 0.4; };
+  const fence = parts.filter(p => p.group === 'site' && !['joints', 'cladding', 'tree'].includes(p.kind) &&
+    [['x', FENCE.z0], ['x', FENCE.z1], ['z', FENCE.x0], ['z', FENCE.x1]].some(([axis, at]) => near(p, axis, at)) &&
+    House.partBounds(p).min[1] >= -0.001 && House.partBounds(p).max[1] > 0.3 &&
+    !(p.kind === 'box' && ['lawn', 'meadow'].includes(p.mat)));
+  [['x', FENCE.z0], ['x', FENCE.z1], ['z', FENCE.x0], ['z', FENCE.x1]].forEach(([axis, at]) => {
+    const side = fence.filter(p => near(p, axis, at));
+    assert.ok(side.some(p => p.mat === 'limestone' && Math.abs(p.max[1] - FENCE.plinth) < 1e-9), 'a stone plinth on ' + axis + at);
+    assert.ok(side.some(p => p.kind === 'slats' && p.mat === 'metal-dark'), 'metal fins on ' + axis + at);
+    assert.ok(side.some(p => p.mat === 'limestone' && p.max[1] > FENCE.height), 'stone pillars on ' + axis + at);
+  });
+  [[FENCE.x0, FENCE.z0], [FENCE.x1, FENCE.z0], [FENCE.x0, FENCE.z1], [FENCE.x1, FENCE.z1]].forEach(([x, z]) => {
+    assert.ok(fence.some(p => p.kind === 'box' && p.max[1] > FENCE.height && p.min[0] <= x && p.max[0] >= x && p.min[2] <= z && p.max[2] >= z), 'corner pillar ' + x + ',' + z);
+  });
+  // It never hides the house: low, and see-through between the fins.
+  fence.forEach(p => assert.ok(House.partBounds(p).max[1] <= 2.3, 'fence part ' + p.mat + ' is low'));
+  assert.ok(FENCE.height < House.LEVELS.FF1 + 1.5, 'below the ground-floor window heads');
+  parts.filter(p => p.kind === 'slats').forEach(p => assert.ok(p.pitch - p.width >= 0.08, 'open between the fins'));
+  // The gate: nothing but a flush threshold across the path at the fence line.
+  fence.filter(p => near(p, 'x', FENCE.z1)).forEach(p => {
+    const b = House.partBounds(p);
+    assert.ok(b.max[0] <= PATH.x0 - 0.15 || b.min[0] >= PATH.x1 + 0.15, p.mat + ' blocks the gate');
+  });
+  assert.ok(GATE.x0 < PATH.x0 && GATE.x1 > PATH.x1, 'the gate is wider than the path');
+  const path = parts.filter(p => p.kind === 'cladding' && p.plane === 'y' && p.a[0] === PATH.x0);
+  assert.ok(path.some(p => p.b[0] <= 7.05) && path.some(p => p.b[1] > FENCE.z1), 'the path runs from the entrance out through the gate');
   assert.ok(parts.filter(p => p.kind === 'tree').length <= 12, 'a few large trees, not a forest');
+});
+
+test('the terrace on the ground-floor roof has a balustrade on every open edge, standing on its coping', () => {
+  const { FF2 } = House.LEVELS;
+  const roof = parts.filter(p => p.group === 'gf-roof' && p.kind === 'box');
+  const edges = {
+    south: p => p.min[2] > 4.8, north: p => p.max[2] < -4.8, east: p => p.min[0] > 6.8 && p.max[2] - p.min[2] > 1,
+  };
+  const coping = roof.filter(p => p.mat === 'limestone-light');
+  Object.entries(edges).forEach(([name, on]) => {
+    const glass = roof.filter(p => p.mat === 'glass-smoke' && on(p));
+    const metal = roof.filter(p => p.mat === 'metal-dark' && on(p));
+    assert.ok(glass.length >= 2, name + ': glass panels');
+    const shoe = metal.find(p => Math.abs(p.min[1] - (FF2 + 0.1)) < 1e-9);
+    const top = metal.find(p => p.max[1] > FF2 + 1.0);
+    assert.ok(shoe && top, name + ': a shoe and a top rail');
+    assert.ok(top.max[1] - (FF2 + 0.02) >= 1.05, name + ': at least 1.05 m above the terrace floor');
+    // The shoe sits on the coping (not in the air, not over the facade).
+    const along = shoe.max[0] - shoe.min[0] > shoe.max[2] - shoe.min[2] ? 0 : 2, across = 2 - along;
+    const mid = (shoe.min[across] + shoe.max[across]) / 2;
+    for (let t = shoe.min[along]; t <= shoe.max[along] + 1e-9; t += 0.02) {
+      const pt = []; pt[along] = t; pt[across] = mid;
+      assert.ok(coping.some(c => Math.abs(c.max[1] - shoe.min[1]) < 1e-9 && pt[0] >= c.min[0] - 1e-9 && pt[0] <= c.max[0] + 1e-9 && pt[2] >= c.min[2] - 1e-9 && pt[2] <= c.max[2] + 1e-9),
+        name + ': stone coping under the shoe at ' + t.toFixed(2));
+    }
+    glass.forEach(g => assert.ok(g.min[1] >= shoe.min[1] && g.min[1] < shoe.max[1] && g.max[1] <= top.min[1] + 1e-9, name + ': glass held by shoe and rail'));
+  });
+  // South and north runs reach the upper floor's wall; the terrace door opens onto the terrace only.
+  ['south', 'north'].forEach(name => {
+    const shoe = roof.find(p => p.mat === 'metal-dark' && edges[name](p) && Math.abs(p.min[1] - (FF2 + 0.1)) < 1e-9);
+    assert.ok(Math.abs(shoe.min[0] - 3.5) < 1e-9, name + ' run starts at the wall');
+  });
+  const door = parts.filter(p => p.group === 'uf-east' && p.mat === 'glass').find(p => p.max[1] > 6.4 && p.min[1] <= FF2);
+  assert.ok(door.max[2] < 4.9, 'the terrace door ends inside the balustrade');
 });
 
 test('entrance: wide monolithic steps up to the floor level, even risers, a landing in front of the niche', () => {
