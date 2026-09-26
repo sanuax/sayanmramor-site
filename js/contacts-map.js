@@ -14,15 +14,18 @@
 
   // Name, purpose, address and phone as on sayanmramor.ru. The legal address
   // (Москва, Складочная) is not a place to visit, so it is not on the map.
-  // Coordinates: the Yandex Maps address point of «улица Толмачёва, 80,
-  // Ивантеевка» -- the point the route is built to. (OSM has this address on
-  // the buildings of the same complex, the nearest one ~130 m to the south.)
+  // Coordinates: lat/lon -- the Yandex Maps address point of «улица
+  // Толмачёва, 80, Ивантеевка», the point the route and "open in maps" links
+  // go to. `pin` -- where the marker stands: the company's own building in
+  // that complex, the centre of OSM way 134908625 (~170 m east, ~96 m south
+  // of the address point), as the company marked it on the map.
   const OFFICE = {
     name: 'Саянмрамор',
     purpose: 'Офис продаж и производство',
     addressLines: ['МО, г. Ивантеевка,', 'ул. Толмачева, д. 80'],
     lat: 55.960447,
     lon: 37.923215,
+    pin: { lat: 55.959584, lon: 37.925953 },
   };
 
   // Yandex Maps URL parameters: rtext = "from~to" as lat,lon, where an empty
@@ -62,7 +65,7 @@
     // trap); two fingers move and zoom it, and the +/- buttons still work.
     const coarse = !!(win.matchMedia && win.matchMedia('(pointer: coarse)').matches);
     const map = L.map(el, {
-      center: [OFFICE.lat, OFFICE.lon], zoom: 16, minZoom: 9, maxZoom: 18,
+      center: [OFFICE.pin.lat, OFFICE.pin.lon], zoom: 16, minZoom: 9, maxZoom: 18,
       zoomControl: false, scrollWheelZoom: false, dragging: !coarse,
     });
     map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
@@ -73,7 +76,7 @@
     tiles.on('tileload', () => { loaded++; });
     tiles.on('tileerror', () => { failed++; if (!loaded && failed >= 4) showFallback(doc); });
 
-    L.marker([OFFICE.lat, OFFICE.lon], {
+    L.marker([OFFICE.pin.lat, OFFICE.pin.lon], {
       title: OFFICE.name + ' — ' + OFFICE.purpose,
       icon: L.divIcon({ className: 'map-pin', html: PIN, iconSize: [34, 44], iconAnchor: [17, 43], popupAnchor: [0, -40] }),
     }).addTo(map).bindPopup(popupContent(doc, OFFICE), {

@@ -18,6 +18,19 @@ test('the one point is the sales office and production in Ivanteevka, at the Yan
   assert.equal(OFFICE.lon, 37.923215);
 });
 
+test('the marker stands on the company\'s building in the complex (OSM way 134908625), the address unchanged', () => {
+  const { OFFICE } = ContactsMap;
+  assert.deepEqual(OFFICE.pin, { lat: 55.959584, lon: 37.925953 });
+  // ~170 m east and ~96 m south of the address point -- not the street point.
+  const mLat = 111320, mLon = 111320 * Math.cos(OFFICE.lat * Math.PI / 180);
+  const east = (OFFICE.pin.lon - OFFICE.lon) * mLon, south = (OFFICE.lat - OFFICE.pin.lat) * mLat;
+  assert.ok(Math.abs(east - 170) < 5 && Math.abs(south - 96) < 5, east + ' / ' + south);
+  // One marker, at the pin.
+  const src = fs.readFileSync(path.join(site, 'js/contacts-map.js'), 'utf8');
+  assert.equal((src.match(/L\.marker\(/g) || []).length, 1);
+  assert.match(src, /L\.marker\(\[OFFICE\.pin\.lat, OFFICE\.pin\.lon\]/);
+});
+
 test('route and "open in maps" go to Yandex Maps at that point', () => {
   const { OFFICE, routeUrl, openUrl } = ContactsMap;
   // rtext: from~to as lat,lon; an empty "from" is the visitor's location.
@@ -83,7 +96,7 @@ test('mouse: drag to move, wheel off until the map is used; touch: one finger sc
   const desktop = mountWithFakeLeaflet(false).mapOptions;
   assert.equal(desktop.dragging, true);
   assert.equal(desktop.scrollWheelZoom, false);
-  assert.deepEqual(desktop.center, [ContactsMap.OFFICE.lat, ContactsMap.OFFICE.lon]);
+  assert.deepEqual(desktop.center, [ContactsMap.OFFICE.pin.lat, ContactsMap.OFFICE.pin.lon], 'centred on the marker');
   assert.equal(mountWithFakeLeaflet(true).mapOptions.dragging, false);
 });
 
