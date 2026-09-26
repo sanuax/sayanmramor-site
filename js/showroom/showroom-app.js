@@ -12,6 +12,7 @@ import { createUI } from './showroom-ui.js';
 const Data = window.ShowroomData;
 const State = window.ShowroomState;
 const House = window.HouseModel;
+const Photos = window.ShowroomStonePhotos;
 const doc = document;
 
 function showFallback(reason) {
@@ -28,7 +29,8 @@ function start() {
   const stage = doc.getElementById('srStage');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const view3d = createShowroomScene(canvas, { House });
+  // A stone photograph arriving re-renders the view (the scene renders on demand).
+  const view3d = createShowroomScene(canvas, { House, Photos, onChange: () => { occlusionDue = true; requestRender(); } });
   const rig = createCameraRig(canvas, { reducedMotion });
   let state = State.initialStateFromLocation(location.search, location.hash);
   let size = { width: 1, height: 1 };
@@ -133,6 +135,8 @@ function start() {
   requestAnimationFrame(() => {
     doc.getElementById('srLoading').classList.add('is-done');
     if (!reducedMotion) rig.goTo(arrival, initial.zone.orbit, { duration: 1800 });
+    // The house is up; now fetch the stone photographs in the background.
+    view3d.loadPhotos();
     ui.showHint();
     requestRender();
   });

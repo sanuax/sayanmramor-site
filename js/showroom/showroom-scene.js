@@ -2,11 +2,12 @@
 //
 // One WebGL renderer and one scene for the whole house. Builds meshes from
 // HouseModel parts (batched: one mesh per group + material + object, see
-// showroom-geometry.js), lights them like an architectural photograph (a
-// warm low sun with soft shadows, a sky-dome environment for reflections,
-// a few warm interior lights), and exposes what the app needs: hide/show cut-away
-// groups, highlight an object, test whether a marker is hidden behind
-// something, render.
+// showroom-geometry.js), lays real stone photographs on the pieces cut
+// from them (stone-photos.js), lights them like an architectural
+// photograph (a warm low sun with soft shadows, a sky-dome environment for
+// reflections, a few warm interior lights), and exposes what the app
+// needs: hide/show cut-away groups, highlight an object, test whether a
+// marker is hidden behind something, render.
 import * as THREE from '../../vendor/three/three.module.js';
 import { createMaterials, roleTint } from './showroom-materials.js';
 import { hash3, createBatch, pushBox, pushSlab, pushCylinder, pushBeam, toGeometry, withWhite, blobGeometry } from './showroom-geometry.js';
@@ -67,7 +68,7 @@ function uvOffset(x, y, z) {
   return [hash3(y - 5.3, z, x) * 4, hash3(x + 2.9, y, z - 7.1) * 4];
 }
 
-export function createShowroomScene(canvas, { House }) {
+export function createShowroomScene(canvas, { House, Photos, onChange }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -84,7 +85,7 @@ export function createShowroomScene(canvas, { House }) {
   scene.fog = new THREE.Fog(FOG_COLOR, 60, 160);
   scene.environment = buildEnvironment(renderer);
 
-  const materials = createMaterials();
+  const materials = createMaterials({ Photos, anisotropy: renderer.capabilities.getMaxAnisotropy(), onChange });
 
   // Light: a warm late-afternoon sun from the south-west, raking across the
   // street facade (so piers, frames and joints model), sky fill, and a few
@@ -118,11 +119,13 @@ export function createShowroomScene(canvas, { House }) {
     return groups.get(name);
   };
   const batches = new Map();
-  const batchFor = part => {
-    const key = part.group + '|' + part.mat + '|' + (part.object || '');
-    if (!batches.has(key)) batches.set(key, Object.assign(createBatch(), { group: part.group, mat: part.mat, object: part.object || null }));
+  // One batch per group + material + object + the slab photo it is cut from.
+  const batchFor = (part, src) => {
+    const key = part.group + '|' + part.mat + '|' + (part.object || '') + '|' + (src || '');
+    if (!batches.has(key)) batches.set(key, Object.assign(createBatch(), { group: part.group, mat: part.mat, object: part.object || null, src: src || null }));
     return batches.get(key);
   };
+  const clampTo = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const jointBuckets = new Map();
   const blobs = { foliage: [] };
   const trunks = [];
@@ -130,17 +133,46 @@ export function createShowroomScene(canvas, { House }) {
   function boxStyle(part) {
     const c = [0, 1, 2].map(i => (part.min[i] + part.max[i]) / 2);
     const style = { bevel: part.bevel || 0, color: tint(roleTint(part.mat) * 0.6, c[0], c[1], c[2]), uvOffset: uvOffset(c[0], c[1], c[2]) };
-    if (part.mat === 'onyx') {
-      // The bookmatched panno maps once across each face, not by the metre.
-      const size = [0, 1, 2].map(i => part.max[i] - part.min[i]);
+    if (part.photo && Photos) {
+      // A piece cut from a real slab: its face shows the slab region at true
+      // scale; a face turned away from it (a thin edge) folds the pattern
+      // over the arris -- the stone continues round the corner, as on a
+      // mitred edge -- instead of smearing one row of the photo.
+      const spec = part.photo, mn = part.min, mx = part.max, plane = spec.plane || 'y', normal = spec.normal || 1;
+      const d = [0, 1, 2].map(i => mx[i] - mn[i]);
+      // u/v directions on the photo face, its normal, its origin, and each
+      // point's depth below that face.
+      const frame = plane === 'y' ? { w: d[0], h: d[2], U: [1, 0, 0], V: [0, 0, -1], N: [0, 1, 0], o: [mn[0], 0, mx[2]], depth: q => mx[1] - q[1] }
+        : plane === 'x' ? { w: d[2], h: d[1], U: [0, 0, -normal], V: [0, 1, 0], N: [normal, 0, 0], o: [0, mn[1], normal > 0 ? mx[2] : mn[2]], depth: q => (normal > 0 ? mx[0] - q[0] : q[0] - mn[0]) }
+          : { w: d[0], h: d[1], U: [normal, 0, 0], V: [0, 1, 0], N: [0, 0, normal], o: [normal > 0 ? mn[0] : mx[0], mn[1], 0], depth: q => (normal > 0 ? mx[2] - q[2] : q[2] - mn[2]) };
+      const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+      const map = Photos.photoMap(spec, frame.w, frame.h);
+      style.color = WHITE;
       style.uvOffset = [0, 0];
-      style.uvOf = (p, n) => {
-        const ax = Math.abs(n[0]), ay = Math.abs(n[1]);
-        const [a, b] = ax > 0.5 ? [2, 1] : ay > 0.5 ? [0, 2] : [0, 1];
-        return [(p[a] - part.min[a]) / size[a], (p[b] - part.min[b]) / size[b]];
+      style.uvOf = (q, n) => {
+        const rel = [q[0] - frame.o[0], q[1] - frame.o[1], q[2] - frame.o[2]];
+        let u = clampTo(dot(rel, frame.U), 0, frame.w), v = clampTo(dot(rel, frame.V), 0, frame.h);
+        if (Math.abs(dot(n, frame.N)) < 0.5) {
+          const depth = frame.depth(q);
+          u += depth * dot(n, frame.U);
+          v += depth * dot(n, frame.V);
+        }
+        return map.uv(u, v);
       };
     }
     return style;
+  }
+
+  // The slab photo on one cladding slab (rect in its plane's a/b axes).
+  function slabPhotoUV(part, spec, rect) {
+    const w = rect.a1 - rect.a0, h = rect.b1 - rect.b0, map = Photos.photoMap(spec, w, h);
+    const ab = q => (part.plane === 'z' ? [q[0], q[1]] : part.plane === 'x' ? [q[2], q[1]] : [q[0], q[2]]);
+    return q => {
+      const [a, b] = ab(q);
+      let u = part.plane === 'x' ? (part.normal > 0 ? rect.a1 - a : a - rect.a0) : part.plane === 'z' ? (part.normal > 0 ? a - rect.a0 : rect.a1 - a) : a - rect.a0;
+      let v = part.plane === 'y' ? rect.b1 - b : b - rect.b0;
+      return map.uv(clampTo(u, 0, w), clampTo(v, 0, h));
+    };
   }
 
   function addTree(part) {
@@ -162,14 +194,17 @@ export function createShowroomScene(canvas, { House }) {
 
   House.buildHouse().forEach(part => {
     if (part.kind === 'box') {
-      pushBox(batchFor(part), part.min, part.max, boxStyle(part));
+      pushBox(batchFor(part, part.photo && part.photo.src), part.min, part.max, boxStyle(part));
     } else if (part.kind === 'cladding') {
-      const b = batchFor(part);
       const amount = roleTint(part.mat);
       const n0 = part.at, n1 = part.at + part.normal * part.depth, g = part.gap / 2;
-      House.claddingSlabs(part).forEach(s => {
+      House.claddingSlabs(part).forEach((s, i) => {
         const ca = (s.a0 + s.a1) / 2, cb = (s.b0 + s.b1) / 2;
-        const style = { color: tint(amount, ca, cb, n1), uvOffset: uvOffset(ca, cb, n0) };
+        const spec = part.photos && Photos ? part.photos[i] : null;
+        const b = batchFor(part, spec && spec.src);
+        const style = spec
+          ? { color: WHITE, uvOffset: [0, 0], uvOf: slabPhotoUV(part, spec, s) }
+          : { color: tint(amount, ca, cb, n1), uvOffset: uvOffset(ca, cb, n0) };
         // Joints: half a gap off each slab edge, except at the surface's own border.
         const a0 = s.a0 + (s.a0 > part.a[0] + 1e-6 ? g : 0), a1 = s.a1 - (s.a1 < part.a[1] - 1e-6 ? g : 0);
         const b0 = s.b0 + (s.b0 > part.b[0] + 1e-6 ? g : 0), b1 = s.b1 - (s.b1 < part.b[1] - 1e-6 ? g : 0);
@@ -202,7 +237,7 @@ export function createShowroomScene(canvas, { House }) {
   });
 
   batches.forEach(b => {
-    const material = b.object ? materials.forObject(b.mat, b.object) : materials.get(b.mat);
+    const material = b.object ? materials.forObject(b.mat, b.object, b.src) : materials.get(b.mat, b.src);
     const mesh = new THREE.Mesh(toGeometry(b), material);
     const isGlass = b.mat === 'glass' || b.mat === 'glass-smoke', isLamp = b.mat === 'lamp';
     mesh.castShadow = !isGlass && !isLamp;
@@ -312,5 +347,8 @@ export function createShowroomScene(canvas, { House }) {
   }
 
   refreshOccluders();
-  return { renderer, scene, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose, groupNames: () => Array.from(groups.keys()) };
+  return {
+    renderer, scene, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose,
+    loadPhotos: materials.loadPhotos, groupNames: () => Array.from(groups.keys()),
+  };
 }

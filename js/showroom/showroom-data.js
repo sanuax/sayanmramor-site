@@ -55,7 +55,7 @@
     },
     {
       id: 'living', label: 'Гостиная', title: 'Гостиная',
-      caption: 'Панно из оникса на каменной стене, каменный пол и широкий подоконник у окна.',
+      caption: 'Акцентная стена из мрамора Majestic в зеркальной раскладке, каменный пол и широкий подоконник у окна.',
       view: { position: [6.6, 8.2, 11.6], target: [3.9, 1.3, 2.3] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.9 },
       hide: INTERIOR_GF_HIDE,
@@ -116,7 +116,7 @@
       title: 'Пол в гостиной', description: 'Каменный пол единого формата для гостиной и кухни.',
       anchor: [3.4, 0.48, 3.4], offset: [2.2, 5.0, 5.4] },
     { id: 'living-panno', productKey: 'panno', zone: 'living', primary: true,
-      title: 'Панно в гостиной', description: 'Декоративное каменное панно — главный акцент гостиной.',
+      title: 'Панно в гостиной', description: 'Стена из мрамора Majestic: две соседние плиты в зеркальной раскладке — главный акцент гостиной.',
       anchor: [1.13, 1.9, 2.6], offset: [5.4, 1.4, 2.6] },
     { id: 'living-sill', productKey: 'podokonnik', zone: 'living', primary: true,
       title: 'Подоконник', description: 'Широкий каменный подоконник у окна гостиной.',

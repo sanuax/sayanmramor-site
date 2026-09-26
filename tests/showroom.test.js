@@ -111,15 +111,15 @@ test('the house reads as one building: two storeys, a cantilevered upper floor, 
   const upper = parts.filter(p => p.group === 'uf-south' && p.kind === 'box');
   const ground = parts.filter(p => p.group === 'gf-south' && p.kind === 'box');
   assert.ok(Math.max(...upper.map(p => p.max[2])) > Math.max(...ground.map(p => p.max[2])) + 1, 'upper floor overhangs the street facade');
-  assert.ok(parts.some(p => p.kind === 'box' && p.mat === 'basalt' && p.max[1] === House.LEVELS.FF1), 'a basalt plinth');
-  assert.equal(parts.filter(p => p.group === 'stair' && p.mat === 'travertine').length, 36, '18 treads + 18 risers');
+  assert.ok(parts.some(p => p.kind === 'box' && p.mat === 'steel-grey' && p.max[1] === House.LEVELS.FF1), 'a Steel Grey plinth');
+  assert.equal(parts.filter(p => p.group === 'stair' && p.mat === 'limestone-floor').length, 36, '18 treads + 18 risers');
 });
 
 const FACADE_GROUPS = ['gf-south', 'gf-west', 'gf-north', 'gf-east', 'uf-south', 'uf-east', 'uf-north', 'uf-west'];
 
 test('the facades are stone: the upper floor is clad in stone slabs, no timber cladding anywhere outside', () => {
   ['uf-south', 'uf-east', 'uf-north', 'uf-west'].forEach(g => {
-    assert.ok(parts.some(p => p.group === g && p.kind === 'cladding' && p.mat === 'travertine'), g + ' stone panels');
+    assert.ok(parts.some(p => p.group === g && p.kind === 'cladding' && p.mat === 'limestone'), g + ' stone panels');
   });
   ['gf-west', 'gf-north', 'gf-east'].forEach(g => {
     assert.ok(parts.some(p => p.group === g && p.kind === 'cladding' && p.mat === 'limestone'), g + ' stone panels');
@@ -136,7 +136,7 @@ test('facade depth: stone surrounds stand proud of the wall, sills project, the 
   const sills = parts.filter(p => p.object === 'exterior-sills');
   assert.ok(south.some(p => p.mat === 'limestone-light' && p.max[2] >= 6.5 + 0.3), 'upper window surrounds project >= 30 cm');
   sills.forEach(p => assert.ok(p.max[2] > Math.max(...south.filter(q => q.mat === 'limestone-light').map(q => q.max[2])), 'the sill projects past its frame'));
-  const niche = parts.filter(p => p.group === 'gf-south' && p.mat === 'stone-graphite' && p.kind === 'cladding');
+  const niche = parts.filter(p => p.group === 'gf-south' && p.mat === 'steel-grey' && p.kind === 'cladding');
   assert.ok(niche.length >= 3, 'the niche is lined with stone');
   assert.ok(5.0 - Math.min(...niche.map(p => House.partBounds(p).min[2])) >= 1.9, 'the niche is ~2 m deep');
 });
@@ -246,10 +246,10 @@ test('entrance: wide monolithic steps up to the floor level, even risers, a land
 
 test('the main stair has a landing, a stone stringer and a balustrade', () => {
   const { landingAfter, landing } = House.STAIR;
-  const treads = parts.filter(p => p.group === 'stair' && p.mat === 'travertine' && p.max[1] - p.min[1] < 0.06).sort((a, b) => a.max[1] - b.max[1]);
+  const treads = parts.filter(p => p.group === 'stair' && p.mat === 'limestone-floor' && p.max[1] - p.min[1] < 0.06).sort((a, b) => a.max[1] - b.max[1]);
   assert.equal(treads.length, 18);
   assert.ok(treads[landingAfter].max[2] - treads[landingAfter].min[2] >= landing, 'the landing is a deep tread');
-  assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'stone-graphite' && p.kind === 'beam'), 'a stone stringer');
+  assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'steel-grey-honed' && p.kind === 'beam'), 'a stone stringer');
   assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'glass'), 'a balustrade');
 });
 
@@ -457,4 +457,119 @@ test('locationFor: zone as #hash, the carried stone as ?stone, the product entry
   const back = State.initialStateFromLocation('?stone=delicato-brown', '#kitchen');
   assert.equal(back.zone, 'kitchen');
   assert.equal(back.stoneId, 'delicato-brown', 'a reload keeps the zone and the stone');
+});
+
+// ---- the stone palette ---------------------------------------------------------
+
+const Photos = require('../js/showroom/stone-photos.js');
+const STONE_FAMILY = {
+  limestone: 'limestone', 'limestone-light': 'limestone', 'limestone-floor': 'limestone', paving: 'limestone',
+  'steel-grey': 'steel-grey', 'steel-grey-honed': 'steel-grey',
+  'viscont-white': 'viscont-white', 'calacatta-nova': 'calacatta-nova', majestic: 'majestic',
+};
+const NOT_STONE = new Set(['graphite', 'poche', 'grout', 'plaster', 'soil', 'wood', 'wood-dark', 'cabinet', 'fabric', 'fabric-light', 'rug', 'shade',
+  'metal', 'metal-dark', 'glass', 'glass-smoke', 'glass-black', 'ceramic', 'basin', 'mirror', 'lamp', 'foliage', 'grass', 'lawn', 'meadow', 'gravel']);
+const ofObject = id => parts.filter(p => p.object === id);
+
+test('one house, one set of stones: our limestone, Steel Grey, Viscont White, Calacatta Nova, Majestic', () => {
+  const families = new Set();
+  parts.filter(p => p.mat).forEach(p => {
+    assert.ok(STONE_FAMILY[p.mat] || NOT_STONE.has(p.mat), 'unexpected material ' + p.mat);
+    if (STONE_FAMILY[p.mat]) families.add(STONE_FAMILY[p.mat]);
+  });
+  assert.deepEqual(Array.from(families).sort(), ['calacatta-nova', 'limestone', 'majestic', 'steel-grey', 'viscont-white']);
+});
+
+test('each stone is where the concept puts it', () => {
+  // The facades are our own limestone -- never a supplier photo.
+  ['gf-south', 'gf-west', 'gf-north', 'gf-east', 'uf-south', 'uf-east', 'uf-north', 'uf-west'].forEach(g => {
+    const clad = parts.filter(p => p.group === g && p.kind === 'cladding' && STONE_FAMILY[p.mat] === 'limestone');
+    assert.ok(clad.length > 0, g);
+    clad.forEach(p => assert.ok(!p.photos && !p.photo, g + ' facade uses no photo'));
+  });
+  ofObject('facade').filter(p => p.kind === 'cladding').forEach(p => assert.equal(p.mat, 'limestone'));
+  // Steel Grey: plinth, outside steps, outside sills.
+  ofObject('entrance-steps').forEach(p => assert.equal(STONE_FAMILY[p.mat], 'steel-grey', 'entrance steps'));
+  ofObject('exterior-sills').forEach(p => assert.equal(p.mat, 'steel-grey'));
+  // Viscont White: the kitchen; Calacatta Nova: the bathroom; Majestic: the feature wall only.
+  ['kitchen-counter', 'kitchen-island', 'kitchen-bar', 'kitchen-backsplash'].forEach(id => ofObject(id).forEach(p => assert.equal(p.mat, 'viscont-white', id)));
+  ['bath-counter', 'bath-wall', 'bath-sill'].forEach(id => ofObject(id).filter(p => p.mat !== 'grout').forEach(p => assert.equal(p.mat, 'calacatta-nova', id)));
+  parts.filter(p => p.mat === 'majestic').forEach(p => assert.equal(p.object, 'living-panno', 'Majestic stays the one accent'));
+  assert.ok(ofObject('living-panno').some(p => p.mat === 'majestic'));
+  // Floors are the calm limestone.
+  ['hall-floor', 'living-floor', 'bath-floor'].forEach(id => ofObject(id).forEach(p => assert.equal(p.mat, 'limestone-floor', id)));
+});
+
+// The w x h a photo is laid over, as the renderer measures it.
+function photoUses() {
+  const uses = [];
+  parts.forEach(p => {
+    if (p.kind === 'box' && p.photo) {
+      const d = [0, 1, 2].map(i => p.max[i] - p.min[i]), plane = p.photo.plane || 'y';
+      const [w, h] = plane === 'y' ? [d[0], d[2]] : plane === 'x' ? [d[2], d[1]] : [d[0], d[1]];
+      uses.push({ part: p, spec: p.photo, w, h });
+    }
+    if (p.kind === 'cladding' && p.photos) {
+      const slabs = House.claddingSlabs(p);
+      assert.equal(p.photos.length, slabs.length, 'one photo per slab: ' + p.mat);
+      slabs.forEach((r, i) => uses.push({ part: p, spec: p.photos[i], w: r.a1 - r.a0, h: r.b1 - r.b0 }));
+    }
+  });
+  return uses;
+}
+
+test('slab photos: real Venezia Stone slabs of the agreed bundles, each region lies on the stone at true scale', () => {
+  const uses = photoUses();
+  assert.ok(uses.length >= 15);
+  uses.forEach(({ part, spec, w, h }) => {
+    const photo = Photos.PHOTOS[spec.src];
+    assert.ok(photo && photo.kind === 'slab', spec.src);
+    assert.equal(photo.stone, part.mat, spec.src + ' is ' + part.mat);
+    const { region, size } = Photos.photoMap(spec, w, h);
+    assert.ok(region[0] >= -1e-6 && region[1] >= -1e-6 && region[2] <= size[0] + 1e-6 && region[3] <= size[1] + 1e-6,
+      spec.src + ' region ' + region.map(x => x.toFixed(3)) + ' outside ' + size.map(x => x.toFixed(3)));
+    const s = spec.scale || 1;
+    assert.ok(s > 0.9 && s <= 1, 'true scale (within 10%)');
+  });
+  const bundles = mat => new Set(uses.filter(u => u.part.mat === mat).map(u => Photos.PHOTOS[u.spec.src].bundle));
+  assert.deepEqual(Array.from(bundles('viscont-white')), ['BLK10421']);
+  assert.deepEqual(Array.from(bundles('calacatta-nova')), ['BLP03755']);
+  assert.deepEqual(Array.from(bundles('majestic')), ['BLM17290']);
+  // The kitchen's waves all run along the worktop and the island.
+  uses.filter(u => u.part.mat === 'viscont-white' && (u.spec.plane || 'y') === 'y').forEach(u => assert.ok([0, 180].includes(u.spec.rotate || 0)));
+});
+
+test('the Majestic bookmatch: two consecutive slabs, full height, their mirrored top edges meeting on the axis', () => {
+  const wall = ofObject('living-panno').find(p => p.kind === 'cladding');
+  const slabs = House.claddingSlabs(wall);
+  assert.equal(slabs.length, 2);
+  assert.ok(Math.abs((slabs[0].a1 - slabs[0].a0) - (slabs[1].a1 - slabs[1].a0)) < 1e-9, 'two equal halves');
+  slabs.forEach(r => assert.ok(r.b1 - r.b0 > 2.9, 'full height'));
+  const [right, left] = wall.photos;   // slab 0 is on the viewer's right (+x wall, seen looking toward -x)
+  assert.deepEqual([left.src, right.src], ['majestic-M0491372', 'majestic-M0491373']);
+  assert.deepEqual([left.rotate, right.rotate], [90, 270], 'turned opposite ways');
+  assert.equal(Photos.PHOTOS[left.src].party, Photos.PHOTOS[right.src].party);
+  assert.equal(Photos.PHOTOS[left.src].bundle, Photos.PHOTOS[right.src].bundle);
+  // Both slabs' top edges (photo y = 0, texture v = 1) run along the axis.
+  const w = slabs[0].a1 - slabs[0].a0, h = slabs[0].b1 - slabs[0].b0;
+  const L = Photos.photoMap(left, w, h), R = Photos.photoMap(right, w, h);
+  [0.1, 0.5, 0.9].forEach(t => {
+    assert.ok(Math.abs(L.uv(w, h * t)[1] - 1) < 1e-9, 'left half: top edge at the axis');
+    assert.ok(Math.abs(R.uv(0, h * t)[1] - 1) < 1e-9, 'right half: top edge at the axis');
+  });
+});
+
+test('stone assets: every shipped photo is in the manifest and used, with its source recorded', () => {
+  const dir = path.join(__dirname, '..', 'assets', 'showroom', 'stone');
+  const files = fs.readdirSync(dir).filter(f => f.endsWith('.webp')).sort();
+  assert.deepEqual(files, Object.keys(Photos.PHOTOS).map(k => k + '.webp').sort());
+  const used = new Set(photoUses().map(u => u.spec.src));
+  Object.entries(Photos.PHOTOS).forEach(([key, p]) => {
+    assert.ok(p.source.startsWith('https://storage.yandexcloud.net/venezia-photo/') && p.page.startsWith('https://veneziastone.com/'), key);
+    if (p.kind === 'slab') assert.ok(used.has(key), key + ' is laid somewhere');
+    const size = fs.statSync(path.join(dir, key + '.webp')).size;
+    assert.ok(size < 2.5 * 1024 * 1024, key + ' is optimised');
+  });
+  const sources = fs.readFileSync(path.join(dir, 'SOURCES.md'), 'utf8');
+  Object.keys(Photos.PHOTOS).forEach(key => assert.ok(sources.includes(key), 'SOURCES.md lists ' + key));
 });
