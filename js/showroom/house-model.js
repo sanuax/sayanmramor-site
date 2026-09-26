@@ -133,49 +133,56 @@
     const { axis, outer, inward, u, v, openings = [], layers, group } = spec;
     const rects = solidRects(u[0], u[1], v[0], v[1], openings);
     const tag = layer => (spec.object && layer.object ? spec.object : null);
+    // Corners: two walls must never fill the same space, or their faces
+    // would lie in one plane and flicker. The cladding of one wall runs
+    // through the corner and the other's stops short of it (`cladTrim`);
+    // the cores (`coreTrim`) stop behind whichever cladding and core own
+    // the corner. Each layer's section cap follows its own trim.
+    const cut = (r, trim) => {
+      const [t0, t1] = trim || [0, 0];
+      const a0 = Math.max(r.u0, u[0] + t0), a1 = Math.min(r.u1, u[1] - t1);
+      return a1 - a0 < 1e-6 ? null : Object.assign({}, r, { u0: a0, u1: a1 });
+    };
     let depth = 0;
     layers.forEach(layer => {
       const n0 = outer + inward * depth, n1 = outer + inward * (depth + layer.t);
-      rects.forEach(r => {
+      const trim = layer.clad ? spec.cladTrim : spec.coreTrim;
+      rects.map(r => cut(r, trim)).filter(Boolean).forEach(r => {
         if (layer.clad) {
-          // At a corner the other wall's cladding runs through; this one
-          // stops short of it by `cladTrim` (no two slabs in one place).
-          const [t0, t1] = spec.cladTrim || [0, 0];
-          const a0 = Math.max(r.u0, u[0] + t0), a1 = Math.min(r.u1, u[1] - t1);
-          if (a1 - a0 < 1e-6) return;
           clad(parts, Object.assign({
-            plane: axis, at: n1, normal: -inward, depth: layer.t, a: [a0, a1], b: [r.v0, r.v1],
+            plane: axis, at: n1, normal: -inward, depth: layer.t, a: [r.u0, r.u1], b: [r.v0, r.v1],
             origin: spec.cladOrigin || [u[0], v[0]], mat: layer.mat, group, object: tag(layer),
           }, layer.clad));
         } else {
           const [min, max] = wallBox(axis, r.u0, r.u1, r.v0, r.v1, n0, n1);
           parts.push(box(min, max, layer.mat, group, tag(layer) ? { object: tag(layer) } : null));
         }
+        // Section cut: where a wall's top is exposed in a cut-away view, it
+        // reads as dark poché (like a drawn section), not a blank white edge.
+        if (spec.cap && r.v1 >= v[1] - 1e-6) {
+          const [min, max] = wallBox(axis, r.u0, r.u1, v[1], v[1] + 0.012, n0, n1);
+          parts.push(box(min, max, 'poche', group));
+        }
       });
       depth += layer.t;
     });
-    // Section cut: where a wall's top is exposed in a cut-away view, it
-    // reads as dark poché (like a drawn section), not a blank white edge.
-    if (spec.cap) {
-      rects.filter(r => r.v1 >= v[1] - 1e-6).forEach(r => {
-        const [min, max] = wallBox(axis, r.u0, r.u1, v[1], v[1] + 0.012, outer, outer + inward * depth);
-        parts.push(box(min, max, 'poche', group));
-      });
-    }
     openings.filter(o => o.glass).forEach(o => {
       const mid = outer + inward * depth * 0.5;
-      const [gMin, gMax] = wallBox(axis, o.u0, o.u1, o.v0, o.v1, mid - 0.012, mid + 0.012);
+      // The pane sits 2 cm into its frame on every side (not flush with it).
+      const [gMin, gMax] = wallBox(axis, o.u0 + 0.02, o.u1 - 0.02, o.v0 + 0.02, o.v1 - 0.02, mid - 0.012, mid + 0.012);
       parts.push(box(gMin, gMax, 'glass', group));
+      // Frame: head and sill rails full width, stiles and mullions between
+      // them (profiles meet, they do not overlap).
       const f = 0.05;
       const frame = [
         { u0: o.u0, u1: o.u1, v0: o.v0, v1: o.v0 + f }, { u0: o.u0, u1: o.u1, v0: o.v1 - f, v1: o.v1 },
-        { u0: o.u0, u1: o.u0 + f, v0: o.v0, v1: o.v1 }, { u0: o.u1 - f, u1: o.u1, v0: o.v0, v1: o.v1 },
+        { u0: o.u0, u1: o.u0 + f, v0: o.v0 + f, v1: o.v1 - f }, { u0: o.u1 - f, u1: o.u1, v0: o.v0 + f, v1: o.v1 - f },
       ];
       // Mullions: at most ~1.6 m of glass between vertical frames.
       const panes = Math.max(1, Math.round((o.u1 - o.u0) / 1.6));
       for (let k = 1; k < panes; k++) {
         const uc = o.u0 + (o.u1 - o.u0) * (k / panes);
-        frame.push({ u0: uc - f / 2, u1: uc + f / 2, v0: o.v0, v1: o.v1 });
+        frame.push({ u0: uc - f / 2, u1: uc + f / 2, v0: o.v0 + f, v1: o.v1 - f });
       }
       frame.forEach(r => {
         const [min, max] = wallBox(axis, r.u0, r.u1, r.v0, r.v1, mid - 0.04, mid + 0.04);
@@ -350,7 +357,7 @@
 
     // Terrace off the living room: limestone paving on a Steel Grey podium, steps
     // down to the lawn on the east, a planter and two loungers.
-    parts.push(box([1.0, 0, GF.z1], [10, FF1, 9.5], 'steel-grey', 'site'));
+    parts.push(box([1.0, 0, GF.z1 + 0.05], [10, FF1, 9.5], 'steel-grey', 'site'));
     clad(parts, {
       plane: 'y', at: FF1, normal: 1, depth: 0.02, a: [1.0, 10], b: [GF.z1 + 0.05, 9.5], origin: [1.0, GF.z1],
       module: [0.9, 0.9], gap: 0.005, chamfer: 0.004, mat: 'paving', group: 'site', object: 'terrace-floor', bed: false,
@@ -377,9 +384,9 @@
     // The facade object is the stone wall west of the niche.
     // The street wall stops at the niche's side walls; stone faces cover
     // those walls' ends, so no plaster shows at the opening.
-    wall(parts, Object.assign({}, south, { u: [GF.x0, -3.5], openings: [slot], object: 'facade', cladTrim: [0.06, 0] }));
-    wall(parts, Object.assign({}, south, { u: [-0.1, GF.x1], openings: [living], cladTrim: [0, 0.06] }));
-    [[-3.505, -3.195], [-0.405, -0.095]].forEach(([x0, x1]) => parts.push(box([x0, FF1, GF.z1 - 0.06], [x1, SLAB, GF.z1], 'limestone', 'gf-south', { bevel: 0.006 })));
+    wall(parts, Object.assign({}, south, { u: [GF.x0, -3.5], openings: [slot], object: 'facade', cladTrim: [0.06, 0], coreTrim: [0.3, 0] }));
+    wall(parts, Object.assign({}, south, { u: [-0.1, GF.x1], openings: [living], cladTrim: [0, 0.06], coreTrim: [0, 0.3] }));
+    [[-3.5, -3.2], [-0.4, -0.1]].forEach(([x0, x1]) => parts.push(box([x0, FF1, GF.z1 - 0.06], [x1, SLAB, GF.z1], 'limestone', 'gf-south', { bevel: 0.006 })));
     surround(parts, south, slot, { width: 0.1, depth: 0.24, mat: 'metal-dark', bevel: 0 });
     surround(parts, south, living, { width: 0.32, depth: 0.46, mat: 'limestone-light' });
     // Slender stone fins on the mullions of the living-room glazing.
@@ -388,8 +395,9 @@
     // Entrance niche: 2 m deep, lined with the facade limestone in large
     // panels; its floor and the steps before it are Steel Grey.
     const nicheLayers = [{ t: 0.05, mat: 'limestone', clad: { module: [1.0, 1.5], gap: 0.006, chamfer: 0.005 } }, { t: 0.25, mat: 'plaster' }];
-    wall(parts, { axis: 'x', outer: -3.2, inward: -1, u: [3.0, GF.z1], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers });
-    wall(parts, { axis: 'x', outer: -0.4, inward: 1, u: [3.0, GF.z1], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers });
+    // The side walls stop behind the stone faces at the street front.
+    wall(parts, { axis: 'x', outer: -3.2, inward: -1, u: [3.0, GF.z1 - 0.06], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers });
+    wall(parts, { axis: 'x', outer: -0.4, inward: 1, u: [3.0, GF.z1 - 0.06], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers });
     wall(parts, { axis: 'z', outer: 3.0, inward: -1, u: [-3.2, -0.4], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers,
       openings: [{ u0: -2.45, u1: -1.25, v0: FF1, v1: 3.15 }, { u0: -1.0, u1: -0.6, v0: FF1, v1: 3.15, glass: true }] });
     parts.push(box([-2.45, FF1 + 0.02, 2.8], [-1.25, 3.15, 2.86], 'wood-dark', 'gf-south'));
@@ -400,17 +408,20 @@
     });
     parts.push(box([-3.15, SLAB - 0.035, 3.0], [-0.45, SLAB - 0.005, 3.1], 'lamp', 'gf-south'));
 
-    const west = { axis: 'x', outer: GF.x0, inward: 1, u: [GF.z0, GF.z1], v: [FF1, SLAB], group: 'gf-west', layers: gfLayers, cap: true };
+    // East and west walls own the corners' cladding; north and south own
+    // none of the corner (their cladding stops at the side walls' face,
+    // their cores at the side walls' inner face).
+    const west = { axis: 'x', outer: GF.x0, inward: 1, u: [GF.z0, GF.z1], v: [FF1, SLAB], group: 'gf-west', layers: gfLayers, cap: true, coreTrim: [0.06, 0.06] };
     wall(parts, west);
     const kitchenWindow = { u0: 3.0, u1: 5.2, v0: 1.6, v1: 3.2, glass: true };
     const hallWindow = { u0: -5.9, u1: -3.8, v0: 0.955, v1: 3.0, glass: true };
     const north = { axis: 'z', outer: GF.z0, inward: 1, u: [GF.x0, GF.x1], v: [FF1, SLAB], group: 'gf-north', layers: gfLayers, cap: true,
-      openings: [hallWindow, kitchenWindow], cladTrim: [0.06, 0.06] };
+      openings: [hallWindow, kitchenWindow], cladTrim: [0.06, 0.06], coreTrim: [0.3, 0.3] };
     wall(parts, north);
     surround(parts, north, hallWindow, Object.assign({ sill: { h: 0.07, mat: 'steel-grey' } }, frame));
     surround(parts, north, kitchenWindow, Object.assign({ sill: { h: 0.07, mat: 'steel-grey' } }, frame));
     const eastWindow = { u0: 0.6, u1: 4.4, v0: 1.3, v1: 3.2, glass: true };
-    const east = { axis: 'x', outer: GF.x1, inward: -1, u: [GF.z0, GF.z1], v: [FF1, SLAB], group: 'gf-east', layers: gfLayers, cap: true, openings: [eastWindow] };
+    const east = { axis: 'x', outer: GF.x1, inward: -1, u: [GF.z0, GF.z1], v: [FF1, SLAB], group: 'gf-east', layers: gfLayers, cap: true, openings: [eastWindow], coreTrim: [0.06, 0.06] };
     wall(parts, east);
     surround(parts, east, eastWindow, Object.assign({ sill: { h: 0.07, mat: 'steel-grey' } }, frame));
 
@@ -629,7 +640,7 @@
     });
     const landTop = stairTop(L), landBack = stairBack(L), landFront = stairFront(L) + 0.03;
     parts.push(box([STAIR.x1, landTop - 0.3, landBack], [STAIR.x1 + 0.06, landTop + 0.02, landFront], 'steel-grey-honed', 'stair', { bevel: 0.006 }));
-    parts.push(box([xs - 0.003, landTop + 0.09, landBack], [xs + 0.012, landTop + 0.95, landFront], 'glass', 'stair'));
+    parts.push(box([xs - 0.003, landTop + 0.09, landBack + 0.005], [xs + 0.012, landTop + 0.95, landFront - 0.005], 'glass', 'stair'));
     parts.push(box([xs - 0.02, landTop + 0.945, landBack], [xs + 0.03, landTop + 0.995, landFront], 'wood', 'stair'));
     // The stone wall the stair climbs along.
     clad(parts, {
@@ -642,18 +653,23 @@
     [
       [[UF.x0, SLAB, 3.4], [UF.x1, FF2, UF.z1]],
       [[UF.x0, SLAB, UF.z0], [UF.x1, FF2, STAIR_END]],
-      [[UF.x0, SLAB, STAIR_END], [-6.7, FF2, 3.4]],
+      [[UF.x0, SLAB, STAIR_END], [-6.664, FF2, 3.4]],   // the void's edge is flush with the stair wall's stone face
       [[-3.5, SLAB, STAIR_END], [UF.x1, FF2, 3.4]],
     ].forEach(([min, max]) => parts.push(box(min, max, 'graphite', 'uf-floor')));
     // Stone belt round the slab edge, a timber soffit with downlights under
     // the cantilever and in the entrance niche.
-    const belt = { bevel: 0.01 };
-    parts.push(box([UF.x0 - 0.04, SLAB, UF.z0 - 0.04], [UF.x0 + 0.3, FF2 + 0.06, UF.z1 + 0.04], 'limestone-light', 'uf-floor', belt));
-    parts.push(box([UF.x0 + 0.3, SLAB, UF.z1 - 0.3], [UF.x1 + 0.04, FF2 + 0.06, UF.z1 + 0.04], 'limestone-light', 'uf-floor', belt));
-    parts.push(box([UF.x0 + 0.3, SLAB, UF.z0 - 0.04], [UF.x1, FF2 + 0.06, UF.z0 + 0.3], 'limestone-light', 'uf-floor', belt));
-    parts.push(box([UF.x1 - 0.3, SLAB, GF.z1], [UF.x1 + 0.04, FF2 + 0.06, UF.z1 - 0.3], 'limestone-light', 'uf-floor', belt));
-    parts.push(box([UF.x0 + 0.3, SLAB - 0.025, GF.z1], [UF.x1 - 0.3, SLAB, UF.z1 - 0.3], 'wood', 'uf-floor'));
-    parts.push(box([UF.x0 + 0.3, SLAB - 0.025, UF.z0 + 0.3], [GF.x0, SLAB, GF.z1], 'wood', 'uf-floor'));
+    // The belt is a stone fascia round the slab edge that drops 3 cm below
+    // the soffit as a drip edge (its underside never shares the slab's).
+    const belt = { bevel: 0.01 }, beltLow = SLAB - 0.03;
+    // It stays within the upper walls' thickness (bw), so it never shows
+    // inside the rooms; the timber soffit runs up to it.
+    const bw = 0.2;
+    parts.push(box([UF.x0 - 0.04, beltLow, UF.z0 - 0.04], [UF.x0 + bw, FF2 + 0.06, UF.z1 + 0.04], 'limestone-light', 'uf-floor', belt));
+    parts.push(box([UF.x0 + bw, beltLow, UF.z1 - bw], [UF.x1 + 0.04, FF2 + 0.06, UF.z1 + 0.04], 'limestone-light', 'uf-floor', belt));
+    parts.push(box([UF.x0 + bw, beltLow, UF.z0 - 0.04], [UF.x1 + 0.04, FF2 + 0.06, UF.z0 + bw], 'limestone-light', 'uf-floor', belt));
+    parts.push(box([UF.x1 - bw, beltLow, GF.z1], [UF.x1 + 0.04, FF2 + 0.06, UF.z1 - bw], 'limestone-light', 'uf-floor', belt));
+    parts.push(box([UF.x0 + bw, SLAB - 0.025, GF.z1], [UF.x1 - bw, SLAB, UF.z1 - bw], 'wood', 'uf-floor'));
+    parts.push(box([UF.x0 + bw, SLAB - 0.025, UF.z0 + bw], [GF.x0, SLAB, GF.z1], 'wood', 'uf-floor'));
     parts.push(box([-3.2, SLAB - 0.025, 3.0], [-0.4, SLAB, GF.z1], 'wood', 'uf-floor'));
     const downlight = (x, z) => parts.push(box([x - 0.07, SLAB - 0.03, z - 0.07], [x + 0.07, SLAB - 0.024, z + 0.07], 'lamp', 'uf-floor'));
     [-7.4, -5.9, -4.4, 0.6, 2.1].forEach(x => downlight(x, 5.65));
@@ -705,23 +721,23 @@
     const ufFrame = { width: 0.2, depth: 0.36, mat: 'limestone-light' };
     const w1 = { u0: -7.6, u1: -4.4, v0: 4.6, v1: 6.4, glass: true };
     const w2 = { u0: -3.0, u1: 2.6, v0: 4.6, v1: 6.4, glass: true };
-    const ufSouth = { axis: 'z', outer: UF.z1, inward: -1, u: [UF.x0, UF.x1], v: [FF2, TOP], group: 'uf-south', layers: ufLayers, cap: true, openings: [w1, w2], cladTrim: [0.06, 0.06] };
+    const ufSouth = { axis: 'z', outer: UF.z1, inward: -1, u: [UF.x0, UF.x1], v: [FF2, TOP], group: 'uf-south', layers: ufLayers, cap: true, openings: [w1, w2], cladTrim: [0.06, 0.06], coreTrim: [0.26, 0.26] };
     wall(parts, ufSouth);
     [w1, w2].forEach(o => surround(parts, ufSouth, o, Object.assign({ sill: { h: 0.08, mat: 'steel-grey', object: 'exterior-sills' } }, ufFrame)));
     const bathWindow = { u0: -3.6, u1: -1.6, v0: 4.6, v1: 6.1, glass: true };
     const terraceDoor = { u0: 1.0, u1: 4.6, v0: FF2, v1: 6.45, glass: true };   // opens onto the terrace only
-    const ufEast = { axis: 'x', outer: UF.x1, inward: -1, u: [UF.z0, UF.z1], v: [FF2, TOP], group: 'uf-east', layers: ufLayers, cap: true, openings: [bathWindow, terraceDoor] };
+    const ufEast = { axis: 'x', outer: UF.x1, inward: -1, u: [UF.z0, UF.z1], v: [FF2, TOP], group: 'uf-east', layers: ufLayers, cap: true, openings: [bathWindow, terraceDoor], coreTrim: [0.06, 0.06] };
     wall(parts, ufEast);
     surround(parts, ufEast, bathWindow, Object.assign({ sill: { h: 0.08, mat: 'steel-grey' } }, ufFrame));
     surround(parts, ufEast, terraceDoor, ufFrame);
-    wall(parts, { axis: 'z', outer: UF.z0, inward: 1, u: [UF.x0, UF.x1], v: [FF2, TOP], group: 'uf-north', layers: ufLayers, cap: true, cladTrim: [0.06, 0.06] });
+    wall(parts, { axis: 'z', outer: UF.z0, inward: 1, u: [UF.x0, UF.x1], v: [FF2, TOP], group: 'uf-north', layers: ufLayers, cap: true, cladTrim: [0.06, 0.06], coreTrim: [0.26, 0.26] });
     const westWindow = { u0: -1.0, u1: 3.0, v0: 4.4, v1: 6.4, glass: true };
-    const ufWest = { axis: 'x', outer: UF.x0, inward: 1, u: [UF.z0, UF.z1], v: [FF2, TOP], group: 'uf-west', layers: ufLayers, cap: true, openings: [westWindow] };
+    const ufWest = { axis: 'x', outer: UF.x0, inward: 1, u: [UF.z0, UF.z1], v: [FF2, TOP], group: 'uf-west', layers: ufLayers, cap: true, openings: [westWindow], coreTrim: [0.06, 0.06] };
     wall(parts, ufWest);
     surround(parts, ufWest, westWindow, Object.assign({ sill: { h: 0.08, mat: 'steel-grey' } }, ufFrame));
 
     // Roof: a flat slab inside a crisp stone cornice.
-    parts.push(box([UF.x0, TOP, UF.z0], [UF.x1, TOP + 0.22, UF.z1], 'graphite', 'roof'));
+    parts.push(box([UF.x0 + 0.3, TOP, UF.z0 + 0.3], [UF.x1 - 0.3, TOP + 0.22, UF.z1 - 0.3], 'graphite', 'roof'));
     const cornice = { bevel: 0.012 };
     parts.push(box([UF.x0 - 0.18, TOP, UF.z1 - 0.3], [UF.x1 + 0.18, TOP + 0.34, UF.z1 + 0.18], 'limestone-light', 'roof', cornice));
     parts.push(box([UF.x0 - 0.18, TOP, UF.z0 - 0.18], [UF.x1 + 0.18, TOP + 0.34, UF.z0 + 0.3], 'limestone-light', 'roof', cornice));
@@ -750,7 +766,7 @@
     const bx1 = ufIn.x1, bz0 = ufIn.z0;
     parts.push(box([-1.07, FF2, bz0], [-0.93, TOP, -0.8], 'plaster', 'uf-interior'));
     parts.push(box([-1.07, TOP, bz0], [-0.93, TOP + 0.012, -0.8], 'poche', 'uf-interior'));
-    wall(parts, { axis: 'z', outer: -0.73, inward: -1, u: [-1.0, bx1], v: [FF2, TOP], group: 'bath-south', cap: true,
+    wall(parts, { axis: 'z', outer: -0.73, inward: -1, u: [-0.93, bx1], v: [FF2, TOP], group: 'bath-south', cap: true,
       layers: [{ t: 0.14, mat: 'plaster' }], openings: [{ u0: -0.5, u1: 0.5, v0: FF2, v1: 5.9 }] });
     // The floor in large Calacatta Nova slabs (3 x 3), cut from the same
     // two slabs as the wall; the veins all run one way.

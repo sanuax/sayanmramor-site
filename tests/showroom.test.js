@@ -231,7 +231,7 @@ test('the terrace on the ground-floor roof has a balustrade on every open edge, 
     const shoe = roof.find(p => p.mat === 'metal-dark' && edges[name](p) && Math.abs(p.min[1] - (FF2 + 0.1)) < 1e-9);
     assert.ok(Math.abs(shoe.min[0] - 3.5) < 1e-9, name + ' run starts at the wall');
   });
-  const door = parts.filter(p => p.group === 'uf-east' && p.mat === 'glass').find(p => p.max[1] > 6.4 && p.min[1] <= FF2);
+  const door = parts.filter(p => p.group === 'uf-east' && p.mat === 'glass').find(p => p.max[1] > 6.4 && p.min[1] <= FF2 + 0.03);
   assert.ok(door.max[2] < 4.9, 'the terrace door ends inside the balustrade');
 });
 
@@ -657,4 +657,59 @@ test('every marker is in plain view from its zone camera on a phone, a tablet an
       assert.ok(!blocker, obj.id + ' hidden by ' + (blocker && blocker.group + ' ' + blocker.mat) + ' at aspect ' + aspect.toFixed(2));
     }));
   });
+});
+
+// Two faces in one plane, facing the same way, overlapping, and not covered
+// by a third solid: the geometric cause of flickering (z-fighting).
+function coplanarFaces() {
+  const solids = parts.filter(p => p.kind === 'box' || p.kind === 'cladding');
+  const bounds = solids.map(p => House.partBounds(p));
+  const faces = new Map();
+  solids.forEach((p, idx) => {
+    const b = bounds[idx];
+    for (let ax = 0; ax < 3; ax++) {
+      [[-1, b.min[ax]], [1, b.max[ax]]].forEach(([dir, at]) => {
+        // A cladding shows only its face; its back sits on its bed.
+        if (p.kind === 'cladding' && (ax !== { x: 0, y: 1, z: 2 }[p.plane] || dir !== p.normal)) return;
+        const key = ax + '|' + dir + '|' + Math.round(at * 1e4);
+        if (!faces.has(key)) faces.set(key, []);
+        faces.get(key).push({ idx, ax, dir, at });
+      });
+    }
+  });
+  const covered = (pt, skip) => bounds.some((b, i) => !skip.includes(i) && [0, 1, 2].every(k => pt[k] > b.min[k] + 1e-6 && pt[k] < b.max[k] - 1e-6));
+  const found = [];
+  faces.forEach(list => {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const A = list[i], C = list[j];
+        const o = [0, 1, 2].filter(k => k !== A.ax);
+        const lo = o.map(k => Math.max(bounds[A.idx].min[k], bounds[C.idx].min[k]));
+        const hi = o.map(k => Math.min(bounds[A.idx].max[k], bounds[C.idx].max[k]));
+        if (hi[0] - lo[0] < 1e-4 || hi[1] - lo[1] < 1e-4) continue;
+        // Sample the overlap just in front of the faces; a point no third solid covers is visible.
+        const fr = [0.13, 0.37, 0.61, 0.89];
+        const visible = fr.some(s => fr.some(t => {
+          const pt = [0, 0, 0];
+          pt[A.ax] = A.at + A.dir * 0.002;
+          pt[o[0]] = lo[0] + (hi[0] - lo[0]) * s;
+          pt[o[1]] = lo[1] + (hi[1] - lo[1]) * t;
+          return !covered(pt, [A.idx, C.idx]);
+        }));
+        if (visible) found.push(solids[A.idx].group + ':' + solids[A.idx].mat + ' / ' + solids[C.idx].group + ':' + solids[C.idx].mat + ' at ' + 'xyz'[A.ax] + '=' + A.at.toFixed(3));
+      }
+    }
+  });
+  return found;
+}
+
+test('no two visible surfaces share a plane (walls meet at corners, cladding, niche, belt, frames)', () => {
+  assert.deepEqual(coplanarFaces(), []);
+});
+
+test('the coplanar-face check catches a wall face laid over another', () => {
+  const { FF1, SLAB } = House.LEVELS;
+  const extra = { kind: 'box', min: [-6.94, FF1, 4.7], max: [-6.7, SLAB, 5.0], mat: 'plaster', group: 'gf-south' };
+  parts.push(extra);
+  try { assert.ok(coplanarFaces().length > 0); } finally { parts.pop(); }
 });
