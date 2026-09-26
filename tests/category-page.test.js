@@ -72,3 +72,22 @@ test('every category page hands off to the canonical configurator URL for its ow
     assert.equal(cta, '/calculator/sayanmramor-calculator.html?product=' + key);
   });
 });
+
+test('every page with the stone catalogue names the supplier once, with a link to Venezia Stone in a new tab', () => {
+  const root = path.join(__dirname, '..');
+  const pages = ['index.html', 'katalog.html', 'showroom.html'].concat(fs.readdirSync(path.join(root, 'categories')).map(f => 'categories/' + f));
+  pages.forEach(page => {
+    const html = fs.readFileSync(path.join(root, page), 'utf8');
+    const hasCatalogue = html.includes('id="stoneGrid"');
+    const lines = html.split('Камень в нашей коллекции закупается у Venezia Stone').length - 1;
+    assert.equal(lines, hasCatalogue ? 1 : 0, page);
+    assert.doesNotMatch(html, /взят с сайта/, page);
+    if (!hasCatalogue) return;
+    const section = html.slice(html.indexOf('class="stone-section"'), html.indexOf('</section>', html.indexOf('class="stone-section"')));
+    const links = section.match(/<a [^>]*href="https:\/\/veneziastone\.com\/"[^>]*>([^<]*)<\/a>/g) || [];
+    assert.equal(links.length, 1, page);
+    assert.match(links[0], /target="_blank"/, page);
+    assert.match(links[0], /rel="noopener"/, page);
+    assert.match(links[0], />Подробнее о коллекции и материалах — на сайте Venezia Stone</, page);
+  });
+});

@@ -305,6 +305,10 @@ h3 { font-size: var(--fs-h3); }
 .stone-card-type { font-size: var(--fs-small); color: var(--muted); }
 .stone-more { display: flex; margin: var(--s-6) auto 0; }
 .stone-more[hidden] { display: none; }
+/* Where the collection's stone comes from: a quiet line under the catalogue. */
+.stone-supplier { margin-top: var(--s-6); font-size: var(--fs-small); line-height: 1.5; color: var(--muted); max-width: 620px; }
+.stone-supplier a { color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.stone-supplier a:hover { color: var(--ink); text-decoration-color: currentColor; }
 
 .configure-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
