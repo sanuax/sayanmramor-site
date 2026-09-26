@@ -112,7 +112,7 @@ test('the house reads as one building: two storeys, a cantilevered upper floor, 
   const ground = parts.filter(p => p.group === 'gf-south' && p.kind === 'box');
   assert.ok(Math.max(...upper.map(p => p.max[2])) > Math.max(...ground.map(p => p.max[2])) + 1, 'upper floor overhangs the street facade');
   assert.ok(parts.some(p => p.kind === 'box' && p.mat === 'steel-grey' && p.max[1] === House.LEVELS.FF1), 'a Steel Grey plinth');
-  assert.equal(parts.filter(p => p.group === 'stair' && p.mat === 'limestone-floor').length, 36, '18 treads + 18 risers');
+  assert.equal(parts.filter(p => p.group === 'stair' && p.kind === 'box' && /^staircase/.test(p.object || '')).length, 36, '18 treads + 18 risers');
 });
 
 const FACADE_GROUPS = ['gf-south', 'gf-west', 'gf-north', 'gf-east', 'uf-south', 'uf-east', 'uf-north', 'uf-west'];
@@ -136,7 +136,8 @@ test('facade depth: stone surrounds stand proud of the wall, sills project, the 
   const sills = parts.filter(p => p.object === 'exterior-sills');
   assert.ok(south.some(p => p.mat === 'limestone-light' && p.max[2] >= 6.5 + 0.3), 'upper window surrounds project >= 30 cm');
   sills.forEach(p => assert.ok(p.max[2] > Math.max(...south.filter(q => q.mat === 'limestone-light').map(q => q.max[2])), 'the sill projects past its frame'));
-  const niche = parts.filter(p => p.group === 'gf-south' && p.mat === 'steel-grey' && p.kind === 'cladding');
+  const niche = parts.filter(p => p.group === 'gf-south' && p.kind === 'cladding' && p.mat === 'limestone' &&
+    ((p.plane === 'x' && (Math.abs(p.at + 3.2) < 0.06 || Math.abs(p.at + 0.4) < 0.06)) || (p.plane === 'z' && Math.abs(p.at - 3.0) < 0.06)));
   assert.ok(niche.length >= 3, 'the niche is lined with stone');
   assert.ok(5.0 - Math.min(...niche.map(p => House.partBounds(p).min[2])) >= 1.9, 'the niche is ~2 m deep');
 });
@@ -246,7 +247,8 @@ test('entrance: wide monolithic steps up to the floor level, even risers, a land
 
 test('the main stair has a landing, a stone stringer and a balustrade', () => {
   const { landingAfter, landing } = House.STAIR;
-  const treads = parts.filter(p => p.group === 'stair' && p.mat === 'limestone-floor' && p.max[1] - p.min[1] < 0.06).sort((a, b) => a.max[1] - b.max[1]);
+  const treads = parts.filter(p => p.group === 'stair' && /^staircase/.test(p.object || '') && p.max[1] - p.min[1] < 0.06).sort((a, b) => a.max[1] - b.max[1]);
+  treads.forEach(p => assert.equal(p.mat, 'steel-grey-honed', 'a stone stair: Steel Grey treads'));
   assert.equal(treads.length, 18);
   assert.ok(treads[landingAfter].max[2] - treads[landingAfter].min[2] >= landing, 'the landing is a deep tread');
   assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'steel-grey-honed' && p.kind === 'beam'), 'a stone stringer');
@@ -463,12 +465,12 @@ test('locationFor: zone as #hash, the carried stone as ?stone, the product entry
 
 const Photos = require('../js/showroom/stone-photos.js');
 const STONE_FAMILY = {
-  limestone: 'limestone', 'limestone-light': 'limestone', 'limestone-floor': 'limestone', paving: 'limestone',
+  limestone: 'limestone', 'limestone-light': 'limestone', paving: 'limestone',
   'steel-grey': 'steel-grey', 'steel-grey-honed': 'steel-grey',
   'viscont-white': 'viscont-white', 'calacatta-nova': 'calacatta-nova', majestic: 'majestic',
 };
-const NOT_STONE = new Set(['graphite', 'poche', 'grout', 'plaster', 'soil', 'wood', 'wood-dark', 'cabinet', 'fabric', 'fabric-light', 'rug', 'shade',
-  'metal', 'metal-dark', 'glass', 'glass-smoke', 'glass-black', 'ceramic', 'basin', 'mirror', 'lamp', 'foliage', 'grass', 'lawn', 'meadow', 'gravel']);
+const NOT_STONE = new Set(['graphite', 'poche', 'grout', 'plaster', 'soil', 'wood', 'wood-dark', 'wood-floor', 'cabinet', 'fabric', 'fabric-light', 'rug', 'shade',
+  'metal', 'metal-dark', 'steel', 'hob-ring', 'glass', 'glass-smoke', 'glass-black', 'ceramic', 'basin', 'mirror', 'lamp', 'foliage', 'grass', 'lawn', 'meadow', 'gravel']);
 const ofObject = id => parts.filter(p => p.object === id);
 
 test('one house, one set of stones: our limestone, Steel Grey, Viscont White, Calacatta Nova, Majestic', () => {
@@ -496,8 +498,11 @@ test('each stone is where the concept puts it', () => {
   ['bath-counter', 'bath-wall', 'bath-sill'].forEach(id => ofObject(id).filter(p => p.mat !== 'grout').forEach(p => assert.equal(p.mat, 'calacatta-nova', id)));
   parts.filter(p => p.mat === 'majestic').forEach(p => assert.equal(p.object, 'living-panno', 'Majestic stays the one accent'));
   assert.ok(ofObject('living-panno').some(p => p.mat === 'majestic'));
-  // Floors are the calm limestone.
-  ['hall-floor', 'living-floor', 'bath-floor'].forEach(id => ofObject(id).forEach(p => assert.equal(p.mat, 'limestone-floor', id)));
+  // Floors: warm oak boards in the rooms, never the facade limestone; the bathroom's is Calacatta Nova.
+  ['hall-floor', 'living-floor'].forEach(id => ofObject(id).forEach(p => assert.equal(p.mat, 'wood-floor', id)));
+  ofObject('bath-floor').forEach(p => assert.equal(p.mat, 'calacatta-nova'));
+  parts.filter(p => p.kind === 'cladding' && p.plane === 'y' && p.normal > 0 && ['gf-floors', 'uf-interior'].includes(p.group))
+    .forEach(p => assert.ok(['wood-floor', 'calacatta-nova'].includes(p.mat), 'indoor floor ' + p.mat));
 });
 
 // The w x h a photo is laid over, as the renderer measures it.
@@ -505,7 +510,8 @@ function photoUses() {
   const uses = [];
   parts.forEach(p => {
     if (p.kind === 'box' && p.photo) {
-      const d = [0, 1, 2].map(i => p.max[i] - p.min[i]), plane = p.photo.plane || 'y';
+      const area = p.photo.area || p;
+      const d = [0, 1, 2].map(i => area.max[i] - area.min[i]), plane = p.photo.plane || 'y';
       const [w, h] = plane === 'y' ? [d[0], d[2]] : plane === 'x' ? [d[2], d[1]] : [d[0], d[1]];
       uses.push({ part: p, spec: p.photo, w, h });
     }
@@ -572,4 +578,83 @@ test('stone assets: every shipped photo is in the manifest and used, with its so
   });
   const sources = fs.readFileSync(path.join(dir, 'SOURCES.md'), 'utf8');
   Object.keys(Photos.PHOTOS).forEach(key => assert.ok(sources.includes(key), 'SOURCES.md lists ' + key));
+});
+
+test('floors: wide oak boards in the rooms, large Calacatta Nova slabs in the bathroom', () => {
+  const boards = parts.filter(p => p.kind === 'cladding' && p.mat === 'wood-floor');
+  assert.ok(boards.some(p => p.object === 'living-floor') && boards.some(p => p.object === 'hall-floor') && boards.some(p => p.group === 'uf-interior'));
+  boards.forEach(p => {
+    assert.ok(p.module[0] >= 1.8 && p.module[1] >= 0.18 && p.module[1] <= 0.25, 'wide long boards');
+    assert.ok(p.stagger > 0 && p.stagger !== 0.5, 'a loose running bond');
+  });
+  const bath = ofObject('bath-floor').find(p => p.kind === 'cladding');
+  assert.ok(bath.module[0] >= 1.2 && bath.module[1] >= 1.2, 'large-format slabs, few joints');
+  assert.equal(House.claddingSlabs(bath).length, 9);
+  bath.photos.forEach(ph => assert.equal(Photos.PHOTOS[ph.src].bundle, 'BLP03755'));
+});
+
+test('outside window sills: Steel Grey pieces with real thickness, a projection and visible ends', () => {
+  const faces = { 'gf-north': ['z', -5, -1], 'gf-east': ['x', 7, 1], 'uf-south': ['z', 6.5, 1], 'uf-east': ['x', 3.5, 1], 'uf-west': ['x', -8.5, -1] };
+  Object.entries(faces).forEach(([group, [axis, face, out]]) => {
+    const sills = parts.filter(p => p.group === group && p.kind === 'box' && p.mat === 'steel-grey');
+    assert.ok(sills.length >= 1, group + ' has stone sills');
+    const frames = parts.filter(p => p.group === group && p.kind === 'box' && p.mat === 'limestone-light');
+    sills.forEach(sill => {
+      const t = sill.max[1] - sill.min[1];
+      assert.ok(t >= 0.06 && t <= 0.1, group + ' sill thickness ' + t);
+      const i = axis === 'z' ? 2 : 0, along = axis === 'z' ? 0 : 2;
+      const proj = out > 0 ? sill.max[i] - face : face - sill.min[i];
+      assert.ok(proj >= 0.35, group + ' sill projects ' + proj.toFixed(2));
+      const jambs = frames.filter(f => f.min[1] <= sill.max[1] + 0.01 && f.min[1] >= sill.max[1] - 0.01 && f.max[1] - f.min[1] > 0.5 &&
+        f.min[along] >= sill.min[along] - 1e-9 && f.max[along] <= sill.max[along] + 1e-9);
+      assert.ok(jambs.length >= 2, group + ': the jambs stand on the sill');
+      const frameFront = Math.max(...jambs.map(f => (out > 0 ? f.max[i] : -f.min[i])));
+      assert.ok((out > 0 ? sill.max[i] : -sill.min[i]) > frameFront + 0.05, group + ': the sill stands proud of its frame');
+      assert.ok(Math.min(...jambs.map(f => f.min[along])) - sill.min[along] >= 0.05, group + ': its end shows past the frame');
+    });
+  });
+});
+
+test('kitchen: an undermount sink cut into the worktop, a flush hob, real fronts, proper bar stools', () => {
+  const top = ofObject('kitchen-counter').filter(p => p.max[1] === 1.35);
+  // Nothing covers the sink opening: the stone is cut round it.
+  const sink = { x: 4.1, z: -4.37 };
+  assert.ok(!top.some(p => sink.x > p.min[0] && sink.x < p.max[0] && sink.z > p.min[2] && sink.z < p.max[2]), 'the worktop is open over the sink');
+  const areaPieces = top.filter(p => p.photo && p.photo.area);
+  assert.ok(areaPieces.length >= 4 && areaPieces.every(p => p.photo.area === areaPieces[0].photo.area), 'one pattern across the cut');
+  const steel = parts.filter(p => p.mat === 'steel' && p.kind === 'box' && p.min[0] >= 3.68 && p.max[0] <= 4.52 && p.min[2] >= -4.57 && p.max[2] <= -4.18);
+  assert.ok(steel.length >= 5, 'a steel bowl: four walls and a bottom');
+  assert.ok(Math.min(...steel.map(p => p.min[1])) < 1.2, 'a deep bowl under the stone');
+  const hob = parts.find(p => p.mat === 'glass-black' && p.kind === 'box' && p.max[1] - p.min[1] < 0.01 && p.min[1] === 1.35);
+  assert.ok(hob, 'a thin glass-ceramic hob on the stone');
+  assert.equal(parts.filter(p => p.kind === 'cyl' && p.mat === 'hob-ring').length, 4, 'four cooking zones');
+  const doors = parts.filter(p => p.group === 'gf-interior' && p.kind === 'box' && ['wood', 'cabinet'].includes(p.mat) && Math.abs((p.max[2] - p.min[2]) - 0.02) < 1e-9);
+  assert.ok(doors.length >= 15, 'separate fronts, not one block');
+  const legs = parts.filter(p => p.kind === 'beam' && p.mat === 'metal-dark' && p.group === 'gf-interior' && p.from[1] < 0.5 && p.to[1] > 1.1);
+  assert.equal(legs.length, 12, 'three stools on four legs');
+  assert.ok(!parts.some(p => p.kind === 'cyl' && p.group === 'gf-interior' && p.base[2] === -1.35), 'no cylinder stools left');
+});
+
+test('every marker is in plain view from its zone camera on a phone, a tablet and a desktop', () => {
+  Data.ZONES.forEach(zone => {
+    const solids = parts.filter(p => !zone.hide.includes(p.group) && ['box', 'cladding'].includes(p.kind) && !['glass', 'glass-smoke', 'lamp'].includes(p.mat));
+    Data.objectsInZone(zone.id).forEach(obj => [390 / 760, 0.95, 1.6].forEach(aspect => {
+      const o = State.scaleView(zone.view, State.distanceScale(aspect, 38)).position, a = obj.anchor;
+      const d = a.map((x, i) => x - o[i]), len = Math.hypot(...d);
+      const blocker = solids.find(p => {
+        if (p.object === obj.id) return false;
+        const b = House.partBounds(p);
+        let t0 = 0, t1 = 1;
+        for (let i = 0; i < 3; i++) {
+          if (Math.abs(d[i]) < 1e-12) { if (o[i] < b.min[i] || o[i] > b.max[i]) return false; continue; }
+          let ta = (b.min[i] - o[i]) / d[i], tb = (b.max[i] - o[i]) / d[i];
+          if (ta > tb) [ta, tb] = [tb, ta];
+          t0 = Math.max(t0, ta); t1 = Math.min(t1, tb);
+          if (t0 > t1) return false;
+        }
+        return t0 < 1 - 0.12 / len;
+      });
+      assert.ok(!blocker, obj.id + ' hidden by ' + (blocker && blocker.group + ' ' + blocker.mat) + ' at aspect ' + aspect.toFixed(2));
+    }));
+  });
 });

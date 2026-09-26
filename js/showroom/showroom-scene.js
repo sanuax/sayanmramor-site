@@ -138,7 +138,10 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
       // scale; a face turned away from it (a thin edge) folds the pattern
       // over the arris -- the stone continues round the corner, as on a
       // mitred edge -- instead of smearing one row of the photo.
-      const spec = part.photo, mn = part.min, mx = part.max, plane = spec.plane || 'y', normal = spec.normal || 1;
+      // `area`: the whole piece the photo is laid on, when this box is one
+      // part of it (a worktop cut round a sink), so the pattern runs on.
+      const spec = part.photo, mn = spec.area ? spec.area.min : part.min, mx = spec.area ? spec.area.max : part.max;
+      const plane = spec.plane || 'y', normal = spec.normal || 1;
       const d = [0, 1, 2].map(i => mx[i] - mn[i]);
       // u/v directions on the photo face, its normal, its origin, and each
       // point's depth below that face.

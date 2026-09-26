@@ -202,13 +202,15 @@
       const [min, max] = wallBox(axis, u0, u1, v0, v1, nIn, n1);
       parts.push(box(min, max, mat, group, Object.assign({ bevel }, extra || null)));
     };
+    // The jambs stand on the sill, so the sill reads as one stone piece: its
+    // top in front of the glass, its thickness along the front, and its
+    // ends sticking out past the frame on both sides.
     const sill = opt.sill;
-    const foot = sill ? o.v0 - sill.h : o.v0;
-    add(o.u0 - w, o.u0 + 0.004, foot, o.v1 + w, nOut, opt.mat);
-    add(o.u1 - 0.004, o.u1 + w, foot, o.v1 + w, nOut, opt.mat);
+    add(o.u0 - w, o.u0 + 0.004, o.v0, o.v1 + w, nOut, opt.mat);
+    add(o.u1 - 0.004, o.u1 + w, o.v0, o.v1 + w, nOut, opt.mat);
     add(o.u0 + 0.004, o.u1 - 0.004, o.v1 - 0.004, o.v1 + w, nOut, opt.mat);
     if (sill) {
-      add(o.u0 - w - 0.04, o.u1 + w + 0.04, o.v0 - sill.h, o.v0 + 0.004, nOut + out * 0.06, sill.mat,
+      add(o.u0 - w - 0.06, o.u1 + w + 0.06, o.v0 - sill.h, o.v0 + 0.004, nOut + out * 0.08, sill.mat,
         sill.object ? { object: sill.object } : null);
     }
   }
@@ -373,15 +375,19 @@
     const slot = { u0: -6.45, u1: -6.0, v0: FF1, v1: 3.2, glass: true };
     const living = { u0: 1.2, u1: 6.6, v0: FF1, v1: 3.2, glass: true };
     // The facade object is the stone wall west of the niche.
-    wall(parts, Object.assign({}, south, { u: [GF.x0, -3.2], openings: [slot], object: 'facade', cladTrim: [0.06, 0] }));
-    wall(parts, Object.assign({}, south, { u: [-3.2, GF.x1], openings: [{ u0: -3.2, u1: -0.4, v0: FF1, v1: SLAB }, living], cladTrim: [0, 0.06] }));
+    // The street wall stops at the niche's side walls; stone faces cover
+    // those walls' ends, so no plaster shows at the opening.
+    wall(parts, Object.assign({}, south, { u: [GF.x0, -3.5], openings: [slot], object: 'facade', cladTrim: [0.06, 0] }));
+    wall(parts, Object.assign({}, south, { u: [-0.1, GF.x1], openings: [living], cladTrim: [0, 0.06] }));
+    [[-3.505, -3.195], [-0.405, -0.095]].forEach(([x0, x1]) => parts.push(box([x0, FF1, GF.z1 - 0.06], [x1, SLAB, GF.z1], 'limestone', 'gf-south', { bevel: 0.006 })));
     surround(parts, south, slot, { width: 0.1, depth: 0.24, mat: 'metal-dark', bevel: 0 });
     surround(parts, south, living, { width: 0.32, depth: 0.46, mat: 'limestone-light' });
     // Slender stone fins on the mullions of the living-room glazing.
     [3.0, 4.8].forEach(x => parts.push(box([x - 0.075, FF1, GF.z1 - 0.1], [x + 0.075, 3.2, GF.z1 + 0.34], 'limestone-light', 'gf-south', { bevel: 0.01 })));
 
-    // Entrance niche: 2 m deep, lined with Steel Grey.
-    const nicheLayers = [{ t: 0.05, mat: 'steel-grey', clad: { module: [1.0, 1.5], gap: 0.006, chamfer: 0.005 } }, { t: 0.25, mat: 'plaster' }];
+    // Entrance niche: 2 m deep, lined with the facade limestone in large
+    // panels; its floor and the steps before it are Steel Grey.
+    const nicheLayers = [{ t: 0.05, mat: 'limestone', clad: { module: [1.0, 1.5], gap: 0.006, chamfer: 0.005 } }, { t: 0.25, mat: 'plaster' }];
     wall(parts, { axis: 'x', outer: -3.2, inward: -1, u: [3.0, GF.z1], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers });
     wall(parts, { axis: 'x', outer: -0.4, inward: 1, u: [3.0, GF.z1], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers });
     wall(parts, { axis: 'z', outer: 3.0, inward: -1, u: [-3.2, -0.4], v: [FF1, SLAB], group: 'gf-south', layers: nicheLayers,
@@ -401,28 +407,29 @@
     const north = { axis: 'z', outer: GF.z0, inward: 1, u: [GF.x0, GF.x1], v: [FF1, SLAB], group: 'gf-north', layers: gfLayers, cap: true,
       openings: [hallWindow, kitchenWindow], cladTrim: [0.06, 0.06] };
     wall(parts, north);
-    surround(parts, north, hallWindow, Object.assign({ sill: { h: 0.06, mat: 'steel-grey' } }, frame));
-    surround(parts, north, kitchenWindow, Object.assign({ sill: { h: 0.06, mat: 'steel-grey' } }, frame));
+    surround(parts, north, hallWindow, Object.assign({ sill: { h: 0.07, mat: 'steel-grey' } }, frame));
+    surround(parts, north, kitchenWindow, Object.assign({ sill: { h: 0.07, mat: 'steel-grey' } }, frame));
     const eastWindow = { u0: 0.6, u1: 4.4, v0: 1.3, v1: 3.2, glass: true };
     const east = { axis: 'x', outer: GF.x1, inward: -1, u: [GF.z0, GF.z1], v: [FF1, SLAB], group: 'gf-east', layers: gfLayers, cap: true, openings: [eastWindow] };
     wall(parts, east);
-    surround(parts, east, eastWindow, Object.assign({ sill: { h: 0.06, mat: 'steel-grey' } }, frame));
+    surround(parts, east, eastWindow, Object.assign({ sill: { h: 0.07, mat: 'steel-grey' } }, frame));
 
     // Interior partition between the hall and the living room.
     wall(parts, { axis: 'x', outer: 0.93, inward: 1, u: [-4.7, 4.7], v: [FF1, SLAB], group: 'gf-interior', cap: true,
       layers: [{ t: 0.14, mat: 'plaster' }], openings: [{ u0: -0.2, u1: 1.0, v0: FF1, v1: 2.6 }] });
 
     // ---- floors ------------------------------------------------------------------
-    const floor = (a, b, mat, module, object) => clad(parts, {
-      plane: 'y', at: FF1, normal: 1, depth: 0.02, a, b, origin: [a[0] < 1 ? -6.7 : 1.07, -4.7], module, stagger: 0.5,
-      gap: 0.004, chamfer: 0.004, mat, group: 'gf-floors', object, bed: false,
-    });
-    // The floors are the facade's limestone, honed: a quiet ground for the
-    // three expressive stones indoors.
-    floor([-6.7, 0.93], [-4.7, 2.7], 'limestone-floor', [1.6, 0.8], 'hall-floor');
-    floor([-6.7, -3.5], [2.7, 4.7], 'limestone-floor', [1.6, 0.8], 'hall-floor');
-    floor([-0.1, 0.93], [2.7, 4.7], 'limestone-floor', [1.6, 0.8], 'hall-floor');
-    floor([1.07, 6.7], [-4.7, 4.7], 'limestone-floor', [1.2, 0.6], 'living-floor');
+    // Floors: wide boards of warm, light oak, laid east-west in a loose
+    // running bond -- a quiet ground for the stone. (The bathroom has stone.)
+    const BOARD = { module: [2.1, 0.21], stagger: 0.37, gap: 0.002, chamfer: 0.0015 };
+    const floor = (a, b, object) => clad(parts, Object.assign({
+      plane: 'y', at: FF1, normal: 1, depth: 0.02, a, b, origin: [-6.7, -4.7],
+      mat: 'wood-floor', group: 'gf-floors', object, bed: false,
+    }, BOARD));
+    floor([-6.7, 0.93], [-4.7, 2.7], 'hall-floor');
+    floor([-6.7, -3.5], [2.7, 4.7], 'hall-floor');
+    floor([-0.1, 0.93], [2.7, 4.7], 'hall-floor');
+    floor([1.07, 6.7], [-4.7, 4.7], 'living-floor');
 
     // ---- hall ------------------------------------------------------------------------
     // A honed Steel Grey wall in large panels (the plinth's stone, indoors)
@@ -478,34 +485,88 @@
     parts.push(box([6.36, 1.2, 0.5], [6.41, 1.26, 4.5], 'limestone-light', 'gf-interior', { object: 'living-sill' }));
 
     // ---- kitchen ---------------------------------------------------------------------------
-    parts.push(box([1.55, FF1 + 0.02, -4.7], [5.95, 0.57, -4.2], 'poche', 'gf-interior'));
-    parts.push(box([1.55, 0.57, -4.7], [5.95, 1.31, -4.12], 'wood', 'gf-interior'));
-    joints(parts, { plane: 'z', at: -4.12, normal: 1, a: [1.55, 5.95], b: [0.57, 1.31], module: [0.55, 0.37], group: 'gf-interior', tone: 'dark' });
+    // Fronts: separate panels with 4 mm gaps on a recessed carcass, a dark
+    // handle-less groove under the worktop.
+    const fronts = (x0, x1, y0, y1, zFace, cols, rows, mat) => {
+      const gap = 0.004, w = (x1 - x0 - gap * (cols - 1)) / cols;
+      for (let c = 0; c < cols; c++) {
+        const r = rows[c % rows.length], hs = r.map(h => h * (y1 - y0 - gap * (r.length - 1)));
+        let y = y0;
+        hs.forEach(h => {
+          const a = x0 + c * (w + gap);
+          parts.push(box([a, y, zFace - 0.02], [a + w, y + h, zFace], mat, 'gf-interior', { bevel: 0.002 }));
+          y += h + gap;
+        });
+      }
+    };
+    parts.push(box([1.57, FF1 + 0.02, -4.7], [5.95, 0.57, -4.2], 'poche', 'gf-interior'));
+    parts.push(box([1.57, 0.57, -4.7], [5.95, 1.1, -4.14], 'cabinet', 'gf-interior'));
+    parts.push(box([1.55, FF1 + 0.02, -4.7], [1.57, 1.31, -4.1], 'wood', 'gf-interior', { bevel: 0.002 }));
+    parts.push(box([1.57, 1.25, -4.16], [5.95, 1.31, -4.14], 'poche', 'gf-interior'));
+    fronts(1.57, 5.95, 0.575, 1.25, -4.12, 7, [[0.28, 0.33, 0.39], [0.28, 0.33, 0.39], [1], [1], [1], [1], [0.28, 0.33, 0.39]], 'wood');
     // Viscont White from two neighbouring cuts of one bundle (K0534518,
     // K0534519), every piece laid with the waves running the same way. The
     // 4.45 m worktop is longer than a 3.3 m strip: two pieces with a joint
-    // beside the tall column, as it would be made.
+    // beside the tall column, as it would be made. The first piece is cut
+    // round an undermount sink; its pattern runs on across the cut.
     const VW18 = 'viscont-white-K0534518', VW19 = 'viscont-white-K0534519';
-    [[1.5, 4.8, { src: VW18, plane: 'y', offset: [0.02, 0.15], scale: 0.97 }], [4.8, 5.95, { src: VW19, plane: 'y', offset: [2.05, 0.15], scale: 0.97 }]].forEach(([x0, x1, photo]) => {
-      parts.push(box([x0, 1.31, -4.7], [x1, 1.35, -4.05], 'viscont-white', 'gf-interior', { bevel: 0.004, object: 'kitchen-counter', photo }));
-      parts.push(box([x0, 1.27, -4.09], [x1, 1.31, -4.05], 'viscont-white', 'gf-interior', { object: 'kitchen-counter', photo }));
+    const topA = { src: VW18, plane: 'y', offset: [0.02, 0.15], scale: 0.97, area: { min: [1.5, 1.31, -4.7], max: [4.8, 1.35, -4.05] } };
+    const topB = { src: VW19, plane: 'y', offset: [2.05, 0.15], scale: 0.97 };
+    const sink = { x0: 3.7, x1: 4.5, z0: -4.55, z1: -4.2 };
+    [[1.5, sink.x0, -4.7, -4.05], [sink.x1, 4.8, -4.7, -4.05], [sink.x0, sink.x1, -4.7, sink.z0], [sink.x0, sink.x1, sink.z1, -4.05]].forEach(([x0, x1, z0, z1]) => {
+      parts.push(box([x0, 1.31, z0], [x1, 1.35, z1], 'viscont-white', 'gf-interior', { bevel: 0.004, object: 'kitchen-counter', photo: topA }));
     });
-    parts.push(box([3.7, 1.35, -4.55], [4.5, 1.352, -4.2], 'metal-dark', 'gf-interior'));
-    cyl(parts, [4.1, 1.35, -4.6], 0.016, 0.27, 'metal', 'gf-interior');
-    parts.push({ kind: 'beam', from: [4.1, 1.61, -4.6], to: [4.1, 1.61, -4.42], width: 0.025, height: 0.025, mat: 'metal', group: 'gf-interior' });
-    parts.push(box([1.85, 1.35, -4.6], [2.65, 1.356, -4.15], 'glass-black', 'gf-interior'));
+    parts.push(box([1.5, 1.27, -4.09], [4.8, 1.31, -4.05], 'viscont-white', 'gf-interior', { object: 'kitchen-counter', photo: topA }));
+    parts.push(box([4.8, 1.31, -4.7], [5.95, 1.35, -4.05], 'viscont-white', 'gf-interior', { bevel: 0.004, object: 'kitchen-counter', photo: topB }));
+    parts.push(box([4.8, 1.27, -4.09], [5.95, 1.31, -4.05], 'viscont-white', 'gf-interior', { object: 'kitchen-counter', photo: topB }));
+    // Undermount stainless sink: a deep bowl just under the stone's cut.
+    const t = 0.008, bowlTop = 1.31, bowlBottom = 1.12;
+    [[sink.x0 - t, sink.x0, sink.z0 - t, sink.z1 + t], [sink.x1, sink.x1 + t, sink.z0 - t, sink.z1 + t],
+      [sink.x0, sink.x1, sink.z0 - t, sink.z0], [sink.x0, sink.x1, sink.z1, sink.z1 + t]].forEach(([x0, x1, z0, z1]) => {
+      parts.push(box([x0, bowlBottom, z0], [x1, bowlTop, z1], 'steel', 'gf-interior'));
+    });
+    parts.push(box([sink.x0 - t, bowlBottom - t, sink.z0 - t], [sink.x1 + t, bowlBottom, sink.z1 + t], 'steel', 'gf-interior'));
+    cyl(parts, [(sink.x0 + sink.x1) / 2, bowlBottom, (sink.z0 + sink.z1) / 2], 0.045, 0.003, 'metal-dark', 'gf-interior');
+    // Gooseneck mixer in dark metal.
+    const fx = (sink.x0 + sink.x1) / 2, fz = -4.62;
+    cyl(parts, [fx, 1.35, fz], 0.026, 0.02, 'metal', 'gf-interior');
+    cyl(parts, [fx, 1.37, fz], 0.016, 0.3, 'metal', 'gf-interior');
+    const arc = [];
+    for (let k = 0; k <= 8; k++) {
+      const a = Math.PI - (k / 8) * Math.PI;
+      arc.push([fx, 1.67 + Math.sin(a) * 0.1, fz + 0.1 + Math.cos(a) * 0.1]);
+    }
+    for (let k = 0; k < 8; k++) parts.push({ kind: 'beam', from: arc[k], to: arc[k + 1], width: 0.022, height: 0.022, mat: 'metal', group: 'gf-interior' });
+    parts.push({ kind: 'beam', from: [fx, 1.67, fz + 0.2], to: [fx, 1.61, fz + 0.2], width: 0.024, height: 0.024, mat: 'metal', group: 'gf-interior' });
+    parts.push({ kind: 'beam', from: [fx + 0.02, 1.52, fz], to: [fx + 0.09, 1.55, fz], width: 0.012, height: 0.012, mat: 'metal', group: 'gf-interior' });
+    // Glass-ceramic hob set flush into the stone: thin black glass, four
+    // quiet rings, a touch strip.
+    parts.push(box([1.86, 1.35, -4.6], [2.64, 1.355, -4.14], 'glass-black', 'gf-interior', { bevel: 0.002 }));
+    [[2.05, -4.46, 0.1], [2.45, -4.46, 0.085], [2.05, -4.27, 0.085], [2.45, -4.27, 0.1]].forEach(([x, z, r]) => {
+      cyl(parts, [x, 1.3551, z], r, 0.0006, 'hob-ring', 'gf-interior');
+      cyl(parts, [x, 1.3551, z], r - 0.006, 0.0009, 'glass-black', 'gf-interior');
+    });
+    parts.push(box([2.14, 1.3551, -4.185], [2.36, 1.3556, -4.165], 'hob-ring', 'gf-interior'));
     [[1.5, 3.0, 2.35], [3.0, 5.2, 1.55], [5.2, 5.95, 2.35]].forEach(([x0, x1, top]) => {
       parts.push(box([x0, 1.35, -4.7], [x1, top, -4.68], 'viscont-white', 'gf-interior', { object: 'kitchen-backsplash' }));
     });
     parts.push(box([2.95, 1.55, -4.85], [5.25, 1.605, -4.62], 'viscont-white', 'gf-interior', { bevel: 0.004, object: 'kitchen-backsplash' }));
-    [[1.5, 3.0], [5.2, 5.95]].forEach(([x0, x1]) => {
-      parts.push(box([x0, 2.35, -4.7], [x1, 3.2, -4.36], 'cabinet', 'gf-interior', { bevel: 0.004 }));
+    // Wall units: a carcass with separate doors, a light strip underneath,
+    // the hood's filter set into the unit over the hob.
+    [[1.5, 3.0, 3], [5.2, 5.95, 1]].forEach(([x0, x1, cols]) => {
+      parts.push(box([x0, 2.35, -4.7], [x1, 3.2, -4.38], 'cabinet', 'gf-interior'));
+      fronts(x0 + 0.002, x1 - 0.002, 2.352, 3.198, -4.36, cols, [[1]], 'cabinet');
       parts.push(box([x0 + 0.05, 2.335, -4.46], [x1 - 0.05, 2.35, -4.41], 'lamp', 'gf-interior'));
     });
-    // Tall column with built-in ovens.
-    parts.push(box([5.95, FF1 + 0.02, -4.7], [6.7, 3.0, -4.1], 'cabinet', 'gf-interior', { bevel: 0.004 }));
-    parts.push(box([6.05, 1.05, -4.1], [6.6, 1.62, -4.09], 'glass-black', 'gf-interior'));
-    parts.push(box([6.05, 1.68, -4.1], [6.6, 2.1, -4.09], 'glass-black', 'gf-interior'));
+    parts.push(box([1.95, 2.338, -4.66], [2.55, 2.35, -4.47], 'steel', 'gf-interior'));
+    // Tall column: a drawer, two built-in ovens with steel handles, a door.
+    parts.push(box([5.95, FF1 + 0.02, -4.7], [6.7, 3.0, -4.14], 'cabinet', 'gf-interior'));
+    parts.push(box([5.955, 0.575, -4.14], [6.695, 1.03, -4.12], 'cabinet', 'gf-interior', { bevel: 0.002 }));
+    parts.push(box([5.955, 2.12, -4.14], [6.695, 2.995, -4.12], 'cabinet', 'gf-interior', { bevel: 0.002 }));
+    [[1.05, 1.62], [1.66, 2.08]].forEach(([y0, y1]) => {
+      parts.push(box([5.975, y0, -4.14], [6.675, y1, -4.115], 'glass-black', 'gf-interior', { bevel: 0.003 }));
+      parts.push({ kind: 'beam', from: [6.03, y1 - 0.05, -4.09], to: [6.62, y1 - 0.05, -4.09], width: 0.016, height: 0.016, mat: 'steel', group: 'gf-interior' });
+    });
     // Island with stone waterfall ends, and the raised bar on its south side.
     // The ends fold the island top's pattern down over its edges (a mitred
     // waterfall), so the stone reads as one piece turning the corner.
@@ -524,21 +585,32 @@
       object: 'kitchen-bar', photo: Object.assign({ plane: 'z', normal: -1, offset: [0.1, 0.55] }, bar) }));
     [[2.35, -1], [5.39, 1]].forEach(([x, normal]) => parts.push(box([x, FF1 + 0.02, -2.15], [x + 0.06, 1.5, -1.7], 'viscont-white', 'gf-interior', {
       object: 'kitchen-bar', photo: Object.assign({ plane: 'x', normal, rotate: 90, offset: [normal < 0 ? 0.1 : 1.6, 0.05] }, bar) })));
+    // Bar stools: a slim dark-metal frame (splayed legs, a footrest ring),
+    // an oak seat frame, an upholstered seat and a low back.
     [3.1, 3.9, 4.7].forEach(x => {
-      cyl(parts, [x, FF1 + 0.02, -1.35], 0.18, 0.02, 'metal-dark', 'gf-interior');
-      cyl(parts, [x, FF1 + 0.04, -1.35], 0.022, 0.52, 'metal', 'gf-interior');
-      cyl(parts, [x, 1.0, -1.35], 0.19, 0.06, 'wood-dark', 'gf-interior');
+      const z = -1.35, f = FF1 + 0.02, seat = 1.17, legAt = h => 0.2 - 0.04 * (h - f) / (seat - f);
+      const leg = (sx, sz, h) => [x + sx * legAt(h), h, z + sz * legAt(h)];
+      [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz]) => parts.push({
+        kind: 'beam', from: leg(sx, sz, f), to: leg(sx, sz, seat), width: 0.02, height: 0.02, mat: 'metal-dark', group: 'gf-interior' }));
+      const ring = 0.77;
+      [[[-1, -1], [1, -1]], [[1, -1], [1, 1]], [[1, 1], [-1, 1]], [[-1, 1], [-1, -1]]].forEach(([a, b]) => parts.push({
+        kind: 'beam', from: leg(a[0], a[1], ring), to: leg(b[0], b[1], ring), width: 0.014, height: 0.014, mat: 'metal-dark', group: 'gf-interior' }));
+      parts.push(box([x - 0.2, seat, z - 0.2], [x + 0.2, seat + 0.02, z + 0.2], 'wood-dark', 'gf-interior', { bevel: 0.006 }));
+      parts.push(box([x - 0.19, seat + 0.02, z - 0.19], [x + 0.19, seat + 0.075, z + 0.19], 'fabric', 'gf-interior', { bevel: 0.022 }));
+      [-0.14, 0.14].forEach(dx => parts.push({
+        kind: 'beam', from: [x + dx, seat + 0.02, z + 0.18], to: [x + dx, seat + 0.26, z + 0.205], width: 0.014, height: 0.014, mat: 'metal-dark', group: 'gf-interior' }));
+      parts.push(box([x - 0.18, seat + 0.18, z + 0.19], [x + 0.18, seat + 0.29, z + 0.235], 'fabric', 'gf-interior', { bevel: 0.02 }));
     });
 
     // ---- staircase ------------------------------------------------------------------------
-    // Travertine treads and risers on a smooth monolithic body, a warm
-    // graphite stringer along the open side, a glass balustrade with a
+    // Honed Steel Grey treads and risers on a smooth monolithic body, a
+    // Steel Grey stringer along the open side, a glass balustrade with a
     // timber handrail, step lights in the stone wall.
     for (let i = 0; i < STAIR.risers; i++) {
       const top = stairTop(i), zFront = stairFront(i), zBack = stairBack(i);
       const object = i < 3 ? 'staircase-steps' : 'staircase';
-      parts.push(box([STAIR.x0, top - 0.05, zBack], [STAIR.x1, top, zFront + 0.03], 'limestone-floor', 'stair', { bevel: 0.006, object }));
-      parts.push(box([STAIR.x0, top - RISE, zFront - 0.02], [STAIR.x1, top - 0.05, zFront], 'limestone-floor', 'stair', { object }));
+      parts.push(box([STAIR.x0, top - 0.05, zBack], [STAIR.x1, top, zFront + 0.03], 'steel-grey-honed', 'stair', { bevel: 0.006, object }));
+      parts.push(box([STAIR.x0, top - RISE, zFront - 0.02], [STAIR.x1, top - 0.05, zFront], 'steel-grey-honed', 'stair', { object }));
       parts.push(box([STAIR.x0 + 0.02, FF1, zBack], [STAIR.x1 - 0.02, top - 0.05, zFront - 0.02], 'plaster', 'stair'));
       if (i % 2 === 1 && i !== STAIR.landingAfter && top < SLAB - 0.3) {
         const zc = (zFront + zBack) / 2;
@@ -664,10 +736,10 @@
       [[-3.5, ufIn.x1], [-0.87, 3.4]],
       [[-3.5, -1.07], [STAIR_END, -0.87]],
       [[ufIn.x0, -1.07], [ufIn.z0, STAIR_END]],
-    ].forEach(([a, b]) => clad(parts, {
-      plane: 'y', at: FF2, normal: 1, depth: 0.02, a, b, origin: [ufIn.x0, ufIn.z0], module: [1.2, 0.6], stagger: 0.5,
-      gap: 0.004, chamfer: 0.004, mat: 'limestone-floor', group: 'uf-interior', bed: false,
-    }));
+    ].forEach(([a, b]) => clad(parts, Object.assign({
+      plane: 'y', at: FF2, normal: 1, depth: 0.02, a, b, origin: [ufIn.x0, ufIn.z0],
+      mat: 'wood-floor', group: 'uf-interior', bed: false,
+    }, BOARD)));
     // Glass guard round the stair void.
     parts.push(box([-3.52, FF2, STAIR_END], [-3.5, FF2 + 1.0, 3.4], 'glass', 'uf-interior'));
     parts.push(box([-6.7, FF2, 3.4], [-3.5, FF2 + 1.0, 3.42], 'glass', 'uf-interior'));
@@ -680,14 +752,23 @@
     parts.push(box([-1.07, TOP, bz0], [-0.93, TOP + 0.012, -0.8], 'poche', 'uf-interior'));
     wall(parts, { axis: 'z', outer: -0.73, inward: -1, u: [-1.0, bx1], v: [FF2, TOP], group: 'bath-south', cap: true,
       layers: [{ t: 0.14, mat: 'plaster' }], openings: [{ u0: -0.5, u1: 0.5, v0: FF2, v1: 5.9 }] });
+    // The floor in large Calacatta Nova slabs (3 x 3), cut from the same
+    // two slabs as the wall; the veins all run one way.
+    const C09 = 'calacatta-nova-P0585309', C10 = 'calacatta-nova-P0585310';
+    const tile = (src, x, rotate) => ({ src, rotate: rotate || 0, offset: [x, 0.17] });
     clad(parts, {
-      plane: 'y', at: FF2, normal: 1, depth: 0.02, a: [-0.93, bx1], b: [bz0, -0.87], module: [1.2, 0.6], stagger: 0.5,
-      gap: 0.004, chamfer: 0.004, mat: 'limestone-floor', group: 'uf-interior', object: 'bath-floor', bed: false,
+      plane: 'y', at: FF2, normal: 1, depth: 0.02, a: [-0.93, bx1], b: [bz0, -0.87], module: [(bx1 + 0.93) / 3, (-0.87 - bz0) / 3],
+      gap: 0.003, chamfer: 0.003, mat: 'calacatta-nova', group: 'uf-interior', object: 'bath-floor', bed: false,
+      photos: [
+        tile(C09, 0.01), tile(C10, 1.4, 180), tile(C09, 1.4),
+        tile(C10, 0.01), tile(C09, 0.7), tile(C10, 0.01, 180),
+        tile(C09, 1.4, 180), tile(C10, 1.4), tile(C09, 0.01, 180),
+      ],
     });
     // Calacatta Nova on the vanity wall, the panels cut from two slabs of one
     // bundle (P0585309 / P0585310): neighbouring panels are neighbouring
     // pieces of the same slab, so the soft veins run on across the joints.
-    const C09 = 'calacatta-nova-P0585309', C10 = 'calacatta-nova-P0585310', cw = (bx1 + 0.93) / 4 * 0.97;
+    const cw = (bx1 + 0.93) / 4 * 0.97;
     const panel = (src, x, rotate) => ({ src, rotate: rotate || 0, offset: [x, 0.02], scale: 0.97 });
     clad(parts, {
       plane: 'z', at: bz0, normal: 1, depth: 0.036, a: [-0.93, bx1], b: [FF2 + 0.02, TOP], module: [(bx1 + 0.93) / 4, (TOP - FF2 - 0.02) / 2],

@@ -3,7 +3,7 @@
 // Material roles used by house-model.js -> Three.js materials.
 //
 // The house is one set of stones:
-//   - our own light limestone (facades, frames, fence, paving, floors) --
+//   - our own light limestone (facades, frames, fence, paving) --
 //     procedural, drawn once on a canvas: soft clouds, faint bedding, a few
 //     pores and calcite specks, no veins; one large (4 m) non-repeating
 //     field that every slab samples at its own random offset, so no two
@@ -11,6 +11,7 @@
 //   - Steel Grey, Viscont White, Calacatta Nova, Majestic -- real Venezia
 //     Stone photographs (stone-photos.js): a material's main photo made
 //     seamless and repeated at true size, or a region of a real slab.
+// Floors are warm oak boards (procedural too); the bathroom's is stone.
 // Photos load in the background after the first frame; until then the
 // stone shows its measured average colour, so nothing flashes. Relief and
 // roughness: a shared fine grain, and for Steel Grey's leathered finish the
@@ -66,27 +67,59 @@ function grainCanvas(size, cells) {
 
 const clamp255 = x => Math.max(0, Math.min(255, Math.round(x)));
 
-// Our limestone: a warm, matt, even stone. Broad clouds a few tenths of a
-// metre across, a quieter mid-scale mottle, faint horizontal bedding, a
-// slight warm/cool drift, sparse darker pores and lighter calcite specks.
-// Centred a little under white: the role colour carries the tone.
+// Our limestone: a warm, light, matt stone with a visible fine-grained
+// body. Broad clouds a few tenths of a metre across, a mid-scale mottle,
+// a sandy grain you see up close, faint horizontal bedding, a slight
+// warm/cool drift, small darker pores and lighter calcite / shell specks.
+// No veins. Centred a little under white: the role colour carries the tone.
 const LIMESTONE_SIZE = 4;   // metres covered by one image
 function limestoneCanvas(size) {
   const rand = rng(90173);
-  const cloud = lattice(5, rand), mottle = lattice(22, rand), fine = lattice(110, rand), bed = lattice(7, rand), drift = lattice(3, rand);
-  const cells = 640, spots = Float32Array.from({ length: cells * cells }, rand);
+  const cloud = lattice(6, rand), mottle = lattice(26, rand), fine = lattice(140, rand), sand = lattice(420, rand), bed = lattice(7, rand), drift = lattice(3, rand);
+  const cells = 700, spots = Float32Array.from({ length: cells * cells }, rand);
   return paint(size, (u, v) => {
-    const c = cloud(u * 5, v * 5) - 0.5;
-    const m = mottle(u * 22, v * 22) - 0.5;
-    const f = fine(u * 110, v * 110) - 0.5;
-    const b = bed(u * 7, v * 60) - 0.5;
+    const c = cloud(u * 6, v * 6) - 0.5;
+    const m = mottle(u * 26, v * 26) - 0.5;
+    const f = fine(u * 140, v * 140) - 0.5;
+    const g = sand(u * 420, v * 420) - 0.5;
+    const b = bed(u * 7, v * 70) - 0.5;
     const spot = spots[Math.floor(v * cells) * cells + Math.floor(u * cells)];
-    const pore = spot > 0.9975 ? -0.1 : 0, calcite = spot < 0.0025 ? 0.06 : 0;
-    const d = c * 0.1 + m * 0.055 + f * 0.035 + b * 0.03 + pore + calcite;
-    const w = (drift(u * 3, v * 3) - 0.5) * 0.05;   // warm (>0) / cool (<0)
-    const L = 234 * (1 + d);
+    const pore = spot > 0.994 ? -0.16 : 0, shell = spot < 0.004 ? 0.07 : 0;
+    const d = c * 0.16 + m * 0.085 + f * 0.06 + g * 0.07 + b * 0.04 + pore + shell;
+    const w = (drift(u * 3, v * 3) - 0.5) * 0.07;   // warm (>0) / cool (<0)
+    const L = 230 * (1 + d);
     return [clamp255(L * (1 + w * 0.6)), clamp255(L), clamp255(L * (1 - w))];
   });
+}
+
+// Oak boards: long fine grain along u, soft cathedral figure, open pores,
+// a little tone drift -- calm, no knots. Covers 4 m along the grain and 1 m
+// across; every board takes its own random stretch of it.
+const OAK_SIZE = [4, 1];
+function oakCanvas(w, h) {
+  const rand = rng(51277);
+  const streak = lattice(512, rand), figure = lattice(9, rand), bend = lattice(5, rand), pores = lattice(900, rand), drift = lattice(4, rand);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(w, h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const u = x / w, v = y / h;
+      const wob = (bend(u * 5, v * 5) - 0.5) * 0.06;
+      const gy = (v + wob) * 512;
+      const grain = streak(u * 6, gy) - 0.5;                                    // long fine lines
+      const ring = Math.sin((v + wob * 3 + (figure(u * 9, v * 2) - 0.5) * 0.2) * Math.PI * 38);
+      const cathedral = Math.pow(Math.abs(ring), 8) * 0.5;                      // soft figure
+      const pore = pores(u * 60, gy * 1.75) > 0.86 ? -0.07 : 0;
+      const d = grain * 0.1 - cathedral * 0.07 + pore + (drift(u * 4, v * 4) - 0.5) * 0.06;
+      const L = 228 * (1 + d);
+      const k = (y * w + x) * 4;
+      img.data[k] = clamp255(L * 1.02); img.data[k + 1] = clamp255(L * 0.99); img.data[k + 2] = clamp255(L * 0.94); img.data[k + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas;
 }
 
 // Small colour maps for the non-stone roles.
@@ -142,10 +175,10 @@ function makeSeamless(canvas) {
 // used when a surface has no slab of its own; `bump` uses the photo's
 // grain as relief.
 const ROLES = {
-  limestone:          ['#dcd0b9', 0.84, { stone: true, limestone: true, tint: 0.05 }],
-  'limestone-light':  ['#e7dfcf', 0.62, { stone: true, limestone: true, tint: 0.03 }],
-  'limestone-floor':  ['#e2d8c6', 0.5, { stone: true, limestone: true, tint: 0.035 }],
-  paving:             ['#d0c4ad', 0.9, { stone: true, limestone: true, tint: 0.05 }],
+  limestone:          ['#e0d2b8', 0.86, { limestone: true, tint: 0.07 }],
+  'limestone-light':  ['#e8ddc8', 0.7, { limestone: true, tint: 0.04 }],
+  paving:             ['#d4c6ac', 0.9, { limestone: true, tint: 0.06 }],
+  'wood-floor':       ['#cbad8b', 0.58, { oak: true, tint: 0.06 }],
   'steel-grey':       ['#404443', 0.82, { photo: true, tile: 'steel-grey-00933', bump: 1.2, tint: 0.035 }],
   'steel-grey-honed': ['#404443', 0.48, { photo: true, tile: 'steel-grey-00933', bump: 0.3, clearcoat: 0.12, tint: 0.025 }],
   'viscont-white':    ['#a8aca6', 0.22, { photo: true, tile: 'viscont-white-01050', clearcoat: 0.25 }],
@@ -161,9 +194,11 @@ const ROLES = {
   cabinet:            ['#3c3935', 0.62, {}],
   fabric:             ['#9d9487', 0.97, {}],
   'fabric-light':     ['#cdc4b5', 0.97, {}],
-  rug:                ['#7c7468', 1, {}],
+  rug:                ['#857c70', 1, { detail: 'speckle' }],
   shade:              ['#f1e8d8', 0.9, { emissive: '#ffcf9a', emissiveIntensity: 0.6 }],
   metal:              ['#2c2b29', 0.38, { metalness: 0.75 }],
+  steel:              ['#c4c4c1', 0.3, { metalness: 0.95 }],
+  'hob-ring':         ['#46464a', 0.45, {}],
   'metal-dark':       ['#2f3031', 0.32, { metalness: 0.7 }],
   'glass-black':      ['#0d0d0e', 0.08, { clearcoat: 1 }],
   ceramic:            ['#f2efe9', 0.18, { clearcoat: 0.5 }],
@@ -207,6 +242,15 @@ export function createMaterials({ Photos, anisotropy = 4, onChange } = {}) {
   limestone.wrapS = limestone.wrapT = THREE.RepeatWrapping;
   limestone.repeat.set(1 / LIMESTONE_SIZE, 1 / LIMESTONE_SIZE);
   limestone.anisotropy = anisotropy;
+  // The limestone's own body as its relief (grain, pores), much finer
+  // than a generic noise: the facade reads as stone, not render.
+  const limestoneRelief = limestone.clone();
+  limestoneRelief.colorSpace = THREE.NoColorSpace;
+  const oak = new THREE.CanvasTexture(oakCanvas(2048, 512));
+  oak.colorSpace = THREE.SRGBColorSpace;
+  oak.wrapS = oak.wrapT = THREE.RepeatWrapping;
+  oak.repeat.set(1 / OAK_SIZE[0], 1 / OAK_SIZE[1]);
+  oak.anisotropy = anisotropy;
   const details = new Map();
   const detail = kind => {
     if (!details.has(kind)) {
@@ -319,7 +363,8 @@ export function createMaterials({ Photos, anisotropy = 4, onChange } = {}) {
     if (extra.stone) { params.roughnessMap = grain; params.bumpMap = grain; params.bumpScale = 0.18; }
     if (extra.photo) { params.roughnessMap = grain; }
     if (extra.leafy) { params.bumpMap = leaf; params.bumpScale = 2.5; }
-    if (extra.limestone) params.map = limestone;
+    if (extra.limestone) { params.map = limestone; params.bumpMap = limestoneRelief; params.bumpScale = 0.9; params.roughnessMap = grain; }
+    if (extra.oak) { params.map = oak; params.bumpMap = oak; params.bumpScale = 0.25; }
     if (extra.detail) params.map = detail(extra.detail);
     if (extra.emissive) { params.emissive = extra.emissive; params.emissiveIntensity = extra.emissiveIntensity; }
     const material = new THREE.MeshPhysicalMaterial(params);
@@ -373,6 +418,8 @@ export function createMaterials({ Photos, anisotropy = 4, onChange } = {}) {
     grain.dispose();
     leaf.dispose();
     limestone.dispose();
+    limestoneRelief.dispose();
+    oak.dispose();
   }
 
   return { get, forObject, objectMaterials, joints, loadPhotos, dispose };
