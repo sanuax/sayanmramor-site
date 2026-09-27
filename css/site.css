@@ -234,13 +234,23 @@ h3 { font-size: var(--fs-h3); }
 
 /* ---- Category page: examples ------------------------------------------------ */
 .page-head { padding-top: var(--s-7); }
-.portfolio-section { max-width: var(--measure); margin: 0 auto var(--s-8); padding: 0 var(--gutter); }
-.portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s-4); }
+.portfolio-section { max-width: var(--measure); margin: 0 auto var(--s-5); padding: 0 var(--gutter); }
+/* Photos keep their own proportions (most are vertical) and are never cropped.
+   Before a photo loads it holds a 2:3 box, the usual portrait shape, so lazy
+   loading has real boxes to watch; once loaded, `auto` switches to the photo's ratio. */
+.portfolio-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); align-items: start;
+}
+/* Masonry (js/site.js, enableMasonry): 1px rows, each photo spans its own height
+   plus the column gap, so the vertical gap equals the horizontal one. */
+.portfolio-grid.is-masonry { grid-auto-rows: 1px; row-gap: 0; }
+.portfolio-grid.is-masonry .portfolio-item { align-self: start; }
 .portfolio-item { margin: 0; }
 .portfolio-item img {
-  width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-m); background: var(--surface-sunk);
+  display: block; width: 100%; height: auto; aspect-ratio: auto 2 / 3;
+  border-radius: var(--radius-m); background: var(--surface-sunk);
 }
-.portfolio-item.image-broken { aspect-ratio: 4 / 3; background: var(--surface-sunk); border-radius: var(--radius-m); }
+.portfolio-item.image-broken { aspect-ratio: 2 / 3; background: var(--surface-sunk); border-radius: var(--radius-m); }
 .portfolio-item figcaption { font-size: var(--fs-small); color: var(--muted); margin-top: var(--s-2); }
 
 /* ---- Готовые изделия (каталог) ---------------------------------------------- */
@@ -327,6 +337,7 @@ h3 { font-size: var(--fs-h3); }
 
 /* ---- Responsive -------------------------------------------------------------- */
 @media (max-width: 900px) {
+  .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home-hero { grid-template-columns: 1fr; gap: var(--s-6); padding-top: var(--s-7); padding-bottom: var(--s-7); }
   .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-showroom-inner { grid-template-columns: 1fr; align-items: start; }
@@ -352,6 +363,7 @@ h3 { font-size: var(--fs-h3); }
   .contacts-card { padding: var(--s-5); }
   .contacts-map-frame { min-height: 340px; }
   .page-head { padding-top: var(--s-6); }
+  .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
   .stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4) var(--s-3); }
   .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-5) var(--s-3); }
   .configure-bar-inner { gap: var(--s-3); }

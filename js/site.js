@@ -6,6 +6,44 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
 
+  // Portfolio masonry. The grid has 1px rows; each photo spans as many rows as
+  // it is tall plus the gap, and the grid's ordinary (sparse) auto-placement
+  // puts every next photo in the first free spot to the right / below, so the
+  // photos read left to right, top to bottom, and close up vertically.
+  function masonrySpan(height, gap) {
+    return Math.max(1, Math.ceil(height + gap));
+  }
+
+  function layoutMasonry(container, gap) {
+    const items = Array.from(container.children);
+    const heights = items.map(el => el.getBoundingClientRect().height);   // read everything, then write
+    items.forEach((el, i) => { el.style.gridRowEnd = 'span ' + masonrySpan(heights[i], gap); });
+  }
+
+  function enableMasonry(container) {
+    // Without ResizeObserver the plain grid (no masonry class) stays in place.
+    if (container.dataset.masonry || typeof ResizeObserver === 'undefined') return;
+    container.dataset.masonry = 'on';
+    container.classList.add('is-masonry');
+    let queued = false;
+    const relayout = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        layoutMasonry(container, parseFloat(getComputedStyle(container).columnGap) || 0);
+      });
+    };
+    let width = -1;
+    new ResizeObserver(entries => {
+      const w = entries[entries.length - 1].contentRect.width;
+      if (w !== width) { width = w; relayout(); }
+    }).observe(container);
+    container.addEventListener('load', relayout, true);    // a photo arrived: its real height is known
+    container.addEventListener('error', relayout, true);
+    relayout();
+  }
+
   function renderPortfolio(container, items) {
     container.innerHTML = '';
     (items || []).forEach(item => {
@@ -24,6 +62,7 @@
       }
       container.appendChild(figure);
     });
+    enableMasonry(container);
   }
 
   function loadPortfolio(productKey, container) {
@@ -43,5 +82,5 @@
   }
   if (typeof document !== 'undefined') revealActiveNav(document);
 
-  return { renderPortfolio, loadPortfolio, revealActiveNav };
+  return { renderPortfolio, loadPortfolio, revealActiveNav, masonrySpan, layoutMasonry };
 });
