@@ -77,7 +77,7 @@
     tiles.on('tileerror', () => { failed++; if (!loaded && failed >= 4) showFallback(doc); });
 
     L.marker([OFFICE.pin.lat, OFFICE.pin.lon], {
-      title: OFFICE.name + ' — ' + OFFICE.purpose,
+      title: OFFICE.name + ' - ' + OFFICE.purpose,
       icon: L.divIcon({ className: 'map-pin', html: PIN, iconSize: [34, 44], iconAnchor: [17, 43], popupAnchor: [0, -40] }),
     }).addTo(map).bindPopup(popupContent(doc, OFFICE), {
       className: 'map-popup', minWidth: 180, maxWidth: 240, autoPanPadding: [24, 24],

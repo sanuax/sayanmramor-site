@@ -61,7 +61,7 @@
     if (!products || products.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'catalog-empty';
-      empty.textContent = 'Пока нет готовых изделий — загляните позже.';
+      empty.textContent = 'Пока нет готовых изделий - загляните позже.';
       container.appendChild(empty);
       return;
     }

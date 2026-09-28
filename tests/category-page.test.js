@@ -88,6 +88,6 @@ test('every page with the stone catalogue names the supplier once, with a link t
     assert.equal(links.length, 1, page);
     assert.match(links[0], /target="_blank"/, page);
     assert.match(links[0], /rel="noopener"/, page);
-    assert.match(links[0], />Подробнее о коллекции и материалах — на сайте Venezia Stone</, page);
+    assert.match(links[0], />Подробнее о коллекции и материалах - на сайте Venezia Stone</, page);
   });
 });

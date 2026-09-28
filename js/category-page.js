@@ -77,7 +77,7 @@
 
     function renderSelection() {
       cta.href = buildUrl(selected && selected.id);
-      chosen.textContent = selected ? selected.name : 'Не выбран — подберёте в конфигураторе';
+      chosen.textContent = selected ? selected.name : 'Не выбран - подберёте в конфигураторе';
       chosen.classList.toggle('is-empty', !selected);
       grid.querySelectorAll('.stone-card').forEach(card => {
         card.setAttribute('aria-pressed', String(!!selected && card.dataset.id === selected.id));
@@ -164,7 +164,7 @@
         apply();
       })
       .catch(() => {
-        status.textContent = 'Не удалось загрузить каталог камня — выберите камень в конфигураторе.';
+        status.textContent = 'Не удалось загрузить каталог камня - выберите камень в конфигураторе.';
       });
   }
 

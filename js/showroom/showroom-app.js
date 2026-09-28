@@ -22,7 +22,7 @@ function showFallback(reason) {
   ['srStage', 'srCaption', 'srZones', 'srBack', 'srCard', 'srPanel', 'srHint'].forEach(id => { doc.getElementById(id).hidden = true; });
   doc.getElementById('srPanelBtn').hidden = true;
   if (reason === 'error') {
-    doc.getElementById('srFallbackText').textContent = 'Не удалось загрузить 3D-дом. Все направления — ниже: выберите изделие и создайте своё.';
+    doc.getElementById('srFallbackText').textContent = 'Не удалось загрузить 3D-дом. Все направления - ниже: выберите изделие и создайте своё.';
   }
 }
 
