@@ -35,7 +35,9 @@ git и файлам; где факт установить не удалось, �
 ```
 veneziastone.com ──scripts/scrape_slabs.py (Playwright+BS4)──► data/slabs.json + data/images/*.webp   [calculator, не в git]
                                                                      │
-          ┌──────────────────────────────────────────────────────────┤ fetch /calculator/data/slabs.json
+          ┌──────────────────────────────────────────────────────────┤ калькулятор: fetch /calculator/data/slabs.json
+          │                                                          │ сайт: fetch /calculator/data/stone-index.json
+          │                                                          │ (производный индекс: scripts/build_stone_index.py, вручную после парсера)
           ▼                                                          ▼
  sayanmramor-calculator.html  ◄── URL ?product=<key>&stone=<id> ── сайт: categories/*.html, showroom.html
  (конфигуратор: шаги, 3D, цена, заявка)  ── ссылка «в шоурум» ──►  showroom.html?product=…&stone=…#zone
@@ -48,7 +50,7 @@ veneziastone.com ──scripts/scrape_slabs.py (Playwright+BS4)──► data/sl
    - Строит единственная функция `ShowroomData.buildConfiguratorUrl()` в `js/showroom/showroom-data.js`, там же 9 публичных product keys.
    - Калькулятор проверяет параметры в `url-bootstrap.js` (`resolveInitialProductKey`, `resolveInitialStoneId`).
    - Обратная ссылка из результата калькулятора в шоурум — `buildShowroomUrl` там же.
-2. **Данные камня** `/calculator/data/slabs.json` плюс картинки `/calculator/data/images/…`. Сайт читает только поля `id`, `name`, `category_label_ru`, `image`, `available`.
+2. **Данные камня** `/calculator/data/stone-index.json` плюс картинки `/calculator/data/images/…`. `slabs.json` — источник истины калькулятора, его читает только калькулятор. `stone-index.json` — производный индекс для category pages: его строит `scripts/build_stone_index.py` калькулятора из `slabs.json` (только камни с `available` не `false`, только поля `id`, `name`, `category_label_ru`, `image`; около 104 КБ вместо 8,9 МБ).
 
 Нет: iframe, общего JS/CSS, API, symlink, копирования файлов, build/deploy-скриптов.
 Оба проекта предполагают **один origin**: пути `/sayanmramor-site/…` и `/calculator/…`.
@@ -334,7 +336,7 @@ python D:\sayanmramor-site\scripts\dev_server.py
 - `katalog.html` — «Готовые изделия» из `data/products.json` через `js/catalog.js`.
 - `categories/*.html` — 9 страниц: `stoleshnitsy-vannaya`, `stoleshnitsy-kuhnya`, `lestnitsy`, `stupeni`, `poly`, `steny`, `panno`, `podokonniki`, `fasady`. На каждой:
   - примеры работ из `data/portfolio.json`, **сейчас только плейсхолдер**;
-  - галерея камня из `slabs.json`: поиск, чипы типа, «Показать ещё»;
+  - галерея камня из `stone-index.json`: поиск, чипы типа, «Показать ещё»;
   - строка поставщика `.stone-supplier`;
   - нижняя панель «Рассчитать в конфигураторе».
   - Логика — `js/category-page.js` + `js/site.js`.
@@ -510,7 +512,7 @@ cd /d/photo_marble && python review_server.py
 
 5. **Заявка из калькулятора никуда не отправляется** (нет backend).
 6. **Фото на сайте:** портфолио всех 9 категорий — плейсхолдер; готовые изделия без фото и цен; каминов нет нигде.
-7. **Страницы категорий загружают весь `slabs.json`** (8,9 МБ, нужно около 113 КБ). `slabs.json` при этом менять нельзя без решения по контракту.
+7. **Страницы категорий читают `stone-index.json`** (около 104 КБ) вместо всего `slabs.json` (8,9 МБ). Индекс генерируется вручную — `python scripts/build_stone_index.py` в калькуляторе после каждого запуска парсера; в парсер он не встроен. Индекс **хранится в git** калькулятора как deploy-артефакт (в `.gitignore` его не добавлять), в отличие от `slabs.json` и `data/images`.
 8. **Каталог от 15.09**, цены могли устареть. Парсеру нужны playwright и bs4; pytest здесь не установлен.
 9. **Кухня:** нет фильтра камня по стойкости (TODO в `product-types.js`).
 10. **Нет правила длины кромки,** кромка в цену не идёт.

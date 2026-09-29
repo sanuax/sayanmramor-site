@@ -38,6 +38,7 @@ test('dev_server.py serves the site and the given configurator checkout on one o
   fs.writeFileSync(path.join(calc, 'sayanmramor-calculator.html'), 'CALCULATOR-UNDER-TEST');
   fs.mkdirSync(path.join(calc, 'data'));
   fs.writeFileSync(path.join(calc, 'data', 'slabs.json'), '{"stones":[]}');
+  fs.writeFileSync(path.join(calc, 'data', 'stone-index.json'), '{"stones":[]}');
   const port = 18000 + Math.floor(Math.random() * 1000);
   const server = spawn(PYTHON, [path.join(__dirname, '..', 'scripts', 'dev_server.py'), '--port', String(port), '--calculator', calc], { stdio: 'ignore' });
   try {
@@ -48,7 +49,10 @@ test('dev_server.py serves the site and the given configurator checkout on one o
     const calculator = await get(port, '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown');
     assert.equal(calculator.status, 200);
     assert.equal(calculator.body, 'CALCULATOR-UNDER-TEST', '/calculator/ is the checkout passed in, nothing else');
+    // The calculator's full catalog (the calculator reads it) and the light
+    // index built from it (the site's category pages read it).
     assert.equal((await get(port, '/calculator/data/slabs.json')).status, 200);
+    assert.equal((await get(port, '/calculator/data/stone-index.json')).status, 200);
     assert.equal((await get(port, '/sayanmramor-site/showroom.html')).status, 200);
 
     const root = await get(port, '/');

@@ -37,7 +37,7 @@ test('every page loads only this site\'s own CSS/JS, and every file exists', () 
 });
 
 // The only two contracts with the calculator: links to the configurator
-// page, and the stone data in /calculator/data/ (slabs.json and the images
+// page, and the stone data in /calculator/data/ (stone-index.json and the images
 // it names). Any other /calculator/ reference would couple the site to the
 // calculator's internals.
 test('site code references the calculator only through the configurator URL and /calculator/data/', () => {

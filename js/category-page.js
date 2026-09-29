@@ -1,7 +1,10 @@
 // js/category-page.js
 //
 // A category page's stone section: the site's own gallery of the stones in
-// /calculator/data/slabs.json (the agreed JSON contract), and the hand-off to
+// /calculator/data/stone-index.json -- the light index built from the
+// calculator's slabs.json (its one source of truth) by
+// scripts/build_stone_index.py: the same stone fields, only the four this
+// page needs, only the stones that can still be ordered -- and the hand-off to
 // the configurator through the canonical URL
 // /calculator/sayanmramor-calculator.html?product=<product-key>&stone=<stone-id>
 // (built by ShowroomData.buildConfiguratorUrl -- one owner of that contract
@@ -15,15 +18,16 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function (ShowroomData) {
 
-  const SLABS_URL = '/calculator/data/slabs.json';
-  // slabs.json stores stone images relative to its own folder.
+  const STONE_INDEX_URL = '/calculator/data/stone-index.json';
+  // The index (like slabs.json) stores stone images relative to its own folder.
   const STONE_IMAGE_BASE = '/calculator/data/';
   const PAGE_SIZE = 24;
   // Stone types with fewer stones than this stay reachable through search
   // instead of each getting a filter chip.
   const MIN_TYPE_COUNT = 10;
 
-  // slabs.json -> the stones this page shows: the ones that can still be
+  // stone-index.json (or slabs.json itself: the same fields) -> the stones
+  // this page shows: the ones that can still be
   // ordered, with only the fields the gallery needs, sorted by name.
   function normalizeStones(data) {
     return ((data && data.stones) || [])
@@ -155,7 +159,7 @@
     search.addEventListener('input', apply);
     more.addEventListener('click', showMore);
 
-    fetch(SLABS_URL)
+    fetch(STONE_INDEX_URL)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(data => {
         stones = normalizeStones(data);
@@ -168,5 +172,5 @@
       });
   }
 
-  return { SLABS_URL, STONE_IMAGE_BASE, PAGE_SIZE, normalizeStones, listTypes, filterStones, init };
+  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, normalizeStones, listTypes, filterStones, init };
 });

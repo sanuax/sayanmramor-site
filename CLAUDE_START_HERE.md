@@ -22,7 +22,7 @@
 - `katalog.html` — готовые изделия (`data/products.json`, 3 заглушки: светильник, стол, ракушка);
 - `showroom.html` — 3D-дом.
 
-С калькулятором связан **только** URL `/calculator/sayanmramor-calculator.html?product=<key>&stone=<id>` и чтением `/calculator/data/slabs.json`. Локально — `python D:\sayanmramor-site\scripts\dev_server.py`, затем `http://localhost:8000/`.
+С калькулятором связан **только** URL `/calculator/sayanmramor-calculator.html?product=<key>&stone=<id>` и чтением `/calculator/data/stone-index.json` (производный индекс из `slabs.json`, строит `scripts/build_stone_index.py` калькулятора). Локально — `python D:\sayanmramor-site\scripts\dev_server.py`, затем `http://localhost:8000/`.
 
 ## Как устроен калькулятор
 

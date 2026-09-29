@@ -6,8 +6,10 @@ const path = require('node:path');
 const CategoryPage = require('../js/category-page.js');
 const ShowroomData = require('../js/showroom/showroom-data.js');
 
-// The slabs.json fields this site relies on (the agreed JSON contract);
-// everything else in a stone record is ignored.
+// The stone fields this site relies on (the agreed JSON contract: the
+// calculator's slabs.json, served to the site as its light
+// stone-index.json with the same field names); everything else in a stone
+// record is ignored.
 const SLABS = {
   updated_at: '2026-09-01',
   stones: [
@@ -49,9 +51,20 @@ test('filterStones matches name or type, ignoring case and ё, within the chosen
   assert.deepEqual(ids(CategoryPage.filterStones(stones, { type: 'Мрамор', query: 'nero' })), ['nero-marquina']);
 });
 
-test('the page reads stone data only from the slabs.json contract', () => {
-  assert.equal(CategoryPage.SLABS_URL, '/calculator/data/slabs.json');
+test('the page reads stone data only from the light stone index, never the full slabs.json', () => {
+  assert.equal(CategoryPage.STONE_INDEX_URL, '/calculator/data/stone-index.json');
   assert.equal(CategoryPage.STONE_IMAGE_BASE, '/calculator/data/');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8').replace(/^\s*\/\/.*$/gm, '');
+  assert.doesNotMatch(src, /slabs\.json/, 'no code path fetches the 8.9 MB catalog');
+});
+
+test('the index shape (the four fields, only orderable stones) gives the same gallery as slabs.json', () => {
+  const index = {
+    updated_at: SLABS.updated_at,
+    stones: SLABS.stones.filter(s => s.available !== false && s.id && s.name)
+      .map(s => ({ id: s.id, name: s.name, category_label_ru: s.category_label_ru || '', image: s.image || '' })),
+  };
+  assert.deepEqual(CategoryPage.normalizeStones(index), CategoryPage.normalizeStones(SLABS));
 });
 
 // Every category page is one of the 10 product directions, initialises the

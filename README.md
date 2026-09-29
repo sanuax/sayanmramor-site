@@ -15,9 +15,13 @@
    Ссылку строит `ShowroomData.buildConfiguratorUrl()`
    (`js/showroom/showroom-data.js`) — единственное место на сайте, где
    живут этот путь и 9 публичных product keys.
-2. **Данные о камне** — `/calculator/data/slabs.json` (и картинки из
-   `/calculator/data/`, на которые он ссылается). Сайт читает только
-   `id`, `name`, `category_label_ru`, `image`, `available`.
+2. **Данные о камне** — `/calculator/data/stone-index.json` (и картинки из
+   `/calculator/data/`, на которые он ссылается). `slabs.json` — источник
+   истины калькулятора (его читает только калькулятор);
+   `stone-index.json` — производный облегчённый индекс для страниц
+   категорий, его строит `scripts/build_stone_index.py` калькулятора из
+   `slabs.json`: только камни, которые можно заказать, и только поля
+   `id`, `name`, `category_label_ru`, `image`.
 
 `tests/site.test.js` проверяет, что страницы не подключают ничего с
 `/calculator/`, что нигде нет `<base>` и что в коде сайта нет других
@@ -72,7 +76,7 @@ Canonical-адрес для QA — `http://localhost:8000/`:
 ## Страницы категорий (`categories/*.html`)
 
 Каждая страница — одно из 9 направлений: примеры работ
-(`data/portfolio.json`), галерея камня из `slabs.json` (поиск, фильтр
+(`data/portfolio.json`), галерея камня из `stone-index.json` (поиск, фильтр
 по типу камня, «Показать ещё») и нижняя панель «Рассчитать в
 конфигураторе». Выбранный камень попадает в ссылку как `&stone=<id>`;
 без JavaScript ссылка всё равно ведёт в конфигуратор с нужным
