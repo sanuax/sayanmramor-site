@@ -101,7 +101,8 @@ h3 { font-size: var(--fs-h3); }
   flex: none; font-size: 15px; font-weight: 800; letter-spacing: 0.12em;
   text-transform: uppercase; text-decoration: none; color: var(--ink);
 }
-.site-nav { position: relative; order: 3; flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 2px var(--s-5); align-items: center; min-width: 0; }
+/* 16 px between sections keeps all 12 of them on one line at the page width. */
+.site-nav { position: relative; order: 3; flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 2px var(--s-4); align-items: center; min-width: 0; }
 .site-nav a {
   font-size: var(--fs-small); color: var(--muted); text-decoration: none;
   padding: 6px 0; border-bottom: 1px solid transparent; white-space: nowrap;
@@ -145,6 +146,26 @@ h3 { font-size: var(--fs-h3); }
 }
 .home-grid a:hover { color: var(--accent); }
 .home-grid a:hover::after { opacity: 1; transform: translateX(3px) rotate(45deg); }
+/* Under the list: a quiet strip of real project photos, each its own link
+   to its direction, named underneath like a line of the list. */
+.home-feature { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); margin-top: var(--s-6); }
+.home-feature-item { display: block; min-width: 0; text-decoration: none; color: var(--ink); }
+.home-feature-item img {
+  display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover;
+  border-radius: var(--radius-m); background: var(--line);
+}
+.home-feature-caption {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  margin-top: var(--s-3); font-size: var(--fs-body); font-weight: 600; letter-spacing: -0.01em;
+  transition: color 0.15s;
+}
+.home-feature-caption::after {
+  content: ''; flex: none; width: 9px; height: 9px; margin-right: 4px;
+  border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor;
+  transform: rotate(45deg); opacity: 0.35; transition: opacity 0.15s, transform 0.15s var(--ease);
+}
+.home-feature-item:hover .home-feature-caption { color: var(--accent); }
+.home-feature-item:hover .home-feature-caption::after { opacity: 1; transform: translateX(3px) rotate(45deg); }
 
 /* The showroom is the one dark band on the site: the same graphite and the
    same off-white type as the showroom itself. */
@@ -359,6 +380,7 @@ h3 { font-size: var(--fs-h3); }
   .subtitle, .lead { font-size: var(--fs-body); }
   .home-grid { grid-template-columns: 1fr; }
   .home-grid a { min-height: 58px; }
+  .home-feature { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-5) var(--s-3); }
   .contacts-head p { font-size: var(--fs-body); }
   .contacts-card { padding: var(--s-5); }
   .contacts-map-frame { min-height: 340px; }

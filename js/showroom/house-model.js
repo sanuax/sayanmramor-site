@@ -472,7 +472,58 @@
         { src: 'majestic-M0491372', rotate: 90, offset: ['end', 0] },    // left of the axis
       ],
     });
-    parts.push(box([1.106, 0.72, 1.9], [1.56, 0.8, 3.8], 'limestone-light', 'gf-interior', { bevel: 0.008 }));
+    // Fireplace portal on the feature wall's axis, facing the sofa, in our
+    // light limestone: a stone podium carried forward as the hearth; two
+    // pilasters on widened plinths, each face split by a shallow recessed
+    // flute; a stone frame round a deep dark firebox (stone reveals, dark
+    // back and floor); a frieze set back for a shadow line; then a stepped
+    // cornice -- band, step, massive shelf -- each proud of the one below.
+    // Every block has its own depth (x from the Majestic face), so light
+    // and shade pick the planes out. The Majestic stays the background:
+    // well over a metre and a half of it shows above, almost a metre each side.
+    const FP = {
+      x0: 1.106, zc: 2.875,
+      W: 0.78, H: 0.62,                // the firebox opening
+      frame: 0.08, pil: 0.30, flute: 0.16, frieze: 0.14,
+      podium: 0.08, plinth: 0.14,
+    };
+    {
+      const X = d => FP.x0 + d, Z = (s, h) => FP.zc + s * h;
+      const y0 = FF1 + 0.02, y1 = y0 + FP.podium, yH = y1 + FP.H, yF = yH + FP.frame, yP = yF + FP.frieze;
+      const w = FP.W / 2, wf = w + FP.frame, wp = wf + FP.pil;
+      const fp = { object: 'living-fireplace' };
+      const stone = (min, max, bevel) => parts.push(box(min, max, 'limestone-light', 'gf-interior', Object.assign(bevel ? { bevel } : {}, fp)));
+      const dark = (min, max) => parts.push(box(min, max, 'poche', 'gf-interior', fp));
+      // Podium under the whole portal, reaching forward as the hearth.
+      stone([X(0), y0, Z(-1, 0.84)], [X(0.6), y1, Z(1, 0.84)], 0.006);
+      [-1, 1].forEach(s => {
+        const zIn = Z(s, wf), zOut = Z(s, wp), zFl0 = Z(s, wf + (FP.pil - FP.flute) / 2), zFl1 = Z(s, wp - (FP.pil - FP.flute) / 2);
+        const lo = (a, b) => [Math.min(a, b), Math.max(a, b)];
+        // Plinth: wider outward and forward than the shaft above it.
+        const [pz0, pz1] = lo(zIn, Z(s, wp + 0.02));
+        stone([X(0), y1, pz0], [X(0.28), y1 + FP.plinth, pz1], 0.005);
+        // Shaft: two outer strips and a flute recessed 1.5 cm between them.
+        [[zIn, zFl0, 0.24], [zFl0, zFl1, 0.225], [zFl1, zOut, 0.24]].forEach(([a, b, d]) => {
+          const [z0, z1] = lo(a, b);
+          stone([X(0), y1 + FP.plinth, z0], [X(d), yP, z1], 0.003);
+        });
+        // Frame jamb beside the opening, 4 cm behind the pilaster faces; its
+        // inner face is the firebox's stone reveal.
+        const [jz0, jz1] = lo(Z(s, w), zIn);
+        stone([X(0), y1, jz0], [X(0.2), yH, jz1], 0.004);
+      });
+      // Frame head over the opening, then the frieze set 2 cm further back.
+      stone([X(0), yH, Z(-1, wf)], [X(0.2), yF, Z(1, wf)], 0.004);
+      stone([X(0), yF, Z(-1, wf)], [X(0.18), yP, Z(1, wf)], 0.003);
+      // Cornice: a band proud of the pilasters, a small step, the shelf.
+      stone([X(0), yP, Z(-1, wp + 0.02)], [X(0.27), yP + 0.05, Z(1, wp + 0.02)], 0.004);
+      stone([X(0), yP + 0.05, Z(-1, wp + 0.03)], [X(0.3), yP + 0.07, Z(1, wp + 0.03)], 0.003);
+      stone([X(0), yP + 0.07, Z(-1, wp + 0.06)], [X(0.34), yP + 0.13, Z(1, wp + 0.06)], 0.008);
+      // The firebox: a dark back 14 cm behind the frame and a dark floor
+      // that stops short of the frame's edge.
+      dark([X(0), y1, Z(-1, w)], [X(0.06), yH, Z(1, w)]);
+      dark([X(0.06), y1, Z(-1, w)], [X(0.18), y1 + 0.01, Z(1, w)]);
+    }
     parts.push(box([2.2, FF1 + 0.02, 1.3], [5.5, FF1 + 0.03, 4.3], 'rug', 'gf-interior'));
     parts.push(box([2.65, FF1 + 0.03, 2.25], [3.5, 0.8, 3.25], 'steel-grey-honed', 'gf-interior', { bevel: 0.01 }));
     // Sofa facing the panno.

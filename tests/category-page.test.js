@@ -54,7 +54,7 @@ test('the page reads stone data only from the slabs.json contract', () => {
   assert.equal(CategoryPage.STONE_IMAGE_BASE, '/calculator/data/');
 });
 
-// Every category page is one of the 9 product directions, initialises the
+// Every category page is one of the 10 product directions, initialises the
 // gallery with that product key, and without JavaScript still links to the
 // canonical configurator URL for it.
 test('every category page hands off to the canonical configurator URL for its own product', () => {

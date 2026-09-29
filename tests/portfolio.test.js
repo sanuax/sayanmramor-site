@@ -1,6 +1,6 @@
 // tests/portfolio.test.js
 // Portfolio photos: every path in data/portfolio.json points at a real file
-// under /sayanmramor-site/assets/, each of the 9 directions shows the agreed
+// under /sayanmramor-site/assets/, each of the 10 directions shows the agreed
 // photos, and every shipped photo is traceable to its archive source.
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -19,7 +19,7 @@ const sha256 = file => crypto.createHash('sha256').update(fs.readFileSync(file))
 // portfolio_keys). A photo may belong to several directions.
 const EXPECTED_COUNTS = {
   lestnitsa: 11, stupeni: 7, stoleshnitsa_kuhnya: 25, stoleshnitsa_vannaya: 21, podokonnik: 2,
-  pol: 16, stena: 38, fasad: 7, panno: 20,
+  pol: 16, stena: 38, fasad: 7, panno: 20, kaminy: 6,
 };
 
 // Minimal RFC 4180 reader: quoted fields may contain commas, quotes ("") and newlines.
@@ -60,7 +60,7 @@ function sources() {
   return entries;
 }
 
-test('portfolio.json has exactly the 9 site directions', () => {
+test('portfolio.json has exactly the 10 site directions', () => {
   assert.deepEqual(Object.keys(portfolio).sort(), [...Data.PRODUCT_KEYS].sort());
 });
 

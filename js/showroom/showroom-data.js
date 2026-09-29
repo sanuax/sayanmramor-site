@@ -1,6 +1,6 @@
 // js/showroom/showroom-data.js
 //
-// Declarative content of the showroom: the 9 product directions, the zones
+// Declarative content of the showroom: the 10 product directions, the zones
 // of the house, and the showroom objects (a real piece of stone in the
 // house -> the product it can be configured as). No DOM, no Three.js --
 // shared by the browser and the Node tests. Anchors are in the house
@@ -30,6 +30,7 @@
     { key: 'stoleshnitsa_vannaya', label: 'Столешницы в ванную', categoryHref: '/sayanmramor-site/categories/stoleshnitsy-vannaya.html' },
     { key: 'stoleshnitsa_kuhnya', label: 'Столешницы на кухню', categoryHref: '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html' },
     { key: 'stupeni', label: 'Ступени', categoryHref: '/sayanmramor-site/categories/stupeni.html' },
+    { key: 'kaminy', label: 'Камины', categoryHref: '/sayanmramor-site/categories/kaminy.html' },
   ];
 
   // Zones: where the client is, and how the camera frames it. `view` is the
@@ -60,7 +61,7 @@
     },
     {
       id: 'living', label: 'Гостиная', title: 'Гостиная',
-      caption: 'Акцентная стена из мрамора Majestic в зеркальной раскладке, пол и широкий каменный подоконник у окна.',
+      caption: 'Акцентная стена из мрамора Majestic в зеркальной раскладке, каменный камин, пол и широкий каменный подоконник у окна.',
       view: { position: [6.6, 8.2, 11.6], target: [3.9, 1.3, 2.3] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.9 },
       hide: INTERIOR_GF_HIDE,
@@ -130,6 +131,9 @@
     { id: 'living-sill', productKey: 'podokonnik', zone: 'living', primary: true,
       title: 'Подоконник', description: 'Широкий каменный подоконник у окна гостиной.',
       anchor: [6.37, 1.31, 3.6], offset: [-3.5, 2.0, 3.0] },
+    { id: 'living-fireplace', productKey: 'kaminy', zone: 'living', primary: true,
+      title: 'Каминный портал', description: 'Портал с полкой из светлого камня по центру стены из мрамора Majestic - напротив дивана.',
+      anchor: [1.306, 1.21, 2.875], offset: [4.6, 1.6, 2.4] },
     // Kitchen
     { id: 'kitchen-counter', productKey: 'stoleshnitsa_kuhnya', zone: 'kitchen', primary: true,
       title: 'Столешница на кухню', description: 'Рабочая столешница вдоль стены - с вырезом под мойку и варочную панель.',

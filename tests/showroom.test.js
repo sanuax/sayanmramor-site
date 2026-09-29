@@ -16,10 +16,10 @@ function inside(point, bounds, pad) {
 
 // ---- products / URL contract ------------------------------------------------
 
-// The configurator's 9 public product keys -- part of the URL contract, so
+// The configurator's 10 public product keys -- part of the URL contract, so
 // they are pinned here rather than read from the calculator's code.
-test('the showroom covers exactly the 9 product directions, with the configurator\'s public product keys', () => {
-  const expected = ['lestnitsa', 'panno', 'podokonnik', 'pol', 'stena', 'fasad', 'stoleshnitsa_vannaya', 'stoleshnitsa_kuhnya', 'stupeni'];
+test('the showroom covers exactly the 10 product directions, with the configurator\'s public product keys', () => {
+  const expected = ['lestnitsa', 'panno', 'podokonnik', 'pol', 'stena', 'fasad', 'stoleshnitsa_vannaya', 'stoleshnitsa_kuhnya', 'stupeni', 'kaminy'];
   assert.deepEqual(Data.PRODUCT_KEYS, expected);
 });
 
@@ -363,7 +363,7 @@ test('WebGL detection: available, unavailable and throwing canvases', () => {
   assert.equal(State.canUseWebGL({ createElement: () => { throw new Error('no canvas'); } }), false);
 });
 
-test('the no-3D fallback in showroom.html links all 9 directions to the configurator contract', () => {
+test('the no-3D fallback in showroom.html links all 10 directions to the configurator contract', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'showroom.html'), 'utf8');
   const fallback = html.slice(html.indexOf('id="srFallback"'), html.indexOf('</section>', html.indexOf('id="srFallback"')));
   Data.PRODUCTS.forEach(p => {
@@ -728,4 +728,58 @@ test('the coplanar-face check catches a wall face laid over another', () => {
   const extra = { kind: 'box', min: [-6.94, FF1, 4.7], max: [-6.7, SLAB, 5.0], mat: 'plaster', group: 'gf-south' };
   parts.push(extra);
   try { assert.ok(coplanarFaces().length > 0); } finally { parts.pop(); }
+});
+
+// ---- the fireplace in the living room ---------------------------------------------
+
+test('the fireplace: a showroom object in the living room, «Камины», its card opens the configurator on kaminy', () => {
+  const o = Data.objectById('living-fireplace');
+  assert.deepEqual([o.productKey, o.zone, o.primary], ['kaminy', 'living', true]);
+  assert.equal(Data.primaryObjectFor('kaminy'), o);
+  const d = State.describe(State.reduce(State.initialState(), { type: 'selectObject', id: 'living-fireplace' }));
+  assert.equal(d.zone.id, 'living');
+  assert.equal(d.card.productLabel, 'Камины');
+  assert.equal(d.card.title, 'Каминный портал');
+  assert.equal(d.card.ctaHref, '/calculator/sayanmramor-calculator.html?product=kaminy');
+  assert.equal(d.card.categoryHref, '/sayanmramor-site/categories/kaminy.html');
+  // The other living-room objects are all still there.
+  assert.deepEqual(Data.objectsInZone('living').map(x => x.id), ['living-floor', 'living-panno', 'living-sill', 'living-fireplace']);
+});
+
+test('the fireplace stands on the floor, centred on the Majestic wall, in front of it -- the panno stays visible around it', () => {
+  const { FF1 } = House.LEVELS;
+  const box = ids => {
+    const b = ids.map(p => House.partBounds(p));
+    return { min: [0, 1, 2].map(i => Math.min(...b.map(x => x.min[i]))), max: [0, 1, 2].map(i => Math.max(...b.map(x => x.max[i]))) };
+  };
+  const fire = box(ofObject('living-fireplace'));
+  const panno = box(ofObject('living-panno'));
+  const pannoFace = panno.max[0];
+  // Centred on the wall's axis (the bookmatch axis), standing on the floor boards.
+  const axis = (panno.min[2] + panno.max[2]) / 2;
+  assert.ok(Math.abs((fire.min[2] + fire.max[2]) / 2 - axis) < 1e-6, 'centred on the panno axis');
+  assert.ok(Math.abs(fire.min[1] - (FF1 + 0.02)) < 1e-9, 'on the floor');
+  // In front of the panno, touching it, never inside it.
+  assert.ok(Math.abs(fire.min[0] - pannoFace) < 1e-9, 'against the panno face');
+  ofObject('living-fireplace').forEach(p => assert.ok(House.partBounds(p).min[0] >= pannoFace - 1e-9, 'nothing inside the wall'));
+  // Not massive: the Majestic shows above it and on both sides.
+  assert.ok(panno.max[1] - fire.max[1] > 1.8, 'panno visible above the shelf');
+  assert.ok(fire.min[2] - panno.min[2] > 0.9 && panno.max[2] - fire.max[2] > 0.9, 'panno visible on both sides');
+  assert.ok(fire.max[2] - fire.min[2] < 1.7, 'about 1.5 m wide');
+  // Our light limestone round a dark firebox; the Majestic stays the one accent.
+  assert.deepEqual([...new Set(ofObject('living-fireplace').map(p => p.mat))].sort(), ['limestone-light', 'poche']);
+});
+
+test('the fireplace replaced the low stone console, and the sofa faces it', () => {
+  // No limestone box is left floating on the feature wall where the console was.
+  const console = parts.filter(p => p.kind === 'box' && p.group === 'gf-interior' && p.mat === 'limestone-light' && !p.object &&
+    House.partBounds(p).min[0] < 1.2 && House.partBounds(p).min[2] > 1.05 && House.partBounds(p).max[2] < 4.7);
+  assert.deepEqual(console, []);
+  // The sofa: the fabric seat across the room, its middle on the fireplace's axis.
+  const fire = ofObject('living-fireplace').map(p => House.partBounds(p));
+  const zc = (Math.min(...fire.map(b => b.min[2])) + Math.max(...fire.map(b => b.max[2]))) / 2;
+  const seat = parts.find(p => p.mat === 'fabric' && p.kind === 'box' && Math.abs(p.min[0] - 4.3) < 1e-9 && Math.abs(p.min[1] - 0.56) < 1e-9);
+  const b = House.partBounds(seat);
+  assert.ok(b.min[0] > Math.max(...fire.map(x => x.max[0])), 'across the room');
+  assert.ok(Math.abs((b.min[2] + b.max[2]) / 2 - zc) < 0.15, 'facing the fireplace');
 });

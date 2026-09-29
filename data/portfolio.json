@@ -163,5 +163,13 @@
     { "image": "/sayanmramor-site/assets/portfolio/193.webp", "caption": "" },
     { "image": "/sayanmramor-site/assets/portfolio/194.webp", "caption": "" },
     { "image": "/sayanmramor-site/assets/portfolio/195.webp", "caption": "" }
+  ],
+  "kaminy": [
+    { "image": "/sayanmramor-site/assets/portfolio/005.webp", "caption": "" },
+    { "image": "/sayanmramor-site/assets/portfolio/014.webp", "caption": "" },
+    { "image": "/sayanmramor-site/assets/portfolio/017.webp", "caption": "" },
+    { "image": "/sayanmramor-site/assets/portfolio/023.webp", "caption": "" },
+    { "image": "/sayanmramor-site/assets/portfolio/024.webp", "caption": "" },
+    { "image": "/sayanmramor-site/assets/portfolio/117.webp", "caption": "" }
   ]
 }

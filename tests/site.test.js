@@ -57,3 +57,65 @@ test('site tests never load calculator modules', () => {
     assert.ok(!/require\([^)]*calculator[\\/]/.test(text) && !/import[^;]*calculator[\\/]/.test(text), file);
   });
 });
+
+// ---- «Камины» on the site ----------------------------------------------------------
+
+test('«Что можно заказать»: «Камины» before «Готовые изделия» (always last), and 4 photos -- each its own direction', () => {
+  const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
+  const block = html.slice(html.indexOf('id="directionsTitle"'), html.indexOf('</section>', html.indexOf('id="directionsTitle"')));
+  const grid = block.slice(block.indexOf('<div class="home-grid">'), block.indexOf('</div>'));
+  const links = [...grid.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map(m => [m[2], m[1]]);
+  assert.deepEqual(links, [
+    ['Лестницы', '/sayanmramor-site/categories/lestnitsy.html'],
+    ['Ступени', '/sayanmramor-site/categories/stupeni.html'],
+    ['Столешницы на кухню', '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html'],
+    ['Столешницы в ванную', '/sayanmramor-site/categories/stoleshnitsy-vannaya.html'],
+    ['Подоконники', '/sayanmramor-site/categories/podokonniki.html'],
+    ['Полы', '/sayanmramor-site/categories/poly.html'],
+    ['Стены', '/sayanmramor-site/categories/steny.html'],
+    ['Фасады', '/sayanmramor-site/categories/fasady.html'],
+    ['Панно', '/sayanmramor-site/categories/panno.html'],
+    ['Камины', '/sayanmramor-site/categories/kaminy.html'],
+    ['Готовые изделия', '/sayanmramor-site/katalog.html'],
+  ]);
+  // The strip: one link per photo, never one link round all of them.
+  const strip = block.slice(block.indexOf('<div class="home-feature">'));
+  assert.doesNotMatch(block, /<a class="home-feature"/);
+  const items = [...strip.matchAll(/<a class="home-feature-item" href="([^"]+)">\s*<img src="([^"]+)" alt="([^"]+)" loading="lazy"[^>]*>\s*<span class="home-feature-caption">([^<]+)<\/span>\s*<\/a>/g)]
+    .map(([, href, src, alt, caption]) => ({ href, src, alt, caption }));
+  assert.deepEqual(items.map(i => [i.caption, i.href]), [
+    ['Лестницы', '/sayanmramor-site/categories/lestnitsy.html'],
+    ['Камины', '/sayanmramor-site/categories/kaminy.html'],
+    ['Подоконники', '/sayanmramor-site/categories/podokonniki.html'],
+    ['Столешницы на кухню', '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html'],
+  ]);
+  // Each link goes to the page the list itself uses for that direction.
+  items.forEach(i => assert.ok(links.some(([label, href]) => label === i.caption && href === i.href), i.caption));
+  // Each photo is a real exported photo from that direction's own portfolio.
+  const portfolio = JSON.parse(fs.readFileSync(path.join(site, 'data', 'portfolio.json'), 'utf8'));
+  const keyOf = { 'Лестницы': 'lestnitsa', 'Камины': 'kaminy', 'Подоконники': 'podokonnik', 'Столешницы на кухню': 'stoleshnitsa_kuhnya' };
+  assert.deepEqual(items.map(i => i.src.split('/').pop()), ['201.webp', '005.webp', '098.webp', '143.webp']);
+  items.forEach(i => {
+    assert.ok(fs.existsSync(path.join(site, i.src.replace('/sayanmramor-site/', ''))), i.src);
+    assert.ok(portfolio[keyOf[i.caption]].some(p => p.image === i.src), i.src + ' is a ' + i.caption + ' portfolio photo');
+    assert.ok(i.alt.length > 10, 'meaningful alt');
+  });
+});
+
+test('every page menu lists «Камины» after «Ступени»; the fireplace page marks it active', () => {
+  pages.filter(p => p !== 'showroom.html').forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    const nav = html.slice(html.indexOf('<nav class="site-nav">'), html.indexOf('</nav>'));
+    const labels = [...nav.matchAll(/<a [^>]*>([^<]+)<\/a>/g)].map(m => m[1]);
+    assert.equal(labels[labels.indexOf('Ступени') + 1], 'Камины', page);
+    assert.equal(nav.includes('<a class="active" href="/sayanmramor-site/categories/kaminy.html">Камины</a>'), page === 'categories/kaminy.html', page);
+  });
+});
+
+test('the fireplace page: the category template on the kaminy key', () => {
+  const html = fs.readFileSync(path.join(site, 'categories', 'kaminy.html'), 'utf8');
+  assert.match(html, /<h1>Камины из камня<\/h1>/);
+  assert.match(html, /SiteCommon\.loadPortfolio\('kaminy', document\.getElementById\('portfolioGrid'\)\);/);
+  assert.match(html, /CategoryPage\.init\('kaminy'\);/);
+  assert.match(html, /href="\/calculator\/sayanmramor-calculator\.html\?product=kaminy"/);
+});
