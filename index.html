@@ -8,8 +8,10 @@
 <link rel="stylesheet" href="/sayanmramor-site/css/site.css">
 <script src="/sayanmramor-site/vendor/leaflet/leaflet.js" defer></script>
 <script src="/sayanmramor-site/js/contacts-map.js" defer></script>
+<script src="/sayanmramor-site/js/offer-form.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#main">Перейти к содержимому</a>
 <header class="site-header">
   <div class="site-header-inner">
     <a class="site-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
@@ -20,18 +22,21 @@
       <a href="/sayanmramor-site/categories/poly.html">Полы</a>
       <a href="/sayanmramor-site/categories/steny.html">Стены</a>
       <a href="/sayanmramor-site/categories/fasady.html">Фасады</a>
-      <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Столешницы в ванную</a>
-      <a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Столешницы на кухню</a>
+      <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Ванная</a>
+      <a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Кухня</a>
       <a href="/sayanmramor-site/categories/stupeni.html">Ступени</a>
       <a href="/sayanmramor-site/categories/kaminy.html">Камины</a>
+      <a href="/sayanmramor-site/categories/spa-zony.html">Спа зоны</a>
+      <a href="/sayanmramor-site/categories/hammamy.html">Хаммамы</a>
+      <a href="/sayanmramor-site/categories/basseyny.html">Бассейны</a>
       <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
       <a class="showroom-link" href="/sayanmramor-site/showroom.html">Шоурум</a>
     </nav>
-    <a class="btn btn-primary site-header-cta" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
+    <a class="btn btn-primary site-header-cta" href="/calculator/sayanmramor-calculator.html" aria-label="Создать изделие"><span>Создать<span class="site-header-cta-tail"> изделие</span></span></a>
   </div>
 </header>
 
-<main class="home-main">
+<main class="home-main" id="main">
   <section class="wrap home-hero">
     <div>
       <h1>Изделия из натурального камня на заказ</h1>
@@ -52,14 +57,17 @@
     <div class="home-grid">
       <a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a>
       <a href="/sayanmramor-site/categories/stupeni.html">Ступени</a>
-      <a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Столешницы на кухню</a>
-      <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Столешницы в ванную</a>
+      <a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Кухня</a>
+      <a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Ванная</a>
       <a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a>
       <a href="/sayanmramor-site/categories/poly.html">Полы</a>
       <a href="/sayanmramor-site/categories/steny.html">Стены</a>
       <a href="/sayanmramor-site/categories/fasady.html">Фасады</a>
       <a href="/sayanmramor-site/categories/panno.html">Панно</a>
       <a href="/sayanmramor-site/categories/kaminy.html">Камины</a>
+      <a href="/sayanmramor-site/categories/spa-zony.html">Спа зоны</a>
+      <a href="/sayanmramor-site/categories/hammamy.html">Хаммамы</a>
+      <a href="/sayanmramor-site/categories/basseyny.html">Бассейны</a>
       <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
     </div>
     <div class="home-feature">
@@ -77,8 +85,19 @@
       </a>
       <a class="home-feature-item" href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">
         <img src="/sayanmramor-site/assets/portfolio/143.webp" alt="Кухонная столешница и фартук из зелёного камня" loading="lazy" decoding="async">
-        <span class="home-feature-caption">Столешницы на кухню</span>
+        <span class="home-feature-caption">Кухня</span>
       </a>
+    </div>
+  </section>
+
+  <section class="offer-band" id="offer" aria-labelledby="offerTitle">
+    <div class="offer-band-inner">
+      <div class="offer-intro">
+        <h2 class="offer-title" id="offerTitle">Получите коммерческое предложение <span class="offer-title-soft">по вашему техническому заданию</span></h2>
+        <p class="offer-phone">Или позвоните: <a href="tel:+74952155145">+7 (495) 215-51-45</a></p>
+      </div>
+      <div data-offer-form></div>
+      <noscript><p class="offer-noscript">Позвоните нам: <a href="tel:+74952155145">+7 (495) 215-51-45</a> или напишите на <a href="mailto:info@sayanmramor.ru">info@sayanmramor.ru</a>.</p></noscript>
     </div>
   </section>
 
@@ -127,5 +146,41 @@
     </div>
   </section>
 </main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-col">
+      <h2 class="site-footer-title">Изделия из камня</h2>
+      <ul class="site-footer-links">
+        <li><a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a></li>
+        <li><a href="/sayanmramor-site/categories/panno.html">Панно</a></li>
+        <li><a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a></li>
+        <li><a href="/sayanmramor-site/categories/poly.html">Полы</a></li>
+        <li><a href="/sayanmramor-site/categories/steny.html">Стены</a></li>
+        <li><a href="/sayanmramor-site/categories/fasady.html">Фасады</a></li>
+        <li><a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Ванная</a></li>
+        <li><a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Кухня</a></li>
+        <li><a href="/sayanmramor-site/categories/stupeni.html">Ступени</a></li>
+        <li><a href="/sayanmramor-site/categories/kaminy.html">Камины</a></li>
+        <li><a href="/sayanmramor-site/categories/spa-zony.html">Спа зоны</a></li>
+        <li><a href="/sayanmramor-site/categories/hammamy.html">Хаммамы</a></li>
+        <li><a href="/sayanmramor-site/categories/basseyny.html">Бассейны</a></li>
+        <li><a href="/sayanmramor-site/katalog.html">Готовые изделия</a></li>
+        <li><a href="/sayanmramor-site/showroom.html">Шоурум</a></li>
+      </ul>
+    </div>
+    <div class="site-footer-col">
+      <h2 class="site-footer-title">Контакты</h2>
+      <p>Офис продаж и производство: МО, г. Ивантеевка, ул. Толмачева, д.80</p>
+      <p><a href="tel:+74952155145">+7 (495) 215-51-45</a></p>
+      <p><a href="mailto:info@sayanmramor.ru">info@sayanmramor.ru</a></p>
+      <p><a href="https://vk.com/sayanmramorru" target="_blank" rel="noopener">ВКонтакте</a></p>
+    </div>
+    <div class="site-footer-col site-footer-legal">
+      <p>ООО «Саянмрамор»<br>ОГРН: 1197746382569<br>Юридический адрес: г.Москва, Складочная, д.3/3, эт.2 пом.IV ком.1-6</p>
+      <p><a href="/sayanmramor-site/privacy.html">Политика конфиденциальности</a></p>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

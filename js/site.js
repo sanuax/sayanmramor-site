@@ -82,5 +82,26 @@
   }
   if (typeof document !== 'undefined') revealActiveNav(document);
 
-  return { renderPortfolio, loadPortfolio, revealActiveNav, masonrySpan, layoutMasonry };
+  // The sticky header and the fixed configure bar cover the page's top and
+  // bottom edges, and their height changes with the width (the menu wraps).
+  // Their live heights (plus a gap for the focus ring) go into the
+  // scroll-padding variables of site.css, so the browser scrolls a focused
+  // stone card, or any other scrolled-to element, clear of both.
+  const FIXED_UI_GAP = 16;
+  function reserveFixedUi(doc) {
+    const root = doc.documentElement;
+    const parts = [['--sticky-top', doc.querySelector('.site-header')], ['--fixed-bottom', doc.querySelector('.configure-bar')]]
+      .filter(([, el]) => el);
+    const measure = () => parts.forEach(([name, el]) => {
+      root.style.setProperty(name, Math.ceil(el.getBoundingClientRect().height) + FIXED_UI_GAP + 'px');
+    });
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(measure);
+      parts.forEach(([, el]) => ro.observe(el));
+    }
+  }
+  if (typeof document !== 'undefined') reserveFixedUi(document);
+
+  return { renderPortfolio, loadPortfolio, revealActiveNav, reserveFixedUi, masonrySpan, layoutMasonry };
 });

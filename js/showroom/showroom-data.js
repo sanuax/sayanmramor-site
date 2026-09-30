@@ -27,8 +27,8 @@
     { key: 'pol', label: 'Полы', categoryHref: '/sayanmramor-site/categories/poly.html' },
     { key: 'stena', label: 'Стены', categoryHref: '/sayanmramor-site/categories/steny.html' },
     { key: 'fasad', label: 'Фасады', categoryHref: '/sayanmramor-site/categories/fasady.html' },
-    { key: 'stoleshnitsa_vannaya', label: 'Столешницы в ванную', categoryHref: '/sayanmramor-site/categories/stoleshnitsy-vannaya.html' },
-    { key: 'stoleshnitsa_kuhnya', label: 'Столешницы на кухню', categoryHref: '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html' },
+    { key: 'stoleshnitsa_vannaya', label: 'Ванная', categoryHref: '/sayanmramor-site/categories/stoleshnitsy-vannaya.html' },
+    { key: 'stoleshnitsa_kuhnya', label: 'Кухня', categoryHref: '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html' },
     { key: 'stupeni', label: 'Ступени', categoryHref: '/sayanmramor-site/categories/stupeni.html' },
     { key: 'kaminy', label: 'Камины', categoryHref: '/sayanmramor-site/categories/kaminy.html' },
   ];

@@ -70,9 +70,12 @@ test('the index shape (the four fields, only orderable stones) gives the same ga
 // Every category page is one of the 10 product directions, initialises the
 // gallery with that product key, and without JavaScript still links to the
 // canonical configurator URL for it.
+const SITE_ONLY = ['spa-zony.html', 'hammamy.html', 'basseyny.html'];
+
 test('every category page hands off to the canonical configurator URL for its own product', () => {
   const dir = path.join(__dirname, '..', 'categories');
-  const files = fs.readdirSync(dir);
+  // Spa, hammam and pool pages are directions of the site only: no configurator product.
+  const files = fs.readdirSync(dir).filter(f => !SITE_ONLY.includes(f));
   assert.equal(files.length, ShowroomData.PRODUCTS.length);
   files.forEach(file => {
     const html = fs.readFileSync(path.join(dir, file), 'utf8');
@@ -83,6 +86,10 @@ test('every category page hands off to the canonical configurator URL for its ow
     const cta = (html.match(/id="configureCta" href="([^"]+)"/) || [])[1];
     assert.equal(cta, ShowroomData.buildConfiguratorUrl(key));
     assert.equal(cta, '/calculator/sayanmramor-calculator.html?product=' + key);
+    // The configure bar's short forms for very narrow screens; the tails are
+    // what site.css hides at <= 360 px.
+    assert.ok(html.includes('id="configureStone">Не выбран<span class="configure-tail"> - подберёте в конфигураторе</span></span>'), file);
+    assert.ok(html.includes('"><span>Рассчитать<span class="configure-tail"> в конфигураторе</span></span></a>'), file);
   });
 });
 

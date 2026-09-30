@@ -79,9 +79,19 @@
 
     cta.href = buildUrl(null);
 
+    // The empty state as in the page's HTML: «Не выбран» plus a tail that
+    // site.css drops on very narrow screens (the bar keeps its one line).
+    function emptyChoice() {
+      const tail = document.createElement('span');
+      tail.className = 'configure-tail';
+      tail.textContent = ' - подберёте в конфигураторе';
+      return ['Не выбран', tail];
+    }
+
     function renderSelection() {
       cta.href = buildUrl(selected && selected.id);
-      chosen.textContent = selected ? selected.name : 'Не выбран - подберёте в конфигураторе';
+      if (selected) chosen.textContent = selected.name;
+      else chosen.replaceChildren(...emptyChoice());
       chosen.classList.toggle('is-empty', !selected);
       grid.querySelectorAll('.stone-card').forEach(card => {
         card.setAttribute('aria-pressed', String(!!selected && card.dataset.id === selected.id));

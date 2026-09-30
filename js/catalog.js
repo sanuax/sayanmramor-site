@@ -6,13 +6,57 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
 
+  // The ruble sign stays on the line of its number (a no-break space).
   function formatProductPrice(priceRub) {
     if (typeof priceRub !== 'number' || !Number.isFinite(priceRub)) return 'Цена по запросу';
-    return Math.round(priceRub).toLocaleString('ru-RU') + ' ₽';
+    return Math.round(priceRub).toLocaleString('ru-RU') + ' ₽';
   }
+
+  // Ordering goes through the company's contacts (address, phone, route) on
+  // the home page -- the one place to reach a manager until there is a form.
+  const ORDER_URL = '/sayanmramor-site/index.html#contacts';
 
   function isAvailable(product) {
     return product.available !== false;
+  }
+
+  // A product with no photograph yet (none listed, or the file is missing):
+  // a quiet line of text in the same 4:5 area instead of an empty box.
+  const NO_PHOTO_TEXT = 'Фото пока нет';
+
+  function photoPlaceholder() {
+    const note = document.createElement('span');
+    note.className = 'product-tile-placeholder';
+    note.textContent = NO_PHOTO_TEXT;
+    return note;
+  }
+
+  // Several photos of one product (the lamp: one design, a different stone
+  // in each piece): a swipeable row inside the same 4:5 area -- CSS
+  // scroll-snap, no script. Focusable, so the keyboard can scroll it too.
+  function photoStrip(name, photos) {
+    const strip = document.createElement('div');
+    strip.className = 'product-tile-strip';
+    strip.tabIndex = 0;
+    strip.setAttribute('role', 'group');
+    strip.setAttribute('aria-label', name + ', ' + photos.length + ' фото');
+    photos.forEach((src, i) => {
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = 'Фото ' + (i + 1) + ' из ' + photos.length;
+      img.src = src;
+      img.addEventListener('error', () => img.replaceWith(photoPlaceholder()));
+      strip.appendChild(img);
+    });
+    return strip;
+  }
+
+  function photoCount(n) {
+    const count = document.createElement('span');
+    count.className = 'product-tile-count';
+    count.setAttribute('aria-hidden', 'true');   // the strip's label already says it
+    count.textContent = n + ' фото';
+    return count;
   }
 
   function buildProductCard(product) {
@@ -21,12 +65,21 @@
 
     const imageWrap = document.createElement('div');
     imageWrap.className = 'product-tile-image';
-    const img = document.createElement('img');
-    img.loading = 'lazy';
-    img.alt = product.name || '';
-    img.src = (product.photos && product.photos[0]) || '';
-    img.addEventListener('error', () => { imageWrap.classList.add('image-broken'); img.remove(); });
-    imageWrap.appendChild(img);
+    const photos = Array.isArray(product.photos) ? product.photos : [];
+    const photo = photos[0];
+    if (photos.length > 1) {
+      imageWrap.appendChild(photoStrip(product.name || '', photos));
+      imageWrap.appendChild(photoCount(photos.length));
+    } else if (photo) {
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = product.name || '';
+      img.src = photo;
+      img.addEventListener('error', () => img.replaceWith(photoPlaceholder()));
+      imageWrap.appendChild(img);
+    } else {
+      imageWrap.appendChild(photoPlaceholder());
+    }
     if (!isAvailable(product)) {
       const badge = document.createElement('span');
       badge.className = 'badge-oos';
@@ -53,6 +106,15 @@
       card.appendChild(desc);
     }
 
+    // «Купить»: the site's primary button (the same as «Создать изделие»),
+    // leading to the contacts; its label names the product for screen readers.
+    const buy = document.createElement('a');
+    buy.className = 'btn btn-primary product-tile-buy';
+    buy.href = ORDER_URL;
+    buy.textContent = 'Купить';
+    buy.setAttribute('aria-label', 'Купить: ' + (product.name || ''));
+    card.appendChild(buy);
+
     return card;
   }
 
@@ -68,5 +130,5 @@
     products.forEach(product => container.appendChild(buildProductCard(product)));
   }
 
-  return { formatProductPrice, isAvailable, buildProductCard, renderCatalog };
+  return { NO_PHOTO_TEXT, ORDER_URL, formatProductPrice, isAvailable, buildProductCard, renderCatalog };
 });

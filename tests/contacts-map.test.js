@@ -101,7 +101,12 @@ test('mouse: drag to move, wheel off until the map is used; touch: one finger sc
 });
 
 test('the legal address is not shown as a place to visit', () => {
-  assert.ok(!/Складочная/.test(index));
+  // Not in «Где мы находимся»; only in the footer, and there labelled as the legal address.
+  const contacts = index.slice(index.indexOf('id="contacts"'), index.indexOf('</section>', index.indexOf('id="contacts"')));
+  assert.ok(!/Складочная/.test(contacts));
+  const footer = index.slice(index.indexOf('<footer'));
+  assert.match(footer, /Юридический адрес: г\.Москва, Складочная/);
+  assert.equal((index.match(/Складочная/g) || []).length, 1);
 });
 
 test('Leaflet is vendored and loads before the map script', () => {

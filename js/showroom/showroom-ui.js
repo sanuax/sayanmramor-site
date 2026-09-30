@@ -55,9 +55,41 @@ export function createUI(doc, { Data, dispatch }) {
   el.panelClose.addEventListener('click', () => dispatch({ type: 'closePanel' }));
 
   let lastCardId = null;
+  let lastZoneId = null;
   let lastPanelOpen = false;
 
+  // What opened the card, so that closing it (✕ or Escape) puts the keyboard
+  // back there instead of on <body>. Kept as a way to find that control
+  // again, not the node: chips are re-rendered on every change, and the
+  // «Все изделия» panel closes when a product is chosen from it.
+  let cardOpener = null;
+  const escape = s => (window.CSS && CSS.escape ? CSS.escape(s) : s);
+  const markerFor = id => doc.querySelector('.sr-marker[data-object-id="' + escape(id) + '"]');
+  function openerOf(active) {
+    if (!active || active === doc.body || el.card.contains(active)) return null;
+    if (active.classList.contains('sr-marker')) { const id = active.dataset.objectId; return () => markerFor(id); }
+    if (active.classList.contains('sr-chip')) {
+      const key = active.dataset.productKey;
+      return () => el.chips.querySelector('.sr-chip[data-product-key="' + escape(key) + '"]');
+    }
+    if (el.panel.contains(active)) return () => el.panelBtn;
+    return () => active;
+  }
+  function focusable(target) {
+    return target && target.isConnected && !target.closest('[hidden]') && !target.classList.contains('is-offscreen');
+  }
+  function restoreFocus(closedObjectId) {
+    // No known opener (entry from the configurator, or a browser that does
+    // not focus clicked buttons): the closed object's own marker.
+    const candidates = [cardOpener && cardOpener(), markerFor(closedObjectId)];
+    const target = candidates.find(focusable);
+    if (target) target.focus({ preventScroll: true });
+  }
+
   function render(view) {
+    // Where the keyboard is, read before anything below re-renders the chips
+    // or hides the card.
+    const active = doc.activeElement;
     zoneButtons.forEach(({ b, zone }) => b.setAttribute('aria-current', zone.id === view.zone.id ? 'true' : 'false'));
     el.back.hidden = !view.backVisible;
     doc.body.classList.toggle('is-interior', view.backVisible);
@@ -69,6 +101,7 @@ export function createUI(doc, { Data, dispatch }) {
       const chip = doc.createElement('button');
       chip.type = 'button';
       chip.className = 'sr-chip';
+      chip.dataset.productKey = product.key;
       chip.textContent = product.label;
       const here = view.markers.find(m => Data.objectById(m.id).productKey === product.key);
       chip.addEventListener('click', () => dispatch({ type: 'selectObject', id: here.id }));
@@ -76,6 +109,11 @@ export function createUI(doc, { Data, dispatch }) {
     }));
 
     const card = view.card;
+    // Only when the card closed in place (✕, Escape); moving to another zone
+    // replaces its markers, and the client is already somewhere else.
+    const focusWasInCard = !card && lastCardId !== null && view.zone.id === lastZoneId &&
+      (!active || active === doc.body || el.card.contains(active));
+    if (card && card.objectId !== lastCardId) cardOpener = openerOf(active);
     el.card.hidden = !card;
     if (card) {
       el.cardProduct.textContent = card.productLabel;
@@ -87,7 +125,10 @@ export function createUI(doc, { Data, dispatch }) {
       el.cardExamples.href = card.categoryHref;
       if (card.objectId !== lastCardId) el.cardCta.focus({ preventScroll: true });
     }
+    if (focusWasInCard) restoreFocus(lastCardId);
+    if (!card) cardOpener = null;
     lastCardId = card ? card.objectId : null;
+    lastZoneId = view.zone.id;
 
     el.panel.hidden = !view.panelOpen;
     doc.body.classList.toggle('has-sheet', !!card || view.panelOpen);

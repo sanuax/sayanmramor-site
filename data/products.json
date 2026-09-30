@@ -1,31 +1,82 @@
 {
-  "updated_at": "2026-09-16T00:00:00+03:00",
+  "updated_at": "2026-09-30T00:00:00+03:00",
   "products": [
     {
-      "id": "svetilnik-01",
-      "name": "Светильник из оникса",
-      "category": "svetilniki",
-      "price_rub": null,
+      "id": "rakushka-01",
+      "name": "Ракушка",
+      "category": "rakushki",
+      "price_rub": 37000,
       "description": null,
-      "photos": [],
+      "photos": ["/sayanmramor-site/assets/products/rakushka-01/1.jpg"],
+      "available": true
+    },
+    {
+      "id": "vaza-01",
+      "name": "Ваза настольная",
+      "category": "vazy",
+      "price_rub": 177000,
+      "description": null,
+      "photos": ["/sayanmramor-site/assets/products/vaza-01/1.jpg"],
+      "available": true
+    },
+    {
+      "id": "art-stol-belyy-01",
+      "name": "Арт-стол — белый",
+      "category": "stoly",
+      "price_rub": 2377000,
+      "description": null,
+      "photos": ["/sayanmramor-site/assets/products/art-stol-belyy-01/1.jpg"],
+      "available": true
+    },
+    {
+      "id": "art-stol-chernyy-01",
+      "name": "Арт-стол — чёрный",
+      "category": "stoly",
+      "price_rub": 3077000,
+      "description": null,
+      "photos": ["/sayanmramor-site/assets/products/art-stol-chernyy-01/1.webp"],
+      "available": true
+    },
+    {
+      "id": "statuya-01",
+      "name": "Статуя",
+      "category": "skulptury",
+      "price_rub": 3377000,
+      "description": null,
+      "photos": ["/sayanmramor-site/assets/products/statuya-01/1.jpg"],
       "available": true
     },
     {
       "id": "stol-01",
-      "name": "Эксклюзивный стол",
+      "name": "Стол",
       "category": "stoly",
-      "price_rub": null,
+      "price_rub": 3177000,
       "description": null,
-      "photos": [],
+      "photos": ["/sayanmramor-site/assets/products/stol-01/1.jpg"],
       "available": true
     },
     {
-      "id": "rakushka-01",
-      "name": "Декоративная ракушка",
-      "category": "rakushki",
-      "price_rub": null,
+      "id": "vanna-oniks-01",
+      "name": "Ванная из оникса",
+      "category": "vanny",
+      "price_rub": 3977000,
       "description": null,
-      "photos": [],
+      "photos": ["/sayanmramor-site/assets/products/vanna-oniks-01/1.jpg"],
+      "available": true
+    },
+    {
+      "id": "svetilnik-01",
+      "name": "Светильник",
+      "category": "svetilniki",
+      "price_rub": 20000,
+      "description": null,
+      "photos": [
+        "/sayanmramor-site/assets/products/svetilnik-01/1.webp",
+        "/sayanmramor-site/assets/products/svetilnik-01/2.webp",
+        "/sayanmramor-site/assets/products/svetilnik-01/3.webp",
+        "/sayanmramor-site/assets/products/svetilnik-01/4.webp",
+        "/sayanmramor-site/assets/products/svetilnik-01/5.webp"
+      ],
       "available": true
     }
   ]
