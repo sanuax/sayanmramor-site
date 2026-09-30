@@ -26,18 +26,28 @@
   --link: #0068d6;          /* legal text links: the old site's blue (#007bff), 4.8:1 here */
 
   --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  /* Type scale: display / h1 / h2 / h3 / body / small / meta. */
-  --fs-display: clamp(34px, 4.4vw, 52px);
-  --fs-h1: clamp(30px, 3.2vw, 40px);
-  --fs-h2: 26px;
+  /* Type scale: display / h1 / h2 / h3 / body / small / meta. The display
+     size is the home page's one headline; every other page -- and the
+     closing offer band -- tops out at h1. */
+  --fs-display: clamp(36px, 4.4vw, 56px);
+  --fs-h1: clamp(32px, 3.4vw, 46px);
+  --fs-h2: clamp(24px, 2.2vw, 30px);
   --fs-h3: 19px;
   --fs-body: 16px;
   --fs-small: 14px;
   --fs-meta: 12px;
 
-  /* Spacing scale. */
+  /* Spacing scale; --section is the one gap between the page's sections. */
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px;
   --s-6: 32px; --s-7: 48px; --s-8: 72px;
+  --section: clamp(64px, 8vw, 96px);
+
+  /* Control heights: compact (header, product cards, the configure bar on a
+     phone), regular (every other button, the search field), large (the
+     offer form's fields and its action). */
+  --control-h-s: 44px;
+  --control-h: 48px;
+  --control-h-l: 56px;
 
   --radius-s: 6px;          /* buttons, fields */
   --radius-m: 12px;         /* cards, photos */
@@ -87,14 +97,18 @@ h3 { font-size: var(--fs-h3); }
 
 /* ---- Buttons -----------------------------------------------------------------
    The same shapes as in the configurator and the showroom: primary = the one
-   action that moves the client on, secondary = an equal alternative. */
+   action that moves the client on, secondary = an equal alternative. One
+   shape in three heights (--control-h-s / --control-h / --control-h-l); the
+   places that use the compact or large one set only height, padding and size. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
-  min-height: 48px; padding: 0 22px; border-radius: var(--radius-s);
-  font: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; text-decoration: none;
+  min-height: var(--control-h); padding: 0 24px; border-radius: var(--radius-s);
+  font: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; letter-spacing: 0.01em;
+  text-decoration: none;
   cursor: pointer; border: 1px solid transparent;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.12s var(--ease);
 }
+.btn:active { transform: scale(0.98); }
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
@@ -110,25 +124,30 @@ h3 { font-size: var(--fs-h3); }
   border-bottom: 1px solid var(--line);
 }
 /* Two quiet rows: the brand and the one primary action, then every
-   direction the site covers on a single line. */
+   direction the site covers on a single line, sitting on the header's
+   bottom rule -- the current page is marked on that rule, like a tab. */
 .site-header-inner {
-  max-width: var(--measure); margin: 0 auto; padding: var(--s-4) var(--gutter) var(--s-2);
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4);
+  max-width: var(--measure); margin: 0 auto; padding: 14px var(--gutter) 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--s-4);
 }
 .site-logo {
   flex: none; font-size: 15px; font-weight: 800; letter-spacing: 0.12em;
   text-transform: uppercase; text-decoration: none; color: var(--ink);
 }
-/* 16 px between sections keeps all 12 of them on one line at the page width. */
+/* 16 px between sections keeps all 15 of them on one line at the page width.
+   The directions run from the logo; «Готовые изделия» and «Шоурум» -- not
+   directions, a shop and a 3D house -- are pushed to the right edge, under
+   the header's button. */
 .site-nav { position: relative; order: 3; flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 2px var(--s-4); align-items: center; min-width: 0; }
 .site-nav a {
-  font-size: var(--fs-small); color: var(--muted); text-decoration: none;
-  padding: 6px 0; border-bottom: 1px solid transparent; white-space: nowrap;
+  font-size: var(--fs-small); color: var(--ink-soft); text-decoration: none;
+  padding: 9px 0 11px; border-bottom: 2px solid transparent; white-space: nowrap;
   transition: color 0.15s, border-color 0.15s;
 }
-.site-nav a:hover { color: var(--ink); }
+.site-nav a[href$="/katalog.html"] { margin-left: auto; }
+.site-nav a:hover { color: var(--ink); border-bottom-color: var(--line-strong); }
 .site-nav a.active { color: var(--ink); border-bottom-color: var(--ink); }
-.site-header-cta { flex: none; margin-left: auto; min-height: 42px; padding: 0 18px; font-size: var(--fs-small); }
+.site-header-cta { flex: none; margin-left: auto; min-height: var(--control-h-s); padding: 0 18px; font-size: var(--fs-small); }
 
 /* ---- Home ------------------------------------------------------------------- */
 .home-hero {
@@ -145,7 +164,7 @@ h3 { font-size: var(--fs-h3); }
 }
 .home-stone figcaption { margin-top: var(--s-3); font-size: var(--fs-small); color: var(--muted); }
 
-.home-directions { padding-bottom: var(--s-8); }
+.home-directions { padding-bottom: var(--section); }
 .home-directions h2 { margin-bottom: var(--s-5); }
 .home-grid {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--s-6);
@@ -202,7 +221,7 @@ h3 { font-size: var(--fs-h3); }
    The address card and the map sit side by side; the map is real geography
    (OpenStreetMap tiles) toned down to the page palette -- warm, quiet, no
    colour of its own -- so the copper pin is the one accent on it. */
-.home-contacts { padding-bottom: var(--s-8); scroll-margin-top: 120px; }
+.home-contacts { padding-top: var(--section); padding-bottom: var(--section); scroll-margin-top: 120px; }
 .contacts-head { margin-bottom: var(--s-5); }
 .contacts-head h2 { margin-bottom: var(--s-1); }
 .contacts-head p { color: var(--ink-soft); font-size: 18px; }
@@ -273,7 +292,7 @@ h3 { font-size: var(--fs-h3); }
 
 /* ---- Category page: examples ------------------------------------------------ */
 .page-head { padding-top: var(--s-7); }
-.portfolio-section { max-width: var(--measure); margin: 0 auto var(--s-5); padding: 0 var(--gutter); }
+.portfolio-section { max-width: var(--measure); margin: 0 auto var(--section); padding: 0 var(--gutter); }
 /* Photos keep their own proportions (most are vertical) and are never cropped.
    Before a photo loads it holds a 2:3 box, the usual portrait shape, so lazy
    loading has real boxes to watch; once loaded, `auto` switches to the photo's ratio. */
@@ -294,13 +313,25 @@ h3 { font-size: var(--fs-h3); }
 
 /* ---- Готовые изделия (каталог) ---------------------------------------------- */
 .catalog-grid {
-  max-width: var(--measure); margin: 0 auto var(--s-8); padding: 0 var(--gutter);
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--s-6) var(--s-5);
+  max-width: var(--measure); margin: 0 auto var(--section); padding: 0 var(--gutter);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--s-7) var(--s-5);
 }
-.product-tile { display: flex; flex-direction: column; gap: var(--s-1); }
+/* A card: the photo, the name, and at its foot -- over a hairline -- the
+   price and «Купить» on one line. Rows: photo / name / description / free
+   space / hairline / foot; the free space takes up what a shorter name
+   leaves, so in a row of cards the hairlines, prices and buttons line up. */
+.product-tile {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--s-3);
+  grid-template-rows: auto auto auto 1fr auto auto; align-items: center;
+}
 .product-tile-image {
+  grid-column: 1 / -1; grid-row: 1;
   position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-m); overflow: hidden;
-  background: var(--surface-sunk); margin-bottom: var(--s-3);
+  background: var(--surface-sunk); margin-bottom: var(--s-4);
+}
+.product-tile::after {
+  content: ''; grid-column: 1 / -1; grid-row: 5;
+  margin: var(--s-4) 0 var(--s-3); border-top: 1px solid var(--line-strong);
 }
 .product-tile-image img { width: 100%; height: 100%; object-fit: cover; }
 /* No photograph yet: the same stone-coloured area, one quiet line centred. */
@@ -319,20 +350,27 @@ h3 { font-size: var(--fs-h3); }
 .product-tile-strip > * { flex: 0 0 100%; scroll-snap-align: start; }
 .product-tile-strip .product-tile-placeholder { position: relative; inset: auto; }
 .product-tile-strip:focus-visible { outline-offset: -2px; }
-.product-tile-name { font-size: var(--fs-body); font-weight: 600; }
-/* The price: plain text in the card's own weight and ink, lining figures of one width. */
+.product-tile-name {
+  grid-column: 1 / -1; grid-row: 2; align-self: start;
+  font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em;
+}
+.product-tile-description {
+  grid-column: 1 / -1; grid-row: 3; align-self: start; margin-top: var(--s-1);
+  font-size: var(--fs-small); color: var(--muted); line-height: 1.45;
+}
+/* The price: plain text, the card's strongest line after the name --
+   larger, in ink, lining figures of one width. */
 .product-tile-price {
-  margin-bottom: var(--s-3);
-  font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: lining-nums tabular-nums;
+  grid-column: 1; grid-row: 6; white-space: nowrap;
+  font-size: 19px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 /* «Купить»: .btn .btn-primary as in the header («Создать изделие»), at the
-   header's compact size but 44 px tall for a finger. Pushed to the card's
-   foot, so the buttons of one row line up even when a name wraps. */
+   same compact height, beside the price. */
 .product-tile-buy {
-  align-self: flex-start; margin-top: auto;
-  min-height: 44px; padding: 0 18px; font-size: var(--fs-small);
+  grid-column: 2; grid-row: 6;
+  min-height: var(--control-h-s); padding: 0 20px; font-size: var(--fs-small);
 }
-.product-tile-description { font-size: var(--fs-small); color: var(--muted); line-height: 1.45; }
 .badge-oos, .product-tile-count {
   position: absolute; top: var(--s-3); left: var(--s-3); padding: 4px 10px; border-radius: 999px;
   background: rgba(30, 26, 22, 0.78); color: var(--on-dark); font-size: var(--fs-meta);
@@ -342,12 +380,12 @@ h3 { font-size: var(--fs-h3); }
 .catalog-empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: var(--s-8) 0; }
 
 /* ---- Category page: stone gallery + hand-off to the configurator ------------ */
-.stone-section { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter) var(--s-8); }
+.stone-section { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter) var(--section); }
 .stone-head h2 { margin-bottom: var(--s-2); }
 .stone-head p { color: var(--ink-soft); line-height: 1.5; max-width: 620px; margin-bottom: var(--s-5); }
 .stone-controls { display: grid; gap: var(--s-3); margin-bottom: var(--s-4); }
 #stoneSearch {
-  width: 100%; max-width: 520px; min-height: 48px; padding: 0 16px;
+  width: 100%; max-width: 520px; min-height: var(--control-h); padding: 0 16px;
   border: 1px solid var(--line-control); border-radius: var(--radius-s);
   font: inherit; font-size: var(--fs-body); background: var(--surface); color: var(--ink);
 }
@@ -405,41 +443,50 @@ h3 { font-size: var(--fs-h3); }
 .configure-cta { flex: none; }
 
 /* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
-   The old site's closing band, in this site's terms: a full-width travertine
-   band between the page and the footer, a large two-tone heading on the left
-   (the old site's solid / outlined lines become ink / muted ink), the form on
-   the right -- stone-white fields straight on the band, no card around them,
-   and one wide copper action. */
+   The closing band of the home page and every direction page: full-width
+   travertine; on the left the two-tone heading (ink / muted ink, the old
+   site's solid / outlined lines) at the pages' own h1 size, and the phone at
+   the foot of the column, level with the form's action; on the right a form
+   drawn like a specification sheet -- small-capital labels, each field one
+   rule, no boxes -- and one wide copper action. */
 .offer-band { background: var(--surface-sunk); scroll-margin-top: 120px; }
 .offer-band-inner {
-  max-width: var(--measure); margin: 0 auto; padding: 96px var(--gutter);
-  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-7) 80px; align-items: start;
+  max-width: var(--measure); margin: 0 auto; padding: var(--section) var(--gutter);
+  display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--s-7) 96px;
 }
+.offer-intro { display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-6); }
 .offer-title {
-  margin: 0; font-size: clamp(34px, 4.4vw, 60px); font-weight: 700; line-height: 1.04;
-  letter-spacing: -0.035em; color: var(--ink); text-wrap: balance;
+  margin: 0; font-size: var(--fs-h1); font-weight: 700; line-height: 1.08;
+  letter-spacing: -0.03em; color: var(--ink); text-wrap: balance;
 }
 .offer-title-soft { display: block; color: var(--muted); }
-.offer-phone { margin-top: var(--s-6); font-size: var(--fs-body); color: var(--ink-soft); }
-.offer-phone a { color: var(--ink); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.offer-phone {
+  padding-top: var(--s-4); border-top: 1px solid var(--line-strong);
+  font-size: var(--fs-body); color: var(--ink-soft);
+}
+.offer-phone a { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .offer-phone a:hover { color: var(--accent-hover); }
 
-.offer-form { display: grid; gap: var(--s-4); }
-.offer-field { display: grid; gap: var(--s-2); min-width: 0; }
+.offer-form { display: grid; gap: var(--s-5); }
+.offer-field { display: grid; gap: var(--s-1); min-width: 0; }
 .offer-label {
   font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft);
 }
+/* A field is its rule: >= 3:1 on the band at rest, ink under the pointer,
+   and a double copper rule for the keyboard (the site's selected state). */
 .offer-input {
-  width: 100%; min-height: 56px; padding: 0 18px; border: 1px solid transparent; border-radius: var(--radius-s);
-  font: inherit; font-size: var(--fs-body); background: var(--surface); color: var(--ink);
-  transition: border-color 0.15s;
+  width: 100%; min-height: var(--control-h-l); padding: 0; border: 0; border-bottom: 1px solid var(--muted);
+  border-radius: 0; font: inherit; font-size: 17px; background: transparent; color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.offer-input:hover { border-color: var(--line-strong); }
-.offer-input:focus { border-color: var(--ink); }
+.offer-input:hover, .offer-input:focus { border-bottom-color: var(--ink); }
+.offer-input:focus-visible { outline: none; border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+.offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface-sunk); -webkit-text-fill-color: var(--ink); }
+.offer-input:autofill:focus-visible { box-shadow: inset 0 0 0 100px var(--surface-sunk), 0 1px 0 var(--accent); }
 .offer-select {
-  appearance: none; -webkit-appearance: none; padding-right: 48px; cursor: pointer;
+  appearance: none; -webkit-appearance: none; padding-right: 32px; cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e1a16' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 16px center; background-size: 18px;
+  background-repeat: no-repeat; background-position: right 2px center; background-size: 18px;
 }
 /* The file: the real input stays for the keyboard and screen readers, hidden;
    its label is a quiet row with a round clip, like the old site's attach button. */
@@ -447,23 +494,27 @@ h3 { font-size: var(--fs-h3); }
   position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0;
 }
-.offer-file { display: flex; align-items: center; gap: var(--s-4); min-height: 56px; cursor: pointer; }
+.offer-file { display: flex; align-items: center; gap: var(--s-4); min-height: var(--control-h-l); cursor: pointer; }
 .offer-file-icon {
-  flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%;
-  background: var(--surface); color: var(--ink); transition: background-color 0.15s, color 0.15s;
+  flex: none; display: grid; place-items: center; width: var(--control-h-s); height: var(--control-h-s); border-radius: 50%;
+  border: 1px solid var(--muted); color: var(--ink); transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 .offer-file-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.offer-file:hover .offer-file-icon { background: var(--ink); color: var(--on-dark); }
+.offer-file:hover .offer-file-icon { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
 .offer-file-input:focus-visible + .offer-file .offer-file-icon { outline: 2px solid var(--accent); outline-offset: 3px; }
 .offer-file-text { display: grid; gap: 2px; min-width: 0; }
 .offer-file-title { font-size: var(--fs-body); font-weight: 600; color: var(--ink); }
 .offer-file-name { font-size: var(--fs-small); color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.offer-consent { display: flex; align-items: flex-start; gap: var(--s-3); font-size: var(--fs-small); color: var(--ink-soft); }
+.offer-consent { display: flex; align-items: flex-start; gap: var(--s-3); font-size: var(--fs-small); line-height: 1.5; color: var(--ink-soft); }
 .offer-consent input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
 .offer-consent a { color: var(--ink); text-underline-offset: 3px; }
-/* The action: the site's primary button, full width of the form and tall. */
-.offer-submit { width: 100%; min-height: 64px; margin-top: var(--s-2); justify-content: space-between; padding: 0 24px; font-size: 17px; }
+/* The action: the site's primary button at the large height, as tall as the
+   fields, across the whole form. */
+.offer-submit {
+  width: 100%; min-height: var(--control-h-l); margin-top: var(--s-2);
+  justify-content: space-between; padding: 0 24px; font-size: var(--fs-body);
+}
 .offer-submit svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s var(--ease); }
 .offer-submit:hover svg { transform: translateX(3px); }
 .offer-status { font-size: var(--fs-small); color: var(--ink); }
@@ -472,35 +523,48 @@ h3 { font-size: var(--fs-h3); }
 .offer-noscript a { color: var(--ink); }
 
 /* ---- Footer ------------------------------------------------------------------
-   The graphite of the showroom band: directions, contacts, company details.
+   The graphite of the showroom band: the wordmark, the directions, the
+   contacts; under a rule, the company's details and the privacy policy.
    Under a fixed configure bar it keeps that bar's height clear
    (--fixed-bottom, js/site.js). */
 .site-footer {
   background: var(--graphite); color: var(--on-dark-muted); border-top: 1px solid var(--on-dark-line);
   font-size: var(--fs-small); line-height: 1.5;
-  padding: var(--s-7) 0 calc(var(--s-7) + var(--fixed-bottom, 0px));
+  padding: var(--s-8) 0 calc(var(--s-6) + var(--fixed-bottom, 0px));
 }
+.site-footer-inner, .site-footer-bottom { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter); }
 .site-footer-inner {
-  max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter);
-  display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-6);
+  display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 3fr); gap: var(--s-7) var(--s-6);
 }
+.site-footer .site-logo { color: var(--on-dark); line-height: 1.4; }
 .site-footer-title {
-  margin-bottom: var(--s-3); font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.12em;
+  margin-bottom: var(--s-4); font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.12em;
   line-height: 1.4; text-transform: uppercase; color: var(--on-dark);
 }
-.site-footer-links { list-style: none; columns: 2; column-gap: var(--s-5); }
+.site-footer-links { list-style: none; columns: 3; column-gap: var(--s-5); }
 .site-footer-links li { break-inside: avoid; }
 .site-footer-links a { display: inline-block; padding: 3px 0; }
 .site-footer p + p { margin-top: var(--s-2); }
+.site-footer-phone a { font-size: 17px; font-weight: 700; }
 .site-footer a { color: var(--on-dark); text-decoration: none; text-underline-offset: 3px; }
 .site-footer a:hover { text-decoration: underline; }
 .site-footer :focus-visible { outline-color: var(--on-dark); }
+.site-footer-bottom {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s-2) var(--s-6);
+  margin-top: var(--s-8);
+}
+.site-footer-bottom::before {
+  content: ''; flex: 0 0 100%; margin-bottom: var(--s-4); border-top: 1px solid var(--on-dark-line);
+}
+.site-footer-legal { display: flex; flex-wrap: wrap; gap: 0 var(--s-5); font-size: var(--fs-meta); }
 
 /* ---- Политика конфиденциальности -------------------------------------------- */
-.legal-page { max-width: calc(760px + 2 * var(--gutter)); padding-top: var(--s-7); padding-bottom: var(--s-8); }
-.legal-page h1 { margin-bottom: var(--s-5); }
+.legal-page { max-width: calc(760px + 2 * var(--gutter)); padding-top: var(--s-7); padding-bottom: var(--section); }
+/* «конфиденциальности» is one 18-letter word: on a 320 px phone the h1 size
+   would push it past the screen edge, so there the heading follows the width. */
+.legal-page h1 { margin-bottom: var(--s-5); font-size: min(var(--fs-h1), 8vw); overflow-wrap: break-word; }
 .legal-page h2 { font-size: var(--fs-h3); margin: var(--s-6) 0 var(--s-3); }
-.legal-page p { margin-bottom: var(--s-3); color: var(--ink-soft); overflow-wrap: anywhere; }
+.legal-page p { margin-bottom: var(--s-3); line-height: 1.65; color: var(--ink-soft); overflow-wrap: anywhere; }
 /* E-mail, phone and site addresses in the policy, blue as on the old site; a light
    underline too, since the blue alone is too close to the text around it. */
 .legal-page a {
@@ -523,6 +587,9 @@ h3 { font-size: var(--fs-h3); }
     mask-image: linear-gradient(90deg, #000 85%, transparent);
   }
   .site-nav::-webkit-scrollbar { display: none; }
+  /* In the scrolling row there is no free space to push the pair right: a
+     double gap keeps them apart instead. */
+  .site-nav a[href$="/katalog.html"] { margin-left: var(--s-4); }
   /* Where the browser can tie an animation to the row's own scroll, each
      edge fades only while there is more to scroll that way: the right one
      at the start, both in the middle, the left one at the end, none when
@@ -553,16 +620,18 @@ h3 { font-size: var(--fs-h3); }
   /* The address first, the map under it. */
   .contacts-layout { grid-template-columns: 1fr; }
   .contacts-map-frame { min-height: 380px; }
-  /* Footer: the directions across the top, contacts and details side by side. */
+  /* Footer: the wordmark across the top, directions and contacts side by side. */
   .site-footer-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .site-footer-col:first-child { grid-column: 1 / -1; }
-  .offer-band-inner { grid-template-columns: 1fr; gap: var(--s-6); padding-top: 72px; padding-bottom: 72px; }
-  .offer-form { max-width: 560px; }
-  .offer-title { font-size: clamp(32px, 6.2vw, 52px); }
+  .site-footer-links { columns: 2; }
+  /* Offer: heading, phone, then the form, in one column of the form's width. */
+  .offer-band-inner { grid-template-columns: 1fr; gap: var(--s-6); }
+  .offer-intro, .offer-form { max-width: 560px; }
 }
 @media (max-width: 600px) {
-  :root { --gutter: 16px; --fs-h2: 22px; --fs-h3: 17px; }
-  .site-header-cta { min-height: 40px; padding: 0 14px; }
+  :root { --gutter: 16px; --fs-h3: 17px; }
+  .site-header-inner { padding-top: 10px; }
+  .site-header-cta { padding: 0 16px; }
   .subtitle, .lead { font-size: var(--fs-body); }
   .home-grid { grid-template-columns: 1fr; }
   .home-grid a { min-height: 58px; }
@@ -573,20 +642,25 @@ h3 { font-size: var(--fs-h3); }
   .page-head { padding-top: var(--s-6); }
   .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
   .stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4) var(--s-3); }
-  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-5) var(--s-3); }
+  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-3); }
+  /* Two cards abreast leave no room beside the price: «Купить» goes under
+     it, across the card, the same width in every card. */
+  .product-tile-name { font-size: var(--fs-body); }
+  .product-tile-price { grid-column: 1 / -1; font-size: 17px; }
+  .product-tile-buy { grid-column: 1 / -1; grid-row: 7; margin-top: var(--s-3); }
   .configure-bar-inner { gap: var(--s-3); }
   .configure-stone.is-empty { font-size: 13px; }
-  .configure-cta { min-height: 44px; padding: 0 16px; font-size: var(--fs-small); }
-  .offer-band-inner { padding-top: 64px; padding-bottom: 64px; }
+  .configure-cta { min-height: var(--control-h-s); padding: 0 16px; font-size: var(--fs-small); }
   .site-footer-inner { grid-template-columns: 1fr; }
+  .site-footer-bottom { margin-top: var(--s-7); }
 }
 /* Very narrow phones: the configure bar's button «Рассчитать в конфигураторе»
    left the stone ~40 px, so the choice showed as «Не в…». Only the short
    forms here -- «Рассчитать», «Не выбран» -- the bar keeps its height. */
 @media (max-width: 360px) {
   .configure-tail { display: none; }
-  /* The header's «Создать изделие» (logo 140 + gap 16 + button 149 px) no
-     longer fits beside the logo below 337 px (~352 px with a classic
+  /* The header's «Создать изделие» (logo 140 + gap 16 + button 155 px) no
+     longer fits beside the logo below 343 px (~358 px with a classic
      scrollbar) and drops to a row of its own: here it reads «Создать»;
      aria-label keeps the full name. */
   .site-header-cta-tail { display: none; }
