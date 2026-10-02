@@ -306,19 +306,34 @@ html.menu-lock { overflow: hidden; }
   .js .nav-group:nth-child(2) { border-top: 0; }
 }
 
-/* ---- Night gallery: the home page's own palette ---------------------------------
-   The home page is a stone gallery at night: a basalt room in which only the
-   stone is lit. These colours belong to the home page alone (its masthead and
-   its hero carry the class «night»); no other page reads them. Travertine is
-   the type, verde the one action. */
-.night {
-  --night: #1a1c19;                       /* basalt, a green undertone: not black */
-  --travertine: #ece5d8;                  /* the type: 15:1 on basalt */
-  --travertine-soft: #a8a194;             /* the quiet type: 6.9:1 on basalt */
-  --verde: #2a5446;                       /* the action (its type 8.1:1) */
-  --verde-lit: #326252;
+/* ---- Home palette: limestone, with one dark opening -----------------------------
+   The home page is light: limestone ground, paper, thin lines, basalt type and
+   one verde for the action. Only the showroom's doorway (class «night») is a
+   dark opening, and the footer below the page is dark. These colours belong
+   to the home page alone (its masthead and its main); no other page reads them.
+   The sections speak in roles -- ground, figure (the type), its quiet and dim
+   tones, rule, placeholder -- light by default, dark inside «.night».
+   Travertine on graphite is the type of the dark opening and the masthead's
+   dark tone. */
+.mast, .home-main {
+  --page: #f0eee9;                        /* limestone */
+  --surface: #f7f5f1;                     /* paper */
+  --line: #d5d1c8;
+  --ink: #1c1d1b;                         /* basalt */
+  --accent: #2f5d50;                      /* verde */
+  --night: #1e2320;                       /* the dark: the showroom's opening, as the footer */
+  --travertine: #ece5d8;                  /* the type on the dark: 13:1 */
+  --travertine-soft: #a8a194;             /* the quiet type on the dark: 6.5:1 */
+  --verde: #2f5d50;                       /* the action (its type 7.2:1) */
+  --verde-lit: #376b5c;
   /* A soft spring with a 1 % overshoot, no bounce (a damped oscillator, sampled). */
   --spring: linear(0, 0.0275, 0.0958, 0.1876, 0.2902, 0.3947, 0.4951, 0.5876, 0.67, 0.7416, 0.8024, 0.8527, 0.8937, 0.9263, 0.9517, 0.971, 0.9852, 0.9954, 1.0024, 1.0069, 1.0096, 1.0108, 1.0111, 1.0107, 1.0099, 1.0088, 1.0077, 1.0065, 1);
+  --ground: var(--page); --figure: var(--ink); --figure-soft: var(--muted); --figure-dim: var(--ink-soft);
+  --rule: var(--line); --placeholder: var(--surface-sunk);
+}
+.night {
+  --ground: var(--night); --figure: var(--travertine); --figure-soft: var(--travertine-soft); --figure-dim: #cfc8ba;
+  --rule: rgba(236, 229, 216, 0.16); --placeholder: #262824;
 }
 
 /* ---- Masthead (home page) ----------------------------------------------------------
@@ -494,15 +509,14 @@ html:has(.mast) { scrollbar-gutter: stable; }
 }
 
 /* ---- Home ------------------------------------------------------------------- */
-/* The home page is being rebuilt as a night gallery, scene by scene: the
-   masthead and the hero are new (the night palette above); the scenes after
-   them are still the earlier ones until their turn comes. */
-.home-main { display: flex; flex-direction: column; min-height: calc(100vh - 65px); }
+/* The home page on limestone (the palette above): every scene light, the
+   showroom's doorway the one dark opening. */
+.home-main { display: flex; flex-direction: column; min-height: calc(100vh - 65px); background: var(--page); }
 .section-title { font-size: var(--fs-h2); margin-bottom: var(--s-6); }
 
 /* 1. The hero: from the slab to the object. A real slab of marble (photographed
-   in the stone yard, on its dark studio ground -- the ground becomes the
-   gallery's basalt) lies in front of you under the great name. Scrolling
+   in the stone yard; shown through its own clean outline, so its dark
+   studio ground is not seen) lies in front of you under the great name. Scrolling
    lifts it: it rises, its dimensions are drawn on it, and as it stands up
    the raw slab becomes a finished staircase -- the configurator's own story,
    stone -> dimensions -> 3D and price -> «Создать изделие». The name rises
@@ -515,27 +529,27 @@ html:has(.mast) { scrollbar-gutter: stable; }
   --band: 112px;                                         /* the caption band above the object */
   --mark-fs: calc((min(100vw, var(--measure)) - 2 * var(--gutter)) * 0.0905);
   --slab-ratio: 1.6808;                                  /* the slab photograph, 4096 x 2437 */
-  position: relative; background: var(--night); color: var(--travertine);
+  position: relative; background: var(--ground); color: var(--figure);
 }
 .hero-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-.night-hero :focus-visible { outline: 2px solid var(--travertine); outline-offset: 3px; }
+.night-hero :focus-visible { outline: 2px solid var(--figure); outline-offset: 3px; }
 .hero-stage { position: relative; padding: 0 0 var(--section); }
 
 .hero-mark { margin: 0; padding: 28px 0 var(--s-6); text-align: center; line-height: 1; }
 .hero-mark-word {
   display: inline-block; padding-left: 0.34em; transform-origin: 50% 0;
   font-size: var(--mark-fs); font-weight: 500; line-height: 1; letter-spacing: 0.34em; text-transform: uppercase; white-space: nowrap;
-  color: var(--travertine);
+  color: var(--figure);
 }
 
 .hero-copy { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-6); align-items: end; }
 .hero-title {
   margin: 0; max-width: 13em;
   font-size: clamp(24px, 2.4vw, 34px); font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; text-wrap: balance;
-  color: var(--travertine);
+  color: var(--figure);
 }
 .hero-side { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-6); }
-.hero-lead { max-width: 31em; font-size: 15px; line-height: 1.55; color: var(--travertine-soft); }
+.hero-lead { max-width: 31em; font-size: 15px; line-height: 1.55; color: var(--figure-soft); }
 /* The action on the dark: a verde oval, like the masthead's. */
 .night-cta {
   flex: none; display: inline-flex; align-items: center; gap: 12px; height: 48px; padding: 0 22px; border-radius: 24px;
@@ -549,26 +563,21 @@ html:has(.mast) { scrollbar-gutter: stable; }
 /* The object. */
 .hero-scene { max-width: var(--measure); margin: var(--s-8) auto 0; padding: 0 var(--gutter); }
 .hero-slab { position: relative; margin: 0; }
-.hero-raw { position: relative; isolation: isolate; aspect-ratio: 4096 / 2437; background: var(--night); }
-/* «lighten» over the basalt: the studio's black ground becomes the gallery, the stone stays lit. */
-.hero-stone-frame { position: absolute; inset: 0; overflow: hidden; }
-.hero-stone { width: 100%; height: 100%; mix-blend-mode: lighten; filter: url(#slabBalance); }
-/* The slab as a real object while it lies (the scrolled scene only). It is
-   shown through its own clean outline: the sawn top and the slanted left side
-   as measured on the photograph, the right side just inside the corner that is
-   missing on the real slab, a straight bottom edge above the chips -- four
-   corners, one whole piece. Inside that outline the photograph is all stone,
-   so the studio's black (and the basalt ground that hid it) are not needed:
-   the slab stands free in 3D. Its thickness is a real face: hung from the
+.hero-raw { position: relative; isolation: isolate; aspect-ratio: 4096 / 2437; }
+/* The slab's own outline: the sawn top and the slanted left side as measured on
+   the photograph, the right side just inside the corner that is missing on the
+   real slab, a straight bottom edge above the chips. Inside it all is stone. */
+.hero-stone-frame { position: absolute; inset: 0; overflow: hidden; clip-path: polygon(2.4% 2.7%, 94.5% 2.7%, 94.5% 96.5%, 4.6% 96.5%); }
+.hero-stone { width: 100%; height: 100%; filter: url(#slabBalance); }
+/* The slab as a real object while it lies (the scrolled scene only): through
+   its outline it stands free in 3D. Its thickness is a real face: hung from the
    bottom edge and turned a right angle about it, it runs along the
    slab's own normal, 3 cm deep at the slab's scale (1.72 % of the frame's
    height); the perspective alone thins it to nothing as the slab stands. Its
    shadow lies on the floor, 3 cm under the top surface. */
 .hero-floor-shadow, .hero-edge { display: none; }
 [data-mode="scrub"] .hero-slab { --thick: calc(var(--fw) / var(--slab-ratio) * 0.0172); transform-style: preserve-3d; }
-[data-mode="scrub"] .hero-raw { background: transparent; isolation: auto; }
-[data-mode="scrub"] .hero-stone { mix-blend-mode: normal; }
-[data-mode="scrub"] .hero-stone-frame { clip-path: polygon(2.4% 2.7%, 94.5% 2.7%, 94.5% 96.5%, 4.6% 96.5%); }
+[data-mode="scrub"] .hero-raw { isolation: auto; }
 [data-mode="scrub"] .hero-edge {
   display: block; position: absolute; top: 96.5%; left: 4.6%; width: 89.9%; height: var(--thick); pointer-events: none;
   background: linear-gradient(to bottom, #a39d92, #6e6a62);
@@ -576,7 +585,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 }
 [data-mode="scrub"] .hero-floor-shadow {
   display: block; position: absolute; top: 7%; left: 6.5%; width: 91%; height: 92%; pointer-events: none;
-  background: rgba(4, 5, 4, 0.72); filter: blur(22px);
+  background: rgba(28, 29, 27, 0.45); filter: blur(22px);
   transform: translateZ(calc(var(--thick) * -1)); opacity: var(--shade, 0);
 }
 .js [data-hero]:not(.is-lit) .hero-floor-shadow, .js [data-hero]:not(.is-lit) .hero-edge { visibility: hidden; }
@@ -585,9 +594,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
   -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), #000 60%);
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), #000 60%);
 }
-/* The dimensions on the whole slab's edges. */
-[data-mode="scrub"] .hero-dim-w { left: 2.4%; right: 5.5%; }
-[data-mode="scrub"] .hero-dim-h { top: 2.7%; bottom: 3.5%; left: calc(94.5% + 14px); }
 /* The slab comes up in the light once its photograph is ready (js/home-hero.js). */
 .js [data-hero]:not(.is-lit) .hero-stone-frame { opacity: 0; }
 .hero-stone-frame { transition: opacity 0.8s ease; }
@@ -606,27 +612,27 @@ html:has(.mast) { scrollbar-gutter: stable; }
   100% { transform: translateX(260%); opacity: 0; }
 }
 /* The slab's real dimensions (2.84 x 1.66 m), drawn along its edges: a line and its two end marks. */
-.hero-dim { position: absolute; pointer-events: none; color: var(--travertine); }
+.hero-dim { position: absolute; pointer-events: none; color: var(--figure); }
 .hero-dim-line { position: absolute; background: currentColor; opacity: 0.55; }
 .hero-dim::before, .hero-dim::after { content: ''; position: absolute; background: currentColor; opacity: calc(0.55 * var(--d, 1)); }
-.hero-dim-w { left: 3.9%; right: 1.7%; top: -6.5%; height: 9px; }
+.hero-dim-w { left: 2.4%; right: 5.5%; top: -6.5%; height: 9px; }
 .hero-dim-w .hero-dim-line { left: 0; right: 0; top: 4px; height: 1px; transform: scaleX(var(--d, 1)); transform-origin: 0 50%; }
 .hero-dim-w::before, .hero-dim-w::after { top: 0; width: 1px; height: 9px; }
 .hero-dim-w::before { left: 0; }
 .hero-dim-w::after { right: 0; }
-.hero-dim-h { top: 2.3%; bottom: 2.5%; left: calc(100% + 14px); width: 9px; }
+.hero-dim-h { top: 2.7%; bottom: 3.5%; left: calc(94.5% + 14px); width: 9px; }
 .hero-dim-h .hero-dim-line { top: 0; bottom: 0; left: 4px; width: 1px; transform: scaleY(var(--d, 1)); transform-origin: 50% 0; }
 .hero-dim-h::before, .hero-dim-h::after { left: 0; width: 9px; height: 1px; }
 .hero-dim-h::before { top: 0; }
 .hero-dim-h::after { bottom: 0; }
 .hero-dim-label {
   position: absolute; font-size: 12px; line-height: 1; letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
-  color: var(--travertine-soft); opacity: var(--d, 1);
+  color: var(--figure-soft); opacity: var(--d, 1);
 }
 .hero-dim-w .hero-dim-label { left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); }
 .hero-dim-h .hero-dim-label { left: 16px; top: 50%; transform: translate(-50%, -50%) rotate(-90deg) translateY(-6px); }
 
-.hero-made { position: relative; margin-top: var(--s-6); aspect-ratio: 4096 / 2437; overflow: hidden; background: #262824; }
+.hero-made { position: relative; margin-top: var(--s-6); aspect-ratio: 4096 / 2437; overflow: hidden; background: var(--placeholder); }
 .hero-photo { width: 100%; height: 100%; object-fit: cover; object-position: 50% 46%; }
 .hero-tag {
   position: absolute; left: var(--s-4); bottom: var(--s-4); display: inline-flex; align-items: center; gap: 10px;
@@ -644,9 +650,9 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .hero-story { margin-top: var(--s-6); }
 .hero-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5); }
 .hero-step { display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: var(--s-2); align-content: start; }
-.hero-step-number { grid-row: span 2; padding-top: 4px; font-size: 13px; color: var(--travertine-soft); font-variant-numeric: tabular-nums; }
-.hero-step-name { font-size: 19px; font-weight: 500; line-height: 1.3; color: var(--travertine); }
-.hero-step-note { font-size: 14px; line-height: 1.5; color: var(--travertine-soft); }
+.hero-step-number { grid-row: span 2; padding-top: 4px; font-size: 13px; color: var(--figure-soft); font-variant-numeric: tabular-nums; }
+.hero-step-name { font-size: 19px; font-weight: 500; line-height: 1.3; color: var(--figure); }
+.hero-step-note { font-size: 14px; line-height: 1.5; color: var(--figure-soft); }
 .hero-final-cta { display: none; }
 
 /* The scene, held while you scroll. js/home-hero.js sets data-mode and the numbers:
@@ -700,7 +706,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 [data-mode="scrub"]:not(.is-made) .hero-tag { visibility: hidden; }
 [data-mode="scrub"] .hero-dim { opacity: var(--dd, 1); }
 [data-mode="scrub"] .hero-story {
-  position: absolute; top: calc(var(--frame-top) - var(--band) + 26px); left: 0; right: 0; z-index: 3; margin: 0;
+  position: absolute; top: calc(var(--frame-top) - var(--band) + 26px); left: 0; right: 0; z-index: 3; margin: 0 auto;
   display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-6);
   opacity: var(--cap, 0);
 }
@@ -737,114 +743,153 @@ html:has(.mast) { scrollbar-gutter: stable; }
   .hero-steps { grid-template-columns: 1fr; gap: var(--s-4); }
 }
 
-/* 2. What can be ordered: the stack. In a stone yard slabs lie in stacks and
-   you see their edges; here every direction is the edge of a slab -- one
-   row, its name set large -- and the 13 rows lie on one another as one
-   stack, in the gallery's basalt. The groups are only air and a small tag in
-   the margin, never boxes. One row is open: a cut in the slab's edge opens a
-   small window (3:2) onto a real photograph of the direction, cropped so that
-   the thing itself -- the stair, the fireplace, the pool -- is plain to see.
-   The window lies over its row (a few pixels past the seams), so the rows
-   never change height. Pointing at (or focusing) another row opens that one
-   and quietly closes the last. On a phone the stack is a plain list, each
-   row with a small picture of its direction, and a tap opens the direction. Without JavaScript the first row stays open and
-   the row under the pointer opens. */
-.home-directions { --row-h: 104px; --win-h: 120px; --seam: rgba(236, 229, 216, 0.13); --label-w: 184px; background: var(--night); color: var(--travertine); padding: var(--s-8) 0 var(--section); }
-.stack-title {
-  margin: 0 0 var(--s-7) var(--label-w);
-  font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; color: var(--travertine);
+/* 2. What can be ordered: a wall of stone slabs. Not a catalogue of cards but
+   the thing the company itself builds -- a wall clad in slabs, each slab a
+   real work of one direction, set in the five groups of «Изделия +»: a wider
+   reveal between the groups, the group's name on the floor under it. As
+   physical as the hero's slab: joints that are recesses (the wall behind the
+   slabs seen deep in their shadow, each slab casting into the joint below and
+   to its right), a light arris on the sawn edges, the light falling off
+   towards the floor, the wall's own shadow at its foot. On a desktop with a
+   real pointer one slab stands open -- its photograph whole, 2:3 -- drawn out
+   of the wall by its own thickness, over its neighbours, its shadow on them;
+   the others stay in the wall, a shade darker, each with its name turned up
+   its edge (js/home-wall.js: the pointer or the focus opens a slab, and it
+   stays open). Phones, tablets and touch screens: the same wall in two
+   courses, split where the groups split (7 and 6); a tap opens the page.
+   Without JavaScript the first slab stands open and every link works. */
+.home-directions { background: var(--ground); color: var(--figure); padding: var(--section) 0; }
+.wall-head { margin-bottom: var(--s-7); }
+.wall-title {
+  margin: 0;
+  font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; color: var(--figure);
 }
-.stack { list-style: none; }
-.stack-item { display: grid; grid-template-columns: var(--label-w) minmax(0, 1fr); align-items: center; }
-.stack-item.is-group { margin-top: var(--s-6); }
-.stack-item:first-child { margin-top: 0; }
-/* The group's tag, in the margin beside its first slab. */
-.stack-group { grid-column: 1; padding-right: var(--s-5); font-size: 12.5px; line-height: 1.4; color: var(--travertine-soft); }
-.stack-row {
-  grid-column: 2; position: relative;
-  display: grid; grid-template-columns: 44px minmax(0, 1fr) 28px; align-items: center; column-gap: var(--s-5);
-  height: var(--row-h); border-bottom: 1px solid var(--seam);
-  color: inherit; text-decoration: none;
-}
-.stack-item.is-group .stack-row { border-top: 1px solid var(--seam); }
-.stack-number { font-size: 13px; color: var(--travertine-soft); font-variant-numeric: tabular-nums; }
-.stack-name {
-  font-size: clamp(30px, 3.3vw, 48px); font-weight: 500; line-height: 1; letter-spacing: -0.025em; white-space: nowrap;
-  color: #cfc8ba; transition: color 0.45s ease;
-}
-/* The cut: a window in the slab's edge, beside the arrow, that opens from its middle. */
-.stack-cut {
-  position: absolute; top: 50%; right: calc(28px + var(--s-6)); z-index: 1;
-  display: block; height: var(--win-h); aspect-ratio: 3 / 2; margin-top: calc(var(--win-h) / -2);
-  overflow: hidden; background: #262824;
-  clip-path: inset(50% 50% round 2px);
-  transition: clip-path 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.stack-row.is-open, html:not(.js) .stack-row:hover { z-index: 2; }
-.stack-cut img {
-  width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%);
-  transform: scale(1.05); transition: transform 0.9s var(--ease);
-}
-.stack-cut::after {   /* the cut's fresh edge and the shade under its upper lip, as in the hero */
-  content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none;
-  border: 1px solid rgba(255, 249, 238, 0.35); border-bottom-color: rgba(255, 249, 238, 0.75);
-  box-shadow: inset 0 16px 20px -12px rgba(10, 11, 10, 0.6);
-}
-.stack-arrow {
-  grid-column: 3; justify-self: end; width: 18px; height: 11px; background: currentColor; opacity: 0.35;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transform: translateX(-6px); transition: opacity 0.45s ease, transform 0.45s var(--ease);
-}
-/* Open: the row that was pointed at last (js/home-stack.js) -- without JavaScript, the first one and the one under the pointer. */
-.stack-row.is-open .stack-name,
-html:not(.js) .stack-row:hover .stack-name, html:not(.js) .stack-row:focus-visible .stack-name { color: var(--travertine); }
-.stack-row.is-open .stack-cut,
-html:not(.js) .stack-row:hover .stack-cut, html:not(.js) .stack-row:focus-visible .stack-cut {
-  clip-path: inset(0 0 round 2px); transition: clip-path 0.75s cubic-bezier(0.22, 0.68, 0.24, 1);
-}
-.stack-row.is-open .stack-cut img,
-html:not(.js) .stack-row:hover .stack-cut img, html:not(.js) .stack-row:focus-visible .stack-cut img { transform: none; }
-.stack-row.is-open .stack-arrow,
-html:not(.js) .stack-row:hover .stack-arrow, html:not(.js) .stack-row:focus-visible .stack-arrow { opacity: 1; transform: none; }
-html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-cut { clip-path: inset(50% 50% round 2px); }
-html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #cfc8ba; }
-.stack-row:focus-visible { outline: 2px solid var(--travertine); outline-offset: 4px; }
+.wall-lead { max-width: 34em; margin-top: var(--s-4); font-size: 15px; line-height: 1.55; color: var(--figure-soft); }
 
-@media (max-width: 1179px) {
-  .home-directions { --row-h: 92px; --win-h: 104px; --label-w: 150px; }
+.wall {
+  --joint: 4px;                                          /* between two slabs of a group */
+  --reveal: 12px;                                        /* between two groups */
+  --wall-h: clamp(260px, 46vh, 400px);
+  list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-6) var(--reveal);
+  max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter);
 }
-/* Narrower: the group's tag goes above its first slab. */
-@media (max-width: 1023px) {
-  .home-directions { --row-h: 84px; --win-h: 88px; }
-  .stack-title { margin-left: 0; }
-  .stack-item { display: block; }
-  .stack-item.is-group { margin-top: var(--s-6); }
-  .stack-group { display: block; padding: 0 0 var(--s-2); }
-  .stack-row { grid-template-columns: 40px minmax(0, 1fr) 24px; column-gap: var(--s-4); }
-  .stack-cut { right: calc(24px + var(--s-5)); }
+/* Two courses: the first two groups (7 slabs), then the last three (6). Every
+   slab of a course the same width: --s, from the course's slabs, joints and reveals. */
+.wall-bay {
+  --row: 7; --joints: 5; --reveals: 1;
+  --s: calc((100% - var(--reveals) * var(--reveal) - var(--joints) * var(--joint)) / var(--row) - 0.2px);
+  display: flex; flex-direction: column; min-width: 0;
+  flex: 0 0 calc(var(--n) * var(--s) + (var(--n) - 1) * var(--joint));
 }
-/* Phones: a plain list of slabs; every row shows a narrow strip of its photograph; a tap opens the direction. */
-@media (max-width: 767px) {
-  .home-directions { --row-h: 64px; --win-h: 48px; padding-top: var(--s-7); }
-  .stack-title { margin-bottom: var(--s-5); }
-  .stack-item.is-group { margin-top: var(--s-5); }
-  .stack-row { grid-template-columns: 30px minmax(0, 1fr) 72px; column-gap: var(--s-3); }
-  .stack-name { font-size: 22px; letter-spacing: -0.01em; color: var(--travertine); }
-  .stack-cut, .stack-row.is-open .stack-cut { position: relative; top: auto; right: auto; grid-column: 3; margin-top: 0; clip-path: none; }
-  .stack-cut img { transform: none; }
-  .stack-arrow { display: none; }
+.wall-bay:nth-child(n + 3) { --row: 6; --joints: 3; --reveals: 2; }
+.wall-bay-name {   /* on the floor under its group */
+  order: 1; margin: var(--s-3) 0 0;
+  font-size: 13px; font-weight: 400; line-height: 1.35; letter-spacing: 0; color: var(--figure-soft);
+}
+.wall-slabs {
+  list-style: none; display: flex; gap: var(--joint); height: var(--wall-h);
+  /* the wall behind the slabs, seen only in the joints, deep in their shadow */
+  background: linear-gradient(to bottom, #6b665d, #46433d);
+  box-shadow: 0 30px 34px -28px rgba(29, 30, 28, 0.6);   /* the wall's shadow at its foot */
+}
+.wall-slabs > li { position: relative; display: flex; flex: 1 1 0; min-width: 0; }
+.wall-slab {
+  position: relative; flex: 1; min-width: 0; display: block;
+  color: #f3eee5; text-decoration: none;
+  box-shadow: 1px 2px 3px rgba(20, 21, 19, 0.55);       /* into the joint below and to the right */
+  transition: transform 0.6s var(--spring), box-shadow 0.6s var(--spring);
+}
+.wall-face { position: absolute; inset: 0; overflow: hidden; background: var(--placeholder); }
+.wall-face img {
+  display: block; width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%);
+  transition: filter 0.4s ease;
+}
+/* The light from above: a faint sheen at the top, falling off towards the floor, where the name is. */
+.wall-face::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 250, 240, 0.1), rgba(255, 250, 240, 0) 24%, rgba(20, 21, 19, 0) 46%, rgba(20, 21, 19, 0.68));
+}
+/* The sawn edges: a light arris above and on the left, a darker one below and on the right. */
+.wall-slab::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 1px 1px 0 rgba(255, 252, 245, 0.32), inset -1px -1px 0 rgba(0, 0, 0, 0.32);
+}
+.wall-slab:hover .wall-face img { filter: brightness(1.08); }
+.wall-slab:focus-visible { z-index: 3; outline: 2px solid var(--figure); outline-offset: 3px; }
+/* The name, turned up the slab's edge (read from the floor up, as on a book's spine). */
+.wall-label { position: absolute; z-index: 1; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; }
+.wall-name {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 15px; font-weight: 500; line-height: 1; letter-spacing: 0.01em; white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.wall-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* A desktop with a real pointer: one course, one slab open. The open slab is
+   exactly as wide as its photograph at the wall's height (2:3); the others
+   share the rest. It comes out of the wall by its thickness -- the sawn edge,
+   light at the arris and darkening into the cut, as the hero's slab -- over
+   its neighbours, and its shadow falls on them. */
+@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+  .wall { --wall-h: clamp(440px, 66vh, 620px); --open: calc(var(--wall-h) * 2 / 3); flex-wrap: nowrap; }
+  .wall-bay {
+    flex: var(--n) 1 calc((var(--n) - 1) * var(--joint));
+    transition: flex-grow 0.6s var(--spring), flex-basis 0.6s var(--spring);
+  }
+  .wall-bay:has(.wall-slab.is-open) { flex-grow: calc(var(--n) - 1); flex-basis: calc(var(--open) + (var(--n) - 1) * var(--joint)); }
+  .wall-slabs > li { transition: flex-grow 0.6s var(--spring), flex-basis 0.6s var(--spring); }
+  .wall-slabs > li:has(> .wall-slab.is-open) { z-index: 2; flex: 0 0 var(--open); }
+  .wall-slab:not(.is-open) .wall-face img { filter: brightness(0.84) saturate(0.92); }
+  .wall-slab:not(.is-open):hover .wall-face img { filter: brightness(0.96); }
+  .wall-slab.is-open {
+    transform: translate(-5px, -6px);
+    box-shadow:
+      1px 1px 0 #ddd7cc, 2px 2px 0 #c2bbae, 3px 3px 0 #aea79b, 4px 4px 0 #9a9387, 5px 5px 0 #857f74, 6px 6px 0 #6d6961,
+      20px 28px 36px -12px rgba(20, 21, 19, 0.55);
+  }
+  /* Its words lie lower in the light than a narrow slab's name: the fall-off goes deeper. */
+  .wall-slab.is-open .wall-face::after {
+    background: linear-gradient(to bottom, rgba(255, 250, 240, 0.1), rgba(255, 250, 240, 0) 24%, rgba(20, 21, 19, 0) 44%, rgba(20, 21, 19, 0.55) 74%, rgba(20, 21, 19, 0.82));
+  }
+  .wall-slab.is-open .wall-label { left: 28px; right: 28px; bottom: 26px; display: block; animation: wall-open-label 0.35s ease 0.3s both; }
+  .wall-slab.was-open .wall-label { animation: wall-close-label 0.3s ease 0.32s both; }
+  .wall-slab.is-open .wall-name {
+    display: inline-flex; align-items: center; gap: 14px;
+    writing-mode: horizontal-tb; transform: none;
+    font-size: clamp(26px, 2vw, 32px); line-height: 1.1; letter-spacing: -0.015em;
+  }
+  .wall-slab.is-open .wall-name::after {
+    content: ''; flex: none; width: 20px; height: 13px; background: currentColor;
+    -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+    transition: transform 0.25s var(--ease);
+  }
+  .wall-slab.is-open:hover .wall-name::after, .wall-slab.is-open:focus-visible .wall-name::after { transform: translateX(4px); }
+  .wall-slab.is-open .wall-text {
+    position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal;
+    display: block; max-width: 24em; margin-top: 10px;
+    font-size: 14px; line-height: 1.45; color: #e2dbcf; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+}
+@keyframes wall-open-label { from { opacity: 0; } }
+@keyframes wall-close-label { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .wall-slab .wall-label { animation: none; }
 }
 
-/* 4. The showroom: its own world -- the graphite and the copper of the
-   showroom, the house as the object. One action (the house itself, or «Открыть
-   шоурум»); the rooms are a quiet second way in. */
+/* 4. The showroom: the one dark opening in the light page, the house as the
+   object. One action (the house itself, or «Открыть шоурум»)
+   in the showroom's own copper -- the colour of the 3D scene it leads into,
+   and the only copper on the page; the rooms are a quiet second way in. */
 .home-portal {
-  background: var(--sr-graphite); color: var(--sr-on-dark);
+  background: var(--ground); color: var(--figure);
   padding: var(--section) 0;
 }
 .portal { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--s-7); align-items: center; }
-.portal-title { color: var(--sr-on-dark); font-size: var(--fs-h1); margin-bottom: var(--s-3); }
-.portal-note { max-width: 30em; margin-bottom: var(--s-6); color: var(--sr-on-dark-muted); }
+.portal-title {
+  margin-bottom: var(--s-3); font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--figure);
+}
+.portal-note { max-width: 30em; margin-bottom: var(--s-6); color: var(--figure-soft); }
 .portal-enter {
   display: inline-flex; align-items: center; gap: var(--s-3); min-height: var(--control-h); padding: 0 20px;
   border-radius: var(--radius-s); background: var(--sr-copper); color: #fff; font-weight: 600; text-decoration: none;
@@ -858,8 +903,8 @@ html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #
 .portal-enter:hover, .portal-enter:focus-visible { background: var(--sr-copper-hover); }
 .portal-enter:hover::after, .portal-enter:focus-visible::after, .home-portal:has(.portal-house:hover) .portal-enter::after { transform: translateX(4px); }
 .portal-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 4px var(--s-4); margin-top: var(--s-5); font-size: var(--fs-small); }
-.portal-rooms a { color: var(--sr-on-dark-muted); text-decoration: none; text-underline-offset: 4px; transition: color 0.2s; }
-.portal-rooms a:hover, .portal-rooms a:focus-visible { color: var(--sr-on-dark); text-decoration: underline; text-decoration-thickness: 1px; }
+.portal-rooms a { color: var(--figure-soft); text-decoration: none; text-underline-offset: 4px; transition: color 0.2s; }
+.portal-rooms a:hover, .portal-rooms a:focus-visible { color: var(--figure); text-decoration: underline; text-decoration-thickness: 1px; }
 .portal-house { display: block; }
 .portal-house img {   /* the scene's own frame, its edges given back to the dark */
   display: block; width: 100%; height: auto;
@@ -868,107 +913,152 @@ html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #
   transition: filter 0.3s var(--ease);
 }
 .portal-house:hover img, .portal-house:focus-visible img { filter: brightness(1.06); }
-.home-portal :focus-visible { outline-color: var(--sr-on-dark); }
+.home-portal :focus-visible { outline-color: var(--figure); }
 .portal-veil {   /* the quiet step into the showroom: the page fades into its graphite */
   position: fixed; inset: 0; z-index: 100; background: var(--sr-graphite);
   opacity: 0; pointer-events: none; transition: opacity 0.26s ease;
 }
 .portal-veil.is-on { opacity: 1; pointer-events: auto; }
 
-/* 5. Real works: a project shown whole -- two pictures of one real object,
-   the whole of it and a closer look, side by side in their own proportions
-   (never cropped), under one thin line: its number, its direction and the way
-   to it. Two spreads, the sides alternating; each spread is one link to its
-   direction. Only the second picture answers the pointer, coming a little
-   closer. Not a catalogue: two strong spreads are enough. */
-.home-works { background: var(--night); color: var(--travertine); padding: var(--section) 0; }
-.works-title {
-  margin: 0 0 var(--s-7);
-  font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; color: var(--travertine);
+/* 6. Ready-made pieces: not a room of their own -- a passage on the way into
+   the catalogue. One horizontal line between two thin
+   rules: the name, one line about the pieces, «Смотреть коллекцию» with the
+   arrow of the works. No pictures, no prices. Pointing at it draws the upper
+   rule in the type's colour from the left and moves the arrow a little. */
+.home-ready { background: var(--ground); color: var(--figure); padding: var(--section) 0; }
+.ready-line {
+  position: relative; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) auto; align-items: baseline; column-gap: var(--s-6);
+  padding: var(--s-6) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  color: inherit; text-decoration: none;
 }
-.project { display: block; color: inherit; text-decoration: none; }
-.project + .project { margin-top: var(--s-8); }
-.project-line { display: flex; align-items: baseline; gap: var(--s-4); margin-bottom: var(--s-5); }
-.project-number { font-size: 13px; color: var(--travertine-soft); font-variant-numeric: tabular-nums; }
-.project-name { margin: 0; font-size: clamp(24px, 2.2vw, 32px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; color: var(--travertine); }
-.project-rule { flex: 1 1 auto; align-self: center; height: 1px; background: rgba(236, 229, 216, 0.16); }
-.project-more { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--travertine-soft); transition: color 0.3s ease; }
-.project-more::after {
+.ready-line::before {
+  content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--figure);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.5s var(--ease);
+}
+.ready-title { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.4; letter-spacing: 0.14em; text-transform: uppercase; color: var(--figure); }
+.ready-text { margin: 0; color: var(--figure-soft); }
+.ready-more { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--figure-soft); white-space: nowrap; transition: color 0.3s ease; }
+.ready-more::after {
   content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   transition: transform 0.3s var(--ease);
 }
-/* The pictures keep their own proportions: a frame is as tall as the spread
-   allows and as wide as its photograph's shape (--ar). The staircase: both at
-   one height across the content's width (--sum: the two shapes together). */
-.project-frames {
-  --cw: calc(min(100vw, var(--measure)) - 2 * var(--gutter));
-  --h: calc((var(--cw) - var(--s-5)) / var(--sum, 2));
-  display: flex; align-items: flex-end; gap: var(--s-5);
-}
-.project-frame { position: relative; display: block; flex: none; height: var(--h); aspect-ratio: var(--ar); overflow: hidden; background: #262824; }
-.project-frame img { width: 100%; height: 100%; object-fit: cover; }
-.project-frame.is-second img { transition: transform 0.8s var(--ease); }
-/* The kitchen: two upright pictures, the whole kitchen the taller (as tall as
-   the screen allows), the closer look four fifths of it, on one base line, to
-   the right -- large enough to fill most of the width as one spread. */
-.project.is-reversed .project-frames { --h: min(720px, calc(100svh - 160px), calc((var(--cw) - var(--s-5)) / 1.44)); justify-content: flex-end; }
-.project.is-reversed .project-frame.is-second { height: calc(var(--h) * 0.8); }
-.project:hover .project-frame.is-second img, .project:focus-visible .project-frame.is-second img { transform: scale(1.03); }
-.project:hover .project-more, .project:focus-visible .project-more { color: var(--travertine); }
-.project:hover .project-more::after, .project:focus-visible .project-more::after { transform: translateX(4px); }
-.project:focus-visible { outline: 2px solid var(--travertine); outline-offset: 8px; }
+.ready-line:hover::before, .ready-line:focus-visible::before { transform: scaleX(1); }
+.ready-line:hover .ready-more, .ready-line:focus-visible .ready-more { color: var(--figure); }
+.ready-line:hover .ready-more::after, .ready-line:focus-visible .ready-more::after { transform: translateX(4px); }
+.ready-line:focus-visible { outline: 2px solid var(--figure); outline-offset: 8px; }
 
-/* 6. Ready-made pieces: an exhibition wall -- two rows, the pieces of a row at
-   one height in their own proportions, standing on one line; the number in
-   the collection, the name, the price. */
-.home-objects { background: var(--stone); padding: var(--section) 0; }
-.objects-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-2) var(--s-6); align-items: end; margin-bottom: var(--s-7); }
-.objects-head .section-title { grid-column: 1; margin-bottom: 0; }
-.objects-text { grid-column: 1; color: var(--ink-soft); }
-.objects-head .home-ready-link { grid-column: 2; grid-row: 1 / span 2; }
-.exhibit { display: grid; gap: var(--s-8); }
-.exhibit-row {
-  --exhibit-max-h: 400px;
-  list-style: none; display: flex; align-items: flex-end; width: 100%; margin: 0 auto;
-  max-width: calc(var(--exhibit-max-h) * var(--sum, 3) + 3 * var(--s-5));
+/* The request, the home page's last word: «мне понравилось -> я хочу своё». A sheet of a project drawing
+   lying on the limestone -- where every piece the company makes begins. A
+   paper sheet, a little lifted, with its frame (the wider margin on the left,
+   for binding) and the small corner cell «Проект». In the drawing field: the
+   hero's slab in lines, at its real size (2840 x 1660), and inside it, dashed
+   in verde, the piece to be cut from it -- «Ваше изделие»; choosing a
+   direction names the piece and draws it solid (js/home-request.js). The form
+   itself (js/offer-form.js, the same form as on the direction pages, the band
+   marked data-offer-open so it stands open) is the sheet's title block:
+   standing on the frame's corner, every field a cell -- its caption small at
+   the top, the entry under it -- the cells ruled by thin lines, the outer edge
+   by the frame's line, and «Получить» one solid verde cell. Only on the home
+   page: the direction pages keep their band as it is. */
+.home-main .offer-band {
+  --sheet-line: #8d877b;                                 /* the frame and the block's outer edge */
+  --cell-line: #cdc7bb;                                  /* the rules between the cells */
+  background: var(--page); padding: var(--section) 0 calc(var(--section) * 1.25);
 }
-.exhibit-item { flex: var(--ar) 1 0; min-width: 0; padding-right: var(--s-5); }
-.exhibit-item:last-child { padding-right: 0; }
-.exhibit-link { display: block; color: var(--ink); text-decoration: none; }
-.exhibit-photo { display: block; }
-.exhibit-photo img { display: block; width: 100%; height: auto; }
-.exhibit-photo.is-empty { display: grid; place-items: center; aspect-ratio: 3 / 4; color: var(--muted); font-size: var(--fs-small); }
-.exhibit-label {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--s-2); align-content: start;
-  min-height: 4.6em; padding-top: var(--s-3); border-top: 1px solid var(--line-strong); transition: border-color 0.2s;
+.home-main .offer-band > .offer-band-inner {
+  position: relative; display: block; width: calc(100% - 2 * var(--gutter)); max-width: calc(var(--measure) - 2 * var(--gutter));
+  margin: 0 auto; padding: 8px 8px 8px 20px;
+  background: var(--surface);
+  /* A sheet lying on the stone, not a panel floating over it: its paper edge, and only a
+     breath of shadow where it touches -- no lift, no glow around it. */
+  box-shadow: 0 0 0 1px rgba(29, 30, 28, 0.05), 0 1px 1px rgba(29, 30, 28, 0.08), 0 10px 14px -12px rgba(29, 30, 28, 0.22);
 }
-.exhibit-number { grid-row: span 2; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.7; }
-.exhibit-name { font-size: 15px; font-weight: 600; }
-.exhibit-price { font-size: var(--fs-small); color: var(--muted); font-variant-numeric: tabular-nums; }
-.exhibit-link:hover .exhibit-label, .exhibit-link:focus-visible .exhibit-label { border-top-color: var(--accent); }
+.home-main .offer-kicker {   /* the sheet's corner cell */
+  position: absolute; z-index: 1; top: 8px; right: 8px; padding: 6px 14px;
+  border-left: 1px solid var(--sheet-line); border-bottom: 1px solid var(--sheet-line);
+  font-size: 12px; line-height: 1.4; color: var(--muted);
+}
+.home-main .offer-needs { display: none; }
+.home-main .offer-main {   /* the frame: a drawing's main line, heavier than the rules inside it */
+  display: grid; grid-template-columns: minmax(0, 1fr); align-items: start;
+  padding-top: 56px; border: 2px solid var(--sheet-line);
+}
+.home-main .offer-title, .home-main .offer-meta, .home-main .offer-drawing, .home-main .offer-notes { margin-left: 20px; margin-right: 20px; }
+.home-main .offer-title {
+  padding: 0; border: 0;
+  font-size: clamp(34px, 4.4vw, 64px); font-weight: 500; line-height: 1.02; letter-spacing: -0.03em;
+}
+.home-main .offer-title-soft { margin-top: var(--s-3); font-size: var(--fs-h3); font-weight: 400; letter-spacing: 0; line-height: 1.4; }
+.home-main .offer-meta { padding-top: var(--s-4); }
 
-.home-ready-link {
-  position: relative; display: inline-flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0;
-  font-weight: 600; color: var(--ink); text-decoration: none;
-}
-.home-ready-link::before {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.35s var(--ease);
-}
-.home-ready-link::after {
-  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transition: transform 0.2s var(--ease);
-}
-.home-ready-link:hover::before, .home-ready-link:focus-visible::before { transform: scaleX(1); }
-.home-ready-link:hover::after, .home-ready-link:focus-visible::after { transform: translateX(4px); }
+/* The drawing: thin lines that keep their weight at any size. */
+.home-main .offer-drawing { margin-top: var(--s-6); margin-bottom: var(--s-5); }
+.offer-drawing svg { display: block; width: 100%; height: auto; overflow: visible; }
+.offer-drawing svg * { vector-effect: non-scaling-stroke; }
+.drawing-slab { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.drawing-dim path { fill: none; stroke: var(--muted); stroke-width: 1; }
+.drawing-axis path { fill: none; stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 16 4 2 4; }
+.drawing-piece { fill: rgba(47, 93, 80, 0.04); stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 7 5; transition: fill 0.4s ease; }
+.is-named .drawing-piece { fill: rgba(47, 93, 80, 0.09); stroke-dasharray: none; }
+.drawing-leader { fill: none; stroke: var(--ink-soft); stroke-width: 1; }
+.drawing-dot { fill: var(--ink-soft); }
+.offer-drawing text { font-family: inherit; font-size: 13px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.offer-drawing .drawing-note { font-size: 15px; font-weight: 500; fill: var(--ink); }
 
-/* The request on the home page stands on the page itself (after the stone hall of the exhibition). */
-.home-main .offer-band { background: var(--page); }
+/* The sheet's notes, numbered as on a drawing: what the form needs, the drawing's units. */
+.home-main .offer-notes {
+  margin-bottom: var(--s-5); padding-left: 1.4em; max-width: 30em;
+  font-size: 13px; line-height: 1.5; color: var(--ink-soft);
+}
+.home-main .offer-notes li { padding-left: 0.2em; }
+.home-main .offer-notes li + li { margin-top: 4px; }
+.home-main .offer-notes li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* The title block: the form, each field a cell; its outer edge the frame's main line. */
+.home-main .offer-form {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0;
+  background: var(--cell-line); border-top: 2px solid var(--sheet-line);
+}
+.home-main .offer-form > * { background: var(--surface); }
+.home-main .offer-field { align-content: start; gap: 2px; min-height: 82px; padding: 10px 16px 12px; transition: background-color 0.2s ease; }
+.home-main .offer-form > .offer-field:first-child, .home-main .offer-field-file { grid-column: 1 / -1; }
+.home-main .offer-field:hover { background: #fbfaf8; }
+.home-main .offer-field:focus-within, .home-main .offer-consent:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
+.home-main .offer-label { font-size: 12px; font-weight: 400; line-height: 1.4; color: var(--muted); }
+/* Each entry is written on a line, as on a printed title block: the caption small above,
+   the writing line at the cell's foot (the site's control line, >= 3:1), a short hint
+   where nothing is written yet (js/home-request.js); the line turns verde in hand. */
+.home-main .offer-input { min-height: 42px; border-bottom: 1px solid var(--line-control); font-size: 17px; }
+.home-main .offer-input::placeholder { color: var(--muted); opacity: 1; }
+.home-main .offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface); }
+.home-main .offer-file { min-height: 42px; padding: 0; border-bottom: 1px solid var(--line-control); }
+.home-main .offer-file-icon { width: 30px; height: 30px; }
+.home-main .offer-file-icon svg { width: 15px; height: 15px; }
+.home-main .offer-file-title { font-weight: 500; }
+.home-main .offer-consent { grid-column: 1 / -1; padding: 14px 16px; }
+.home-main .offer-submit {
+  grid-column: 1 / -1; justify-self: stretch; justify-content: space-between; align-items: center;
+  min-height: 64px; padding: 0 18px; border: 0; border-radius: 0;
+  font-size: 17px; font-weight: 600; letter-spacing: 0;
+}
+.home-main .offer-form > .offer-submit { background: var(--accent); color: #fff; }
+.home-main .offer-form > .offer-submit:hover { background: var(--accent-hover); }
+.home-main .offer-submit:active { transform: none; }
+.home-main .offer-submit:focus-visible { outline: 2px solid var(--surface); outline-offset: -6px; }
+.home-main .offer-status { grid-column: 1 / -1; padding: 14px 16px; line-height: 1.5; }
+.home-main .offer-noscript { margin: 0 20px 24px; }
+@media (max-width: 480px) {
+  .offer-drawing text { font-size: 24px; }
+  .offer-drawing .drawing-note { font-size: 27px; }
+}
+@media (min-width: 481px) and (max-width: 767px) {
+  .offer-drawing text { font-size: 19px; }
+  .offer-drawing .drawing-note { font-size: 21px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .project-frame img, .portal-house img { transition: none; }
+  .portal-house img, .ready-line::before, .ready-more::after { transition: none; }
 }
 
 /* Narrower screens: the same scenes, stacked. */
@@ -976,52 +1066,47 @@ html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #
   .portal { grid-template-columns: 1fr; gap: var(--s-6); }
 }
 @media (max-width: 700px) {
-  /* Phones: the whole object across the width, the second picture large under it. */
-  .project-frames, .project.is-reversed .project-frames { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; justify-items: end; gap: var(--s-3); }
-  .project-frame, .project.is-reversed .project-frame.is-second { width: 100%; height: auto; }
-  .project-frame.is-second, .project.is-reversed .project-frame.is-second { width: 72%; }
-  .project.is-reversed .project-frame.is-main { order: -1; }
-  .project + .project { margin-top: var(--s-7); }
-  .project-more { font-size: 13px; }
-  .exhibit { gap: var(--s-7); }
-  .exhibit-row { flex-wrap: wrap; row-gap: var(--s-6); max-width: none; }
-  .exhibit-item, .exhibit-item:last-child { flex: 0 0 50%; padding-right: var(--s-3); }
-  .exhibit-item:nth-child(2n) { padding-right: 0; }
-  .objects-head { grid-template-columns: 1fr; }
-  .objects-head .home-ready-link { grid-column: 1; grid-row: auto; justify-self: start; }
+  /* The passage to the catalogue: the same line, its three parts one under another. */
+  .ready-line { grid-template-columns: minmax(0, 1fr); row-gap: var(--s-3); padding: var(--s-5) 0; }
+  .ready-more { justify-self: start; }
 }
 
 /* ---- Home: where we are ------------------------------------------------------
-   The address card and the map sit side by side; the map is real geography
-   (OpenStreetMap tiles) toned down to the page palette -- warm, quiet, no
-   colour of its own -- so the copper pin is the one accent on it. */
-.home-contacts { padding-top: var(--section); padding-bottom: var(--section); scroll-margin-top: 120px; }
-.contacts-head { margin-bottom: var(--s-5); }
-.contacts-head h2 { margin-bottom: var(--s-1); }
-.contacts-head p { color: var(--ink-soft); font-size: 18px; }
-.contacts-layout {
-  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--s-5); align-items: stretch;
+   Drawn like a plan on the limestone: the address in a column on the left --
+   where, the address, the phone, and under a thin line the way there -- and on
+   the right the map, a plain rectangle in a thin strong line. The map is real
+   geography (OpenStreetMap tiles) toned to the limestone, so the verde pin is
+   the one colour on it. No cards, no rounded corners. */
+.home-contacts {
+  padding-top: var(--section); padding-bottom: var(--section); scroll-margin-top: 120px;
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); column-gap: var(--s-7); align-items: start;
 }
+.contacts-layout { display: contents; }
+.contacts-head { grid-column: 1; grid-row: 1; margin-bottom: var(--s-5); }
+.contacts-head h2 { margin-bottom: 0; font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; }
+.contacts-head p { display: none; }   /* the same words head the column below */
 .contacts-card {
+  grid-column: 1; grid-row: 2;
   display: flex; flex-direction: column; gap: var(--s-4);
-  padding: var(--s-6); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m);
 }
+.contacts-card h3 { font-size: 13px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
 .contacts-card address { display: grid; gap: var(--s-3); font-style: normal; }
 .contacts-address { font-size: var(--fs-h3); line-height: 1.4; }
 .contacts-phone { justify-self: start; font-size: var(--fs-h3); font-weight: 600; text-decoration: none; }
 .contacts-phone:hover { color: var(--accent); }
-.contacts-actions { display: grid; gap: var(--s-3); margin-top: auto; padding-top: var(--s-3); }
+.contacts-actions { display: grid; gap: var(--s-3); margin-top: var(--s-3); padding-top: var(--s-5); border-top: 1px solid var(--line-strong); }
 .contacts-note { font-size: var(--fs-meta); color: var(--muted); }
 
 .contacts-map-frame {
-  position: relative; min-height: 460px; border-radius: var(--radius-m); overflow: hidden;
-  background: var(--surface-sunk); border: 1px solid var(--line);
+  grid-column: 2; grid-row: 1 / span 2;
+  position: relative; min-height: 480px; overflow: hidden;
+  background: var(--page); border: 1px solid var(--line-strong);
 }
 /* z-index: 0 keeps Leaflet's panes and controls (z-index up to 1000) inside
    the frame -- under the sticky header, not over it. */
-.contacts-map { position: absolute; inset: 0; z-index: 0; background: var(--surface-sunk); font-family: var(--font); }
-.contacts-map .leaflet-tile-pane { filter: grayscale(1) sepia(0.2) brightness(1.03) contrast(0.86); }
-.contacts-map .leaflet-bar { border: 1px solid var(--line-strong); border-radius: var(--radius-s); box-shadow: none; overflow: hidden; }
+.contacts-map { position: absolute; inset: 0; z-index: 0; background: var(--page); font-family: var(--font); }
+.contacts-map .leaflet-tile-pane { filter: grayscale(1) sepia(0.3) brightness(1.05) contrast(0.84); }
+.contacts-map .leaflet-bar { border: 1px solid var(--line-strong); border-radius: 0; box-shadow: none; overflow: hidden; }
 .contacts-map .leaflet-bar a {
   width: 36px; height: 36px; line-height: 34px; font-size: 20px; font-weight: 400;
   color: var(--ink); background: var(--surface); border-bottom-color: var(--line);
@@ -1060,9 +1145,115 @@ html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #
 .contacts-map-fallback {
   position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: var(--s-2); padding: var(--s-5);
-  background: var(--surface-sunk); color: var(--ink-soft); text-align: center;
+  background: var(--page); color: var(--ink-soft); text-align: center;
 }
 .contacts-map-fallback a { color: var(--accent); font-weight: 600; }
+
+/* ---- Home: the desktop grid (1024 px and wider) ---------------------------------
+   The desktop is the home page's own composition, not the phone's layout grown
+   wide. Three fields:
+   - the content grid: 12 columns, 24 px apart, at most 1440 px, between
+     margins of 5 % of the screen (24..120 px) -- the type, the lists, the form;
+   - the wide field: up to 1760 px, half the margin from the screen's edges --
+     the objects: the slab, the house, the stone plane of the directions;
+   - full bleed: the sections' grounds, the showroom's dark band, the hero's scene.
+   One vertical runs through the page: the content splits 5 / 7, the second
+   column starting at the sixth (the hero's words, the passage, the request,
+   where we are); the showroom keeps its 4 / 8. Narrower screens keep the
+   tablet and phone layouts as they are. */
+@media (min-width: 1024px) {
+  .mast, .home-main, .home-main ~ .site-footer {
+    --margin: clamp(24px, 5vw, 120px);
+    --content: min(calc(100vw - 2 * var(--margin)), 1440px);
+    --wide: min(calc(100vw - var(--margin)), 1760px);
+    --bleed: calc((var(--wide) - var(--content)) / 2);   /* how far the wide field reaches past the content, each side */
+    --gap: 24px;
+  }
+  /* The opening scenes -- the hero and the directions -- in one material language:
+     depth from layers, overlap and a real shadow, not from lines; one arrow, a
+     little heavier; a second stone, the plane things are lifted over. */
+  .night-hero, .home-directions {
+    --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
+    --stone-2: #e3ded5;
+  }
+  .mast-inner, .home-main .wrap, .home-main .offer-band-inner,
+  .home-main ~ .site-footer .site-footer-inner, .home-main ~ .site-footer .site-footer-bottom {
+    max-width: calc(1440px + 2 * var(--margin)); padding-left: var(--margin); padding-right: var(--margin);
+  }
+
+  /* Hero: the great name across the content, the headline a true headline beside it
+     (0.37 of the name: two lines in its five columns at every width), its words on the 5 / 7 vertical;
+     the slab in the wide field, at most 1320 px, so it has air around it. */
+  .night-hero { --mark-fs: calc(var(--content) * 0.0905); }
+  .hero-copy { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
+  .hero-title { grid-column: 1 / 6; max-width: none; font-size: max(28px, calc(var(--mark-fs) * 0.37)); }
+  .hero-side { grid-column: 6 / 13; }
+  .hero-scene { max-width: calc(1440px + 2 * var(--margin)); padding: 0 var(--margin); }
+  [data-mode="scrub"] .hero-stage { --fw: min(var(--wide), 1320px, calc((100svh - var(--mast-h, 64px) - var(--band) - 28px) * var(--slab-ratio))); }
+  /* A larger slab than 1440 x 900's (1170 px) keeps the point of view in proportion (1800 px for it),
+     so it is the same scene, larger -- the lying slab stays on the screen; never closer than 1800 px. */
+  [data-mode="scrub"] .hero-scene { perspective: max(1800px, calc(var(--fw) * 1.5385)); }
+  /* The sawn edge: a light arris where it meets the face, the stone darkening into the cut. */
+  [data-mode="scrub"] .hero-edge { background: linear-gradient(to bottom, #ddd7cc 0 1px, #aea79b 1px, #918b80 55%, #6d6961 100%); }
+  /* The shadow on the floor in two parts: close and firm under the slab's edges, then a soft spread. */
+  [data-mode="scrub"] .hero-floor-shadow { top: 2.7%; left: 3.5%; width: 91%; height: 93.8%; background: none; filter: none; }
+  [data-mode="scrub"] .hero-floor-shadow::before, [data-mode="scrub"] .hero-floor-shadow::after { content: ''; position: absolute; }
+  [data-mode="scrub"] .hero-floor-shadow::before { inset: 5% -3% -7% 2%; background: rgba(29, 30, 28, 0.3); filter: blur(28px); }
+  [data-mode="scrub"] .hero-floor-shadow::after { inset: 1% -0.6% -1.6% 0.6%; background: rgba(29, 30, 28, 0.42); filter: blur(5px); }
+
+  /* What can be ordered: the title in the first five columns, its line on the 5 / 7
+     vertical; the wall in the wide field. */
+  .wall-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: end; }
+  .wall-title { grid-column: 1 / 6; }
+  .wall-lead { grid-column: 6 / 12; margin-top: 0; }
+  .wall { max-width: var(--wide); padding: 0; }
+
+  /* The showroom: 4 / 8, the house reaching out into the wide field on the right. */
+  .portal { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
+  .portal-text { grid-column: 1 / 5; }
+  .portal-house { grid-column: 5 / 13; margin-right: calc(var(--bleed) * -1); }
+
+  /* The passage: the name, its line on the vertical, the way to the catalogue at the right edge. */
+  .ready-line { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
+  .ready-title { grid-column: 1 / 6; }
+  .ready-text { grid-column: 6 / 11; }
+  .ready-more { grid-column: 11 / 13; justify-self: end; }
+
+  /* The request: the sheet as wide as the content; inside its frame the heading and
+     the phone at the top of the first five columns, the sheet's notes at their foot,
+     level with the title block -- as a drawing keeps its notes beside its stamp --
+     the drawing and the title block on the 5 / 7 vertical, the block standing on the
+     frame's corner, three cells abreast, «Получить» the tall cell at the corner. */
+  .home-main .offer-band > .offer-band-inner { width: var(--content); max-width: none; padding: 12px 12px 12px 32px; }
+  .home-main .offer-kicker { top: 12px; right: 12px; }
+  .home-main .offer-main { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto auto 1fr auto; column-gap: var(--gap); padding-top: 56px; }
+  .home-main .offer-title { grid-column: 1 / 6; grid-row: 1; margin: 0 0 0 48px; }
+  .home-main .offer-meta { grid-column: 1 / 6; grid-row: 2; margin: 0 0 0 48px; padding-top: var(--s-5); }
+  .home-main .offer-notes { grid-column: 1 / 6; grid-row: 4; align-self: end; margin: 0 var(--s-5) 22px 48px; }
+  .home-main .offer-drawing { grid-column: 6 / 13; grid-row: 1 / 4; justify-self: center; width: min(100%, 600px); margin: 0 48px 28px 0; }
+  .home-main .offer-reveal, .home-main .offer-noscript { grid-column: 6 / 13; grid-row: 4; }
+  .home-main .offer-form { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); border-left: 2px solid var(--sheet-line); }
+  .home-main .offer-form > .offer-field:first-child { grid-column: auto; }
+  .home-main .offer-field-file, .home-main .offer-consent { grid-column: 1 / 3; }
+  .home-main .offer-submit { grid-column: 3; grid-row: 2 / 4; align-items: flex-end; padding: 18px 20px; font-size: 19px; }
+  .home-main .offer-submit svg { flex: none; }
+
+  /* Where we are: the address in five columns, the map in seven, its height from its width. */
+  .home-contacts { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
+  .contacts-head, .contacts-card { grid-column: 1 / 6; }
+  .contacts-map-frame { grid-column: 6 / 13; width: 100%; min-height: 360px; aspect-ratio: 16 / 10; }
+}
+/* 1024..1279: the hero's words keep their width beside the action (so they stay clear of the lying
+   slab); the passage's line a column shorter, so the way to the catalogue has room. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .hero-side { gap: var(--s-3); }
+  .ready-text { grid-column: 6 / 10; }
+  .ready-more { grid-column: 10 / 13; }
+  /* The project sheet: its title block a column wider, so every cell keeps its entry whole. */
+  .home-main .offer-title, .home-main .offer-meta, .home-main .offer-notes { grid-column: 1 / 5; }
+  .home-main .offer-drawing, .home-main .offer-reveal, .home-main .offer-noscript { grid-column: 5 / 13; }
+  .home-main .offer-input { font-size: 16px; }
+}
 
 /* ---- Category page: examples ------------------------------------------------ */
 .page-head { padding-top: var(--s-7); }
@@ -1394,6 +1585,8 @@ html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #
   .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   /* The address first, the map under it. */
   .contacts-layout { grid-template-columns: 1fr; }
+  .home-contacts { grid-template-columns: 1fr; }
+  .contacts-map-frame { grid-column: 1; grid-row: auto; margin-top: var(--s-6); }
   .contacts-map-frame { min-height: 380px; }
   /* Footer: the wordmark across the top, directions and contacts side by side. */
   .site-footer-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1440,12 +1633,10 @@ html:not(.js) .stack:hover .stack-row.is-open:not(:hover) .stack-name { color: #
      menu button on the narrowest phones: here it reads «Создать»;
      aria-label keeps the full name. */
   .site-header-cta-tail { display: none; }
+  /* The home page's project sheet: its title block one cell to a row. */
+  .home-main .offer-form { grid-template-columns: minmax(0, 1fr); }
   /* The home page's masthead: its name a size smaller still beside «Меню». */
   .mast-logo { font-size: 11px; letter-spacing: 0.22em; padding-left: 0.22em; }
-  /* The home page's stack of directions: a narrower strip beside the name. */
-  .stack-row { grid-template-columns: 26px minmax(0, 1fr) 60px; }
-  .stack-name { font-size: 20px; }
-  .home-directions { --win-h: 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }

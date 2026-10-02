@@ -12,6 +12,8 @@
 // of its row, like a line of the list of directions); a click unfolds the form
 // under it -- the same place, no dialog -- and puts the focus in its first
 // field. The fields are numbered rows, in the order they are filled in.
+// A band marked data-offer-open (the home page's closing request) is not
+// folded: the form stands open under its heading.
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = factory();
@@ -163,6 +165,8 @@
     const title = band && band.querySelector('.offer-title');
     const reveal = band && band.querySelector('.offer-reveal');
     if (!title || !reveal || title.querySelector('.offer-toggle')) return null;
+    // A band marked data-offer-open (the home page) stands open: no toggle, the form in view.
+    if (band.hasAttribute('data-offer-open')) return null;
     reveal.id = reveal.id || 'offer-' + n + '-reveal';
     const toggle = el(doc, 'button', { type: 'button', className: 'offer-toggle', 'aria-expanded': 'false', 'aria-controls': reveal.id });
     const label = el(doc, 'span', { className: 'offer-toggle-label' });
