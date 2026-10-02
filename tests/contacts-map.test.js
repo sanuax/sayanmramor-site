@@ -8,7 +8,7 @@ const ContactsMap = require('../js/contacts-map.js');
 const site = path.join(__dirname, '..');
 const index = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
 const unescape = s => s.replace(/&amp;/g, '&');
-const section = index.slice(index.indexOf('id="contacts"'), index.indexOf('class="home-showroom"'));
+const section = index.slice(index.indexOf('id="contacts"'), index.indexOf('</section>', index.indexOf('id="contacts"')));
 
 test('the one point is the sales office and production in Ivanteevka, at the Yandex address point', () => {
   const { OFFICE } = ContactsMap;
@@ -41,7 +41,7 @@ test('route and "open in maps" go to Yandex Maps at that point', () => {
 
 test('index.html: the contacts section has the address, the phone and the two links as plain HTML', () => {
   const { OFFICE, routeUrl, openUrl } = ContactsMap;
-  assert.ok(section.length > 0, 'section#contacts before the showroom band');
+  assert.ok(section.length > 0, 'section#contacts');
   assert.match(section, /<h2 id="contactsTitle">Где мы находимся<\/h2>/);
   assert.match(section, /Офис продаж и производство/);
   assert.match(section, /МО, г\. Ивантеевка,<br>ул\. Толмачева, д\. 80/);

@@ -1,12 +1,17 @@
 // js/offer-form.js
 //
-// «Получите коммерческое предложение по вашему техническому заданию» -- the
-// request block the old sayanmramor.ru closed its pages with. Each page carries
-// the same static band (its heading is plain HTML); this module renders the
-// form into its <div data-offer-form> (data-preselect="<direction key>" picks
-// the page's own direction). The directions are the SITE's -- not the
-// configurator's product types. There is no backend yet: a valid submit says
-// so and gives the phone and e-mail instead of pretending to send anything.
+// «Получить расчёт по вашему проекту» -- the request block that closes the
+// home page and every direction page. Each page carries the same static band
+// (its heading is plain HTML); this module renders the form into its
+// <div data-offer-form> (data-preselect="<direction key>" picks the page's own
+// direction). The directions are the SITE's -- not the configurator's product
+// types. There is no backend yet: a valid submit says so and gives the phone
+// and e-mail instead of pretending to send anything.
+//
+// The band opens in place: the heading becomes the button (an arrow at the end
+// of its row, like a line of the list of directions); a click unfolds the form
+// under it -- the same place, no dialog -- and puts the focus in its first
+// field. The fields are numbered rows, in the order they are filled in.
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = factory();
@@ -38,6 +43,8 @@
   const NOT_SENT = 'Заявки с сайта пока не отправляются. Позвоните нам: ' + PHONE +
     ' или напишите на ' + EMAIL + ' - файл с техническим заданием можно приложить к письму.';
   const NO_FILE = 'Файл не выбран';
+  // The fields, in the order they are filled in (and numbered on the page).
+  const FIELDS = ['Направление', 'Имя', 'Телефон', 'Техническое задание'];
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
   // Two small line icons, drawn in currentColor: a paper clip and an arrow.
@@ -82,7 +89,7 @@
     const preselect = container.getAttribute('data-preselect') || '';
 
     const select = el(doc, 'select', { id: id('direction'), name: 'direction', className: 'offer-input offer-select' },
-      [el(doc, 'option', { value: '', textContent: 'Без категории' })].concat(DIRECTIONS.map(d => {
+      [el(doc, 'option', { value: '', textContent: 'Без направления' })].concat(DIRECTIONS.map(d => {
         const o = el(doc, 'option', { value: d.key, textContent: d.label });
         if (d.key === preselect) o.setAttribute('selected', '');
         return o;
@@ -97,10 +104,11 @@
     });
     const fileRow = el(doc, 'div', { className: 'offer-field offer-field-file' }, [
       file,
+      el(doc, 'span', { className: 'offer-label', textContent: FIELDS[3] }),
       el(doc, 'label', { className: 'offer-file', htmlFor: id('file') }, [
         el(doc, 'span', { className: 'offer-file-icon' }, [icon(doc, 'clip')]),
         el(doc, 'span', { className: 'offer-file-text' }, [
-          el(doc, 'span', { className: 'offer-file-title', textContent: 'Прикрепить техническое задание' }),
+          el(doc, 'span', { className: 'offer-file-title', textContent: 'Прикрепить файл' }),
           fileName,
         ]),
       ]),
@@ -110,9 +118,9 @@
     const status = el(doc, 'p', { className: 'offer-status', role: 'status' });
 
     const form = el(doc, 'form', { className: 'offer-form', novalidate: '' }, [
-      field(doc, id('name'), 'ФИО', el(doc, 'input', { type: 'text', id: id('name'), name: 'name', className: 'offer-input', autocomplete: 'name' })),
-      field(doc, id('phone'), 'Телефон', el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'offer-input', autocomplete: 'tel', inputmode: 'tel', required: '' })),
-      field(doc, id('direction'), 'Категория', select),
+      field(doc, id('direction'), FIELDS[0], select),
+      field(doc, id('name'), FIELDS[1], el(doc, 'input', { type: 'text', id: id('name'), name: 'name', className: 'offer-input', autocomplete: 'name' })),
+      field(doc, id('phone'), FIELDS[2], el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'offer-input', autocomplete: 'tel', inputmode: 'tel', required: '' })),
       fileRow,
       el(doc, 'div', { className: 'offer-consent' }, [
         consent,
@@ -142,7 +150,37 @@
     });
 
     container.replaceChildren(form);
+    enhanceBand(container, form, n);
     return form;
+  }
+
+  // The band's heading becomes the button that unfolds the form in place.
+  // Without this script the heading stays a heading (and the page shows the
+  // <noscript> line with the phone and e-mail instead of a form).
+  function enhanceBand(container, form, n) {
+    const doc = container.ownerDocument;
+    const band = container.closest && container.closest('.offer-band');
+    const title = band && band.querySelector('.offer-title');
+    const reveal = band && band.querySelector('.offer-reveal');
+    if (!title || !reveal || title.querySelector('.offer-toggle')) return null;
+    reveal.id = reveal.id || 'offer-' + n + '-reveal';
+    const toggle = el(doc, 'button', { type: 'button', className: 'offer-toggle', 'aria-expanded': 'false', 'aria-controls': reveal.id });
+    const label = el(doc, 'span', { className: 'offer-toggle-label' });
+    while (title.firstChild) label.appendChild(title.firstChild);
+    toggle.appendChild(label);
+    toggle.appendChild(el(doc, 'span', { className: 'offer-toggle-arrow', 'aria-hidden': 'true' }));
+    title.appendChild(toggle);
+    band.classList.add('is-collapsible');
+    toggle.addEventListener('click', () => {
+      const open = !band.classList.contains('is-open');
+      band.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        const first = form.querySelector('select, input:not([type="file"])');
+        if (first) first.focus({ preventScroll: true });
+      }
+    });
+    return toggle;
   }
 
   function mountAll(doc) {
@@ -151,5 +189,5 @@
 
   if (typeof document !== 'undefined') mountAll(document);
 
-  return { DIRECTIONS, NOT_SENT, mount, mountAll };
+  return { DIRECTIONS, FIELDS, NOT_SENT, mount, mountAll, enhanceBand };
 });

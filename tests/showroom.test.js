@@ -378,7 +378,9 @@ test('every site page links to the showroom from its main navigation', () => {
   const pages = ['index.html', 'katalog.html'].concat(fs.readdirSync(path.join(root, 'categories')).map(f => 'categories/' + f));
   pages.forEach(page => {
     const html = fs.readFileSync(path.join(root, page), 'utf8');
-    const nav = html.slice(html.indexOf('<nav class="site-nav">'), html.indexOf('</nav>'));
+    // The home page's masthead (its own nav) or the other pages' header.
+    const start = html.includes('<nav class="mast-nav"') ? html.indexOf('<nav class="mast-nav"') : html.indexOf('<nav class="site-nav"');
+    const nav = html.slice(start, html.indexOf('</nav>', start));
     assert.ok(nav.includes('href="/sayanmramor-site/showroom.html"'), page);
   });
 });
