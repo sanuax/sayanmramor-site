@@ -15,10 +15,14 @@
   // Name, purpose, address and phone as on sayanmramor.ru. The legal address
   // (Москва, Складочная) is not a place to visit, so it is not on the map.
   // Coordinates: lat/lon -- the Yandex Maps address point of «улица
-  // Толмачёва, 80, Ивантеевка», the point the route and "open in maps" links
-  // go to. `pin` -- where the marker stands: the company's own building in
-  // that complex, the centre of OSM way 134908625 (~170 m east, ~96 m south
-  // of the address point), as the company marked it on the map.
+  // Толмачёва, 80, Ивантеевка» (the whole complex). `pin` -- the company's own
+  // building in that complex, the centre of OSM way 134908625 (~170 m east,
+  // ~96 m south of the address point), as the company marked it on the map:
+  // the marker stands there.
+  // `yandex` -- the company's own card in Yandex Maps (organisation 195958427090,
+  // «Саянмрамор», in that building) and the point Yandex routes to for it: the
+  // route and "open in maps" links go to the card, not to the complex's address
+  // point (a route there ended at the wrong end of the complex).
   const OFFICE = {
     name: 'Саянмрамор',
     purpose: 'Офис продаж и производство',
@@ -26,16 +30,20 @@
     lat: 55.960447,
     lon: 37.923215,
     pin: { lat: 55.959584, lon: 37.925953 },
+    yandex: { oid: '195958427090', slug: 'sayanmramor', lat: 55.959646, lon: 37.92594 },
   };
 
-  // Yandex Maps URL parameters: rtext = "from~to" as lat,lon, where an empty
-  // "from" is the visitor's own location; rtt = the route type.
-  // whatshere[point] (lon,lat) opens the address card for that point.
+  // Yandex Maps URL parameters, as Yandex itself builds them from the card's
+  // «Маршрут»: rtext = "from~to" as lat,lon, where an empty "from" is the
+  // visitor's own location; rtt = the route type; ruri = "from~to" as the
+  // places' ids, so the end of the route is the organisation, named.
   function routeUrl(p) {
-    return 'https://yandex.ru/maps/?rtext=~' + p.lat + ',' + p.lon + '&rtt=auto';
+    const y = p.yandex;
+    return 'https://yandex.ru/maps/?rtext=~' + y.lat.toFixed(6) + ',' + y.lon.toFixed(6) + '&rtt=auto&ruri=~' +
+      encodeURIComponent('ymapsbm1://org?oid=' + y.oid);
   }
   function openUrl(p) {
-    return 'https://yandex.ru/maps/?whatshere%5Bpoint%5D=' + p.lon + ',' + p.lat + '&whatshere%5Bzoom%5D=17';
+    return 'https://yandex.ru/maps/org/' + p.yandex.slug + '/' + p.yandex.oid + '/';
   }
 
   const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';

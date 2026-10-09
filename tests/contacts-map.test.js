@@ -31,12 +31,14 @@ test('the marker stands on the company\'s building in the complex (OSM way 13490
   assert.match(src, /L\.marker\(\[OFFICE\.pin\.lat, OFFICE\.pin\.lon\]/);
 });
 
-test('route and "open in maps" go to Yandex Maps at that point', () => {
+test('route and "open in maps" go to the company\'s own card in Yandex Maps, in its building -- not the complex\'s address point', () => {
   const { OFFICE, routeUrl, openUrl } = ContactsMap;
-  // rtext: from~to as lat,lon; an empty "from" is the visitor's location.
-  assert.equal(routeUrl(OFFICE), 'https://yandex.ru/maps/?rtext=~55.960447,37.923215&rtt=auto');
-  // whatshere[point]: lon,lat.
-  assert.equal(openUrl(OFFICE), 'https://yandex.ru/maps/?whatshere%5Bpoint%5D=37.923215,55.960447&whatshere%5Bzoom%5D=17');
+  // rtext: from~to as lat,lon (an empty "from" is the visitor's location); ruri: the organisation at the end.
+  assert.equal(routeUrl(OFFICE), 'https://yandex.ru/maps/?rtext=~55.959646,37.925940&rtt=auto&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D195958427090');
+  assert.equal(openUrl(OFFICE), 'https://yandex.ru/maps/org/sayanmramor/195958427090/');
+  // Yandex's point for the card is the company's building: a few metres from the pin.
+  const m = 111320, dy = (OFFICE.yandex.lat - OFFICE.pin.lat) * m, dx = (OFFICE.yandex.lon - OFFICE.pin.lon) * m * Math.cos(OFFICE.pin.lat * Math.PI / 180);
+  assert.ok(Math.hypot(dx, dy) < 20, Math.hypot(dx, dy) + ' m');
 });
 
 test('index.html: the contacts section has the address, the phone and the two links as plain HTML', () => {
