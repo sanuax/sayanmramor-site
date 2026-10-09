@@ -123,8 +123,8 @@
 
     const form = el(doc, 'form', { className: 'offer-form', novalidate: '' }, [
       field(doc, id('direction'), FIELDS[0], select),
-      field(doc, id('name'), FIELDS[1], el(doc, 'input', { type: 'text', id: id('name'), name: 'name', className: 'offer-input', autocomplete: 'name' })),
-      field(doc, id('phone'), FIELDS[2], el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'offer-input', autocomplete: 'tel', inputmode: 'tel', required: '' })),
+      field(doc, id('name'), FIELDS[1], el(doc, 'input', { type: 'text', id: id('name'), name: 'name', className: 'offer-input', autocomplete: 'name', placeholder: 'Ваше имя' })),
+      field(doc, id('phone'), FIELDS[2], el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'offer-input', autocomplete: 'tel', inputmode: 'tel', placeholder: '+7 (___) ___-__-__', required: '' })),
       fileRow,
       el(doc, 'div', { className: 'offer-consent' }, [
         consent,
@@ -135,7 +135,7 @@
         ]),
       ]),
       el(doc, 'button', { type: 'submit', className: 'btn btn-primary offer-submit' }, [
-        el(doc, 'span', { textContent: 'Получить' }), icon(doc, 'arrow'),
+        el(doc, 'span', { textContent: 'Получить расчёт' }), icon(doc, 'arrow'),
       ]),
       status,
     ]);

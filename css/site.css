@@ -378,7 +378,7 @@ html.menu-lock { overflow: hidden; }
    way to the ready-made pieces; the showroom's band; the request form standing
    open; where we are. Nothing moves but colour on hover and focus (150 ms):
    no scroll scenes, nothing held, nothing that needs JavaScript to be seen. */
-.home { --gap: 24px; }   /* the gap of the contacts' 12-column row (1024 px and wider) */
+.home { --gap: 24px; --order-pad: clamp(28px, 4.4vw, 56px); }   /* the gap of the contacts' 12-column row (1024 px and wider) */
 
 .home-hero {
   display: grid; position: relative; isolation: isolate; overflow: hidden;
@@ -511,7 +511,7 @@ html.menu-lock { overflow: hidden; }
 
 /* What can be ordered: one stone panel -- warm dark marble under a veil -- with
    the menu's five groups, each a photograph of its work, its name and its links. */
-.home-products { --order-pad: clamp(28px, 4.4vw, 56px); padding-bottom: var(--section); }
+.home-products { padding-bottom: var(--section); }
 .home-order {
   --order-ink: #f6f2ec; --order-dim: rgba(246, 242, 236, 0.78); --order-rule: rgba(246, 242, 236, 0.3);
   position: relative; isolation: isolate; overflow: hidden; border-radius: 20px;
@@ -602,6 +602,59 @@ html.menu-lock { overflow: hidden; }
   .home-instock-title { font-size: 18px; }
   .home-groups { grid-template-columns: minmax(0, 1fr); }
   .home-group a { min-height: 44px; }   /* a finger's target */
+}
+
+/* The request on the home page: a light card in the measure, under the dark showroom band
+   and over the dark footer. It keeps the stone panel's padding and five columns: the words
+   over the first two, the form from the third (under «Кухня и ванная») to the end.
+   .offer-main and .offer-meta step aside (display: contents) so their parts take the card's grid. */
+.home .offer-band { background: transparent; padding: var(--section) var(--gutter) 0; }   /* below it, the contacts keep their own top space */
+.home .offer-band-inner {
+  max-width: calc(var(--measure) - 2 * var(--gutter)); margin: 0 auto; padding: var(--order-pad);
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: auto auto auto 1fr; column-gap: var(--s-5); align-items: start;
+  border-radius: 20px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+}
+.home .offer-main, .home .offer-meta { display: contents; }
+.home .offer-kicker {
+  grid-column: 1 / 3; grid-row: 1; display: flex; align-items: center; gap: var(--s-3); padding: 0;
+  font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+.home .offer-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
+.home .offer-title {
+  grid-column: 1 / 3; grid-row: 2; margin-top: var(--s-4); padding: 0; border: 0;
+  font-size: clamp(26px, 2.5vw, 36px); font-weight: 600; line-height: 1.12; letter-spacing: -0.015em;
+}
+.home .offer-title-soft { margin-top: 4px; font-weight: 300; color: var(--ink-soft); }
+.home .offer-lead { grid-column: 1 / 3; grid-row: 3; max-width: 32em; margin-top: var(--s-5); font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+.home .offer-phone {
+  grid-column: 1 / 3; grid-row: 4; align-self: end; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--s-3);   /* the icon, «Или позвоните:» over the number */
+  margin-top: var(--s-6); font-size: var(--fs-small); color: var(--ink-soft);
+}
+.home .offer-phone::before {
+  content: ''; grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; background: var(--surface-sunk) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23474944' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16.4v2.8a1.9 1.9 0 0 1-2 1.9 18.6 18.6 0 0 1-8.1-2.9 18.3 18.3 0 0 1-5.6-5.6A18.6 18.6 0 0 1 2.4 4.5a1.9 1.9 0 0 1 1.9-2h2.8a1.9 1.9 0 0 1 1.9 1.6c.1.9.4 1.8.7 2.6a1.9 1.9 0 0 1-.4 2L8.1 9.9a15 15 0 0 0 5.6 5.6l1.2-1.2a1.9 1.9 0 0 1 2-.4c.8.3 1.7.6 2.6.7a1.9 1.9 0 0 1 1.6 1.9z'/%3E%3C/svg%3E") center / 18px no-repeat;
+}
+.home .offer-needs {
+  grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; gap: var(--s-4);
+  font-size: 13px; color: var(--muted);
+}
+.home .offer-needs::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.home .offer-phone a { font-size: var(--fs-body); }
+.home .offer-reveal, .home .offer-noscript { grid-column: 3 / 6; grid-row: 2 / 5; }
+.home .offer-form { margin-top: var(--s-4); column-gap: var(--s-6); }
+.home .offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface); }
+.home .offer-input::placeholder { color: var(--muted); opacity: 1; }
+/* Narrower than the panel's five columns: the words over the form, each the card's width. */
+@media (max-width: 1100px) {
+  .home .offer-band-inner { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .home .offer-kicker, .home .offer-title, .home .offer-lead, .home .offer-phone, .home .offer-needs,
+  .home .offer-reveal, .home .offer-noscript { grid-column: 1; grid-row: auto; }
+  .home .offer-phone { margin-top: var(--s-5); }
+  .home .offer-needs { margin-top: var(--s-7); }
+  .home .offer-needs, .home .offer-reveal, .home .offer-noscript { order: 1; }   /* the phone stays with the words, the line of fields goes to the form */
+}
+@media (max-width: 520px) {
+  .home .offer-band { padding-left: var(--gutter); padding-right: var(--gutter); }
+  .home .offer-band-inner { border-radius: 16px; }
 }
 
 /* The showroom: the site's one dark band on the page -- the words, the way in, the house. */

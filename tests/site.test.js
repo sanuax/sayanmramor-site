@@ -757,7 +757,6 @@ test('home-request.js: the chosen direction names the piece on the drawing and d
   assert.ok(!('value' in inputs.name.attrs) && !('required' in inputs.name.attrs), 'nothing but the hint');
   HomeRequest.hint(null);
   const src = fs.readFileSync(path.join(site, 'js', 'home-request.js'), 'utf8');
-  assert.doesNotMatch(fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8'), /placeholder/, 'the shared form stays as it is');
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon|submit/, 'it never sends nor submits anything');
 });
 
