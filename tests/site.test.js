@@ -657,6 +657,7 @@ test('the offer band on all 14 pages: «Проект», one heading row, the lin
     assert.match(band, /<div class="offer-reveal">\s*<div class="offer-reveal-inner">\s*<div data-offer-form[^>]*><\/div>\s*<\/div>\s*<\/div>/, page);
     assert.match(band, /<noscript><p class="offer-noscript">/, page);
     assert.ok(band.indexOf('</noscript>') > band.indexOf('offer-reveal'), page + ': the fallback stands outside the folding block');
+    assert.match(band, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: [\s\S]*?<\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor<\/a><\/p>\s*<\/div>/, page + ': Telegram under the phone');
     assert.doesNotMatch(band, /Получите коммерческое предложение/, page);
   });
 });
