@@ -1,7 +1,7 @@
 // js/showroom/showroom-ui.js
 //
 // The DOM around the 3D stage, rendered from ShowroomState.describe():
-// zone bar, "where am I" caption, «← На улицу», the object card and the
+// zone bar, "where am I" caption, «На улицу», the object card and the
 // «Все изделия» panel. Sends intents back as reducer actions -- no product
 // logic lives in these handlers.
 export function createUI(doc, { Data, dispatch }) {
@@ -41,8 +41,7 @@ export function createUI(doc, { Data, dispatch }) {
     where.textContent = Data.zoneById(object.zone).label;
     const arrow = doc.createElement('span');
     arrow.className = 'sr-panel-arrow';
-    arrow.setAttribute('aria-hidden', 'true');
-    arrow.textContent = '→';
+    arrow.setAttribute('aria-hidden', 'true');   // the site's arrow, drawn by css/showroom.css
     b.append(name, where, arrow);
     b.addEventListener('click', () => dispatch({ type: 'chooseProduct', productKey: product.key }));
     li.appendChild(b);

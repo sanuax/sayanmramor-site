@@ -81,43 +81,6 @@ function webpSize(file) {
   return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
 }
 
-test('«Что можно заказать»: a wall of 13 slabs in the groups and order of «Изделия +», each a plain link to its page, under the menu\'s own names; its photograph from that page, upright; its words the page\'s own; the first one open', () => {
-  const html = homeHtml();
-  const sec = sectionOf(html, '<section class="home-directions"');
-  assert.match(sec, /<section class="home-directions" aria-labelledby="directionsTitle" data-wall>\s*<div class="wrap wall-head">\s*<h2 class="wall-title" id="directionsTitle">Что можно заказать<\/h2>\s*<p class="wall-lead">От подоконника до фасада и бассейна\. Десять направлений можно рассчитать в конфигураторе, а спа зоны, хаммамы и бассейны - выполнить по техническому заданию\.<\/p>/);
-  // The groups and the slabs, as the masthead's «Изделия +» has them.
-  const menu = html.slice(html.indexOf('<details class="mast-drop mast-drop-products">'), html.indexOf('</details>', html.indexOf('mast-drop-products')));
-  const menuGroups = [...menu.matchAll(/<p class="mast-group-title">([^<]+)<\/p>\s*<ul>([\s\S]*?)<\/ul>/g)]
-    .map(m => [m[1], [...m[2].matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map(a => [a[2], a[1]])]);
-  const bays = [...sec.matchAll(/<li class="wall-bay" style="--n: (\d)">\s*<h3 class="wall-bay-name">([^<]+)<\/h3>\s*<ul class="wall-slabs">([\s\S]*?)<\/ul>\s*<\/li>/g)];
-  const slabRe = /<li><a class="wall-slab( is-open)?" href="([^"]+)"><span class="wall-face"><img src="([^"]+)" alt="" width="(\d+)" height="(\d+)" loading="lazy" decoding="async"><\/span><span class="wall-label"><span class="wall-name">([^<]+)<\/span><span class="wall-text">([^<]+)<\/span><\/span><\/a><\/li>/g;
-  const wall = bays.map(b => [b[2], [...b[3].matchAll(slabRe)].map(m => ({ open: !!m[1], href: m[2], photo: m[3], w: +m[4], h: +m[5], name: m[6], text: m[7] }))]);
-  assert.equal(menuGroups.length, 5);
-  assert.deepEqual(wall.map(([g, slabs]) => [g, slabs.map(s => [s.name, s.href])]), menuGroups, 'the five groups and thirteen directions of «Изделия +», in its order');
-  bays.forEach((b, i) => assert.equal(+b[1], wall[i][1].length, b[2] + ': --n is its number of slabs'));
-  const slabs = wall.flatMap(([, s]) => s);
-  assert.equal(slabs.length, 13);
-  assert.deepEqual(slabs.map(s => s.open), slabs.map((s, i) => i === 0), 'the first slab open');
-  assert.ok(slabs.every(s => !/Столешниц/.test(s.name)), 'the menu\'s names: «Кухня», «Ванная»');
-  const PHOTOS = ['184', '190', '160', '049', '096', '098', '014', '142', '053', '170', '091', 'm2_storis', 'm59'];
-  assert.deepEqual(slabs.map(s => s.photo.split('/').pop().replace('.webp', '')), PHOTOS);
-  slabs.forEach(s => {
-    const page = s.href.replace('/sayanmramor-site/', '');
-    const file = path.join(site, s.photo.replace('/sayanmramor-site/', ''));
-    assert.ok(photosOfPage(page).includes(s.photo), s.name + ': a photograph its own page shows');
-    assert.ok(fs.existsSync(file), s.photo);
-    assert.deepEqual(webpSize(file), [s.w, s.h], s.name + ': width and height as the file has them');
-    assert.ok(s.h > s.w, s.name + ': an upright photograph, shown whole when its slab is open');
-    const subtitle = fs.readFileSync(path.join(site, page), 'utf8').split('<p class="subtitle">')[1].split('</p>')[0];
-    assert.ok(subtitle.includes(s.text), s.name + ': the words are its page\'s own');
-  });
-  ['Спа зоны', 'Хаммамы', 'Бассейны'].forEach(n => assert.doesNotMatch(slabs.find(s => s.name === n).text, /конфигуратор/));
-  assert.doesNotMatch(sec, /—/, 'the site\'s short dash');
-  assert.doesNotMatch(sec, /class="[^"]*(card|badge|pill)/, 'no cards, no badges');
-  assert.ok(html.includes('<script src="/sayanmramor-site/js/home-wall.js" defer></script>'));
-  assert.ok(!fs.existsSync(path.join(site, 'js', 'home-stack.js')) && !html.includes('home-stack'), 'the old stack is gone');
-});
-
 test('«Что можно заказать» in CSS: a wall, not cards -- joints that are recesses, sawn edges, the light falling off, its shadow at the foot; the names turned up the slabs; two courses (7 and 6) on phones, tablets and touch screens; on a desktop with a real pointer one course and one slab open, 2:3, drawn out of the wall by its thickness', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const block = css.slice(css.indexOf('/* 2. What can be ordered'), css.indexOf('/* 4. The showroom'));
@@ -175,44 +138,7 @@ test('home-wall.js: one slab open at a time -- the one the pointer moves over or
   assert.equal(HomeWall.init({ querySelector: () => null }), null);
 });
 
-test('the home page\'s masthead: the name in the middle, «Создать изделие» on the left, the ovals on the right -- «Изделия +» (all 13 directions in five groups), «Готовые изделия», «Шоурум +» (the house, the way in, the rooms), «Контакты»; «Меню» on narrower screens', () => {
-  const html = homeHtml();
-  const mast = html.slice(html.indexOf('<header class="mast is-light" data-mast data-dock>'), html.indexOf('</header>'));
-  assert.ok(mast.length > 0, 'the new masthead');
-  assert.doesNotMatch(html, /<header class="site-header">/, 'the old header is gone from the home page');
-  assert.match(mast, /<div class="mast-start">\s*<a class="mast-pill mast-cta" href="\/calculator\/sayanmramor-calculator\.html">Создать изделие<\/a>/);
-  assert.match(mast, /<a class="mast-logo" href="\/sayanmramor-site\/index\.html">Саянмрамор<\/a>/);
-  const nav = mast.slice(mast.indexOf('<nav class="mast-nav"'), mast.indexOf('</nav>'));
-  const ovals = [...nav.matchAll(/<(summary|a) class="mast-pill"[^>]*>([^<]+)/g)].map(m => m[1] + ':' + m[2]);
-  assert.deepEqual(ovals, ['summary:Изделия', 'a:Готовые изделия', 'summary:Шоурум', 'a:Контакты']);
-  assert.match(nav, /<a class="mast-pill" href="\/sayanmramor-site\/katalog\.html">Готовые изделия<\/a>/);
-  assert.match(nav, /<a class="mast-pill" href="\/sayanmramor-site\/index\.html#contacts">Контакты<\/a>/);
-  // Both planes that list the directions list all 13, in the five groups, each to its own page.
-  const groupsOf = part => [...part.matchAll(/<div class="mast-group">\s*<p class="mast-group-title">([^<]+)<\/p>\s*<ul>([\s\S]*?)<\/ul>/g)]
-    .map(m => [m[1], [...m[2].matchAll(/<li><a href="([^"]+)">([^<]+)<\/a><\/li>/g)].map(a => [a[2], a[1]])]);
-  const expected = GROUPS.map(([title, names]) => [title, names.map(n => [n, '/sayanmramor-site/' + DIRECTIONS[n]])]);
-  const products = nav.slice(nav.indexOf('mast-drop-products'), nav.indexOf('mast-drop-showroom'));
-  const menu = mast.slice(mast.indexOf('<details class="mast-drop mast-menu">'));
-  assert.deepEqual(groupsOf(products), expected);
-  assert.deepEqual(groupsOf(menu), expected);
-  // «Шоурум»: the house (loaded only when the plane opens), the way in, the rooms the showroom opens by hash -- all through the quiet fade.
-  const showroom = nav.slice(nav.indexOf('mast-drop-showroom'));
-  assert.match(showroom, /<img src="\/sayanmramor-site\/assets\/home\/showroom-house-1600\.webp" alt="" width="1600" height="1000" loading="lazy"/);
-  assert.match(showroom, /<a class="mast-enter" href="\/sayanmramor-site\/showroom\.html" data-portal>Открыть шоурум<\/a>/);
-  const rooms = [...showroom.matchAll(/<li><a href="\/sayanmramor-site\/showroom\.html#(\w+)" data-portal>([^<]+)<\/a><\/li>/g)].map(m => m[1]);
-  assert.deepEqual(rooms, ['hall', 'living', 'kitchen', 'staircase', 'bathroom']);
-  // «Меню»: everything, the action and the phone.
-  assert.match(menu, /<a href="\/sayanmramor-site\/katalog\.html">Готовые изделия<\/a>/);
-  assert.match(menu, /<a href="\/sayanmramor-site\/showroom\.html" data-portal>Шоурум<\/a>/);
-  assert.match(menu, /<a class="mast-pill mast-cta mast-menu-cta" href="\/calculator\/sayanmramor-calculator\.html">Создать изделие<\/a>/);
-  assert.match(menu, /<a class="mast-menu-phone" href="tel:\+74952155145">\+7 \(495\) 215-51-45<\/a>/);
-  assert.equal((mast.match(/<details class="mast-drop/g) || []).length, 3, 'native <details>: they open without JavaScript');
-  // The home page loads the masthead's own script, not the other pages' header.js.
-  assert.ok(html.includes('<script src="/sayanmramor-site/js/masthead.js" defer></script>'));
-  assert.ok(!html.includes('js/header.js'));
-});
-
-test('the other 15 pages keep their header for now: the old <header class="site-header"> and header.js, no masthead', () => {
+test('all 16 pages share one header: <header class="site-header"> and header.js, no masthead anywhere', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.match(html, /<header class="site-header">/, page);
@@ -252,60 +178,6 @@ test('masthead.js: one plane at a time, opened from the oval\'s width and closed
   const src = fs.readFileSync(path.join(site, 'js', 'masthead.js'), 'utf8');
   ["e.preventDefault()", "'--pill-w'", "classList.add('is-open')", "e.key === 'Escape'", "'focusout'", "'menu-lock'", "IntersectionObserver", "prefers-reduced-motion"]
     .forEach(t => assert.ok(src.includes(t), t));
-});
-
-test('the hero: the great name, the headline and the action; a real slab (the showroom\'s Calacatta photograph, its real size drawn on it) that becomes the staircase (photo 200); the three steps in the site\'s own words', () => {
-  const crypto = require('node:crypto');
-  const html = homeHtml();
-  const sec = sectionOf(html, '<section class="night-hero"');
-  assert.match(sec, /<p class="hero-mark" aria-hidden="true"><span class="hero-mark-word">Саянмрамор<\/span><\/p>/);
-  assert.match(sec, /<h1 class="hero-title" id="heroTitle">Изделия из натурального камня на заказ<\/h1>/);
-  assert.match(sec, /<p class="hero-lead">Лестницы, столешницы, полы, стены и фасады из мрамора, кварцита, оникса и гранита\. Выберите камень из каталога и задайте размеры - изделие сразу появится в 3D с ориентировочной стоимостью\.<\/p>/);
-  const actions = [...sec.matchAll(/<a class="night-cta[^"]*" href="([^"]+)">([^<]+)<\/a>/g)].map(m => [m[1], m[2]]);
-  assert.deepEqual(actions, [['/calculator/sayanmramor-calculator.html', 'Создать изделие'], ['/calculator/sayanmramor-calculator.html', 'Создать изделие']], 'the action, and again at the end of the story');
-  // The slab: an existing photograph of a real slab (the showroom uses it too), its size as the showroom records it.
-  // A phone never decodes the 4096 px original: 1600 / 2560 copies of it (assets/home/SOURCES.md), the original only for the densest large screens.
-  const stoneImg = sec.match(/<img class="hero-stone" ([^>]*)>/)[1];
-  assert.match(stoneImg, /src="\/sayanmramor-site\/assets\/home\/calacatta-nova-P0585309-1600\.webp"/);
-  assert.match(stoneImg, /alt="" width="4096" height="2437" fetchpriority="high"/);
-  const stoneSet = [...stoneImg.match(/srcset="([^"]+)"/)[1].matchAll(/(\S+) (\d+)w/g)].map(m => [m[1], Number(m[2])]);
-  assert.deepEqual(stoneSet, [
-    ['/sayanmramor-site/assets/home/calacatta-nova-P0585309-1600.webp', 1600],
-    ['/sayanmramor-site/assets/home/calacatta-nova-P0585309-2560.webp', 2560],
-    ['/sayanmramor-site/assets/showroom/stone/calacatta-nova-P0585309.webp', 4096],
-  ]);
-  assert.match(stoneImg, /sizes="\(max-width: 767px\) [^"]+"/);
-  const homeSources = fs.readFileSync(path.join(site, 'assets', 'home', 'SOURCES.md'), 'utf8');
-  stoneSet.forEach(([src]) => {
-    const data = fs.readFileSync(path.join(site, src.replace('/sayanmramor-site/', '')));
-    assert.ok(homeSources.includes(crypto.createHash('sha256').update(data).digest('hex')), src + ' is in assets/home/SOURCES.md');
-  });
-  const Photos = require('../js/showroom/stone-photos.js');
-  assert.deepEqual(Photos.PHOTOS['calacatta-nova-P0585309'].slab, [2.84, 1.66]);
-  assert.match(sec, /<span class="hero-dim-label">2840<\/span>[\s\S]*<span class="hero-dim-label">1660<\/span>/);
-  assert.doesNotMatch(sec.replace(/<[^>]*>/g, ' '), /Calacatta|калакатт/i, 'the stone is not named in the text');
-  // Its colour balance is the showroom's own (mean -> target, linear light).
-  const gain = Photos.gain('calacatta-nova-P0585309').map(g => g.toFixed(3));
-  assert.ok(sec.includes(`values="${gain[0]} 0 0 0 0  0 ${gain[1]} 0 0 0  0 0 ${gain[2]} 0 0  0 0 0 1 0"`), gain.join(' '));
-  // The object it becomes: photo 200, as in SOURCES.md.
-  const img = sec.match(/<img class="hero-photo" ([^>]*)>/)[1];
-  assert.match(img, /alt="Лестница из натурального камня"/);
-  const srcset = [...img.match(/srcset="([^"]+)"/)[1].matchAll(/(\S+) (\d+)w/g)].map(m => [m[1].split('/').pop(), Number(m[2])]);
-  assert.deepEqual(srcset, [['hero-stair-1200.webp', 1200], ['hero-stair-1920.webp', 1920], ['hero-stair-2880.webp', 2880]]);
-  const sources = fs.readFileSync(path.join(site, 'assets', 'hero', 'SOURCES.md'), 'utf8');
-  srcset.forEach(([file]) => {
-    const data = fs.readFileSync(path.join(site, 'assets', 'hero', file));
-    assert.ok(sources.includes(crypto.createHash('sha256').update(data).digest('hex')), file + ' is in SOURCES.md');
-  });
-  assert.match(sec, /<a class="hero-tag" href="\/sayanmramor-site\/categories\/lestnitsy\.html">Лестницы<\/a>/);
-  const steps = [...sec.matchAll(/<li class="hero-step" data-step="(\d)"><span class="hero-step-number">(\d\d)<\/span><span class="hero-step-name">([^<]+)<\/span><span class="hero-step-note">([^<]+)<\/span><\/li>/g)].map(m => m.slice(1));
-  assert.deepEqual(steps, [
-    ['1', '01', 'Камень', 'Выберите камень из каталога'],
-    ['2', '02', 'Размеры', 'Задайте размеры'],
-    ['3', '03', '3D и стоимость', 'Изделие сразу появится в 3D с ориентировочной стоимостью'],
-  ]);
-  assert.ok(html.indexOf('js/home-hero.js') > 0);
-  assert.doesNotMatch(html, /home-process|process-step|class="slab/, '«От идеи к изделию» is the hero\'s story now');
 });
 
 test('the hero in CSS: held while you scroll (sticky), moved only by transform and opacity from a few numbers; standing still by default (no JavaScript, phones, «reduce motion»)', () => {
@@ -383,43 +255,6 @@ test('home-hero.js: one number from 0 to 1 -- the slab lies at 0 and stands as t
 });
 
 
-test('the showroom doorway: the house (a clean frame of the 3D scene, in SOURCES.md) is the object and the link; «Открыть шоурум» the action; the rooms a quiet second way in', () => {
-  const crypto = require('node:crypto');
-  const sec = sectionOf(homeHtml(), '<section class="home-portal night"');
-  assert.match(sec, /<h2 class="portal-title" id="portalTitle">Дом из натурального камня<\/h2>/);
-  assert.match(sec, /<a class="portal-enter" href="\/sayanmramor-site\/showroom\.html" data-portal>Открыть шоурум<\/a>/);
-  const rooms = [...sec.matchAll(/<li><a href="\/sayanmramor-site\/showroom\.html#(\w+)" data-portal>([^<]+)<\/a><\/li>/g)].map(m => [m[1], m[2]]);
-  assert.deepEqual(rooms, [['hall', 'Холл'], ['living', 'Гостиная'], ['kitchen', 'Кухня'], ['staircase', 'Лестница'], ['bathroom', 'Ванная']]);
-  // The rooms are zones the showroom itself opens by hash.
-  const app = fs.readFileSync(path.join(site, 'js', 'showroom', 'showroom-data.js'), 'utf8');
-  rooms.forEach(([id]) => assert.ok(app.includes("'" + id + "'"), id));
-  const house = sec.match(/<a class="portal-house" href="\/sayanmramor-site\/showroom\.html" data-portal aria-label="([^"]+)">\s*<img ([^>]*)>/);
-  assert.match(house[1], /Открыть шоурум/);
-  const srcset = [...house[2].match(/srcset="([^"]+)"/)[1].matchAll(/(\S+) (\d+)w/g)].map(m => [m[1].split('/').pop(), Number(m[2])]);
-  assert.deepEqual(srcset, [['showroom-house-1600.webp', 1600], ['showroom-house-2560.webp', 2560]]);
-  const sources = fs.readFileSync(path.join(site, 'assets', 'home', 'SOURCES.md'), 'utf8');
-  srcset.forEach(([file]) => {
-    const data = fs.readFileSync(path.join(site, 'assets', 'home', file));
-    assert.ok(sources.includes(crypto.createHash('sha256').update(data).digest('hex')), file + ' is in SOURCES.md');
-  });
-  assert.match(sources, /toDataURL/);
-  assert.match(sources, /не фотография реального здания/);
-  // The one dark opening of the light page (class «night»), the heading in the page's type; the showroom's copper only on its action,
-  // its graphite only in the veil on the way in; no zoom.
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const block = css.slice(css.indexOf('/* 4. The showroom'), css.indexOf('/* 6. Ready-made'));
-  assert.match(block, /\.home-portal \{\s*background: var\(--ground\); color: var\(--figure\);/);
-  assert.match(block, /\.portal-title \{[^}]*font-size: clamp\(28px, 2\.6vw, 40px\); font-weight: 500;/);
-  assert.doesNotMatch(block, /font-weight: 700/);
-  assert.equal((block.match(/var\(--sr-copper\)/g) || []).length, 1, 'copper only on «Открыть шоурум»');
-  assert.match(block, /\.portal-enter \{[^}]*background: var\(--sr-copper\); color: #fff;/);
-  assert.match(block, /\.portal-veil \{[^}]*position: fixed; inset: 0;[^}]*background: var\(--sr-graphite\);/);
-  assert.doesNotMatch(block, /scale\(|zoom/);
-  assert.doesNotMatch(block, /\.portal-rooms[^{]*\{[^}]*(border|::before|border-radius)/, 'the rooms: no dots, lines or cards');
-  const outside = css.slice(0, css.indexOf('/* 4. The showroom')) + css.slice(css.indexOf('/* 6. Ready-made'));
-  assert.doesNotMatch(outside.replace(/:root \{[\s\S]*?\n\}/, ''), /var\(--sr-/, 'the showroom\'s colours stay in its doorway');
-});
-
 test('home-portal.js: a plain click fades the page into the showroom\'s graphite, then opens the link; modifier clicks and «reduce motion» keep the plain link', () => {
   const HomePortal = require('../js/home-portal.js');
   assert.ok(HomePortal.FADE_MS >= 180 && HomePortal.FADE_MS <= 300);
@@ -451,27 +286,9 @@ test('home-portal.js: a plain click fades the page into the showroom\'s graphite
   assert.equal(timers[0][1], HomePortal.FADE_MS);
   timers[0][0]();
   assert.equal(win.location.href, '/sayanmramor-site/showroom.html');
-  assert.ok(homeHtml().includes('<script src="/sayanmramor-site/js/home-portal.js" defer></script>'));
+  // The module stays (until the clean-up step), but the static home page no longer loads it.
+  assert.ok(!homeHtml().includes('home-portal.js'));
   assert.ok(!fs.existsSync(path.join(site, 'js', 'home-directions.js')));
-});
-
-test('«Готовые изделия» on the home page: a passage into the existing catalogue -- the name, one line, «Смотреть коллекцию»; no pictures, prices, cards or «Купить»; the catalogue and products.json stay', () => {
-  const html = homeHtml();
-  const sec = sectionOf(html, '<section class="home-ready"');
-  assert.match(sec, /<a class="ready-line" href="\/sayanmramor-site\/katalog\.html">\s*<h2 class="ready-title" id="readyTitle">Готовые изделия<\/h2>\s*<p class="ready-text">Изделия из камня в наличии - фиксированная цена, без ожидания расчёта\.<\/p>\s*<span class="ready-more">Смотреть коллекцию<\/span>\s*<\/a>/);
-  assert.doesNotMatch(sec, /<img|data-collection|₽|Купить/, 'no pictures, prices or «Купить»');
-  assert.ok(fs.existsSync(path.join(site, 'katalog.html')), 'the catalogue it leads to');
-  assert.doesNotMatch(html, /js\/home-collection\.js|js\/catalog\.js|home-objects|class="exhibit|data-collection/, 'nothing left of the wall of pieces');
-  assert.ok(!fs.existsSync(path.join(site, 'js', 'home-collection.js')));
-  assert.match(fs.readFileSync(path.join(site, 'katalog.html'), 'utf8'), /<script src="\/sayanmramor-site\/js\/catalog\.js">/, 'the catalogue keeps its own code');
-  assert.equal(JSON.parse(fs.readFileSync(path.join(site, 'data', 'products.json'), 'utf8')).products.length, 8, 'the pieces stay on the site');
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const block = css.slice(css.indexOf('/* 6. Ready-made'), css.indexOf('/* The request, the home page'));
-  assert.match(block, /\.home-ready \{ background: var\(--ground\); color: var\(--figure\);/);
-  assert.match(block, /\.ready-line \{[^}]*border-top: 1px solid [^;]+; border-bottom: 1px solid /, 'between two thin rules');
-  assert.match(block, /\.ready-line:hover \.ready-more::after, \.ready-line:focus-visible \.ready-more::after \{ transform: translateX\(4px\); \}/);
-  assert.doesNotMatch(block, /box-shadow|border-radius|background: (?!var\(--ground\)|var\(--figure\)|currentColor)|scale\((?!0|1)/, 'not a card');
-  assert.doesNotMatch(css, /\.exhibit|\.home-objects|\.home-ready-link/);
 });
 
 // ---- Header: one row, «Изделия» panel with the 13 directions in five groups ----------
@@ -491,27 +308,37 @@ const GROUPS = [
   ['Пространство', ['Полы', 'Стены', 'Панно', 'Подоконники', 'Камины']],
   ['Кухня и ванная', ['Кухня', 'Ванная']],
   ['Фасады', ['Фасады']],
-  ['Спа и вода', ['Спа зоны', 'Хаммамы', 'Бассейны']],
+  ['Спа и бассейны', ['Спа зоны', 'Хаммамы', 'Бассейны']],
 ];
-// The home page has its own masthead now (stage 1 of the night gallery); the other pages keep this header.
-const headerPages = pages.filter(p => p !== 'showroom.html' && p !== 'index.html').concat(['privacy.html']);
+// One header on every page but the showroom: the home page has the same header as the other 15.
+const headerPages = pages.filter(p => p !== 'showroom.html').concat(['privacy.html']);
 
-test('every page: the header is «Изделия» (a panel with all 13 directions in five groups), Готовые изделия, Шоурум, Контакты', () => {
+test('every page: the header is «Изделия» (a panel with all 13 directions in five groups), Готовые изделия, Шоурум (a panel: the house, the way in, its rooms), Контакты', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     const nav = navOf(html);
-    const panel = nav.slice(nav.indexOf('<details class="nav-products">'), nav.indexOf('</details>'));
+    const panel = nav.slice(nav.indexOf('<details class="nav-drop nav-products">'), nav.indexOf('</details>'));
     assert.ok(panel.includes('<summary'), page);
     const groups = [...panel.matchAll(/<div class="nav-group">\s*<p class="nav-group-title">([^<]+)<\/p>([\s\S]*?)<\/ul>/g)]
       .map(m => [m[1], [...m[2].matchAll(/<a [^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map(a => [a[2], a[1]])]);
     assert.deepEqual(groups, GROUPS.map(([title, names]) => [title, names.map(n => [n, '/sayanmramor-site/' + DIRECTIONS[n]])]), page);
-    const rest = [...nav.slice(nav.indexOf('</details>')).matchAll(/<a [^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map(a => [a[2], a[1]]);
-    assert.deepEqual(rest, [
-      ['Готовые изделия', '/sayanmramor-site/katalog.html'],
-      ['Шоурум', '/sayanmramor-site/showroom.html'],
-      ['Контакты', '/sayanmramor-site/index.html#contacts'],
+    // The places in order: the products' panel, the ready-made pieces, the showroom's panel, the contacts.
+    const places = [...nav.matchAll(/\n      (?:<details class="([^"]+)">\s*<summary[^>]*>([^<]+)<\/summary>|<a [^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>)/g)]
+      .map(m => (m[1] ? ['details:' + m[1], m[2]] : ['a:' + m[3], m[4]]));
+    assert.deepEqual(places, [
+      ['details:nav-drop nav-products', 'Изделия'],
+      ['a:/sayanmramor-site/katalog.html', 'Готовые изделия'],
+      ['details:nav-drop nav-showroom', 'Шоурум'],
+      ['a:/sayanmramor-site/index.html#contacts', 'Контакты'],
     ], page);
+    const showroom = nav.slice(nav.indexOf('<details class="nav-drop nav-showroom">'));
+    assert.match(showroom, /<a class="nav-showroom-house" href="\/sayanmramor-site\/showroom\.html" tabindex="-1" aria-hidden="true"><img src="\/sayanmramor-site\/assets\/home\/showroom-house-640\.webp"[^>]*alt="" width="640" height="400" loading="lazy"/, page);
+    assert.match(showroom, /<p class="nav-showroom-title">Дом из натурального камня<\/p>/, page);
+    assert.match(showroom, /<a class="btn btn-primary nav-showroom-enter" href="\/sayanmramor-site\/showroom\.html">Открыть шоурум<\/a>/, page);
+    const rooms = [...showroom.matchAll(/<li><a href="\/sayanmramor-site\/showroom\.html#(\w+)">([^<]+)<\/a><\/li>/g)].map(m => [m[1], m[2]]);
+    assert.deepEqual(rooms, [['hall', 'Холл'], ['living', 'Гостиная'], ['kitchen', 'Кухня'], ['staircase', 'Лестница'], ['bathroom', 'Ванная']], page);
   });
+  ['showroom-house-640.webp', 'showroom-house-1600.webp'].forEach(f => assert.ok(fs.existsSync(path.join(site, 'assets', 'home', f)), f));
 });
 
 test('the page\'s own direction is marked active (and aria-current) in the panel, and «Изделия» is marked too; «Готовые изделия» is its own item', () => {
@@ -534,8 +361,9 @@ test('every page: the header button keeps its full name, with «изделие»
     assert.ok(html.includes('id="siteNav"'), page);
   });
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const narrow = css.slice(css.indexOf('@media (max-width: 360px)'));
-  assert.match(narrow.slice(0, narrow.indexOf('}\n}') + 3), /\.site-header-cta-tail \{ display: none; \}/);
+  // On a phone the capsule holds the name and the menu button; «Создать изделие» waits inside the open menu, full width.
+  assert.match(css, /\.js \.site-header-cta \{ display: none; \}/);
+  assert.match(css, /\.js \.site-header\.menu-open \.site-header-cta \{ order: 4; display: inline-flex;/);
 });
 
 test('header.js is loaded deferred on every header page; the «js» flag is set before the stylesheet', () => {
@@ -577,7 +405,8 @@ function fakeHeaderDom(mobile) {
   products.contains = x => x === products || x === summary || x === link;
   products.querySelector = sel => (sel === 'summary' ? summary : null);
   const header = el('header', {
-    querySelector: sel => ({ '.nav-products': products, '.nav-toggle': toggle, '.nav-group a': link })[sel] || null,
+    querySelector: sel => ({ '.nav-toggle': toggle, '.nav-group a': link })[sel] || null,
+    querySelectorAll: sel => (sel === '.nav-drop' ? [products] : []),
   });
   const rootEl = el('html');
   const mq = { matches: !!mobile, listeners: [], addEventListener(t, fn) { this.listeners.push(fn); } };
@@ -645,6 +474,61 @@ test('header.js, mobile: the button opens the menu with the products listed, loc
   assert.equal(d.summary.attrs.tabindex, undefined);
 });
 
+test('header.js, wide screen: a panel folds up before it closes (caught while folding, it stays); opening one folds the other away; no fold under reduced motion', () => {
+  const timers = [];
+  const listen = o => Object.assign(o, { listeners: {}, addEventListener(t, fn) { (this.listeners[t] = this.listeners[t] || []).push(fn); } });
+  function makeDrop(name) {
+    const classes = new Set();
+    const panel = listen({});
+    const summary = listen({ attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, removeAttribute(k) { delete this.attrs[k]; }, focus() {} });
+    const drop = listen({
+      name, open: false, panel, summary,
+      classList: { contains: c => classes.has(c), toggle(c, on) { if (on) classes.add(c); else classes.delete(c); } },
+      querySelector: sel => (sel === 'summary' ? summary : sel === '.nav-panel' ? panel : null),
+      contains: x => x === drop || x === summary || x === panel,
+    });
+    return drop;
+  }
+  const products = makeDrop('products'), showroom = makeDrop('showroom');
+  const header = listen({ classList: { contains: () => false, toggle() {} }, querySelector: () => null,
+    querySelectorAll: sel => (sel === '.nav-drop' ? [products, showroom] : []) });
+  const doc = listen({ documentElement: { classList: { toggle() {} } }, querySelector: sel => (sel === '.site-header' ? header : null) });
+  let reduce = false;
+  const win = {
+    matchMedia: q => ({ matches: q === SiteHeader.REDUCED_QUERY ? reduce : false, addEventListener() {} }),
+    setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
+    clearTimeout: id => { if (timers[id - 1]) timers[id - 1].fn = () => {}; },
+  };
+  SiteHeader.init(doc, win);
+  const click = drop => { const ev = { prevented: false, preventDefault() { this.prevented = true; } }; drop.summary.listeners.click.forEach(fn => fn(ev)); return ev; };
+  const esc = () => doc.listeners.keydown.forEach(fn => fn({ key: 'Escape' }));
+
+  products.open = true;
+  esc();
+  assert.ok(products.classList.contains('is-closing') && products.open, 'folding: still open, marked');
+  products.panel.listeners.animationend.forEach(fn => fn());
+  assert.ok(!products.open && !products.classList.contains('is-closing'), 'the fold ends: closed');
+
+  products.open = true;
+  assert.ok(click(products).prevented, 'its own name closes it -- by folding, not natively');
+  assert.ok(products.classList.contains('is-closing'));
+  assert.ok(click(products).prevented, 'caught while folding');
+  assert.ok(products.open && !products.classList.contains('is-closing'), 'it stays open');
+  timers[timers.length - 1].fn();
+  assert.ok(products.open, 'the cancelled fold does not close it later');
+
+  assert.ok(!click(showroom).prevented, 'a closed panel opens natively');
+  assert.ok(products.classList.contains('is-closing'), 'and the other one folds away');
+  assert.equal(timers[timers.length - 1].ms, SiteHeader.FOLD_MS);
+  timers[timers.length - 1].fn();
+  assert.equal(products.open, false);
+
+  reduce = true;
+  showroom.open = true;
+  esc();
+  assert.ok(!showroom.open && !showroom.classList.contains('is-closing'), 'reduced motion: closed at once');
+});
+
 test('the header points only at what exists: «Контакты» lands on the home page contacts; no «Камень» / «Производство» items or sections', () => {
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
   assert.equal((home.match(/id="contacts"/g) || []).length, 1);
@@ -655,36 +539,65 @@ test('the header points only at what exists: «Контакты» lands on the h
   });
 });
 
-test('the old scrolling menu row is gone with its edge fades; the mobile menu hangs from the header (absolute), so the header keeps its blur', () => {
+test('the header is a floating capsule: sticky, never full width, fully rounded, a little translucent over a soft blur (solid where blur is missing), a hairline edge; it opens downward into the menu on a phone', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.doesNotMatch(css, /nav-fade|nav-edges/);
-  const header = css.slice(css.indexOf('/* ---- Header'), css.indexOf('/* ---- Home palette'));
-  assert.match(header, /backdrop-filter: blur\(10px\)/);
+  const header = css.slice(css.indexOf('/* ---- Header: the capsule'), css.indexOf('/* ---- Home (static)'));
+  const start = header.indexOf('\n.site-header {');
+  const rule = header.slice(start, header.indexOf('}', start));
+  assert.match(rule, /position: sticky; top: 12px;/);
+  assert.match(rule, /width: min\(1120px, calc\(100% - 2 \* var\(--gutter\)\)\); margin: 12px auto 0;/);
+  assert.match(rule, /border-radius: 999px;/);
+  assert.match(rule, /--capsule-bg: rgba\(248, 247, 244, 0\.8\);/);
+  assert.match(rule, /backdrop-filter: blur\(18px\) saturate\(1\.2\);/);
+  assert.match(header, /@supports not \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\) \{\s*\.site-header \{ --capsule-bg: rgba\(248, 247, 244, 0\.97\); \}/);
   assert.doesNotMatch(header, /position: fixed/);
+  // The places stand on the capsule's middle; the action is a pill set into its curve.
+  assert.match(header, /grid-template-columns: minmax\(0, 1fr\) auto minmax\(0, 1fr\);/);
+  assert.match(header, /\.site-header-cta \{\s*grid-column: 3; justify-self: end;[^}]*border-radius: 999px;/);
+  // Open on a phone: only the list scrolls; the name, the close button and the action stay in view.
+  assert.match(header, /\.js \.site-header\.menu-open \.site-nav \{[^}]*overflow-y: auto;/);
+  // The brand's own letters belong to the name in the header alone (a hook; no font is shipped yet).
+  assert.match(header, /\.site-header \.site-logo \{[^}]*font-family: var\(--font-brand, var\(--font\)\);/);
+  assert.equal((css.match(/var\(--font-brand/g) || []).length, 1, 'used by that one rule only');
 });
 
 // ---- Typography: the site's own -------------------------------------------------------
 
-test('typography is the Helvetica stack of the site: no web fonts loaded or preloaded anywhere', () => {
+test('typography: Montserrat for text, Unbounded for h1 / h2 and the name, Source Serif 4 for the home groups -- local files (no CDN, no preload), each with its licence; the showroom reads Montserrat too', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  assert.match(css, /--font: 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
-  assert.doesNotMatch(css, /@font-face|Source Serif|Golos|--font-display/);
+  assert.match(css, /--font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
+  assert.match(css, /--font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;/);
+  assert.match(css, /--font-brand: var\(--font-display\);/);
+  assert.match(css, /\nh1, h2 \{ font-family: var\(--font-display\); font-weight: 600;/);
+  const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
+  assert.match(sr, /font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
+  assert.equal((sr.match(/@font-face \{ font-family: 'Montserrat';[^}]*url\(\.\.\/assets\/fonts\/montserrat-[a-z-]+-wght-normal\.woff2\)/g) || []).length, 3);
+  const faces = [...css.matchAll(/@font-face \{ font-family: '([^']+)';[^}]*src: url\(\.\.\/assets\/fonts\/([^)]+\.woff2)\) format\('woff2-variations'\); unicode-range: [^;]+; \}/g)];
+  assert.equal(faces.length, (css.match(/@font-face/g) || []).length, 'every face a local woff2 with its unicode-range');
+  assert.deepEqual([...new Set(faces.map(f => f[1]))], ['Montserrat', 'Unbounded', 'Source Serif 4']);
+  faces.forEach(([, , file]) => assert.ok(fs.existsSync(path.join(site, 'assets', 'fonts', file)), file));
+  ['montserrat', 'unbounded', 'source-serif-4'].forEach(f => assert.ok(fs.existsSync(path.join(site, 'assets', 'fonts', 'LICENSE-' + f + '.txt')), f));
+  assert.doesNotMatch(css, /Golos|fonts\.googleapis|fonts\.gstatic/);
   headerPages.concat(['showroom.html', 'index.html']).forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.doesNotMatch(html, /\.woff2|rel="preload" [^>]*as="font"|fonts\.googleapis|fonts\.gstatic/, page);
   });
 });
 
-test('header: one travelling line under the row, a copper segment under an open «Изделия», the panel unfolding downward; no pills, springs or staggered rows', () => {
+test('header: the places are soft pills in the capsule -- the current one and the pointed one a faint fill, the keyboard ring the same shape; no line, no springs; the «Изделия» panel unfolds downward', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const header = css.slice(css.indexOf('/* ---- Header: the capsule'), css.indexOf('/* ---- Home (static)'));
+  assert.match(header, /\.site-nav > a, \.nav-drop > summary \{[^}]*height: 36px; padding: 0 14px; border-radius: 999px;[^}]*transition: color 0\.15s, background-color 0\.15s;/);
+  assert.match(header, /\.site-nav > a\.active, \.nav-drop > summary\.active \{ color: var\(--ink\); background: rgba\(28, 29, 27, 0\.06\); \}/);
+  assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: rgba\(28, 29, 27, 0\.05\); \} \}/);
+  assert.match(header, /\.nav-indicator \{ display: none; \}/, 'header.js may place its line; the capsule does not show it');
   const wide = css.slice(css.indexOf('@media (min-width: 1001px) {'), css.indexOf('@keyframes nav-panel-unfold'));
-  assert.ok(wide.includes('.js .site-nav > a, .js .nav-products > summary { border-bottom-color: transparent; }'));
-  assert.match(wide, /\.js \.nav-indicator \{[^}]*height: 2px;[^}]*background: var\(--ink\)/);
-  assert.match(wide, /\.nav-products > summary::before \{[^}]*background: var\(--accent\)[^}]*transform: scaleX\(0\)/);
-  assert.ok(wide.includes('.nav-products[open] > summary::before { transform: scaleX(1);'));
-  assert.ok(wide.includes('.nav-products[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'));
-  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0\); \}/);
-  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.nav-products\[open\] > \.nav-panel \{ animation: none; \}/);
+  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'));
+  assert.ok(wide.includes('.nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }'), 'and folds back up when it closes');
+  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round 24px\); \}/);
+  assert.match(css, /@keyframes nav-panel-fold \{\s*from \{ clip-path: inset\(0 0 0 0 round 24px\);[^}]*\}\s*to \{ clip-path: inset\(0 0 100% 0 round 24px\);/);
+  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.nav-drop\[open\] > \.nav-panel, \.nav-drop\.is-closing > \.nav-panel \{ animation: none; \}/);
   assert.doesNotMatch(css, /nav-group:nth-child\(\d\) \{[^}]*animation-delay/);
 });
 
@@ -811,59 +724,6 @@ test('the home page\'s request stands open (data-offer-open): no toggle, the for
   });
 });
 
-test('the home page\'s request is a sheet of a project drawing: its frame and corner cell «Проект»; in its field the hero\'s slab in lines at its real size, the piece to be cut from it dashed -- «Ваше изделие»; the form its title block, every field a cell, «Получить» the solid cell', () => {
-  const home = homeHtml();
-  const band = sectionOf(home, '<section class="offer-band"');
-  // The drawing stands between the phone and the form; decorative, the form says it all.
-  assert.ok(band.indexOf('class="offer-meta"') < band.indexOf('class="offer-drawing"') && band.indexOf('class="offer-drawing"') < band.indexOf('class="offer-reveal"'));
-  assert.match(band, /<figure class="offer-drawing" aria-hidden="true">\s*<svg viewBox="0 0 640 410" focusable="false">/);
-  assert.match(band, /<text class="drawing-figure"[^>]*>2840<\/text>/, 'the hero\'s slab, its real length');
-  assert.match(band, /<text class="drawing-figure"[^>]*>1660<\/text>/, 'and width');
-  assert.match(band, /<rect class="drawing-slab" x="60" y="60" width="500" height="292"\/>/, 'drawn in its own proportion (2840 : 1660)');
-  assert.match(band, /<rect class="drawing-piece"/);
-  assert.match(band, /<text class="drawing-note"[^>]*data-piece-name>Ваше изделие<\/text>/);
-  assert.ok(home.includes('<script src="/sayanmramor-site/js/home-request.js" defer></script>'));
-  assert.ok(home.indexOf('js/offer-form.js') < home.indexOf('js/home-request.js'), 'the form is there before the sheet names its piece');
-  fs.readdirSync(path.join(site, 'categories')).forEach(f => {
-    const html = fs.readFileSync(path.join(site, 'categories', f), 'utf8');
-    assert.doesNotMatch(html, /offer-drawing|home-request\.js/, f + ': the direction pages keep their band');
-  });
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const sheet = css.slice(css.indexOf('/* The request, the home page'), css.indexOf('/* Narrower screens: the same scenes'));
-  // A sheet lying on the stone, not a card floating over it: its paper edge and a breath of shadow, nothing lifted.
-  const paper = (sheet.match(/\.home-main \.offer-band > \.offer-band-inner \{[^}]*\}/) || [''])[0];
-  assert.match(paper, /background: var\(--surface\);/);
-  assert.match(paper, /box-shadow: 0 0 0 1px rgba\(29, 30, 28, 0\.05\), 0 1px 1px rgba\(29, 30, 28, 0\.08\), 0 10px 14px -12px rgba\(29, 30, 28, 0\.22\);/, 'lying, not lifted');
-  assert.match(sheet, /\.home-main \.offer-kicker \{[^}]*position: absolute;[^}]*border-left: 1px solid var\(--sheet-line\); border-bottom: 1px solid var\(--sheet-line\);/, 'the corner cell «Проект»');
-  assert.match(sheet, /\.home-main \.offer-main \{[^}]*border: 2px solid var\(--sheet-line\);/, 'the frame: a drawing\'s main line, heavier than the rules inside');
-  assert.match(sheet, /\.offer-drawing svg \* \{ vector-effect: non-scaling-stroke; \}/, 'thin lines at any size');
-  assert.match(sheet, /\.drawing-piece \{[^}]*stroke-dasharray: 7 5;/, 'the piece dashed');
-  assert.match(sheet, /\.is-named \.drawing-piece \{[^}]*stroke-dasharray: none; \}/, 'named, it is drawn solid');
-  assert.match(sheet, /\.home-main \.offer-form \{[^}]*gap: 1px;[^}]*background: var\(--cell-line\); border-top: 2px solid var\(--sheet-line\);/, 'the title block: cells ruled by thin lines, its edge the main line');
-  assert.match(sheet, /\.home-main \.offer-field:focus-within, \.home-main \.offer-consent:focus-within \{ box-shadow: inset 0 0 0 2px var\(--accent\); \}/, 'the cell in hand is marked');
-  // Every entry is seen as one before it is touched: a writing line in its cell (the site's
-  // control line, >= 3:1), not only a hover; the file row too; a hint where nothing is written.
-  assert.match(sheet, /\.home-main \.offer-input \{[^}]*border-bottom: 1px solid var\(--line-control\);/, 'name, phone and direction written on a line');
-  assert.match(sheet, /\.home-main \.offer-file \{[^}]*border-bottom: 1px solid var\(--line-control\);/, 'the file row on a line');
-  assert.doesNotMatch(sheet, /\.home-main \.offer-input \{[^}]*border-bottom: 0/, 'never an entry without its line');
-  assert.match(sheet, /\.home-main \.offer-field \{[^}]*padding: 10px 16px 12px;/, 'the line inside the cell, clear of its rule');
-  assert.match(sheet, /\.home-main \.offer-input::placeholder \{ color: var\(--muted\); opacity: 1; \}/, 'the hint quieter than what is written');
-  // The sheet's notes: the form's own requirements and the drawing's units -- nothing for show.
-  const notes = [...band.matchAll(/<li>([^<]+)<\/li>/g)].map(m => m[1]);
-  assert.ok(band.indexOf('class="offer-drawing"') < band.indexOf('class="offer-notes"') && band.indexOf('class="offer-notes"') < band.indexOf('class="offer-reveal"'));
-  assert.deepEqual(notes, ['Обязательные поля - телефон и согласие на обработку данных.', 'Техническое задание можно приложить файлом: чертёж, эскиз или фото с размерами.', 'Размеры на чертеже - в миллиметрах.']);
-  assert.doesNotMatch(band, /—/, 'the site\'s short dash');
-  assert.match(sheet, /\.home-main \.offer-form > \.offer-submit \{ background: var\(--accent\); color: #fff; \}/, '«Получить»: the one solid cell');
-  assert.match(sheet, /\.home-main \.offer-submit:focus-visible \{ outline: 2px solid var\(--surface\); outline-offset: -6px; \}/);
-  const desk = css.slice(css.indexOf('  /* The request: the sheet as wide as the content'));
-  assert.match(desk, /\.home-main \.offer-submit \{ grid-column: 3; grid-row: 2 \/ 4;/, 'on a desktop «Получить» the tall cell at the corner');
-  // On a desktop the left column works: the phone under the heading, the notes at its foot, level with the title block.
-  assert.match(desk, /\.home-main \.offer-meta \{ grid-column: 1 \/ 6; grid-row: 2;/);
-  assert.match(desk, /\.home-main \.offer-notes \{ grid-column: 1 \/ 6; grid-row: 4; align-self: end;/);
-  assert.match(desk, /\.home-main \.offer-reveal, \.home-main \.offer-noscript \{ grid-column: 6 \/ 13; grid-row: 4; \}/);
-  assert.match(css, /@media \(max-width: 360px\) \{[\s\S]*?\.home-main \.offer-form \{ grid-template-columns: minmax\(0, 1fr\); \}/, 'the narrowest phones: one cell to a row');
-});
-
 test('home-request.js: the chosen direction names the piece on the drawing and draws it solid; «Без направления» gives back «Ваше изделие» and the dashes', () => {
   const HomeRequest = require('../js/home-request.js');
   const select = (value, text) => ({ selectedIndex: 0, options: [{ value, textContent: text }] });
@@ -925,9 +785,10 @@ test('the home page\'s desktop grid (1024 px and wider): 12 columns between marg
   // What can be ordered: the title in five columns, its line on the vertical; the wall in the wide field.
   assert.match(block, /\.wall-title \{ grid-column: 1 \/ 6; \}\s*\.wall-lead \{ grid-column: 6 \/ 12; margin-top: 0; \}/);
   assert.match(block, /\.wall \{ max-width: var\(--wide\); padding: 0; \}/);
-  // One material language for the opening scenes: the heavier arrow and the second stone.
-  assert.match(block, /\.night-hero, \.home-directions \{\s*--arrow: url\([^)]*stroke-width='2'[^)]*\);\s*--stone-2: #e3ded5;\s*\}/);
-  assert.match(css, /\n  --arrow: url\([^)]*stroke-width='1\.4'/, 'the rest of the site keeps its arrow');
+  // One material language for the opening scenes: the second stone. The arrow is the site's one arrow.
+  assert.match(block, /\.night-hero, \.home-directions \{\s*--stone-2: #e3ded5;\s*\}/);
+  assert.match(css, /\n  --arrow: url\([^)]*stroke-width='2' stroke-linecap='square'/, 'one arrow for the whole site: 2 px, square ends');
+  assert.equal((css.match(/--arrow: url\(/g) || []).length, 1, 'declared once');
   // The hero's caption band back in the content's field (its centring was reset by margin: 0).
   assert.match(css, /\[data-mode="scrub"\] \.hero-story \{\s*position: absolute; top: calc\(var\(--frame-top\) - var\(--band\) \+ 26px\); left: 0; right: 0; z-index: 3; margin: 0 auto;/);
   // Only the home page: the shared footer and container keep their measure; nothing below 1024 px changes.
@@ -958,22 +819,12 @@ test('the «Изделия» panel is a ledger about 640 px wide: numbered group
   assert.match(rule('.nav-group-title::before'), /content: counter\(nav-group, decimal-leading-zero\)/);
   assert.match(rule('.nav-group'), /border-top: 1px solid var\(--line\)/);
   assert.match(rule('.nav-group a::before'), /background: var\(--accent\)[\s\S]*transform: scaleX\(0\)/);
-  assert.match(css, /\.nav-group a:hover::before, \.nav-group a:focus-visible::before, \.nav-group a\.active::before \{ transform: scaleX\(1\); \}/);
+  assert.match(css, /\.nav-group a:focus-visible::before, \.nav-group a\.active::before \{ transform: scaleX\(1\); \}/);
+  assert.match(css, /@media \(hover: hover\) \{ \.nav-group a:hover::before \{ transform: scaleX\(1\); \} \}/);
   const panel = css.slice(css.indexOf('/* The panel: a ledger'), css.indexOf('.site-header-cta {'));
   assert.doesNotMatch(panel, /<img|url\((?!\s*var)|font-family|uppercase/);
 });
 
-test('the home page tells it in order: the hero (from the slab to the object), what can be ordered, the showroom, the ready-made pieces, the request, where we are; no «Реальные работы»', () => {
-  const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
-  const order = ['<section class="night-hero"', '<section class="home-directions"', '<section class="home-portal night"',
-    '<section class="home-ready"', '<section class="offer-band"', '<section class="wrap home-contacts"'].map(s => html.indexOf(s));
-  order.forEach(i => assert.ok(i > 0));
-  assert.deepEqual([...order].sort((a, b) => a - b), order);
-  assert.deepEqual([...html.matchAll(/<(?:section|header) class="((?:[^"]* )?night(?: [^"]*)?)"/g)].map(m => m[1]), ['home-portal night'], 'one dark opening: the showroom; never two dark sections in a row');
-  assert.equal((html.match(/<section[ >]/g) || []).length, 6, 'no other sections');
-  assert.doesNotMatch(html, /home-works|Реальные работы|class="project/, '«Реальные работы» is not on the home page');
-  assert.doesNotMatch(html, /home-showroom|home-index|home-object"|index-link|grid-bleed|home-hero"|home-process|colonnade/, 'nothing left of the earlier home pages');
-});
 test('palette «basalt and serpentine»: limestone, warm stone, basalt, deep green-graphite, one verde accent; the showroom\'s copper only on the doorway\'s action; css/showroom.css untouched', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   [['--page', '#efede8'], ['--stone', '#e6e1d8'], ['--surface', '#f8f7f4'], ['--ink', '#1c1d1b'], ['--graphite', '#1e2320'], ['--accent', '#2a5446'], ['--accent-hover', '#1f4036'], ['--link', '#2a5446'], ['--accent-on-dark', '#7fa698']]
@@ -1105,4 +956,201 @@ test('the privacy policy: e-mails, site addresses and phones are links, as on th
   assert.equal(links.length, 16);
   // No other text became a link.
   links.forEach(([, text]) => assert.match(text, /@sayanmramor\.ru$|^https:\/\/sayanmramor\.ru\/?$|^\+ ?7\(495\)215-51-45$/));
+});
+
+test('hover only where there is a pointer: every :hover rule sits in @media (hover: hover) (or the desktop wall\'s fine-pointer block); focus keeps its own rules', () => {
+  ['site.css', 'showroom.css'].forEach(name => {
+    const css = fs.readFileSync(path.join(site, 'css', name), 'utf8');
+    const loose = css.split('\n').filter(line => line.includes(':hover')
+      && !line.startsWith('@media (hover: hover)') && !/^\s+\S/.test(line) && !line.trim().startsWith('/*'));
+    assert.deepEqual(loose, [], name);
+  });
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const wall = css.slice(css.indexOf('@media (min-width: 1200px) and (hover: hover) and (pointer: fine)'));
+  assert.ok(wall.indexOf('.wall-slab:not(.is-open):hover') < wall.indexOf('\n}\n'), 'the wall\'s indented hovers are inside its fine-pointer block');
+});
+
+test('step 0 fixes: the phone\'s contacts line up with their heading; touch targets of 44 px in the menus; the configure bar shortens instead of cutting off', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.doesNotMatch(css, /\.contacts-card \{ padding:/, 'no card padding left over on phones');
+  assert.match(css, /\.mast-menu \.mast-group a, \.mast-menu-links a \{ display: inline-flex; align-items: center; min-height: 44px; \}/);
+  assert.match(css, /\.js \.nav-group a \{ min-height: 44px;/);
+  assert.match(css, /@media \(max-width: 540px\) \{\s*\.configure-stone \.configure-tail \{ display: none; \}\s*\}/);
+  assert.match(css, /@media \(max-width: 420px\) \{\s*\.configure-cta \.configure-tail \{ display: none; \}\s*\}/);
+});
+
+test('the showroom draws its icons: no ✕ / ← / → typed as text; the cross is an SVG line icon, the arrows the site\'s arrow', () => {
+  const html = fs.readFileSync(path.join(site, 'showroom.html'), 'utf8');
+  const ui = fs.readFileSync(path.join(site, 'js', 'showroom', 'showroom-ui.js'), 'utf8').replace(/\/\/.*$/gm, '');
+  const state = fs.readFileSync(path.join(site, 'js', 'showroom', 'showroom-state.js'), 'utf8').replace(/\/\/.*$/gm, '');
+  [html.replace(/<!--[\s\S]*?-->/g, ''), ui, state].forEach(src => assert.doesNotMatch(src, /[✕×←→]/));
+  assert.equal((html.match(/class="sr-close"[^>]*aria-label="Закрыть"><svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">/g) || []).length, 2);
+  const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
+  assert.match(sr, /--sr-arrow: url\([^)]*stroke-width='2' stroke-linecap='square'/);
+});
+
+// ---- Home: the static page (rebuilt on 4ad72f4's structure, in the site's own system) -----
+
+test('the home page is static: header, hero, from stone to object, what can be ordered, the showroom, the request, where we are, footer -- and no script of the redesign', () => {
+  const html = homeHtml();
+  const main = html.slice(html.indexOf('<main'), html.indexOf('</main>'));
+  const order = [...main.matchAll(/<section class="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'offer-band', 'wrap home-contacts']);
+  assert.match(html, /<main class="home" id="main">/);
+  const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', ''));
+  assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-form.js', 'js/site.js']);
+  assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
+  // The redesign's modules are kept until the clean-up step.
+  ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
+    assert.ok(fs.existsSync(path.join(site, 'js', f)), f + ' is kept for now'));
+});
+
+test('the home hero: the headline, one line and two plain actions on the wall of one generated picture -- the washbasin, called a visualisation; wide and upright versions; nothing moves', () => {
+  const hero = sectionOf(homeHtml(), '<section class="home-hero"');
+  assert.match(hero, /<h1 id="heroTitle">Изделия из натурального камня на заказ<\/h1>/);
+  assert.match(hero, /<p class="lead">Лестницы, столешницы, полы, стены и фасады/);
+  const actions = [...hero.matchAll(/<a class="btn (btn-\w+)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => m.slice(1));
+  assert.deepEqual(actions, [
+    ['btn-primary', '/calculator/sayanmramor-calculator.html', 'Создать изделие'],
+    ['btn-secondary', '/sayanmramor-site/showroom.html', 'Открыть 3D-шоурум'],
+  ]);
+  const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
+  assert.equal(imgs.length, 1, 'one picture');
+  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/ai-washbasin-1871\.webp"/);
+  assert.match(imgs[0], /alt="[^"]*визуализация" width="1871" height="841" fetchpriority="high" decoding="async"/);
+  assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
+  assert.match(hero, /<source media="\(max-aspect-ratio: 1\/1\), \(max-width: 900px\)" srcset="[^"]*ai-washbasin-4x5-720\.webp 720w, [^"]*ai-washbasin-4x5-1121\.webp 1121w"/, 'phones and upright windows get the upright version');
+  [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
+  assert.match(hero, /<p class="wrap home-hero-note">Раковина из кварцита — визуализация<\/p>/, 'a generated picture is said to be one');
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.home-hero \{\s*display: grid;[^}]*margin-top: -74px;/, 'the picture runs under the floating header');
+  assert.match(css, /\.js \.home-hero \{ margin-top: -66px; \}/);
+  assert.match(css, /html:not\(\.js\) \.home-hero \{ margin-top: 0; \}/);
+  assert.match(css, /\.home-hero \.lead \{[^}]*color: var\(--ink\);/, 'the lead in full ink on the picture');
+  assert.match(css, /@media \(max-aspect-ratio: 1\/1\), \(max-width: 900px\) \{[\s\S]*?\.home-hero-content \{ padding-top: calc\(66px \+ var\(--s-6\)\); padding-bottom: calc\(62cqw \+ var\(--s-6\)\); \}/, 'room kept for the washbasin under the words');
+});
+
+test('«От камня к изделию»: three real photographs in order -- the stone, its cutting, the finished piece -- each with alt, size, srcset and lazy loading; labels and arrows are decoration', () => {
+  const sec = sectionOf(homeHtml(), '<section class="wrap home-s2o"');
+  assert.match(sec, /<h2 id="s2oTitle">От камня к&nbsp;изделию<\/h2>/);
+  assert.match(sec, /<p>Выбираем камень, проектируем форму и изготавливаем изделие по вашим размерам\.<\/p>/);
+  const steps = [...sec.matchAll(/<li class="home-s2o-step">([\s\S]*?)<\/li>/g)].map(m => m[1]);
+  assert.equal(steps.length, 3);
+  const expected = [
+    ['s2o-quartz-white-640.webp', 'Слэб полудрагоценного кварца Quartz White', 'Натуральный камень', 'Кварц Quartz White', '1', 'Камень'],
+    ['s2o-making-036-960.webp', 'Распил каменной плиты на станке', 'Раскрой и обработка', 'Распил плиты и обработка кромки', '2', 'Производство'],
+    ['s2o-kitchen-155-640.webp', 'Кухонная столешница и фартук с подсветкой из кварца Quartz White', 'Готовое изделие', 'Столешница и фартук с подсветкой', '3', 'Изделие'],
+  ];
+  steps.forEach((step, i) => {
+    const [file, alt, title, text, n, label] = expected[i];
+    const img = step.match(/<img [^>]*>/)[0];
+    assert.match(img, new RegExp(`src="/sayanmramor-site/assets/home/${file.replace('.', '\\.')}"`));
+    assert.match(img, new RegExp(`alt="${alt}" width="\\d+" height="\\d+" loading="lazy" decoding="async"`));
+    assert.match(img, /srcset="[^"]+ \d+w, [^"]+ \d+w" sizes="[^"]+"/);
+    [...img.matchAll(/\/sayanmramor-site\/(assets\/home\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
+    assert.match(step, new RegExp(`<span class="home-s2o-chip" aria-hidden="true"><b><span>${n}</span></b>${label}</span>`));
+    assert.match(step, new RegExp(`<p class="home-s2o-cap"><strong>${title}</strong>${text}</p>`));
+    assert.equal((step.match(/<span class="home-s2o-arrow" aria-hidden="true">/g) || []).length, i === 0 ? 0 : 1, 'an arrow on the seam before steps 2 and 3');
+  });
+  assert.doesNotMatch(sec, /<script|data-[a-z]+=/, 'static: no script, no hooks');
+});
+
+test('«От камня к изделию» in CSS: equal 4:5 cards laid over each other, the middle one lower, arrows on the seams, captions on one line; one column on phones (600 px), the words above the photographs from 900 px; a light lift under a pointer only', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* From stone to object'), css.indexOf('/* What can be ordered'));
+  assert.ok(block.length > 500);
+  assert.match(block, /\.home-s2o-steps \{[^}]*grid-template-columns: minmax\(0, 6fr\) minmax\(0, 1fr\) minmax\(0, 5fr\) minmax\(0, 1fr\) minmax\(0, 6fr\);/);
+  assert.match(block, /\.home-s2o-step \{ display: grid; grid-row: 1 \/ 3; grid-template-rows: subgrid; grid-template-columns: subgrid; \}/);
+  assert.match(block, /\.home-s2o-shot \{[^}]*aspect-ratio: 4 \/ 5;/);
+  assert.match(block, /\.home-s2o-step:nth-child\(2\) \.home-s2o-card \{ margin-top: var\(--s2o-dy\); \}/);
+  assert.match(block, /\.home-s2o-cap \{ grid-row: 2;/, 'all captions on the one row under the cards');
+  assert.match(block, /@supports not \(grid-template-columns: subgrid\)/, 'a plain three-column fallback');
+  const phones = css.slice(css.indexOf('@media (max-width: 600px) {\n  .offer-form'));
+  assert.match(phones.slice(0, phones.indexOf('\n}\n')), /\.home-s2o-steps \{ display: block; \}[\s\S]*\.home-s2o-arrow-right \{ display: none; \}\s*\.home-s2o-arrow-down \{ display: block; \}/,
+    'on phones the steps stand one under another and the arrow points down');
+  // Motion only under a pointer and only when motion is welcome: one block, transform and opacity, no animations.
+  const motionAt = block.indexOf('@media (hover: hover) and (prefers-reduced-motion: no-preference) {');
+  assert.ok(motionAt > 0, 'the hover lift sits in one pointer + no-preference block');
+  const motion = block.slice(motionAt, block.indexOf('\n}\n', motionAt));
+  const outside = block.slice(0, motionAt) + block.slice(motionAt + motion.length);
+  assert.doesNotMatch(outside, /:hover|transition|transform:/, 'nothing reacts or moves outside that block');
+  assert.doesNotMatch(block, /animation|@keyframes|will-change/);
+  [...motion.matchAll(/transition: ([^;]+);/g)].forEach(m => m[1].split(/,\s*(?=[a-z-]+ \d)/).forEach(t => assert.match(t, /^(transform|opacity) 0\.\d+s cubic-bezier\(/, t)));
+  assert.match(motion, /\.home-s2o-card:hover \.home-s2o-shot, \.home-s2o-card:hover::before \{ transform: translateY\(-6px\); \}/);
+  assert.match(motion, /\.home-s2o-card:hover \.home-s2o-shot img \{ transform: scale\(1\.04\); \}/);
+  // The step's digit: its box trimmed to the cap height, so the circle centres the figure.
+  assert.match(block, /\.home-s2o-chip b span \{ display: block; line-height: 1; font-variant-numeric: tabular-nums; text-box: trim-both cap alphabetic; \}/);
+});
+
+test('«Что можно заказать»: one stone panel with the menu\'s five groups -- each a photograph, its name and its real links -- and the ready-made pieces on their own line, not a configurator direction', () => {
+  const sec = sectionOf(homeHtml(), '<section class="wrap home-products"');
+  assert.match(sec, /<h2 id="productsTitle">Что можно заказать<\/h2>/);
+  // The page names the countertops in full; the menu keeps them short.
+  const HOME_NAMES = { 'Кухня': 'Столешница на кухню', 'Ванная': 'Столешница в ванную' };
+  const homeName = n => HOME_NAMES[n] || n;
+  const directionOf = caption => DIRECTIONS[Object.keys(HOME_NAMES).find(n => HOME_NAMES[n] === caption) || caption];
+  const groups = [...sec.matchAll(/<h3 class="home-group-title">([^<]+)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g)]
+    .map(m => [m[1], [...m[2].matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map(a => [a[2], a[1]])]);
+  assert.deepEqual(groups, GROUPS.map(([title, names]) => [title, names.map(n => [homeName(n), '/sayanmramor-site/' + DIRECTIONS[n]])]));
+  // Every group has its photograph, a decoration (alt=""): the group's name says what it is.
+  const shots = [...sec.matchAll(/<span class="home-group-frame"><img class="home-group-shot" src="([^"]+)" alt="" width="720" height="300" loading="lazy" decoding="async"><\/span>\s*<h3 class="home-group-title">/g)];
+  assert.equal(shots.length, 5);
+  shots.forEach(([, src]) => assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src));
+  // The panel's ground: the stone, a local file at two sizes.
+  const ground = [...sec.matchAll(/(?:srcset|src)="(\/sayanmramor-site\/assets\/home\/order\/bg-[^"]+)"/g)];
+  assert.equal(ground.length, 2);
+  ground.forEach(([, src]) => assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src));
+  assert.match(sec, /<a class="home-order-go" href="\/calculator\/sayanmramor-calculator\.html" aria-label="Создать изделие в конфигураторе"/);
+  assert.doesNotMatch(sec, /home-feature/, 'the four works are gone: the panel has the photographs');
+  assert.match(sec, /<a class="home-instock" href="\/sayanmramor-site\/katalog\.html">\s*<span class="home-instock-title">Готовые изделия<\/span>/);
+  const groupLinks = sec.slice(sec.indexOf('home-groups'), sec.indexOf('home-instock'));
+  assert.doesNotMatch(groupLinks, /katalog\.html/, 'the ready-made pieces are not one of the groups');
+});
+
+test('works in frames: the direction pages\' photos -- rounded, a soft shadow, a hairline edge; a light lift under a pointer only, never over each other', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* ---- Works in frames'), css.indexOf('/* ---- Готовые изделия'));
+  assert.ok(block.length > 300, 'one block for both');
+  assert.match(block, /\.portfolio-shot \{\s*position: relative; display: block; overflow: hidden; border-radius: 20px;[^}]*box-shadow: 0 0 0 1px rgba\(28, 29, 27, 0\.06\),/);
+  assert.match(block, /\.portfolio-shot::after \{[^}]*inset 0 0 0 1px rgba\(255, 255, 255, 0\.22\)/);
+  const motionAt = block.indexOf('@media (hover: hover) and (prefers-reduced-motion: no-preference) {');
+  assert.ok(motionAt > 0);
+  const motion = block.slice(motionAt, block.indexOf('\n}\n', motionAt));
+  const outside = block.slice(0, motionAt) + block.slice(motionAt + motion.length);
+  assert.doesNotMatch(outside, /:hover|transition|transform:/, 'nothing reacts or moves outside the pointer block');
+  assert.doesNotMatch(block, /margin-(left|top): -|animation|@keyframes/, 'side by side: no overlap, no animations');
+  assert.match(motion, /\.portfolio-item:hover \.portfolio-shot \{\s*transform: translateY\(-6px\);/);
+  assert.match(motion, /transform: scale\(1\.04\);/);
+  [...motion.matchAll(/transition: ([^;]+);/g)].forEach(m => m[1].split(/,\s*(?=[a-z-]+ \d)/).forEach(t => assert.match(t, /^(transform|box-shadow) 0\.\d+s cubic-bezier\(/, t)));
+  // The photos sit in the frame: the frame rounds them, the photos themselves keep their shape.
+  assert.match(css, /\.portfolio-item img \{ display: block; width: 100%; height: auto; aspect-ratio: auto 2 \/ 3; \}/);
+  assert.doesNotMatch(css, /\.portfolio-item img \{[^}]*border-radius/);
+});
+
+test('the home showroom band: words, a plain link into the showroom and its house -- no veil, no doorway script', () => {
+  const sec = sectionOf(homeHtml(), '<section class="home-showroom"');
+  assert.match(sec, /<h2 id="showroomTitle">Дом из натурального камня<\/h2>/);
+  assert.match(sec, /<a class="btn btn-on-dark" href="\/sayanmramor-site\/showroom\.html">Открыть шоурум<\/a>/);
+  assert.match(sec, /<img src="\/sayanmramor-site\/assets\/home\/showroom-house-1600\.webp" alt="" width="1600" height="1000" loading="lazy"/);
+  assert.doesNotMatch(sec, /data-portal/);
+});
+
+test('the home request is the direction pages\' form, standing open: no drawing, no notes, no sheet', () => {
+  const sec = sectionOf(homeHtml(), '<section class="offer-band"');
+  assert.match(sec, /data-offer-open/);
+  assert.match(sec, /<p class="offer-kicker">Проект<\/p>/);
+  assert.match(sec, /<div data-offer-form><\/div>/);
+  assert.doesNotMatch(sec, /offer-drawing|offer-notes|<svg/);
+});
+
+test('the static home in CSS: colour on hover and focus only -- no sticky, no transforms, no animations, transitions of 150 ms; hover only where there is a pointer', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const whole = css.slice(css.indexOf('/* ---- Home (static)'), css.indexOf('/* ---- Home palette'));
+  // «От камня к изделию» is the one exception: its cards lift under a pointer (tested on its own below).
+  const block = whole.slice(0, whole.indexOf('/* From stone to object')) + whole.slice(whole.indexOf('/* What can be ordered'));
+  assert.ok(block.length > 500);
+  assert.doesNotMatch(block, /sticky|position: fixed|(?<!text-)transform|animation|@keyframes|will-change|perspective|clip-path/);
+  [...block.matchAll(/transition: ([^;]+);/g)].forEach(m => assert.match(m[1], /^(color|opacity) 0\.15s$/, m[1]));
+  assert.match(block, /\.home-hero \{\s*display: grid;/);
+  assert.match(block, /\.home-groups \{ display: grid; grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
 });

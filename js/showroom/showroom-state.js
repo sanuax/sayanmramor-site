@@ -72,7 +72,7 @@
         description: object.description,
         productLabel: product.label,
         context: 'Натуральный камень · ' + zone.title,
-        ctaLabel: 'Создать изделие →',
+        ctaLabel: 'Создать изделие',   // the arrow is drawn by css/showroom.css (.sr-go)
         ctaHref: Data.buildConfiguratorUrl(object.productKey, state.stoneId),
         categoryHref: product.categoryHref,
       };

@@ -44,17 +44,30 @@
     relayout();
   }
 
+  // A photo without a caption is still a work, not decoration: it is named
+  // after the page it stands on («Лестницы из камня - работа 2»).
+  function portfolioAlt(pageTitle, item, i) {
+    if (item.caption) return item.caption;
+    return pageTitle ? pageTitle + ' - работа ' + (i + 1) : '';
+  }
+
   function renderPortfolio(container, items) {
     container.innerHTML = '';
-    (items || []).forEach(item => {
+    const h1 = document.querySelector ? document.querySelector('h1') : null;
+    const pageTitle = h1 ? h1.textContent.trim() : '';
+    (items || []).forEach((item, i) => {
       const figure = document.createElement('figure');
       figure.className = 'portfolio-item';
+      // The frame: rounded, a soft shadow and a hairline edge; under a pointer it lifts (css/site.css).
+      const shot = document.createElement('span');
+      shot.className = 'portfolio-shot';
       const img = document.createElement('img');
       img.src = item.image;
-      img.alt = item.caption || '';
+      img.alt = portfolioAlt(pageTitle, item, i);
       img.loading = 'lazy';
       img.addEventListener('error', () => { figure.classList.add('image-broken'); img.remove(); });
-      figure.appendChild(img);
+      shot.appendChild(img);
+      figure.appendChild(shot);
       if (item.caption) {
         const caption = document.createElement('figcaption');
         caption.textContent = item.caption;
@@ -103,5 +116,5 @@
   }
   if (typeof document !== 'undefined') reserveFixedUi(document);
 
-  return { renderPortfolio, loadPortfolio, revealActiveNav, reserveFixedUi, masonrySpan, layoutMasonry };
+  return { renderPortfolio, loadPortfolio, portfolioAlt, revealActiveNav, reserveFixedUi, masonrySpan, layoutMasonry };
 });

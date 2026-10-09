@@ -49,10 +49,11 @@
   const FIELDS = ['Направление', 'Имя', 'Телефон', 'Техническое задание'];
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  // Two small line icons, drawn in currentColor: a paper clip and an arrow.
+  // Two small line icons, drawn in currentColor: a paper clip, and the site's
+  // one arrow (the same drawing as --arrow in css/site.css: 16 x 10, 2 px, square ends).
   const ICONS = {
-    clip: 'M15.5 6.5 8.2 13.8a2 2 0 0 0 2.8 2.8l7.4-7.4a4 4 0 0 0-5.7-5.7l-7.6 7.6a6 6 0 0 0 8.5 8.5L20 13',
-    arrow: 'M5 12h14M13 6l6 6-6 6',
+    clip: { viewBox: '0 0 24 24', d: 'M15.5 6.5 8.2 13.8a2 2 0 0 0 2.8 2.8l7.4-7.4a4 4 0 0 0-5.7-5.7l-7.6 7.6a6 6 0 0 0 8.5 8.5L20 13' },
+    arrow: { viewBox: '0 0 16 10', d: 'M1 5h12.5M10 1.5L13.5 5 10 8.5' },
   };
 
   let formCount = 0;
@@ -69,11 +70,12 @@
 
   function icon(doc, name) {
     const svg = doc.createElementNS(SVG_NS, 'svg');
-    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('viewBox', ICONS[name].viewBox);
+    svg.setAttribute('class', 'icon-' + name);
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('focusable', 'false');
     const path = doc.createElementNS(SVG_NS, 'path');
-    path.setAttribute('d', ICONS[name]);
+    path.setAttribute('d', ICONS[name].d);
     svg.appendChild(path);
     return svg;
   }

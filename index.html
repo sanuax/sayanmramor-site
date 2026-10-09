@@ -7,260 +7,220 @@
 <script>document.documentElement.classList.add('js');</script>
 <link rel="stylesheet" href="/sayanmramor-site/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="/sayanmramor-site/css/site.css">
+<script src="/sayanmramor-site/js/header.js" defer></script>
 <script src="/sayanmramor-site/vendor/leaflet/leaflet.js" defer></script>
 <script src="/sayanmramor-site/js/contacts-map.js" defer></script>
 <script src="/sayanmramor-site/js/offer-form.js" defer></script>
-<script src="/sayanmramor-site/js/masthead.js" defer></script>
-<script src="/sayanmramor-site/js/home-hero.js" defer></script>
-<script src="/sayanmramor-site/js/home-wall.js" defer></script>
-<script src="/sayanmramor-site/js/home-portal.js" defer></script>
-<script src="/sayanmramor-site/js/home-request.js" defer></script>
+<script src="/sayanmramor-site/js/site.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Перейти к содержимому</a>
-<header class="mast is-light" data-mast data-dock>
-  <div class="mast-inner">
-    <div class="mast-start">
-      <a class="mast-pill mast-cta" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
-    </div>
-    <a class="mast-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
-    <nav class="mast-nav" aria-label="Основное меню">
-      <details class="mast-drop mast-drop-products">
-        <summary class="mast-pill">Изделия<span class="mast-plus" aria-hidden="true"></span></summary>
-        <div class="mast-sheet">
-          <div class="mast-groups">
-            <div class="mast-group">
-              <p class="mast-group-title">Лестницы и ступени</p>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-logo" href="/sayanmramor-site/index.html">Саянмрамор</a>
+    <nav class="site-nav" id="siteNav" aria-label="Основное меню">
+      <details class="nav-drop nav-products">
+        <summary>Изделия</summary>
+        <div class="nav-panel">
+          <div class="nav-panel-inner">
+            <div class="nav-group">
+              <p class="nav-group-title">Лестницы и ступени</p>
               <ul>
-              <li><a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a></li>
-              <li><a href="/sayanmramor-site/categories/stupeni.html">Ступени</a></li>
+                <li><a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a></li>
+                <li><a href="/sayanmramor-site/categories/stupeni.html">Ступени</a></li>
               </ul>
             </div>
-            <div class="mast-group">
-              <p class="mast-group-title">Пространство</p>
+            <div class="nav-group">
+              <p class="nav-group-title">Пространство</p>
               <ul>
-              <li><a href="/sayanmramor-site/categories/poly.html">Полы</a></li>
-              <li><a href="/sayanmramor-site/categories/steny.html">Стены</a></li>
-              <li><a href="/sayanmramor-site/categories/panno.html">Панно</a></li>
-              <li><a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a></li>
-              <li><a href="/sayanmramor-site/categories/kaminy.html">Камины</a></li>
+                <li><a href="/sayanmramor-site/categories/poly.html">Полы</a></li>
+                <li><a href="/sayanmramor-site/categories/steny.html">Стены</a></li>
+                <li><a href="/sayanmramor-site/categories/panno.html">Панно</a></li>
+                <li><a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a></li>
+                <li><a href="/sayanmramor-site/categories/kaminy.html">Камины</a></li>
               </ul>
             </div>
-            <div class="mast-group">
-              <p class="mast-group-title">Кухня и ванная</p>
+            <div class="nav-group">
+              <p class="nav-group-title">Кухня и ванная</p>
               <ul>
-              <li><a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Кухня</a></li>
-              <li><a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Ванная</a></li>
+                <li><a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Кухня</a></li>
+                <li><a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Ванная</a></li>
               </ul>
             </div>
-            <div class="mast-group">
-              <p class="mast-group-title">Фасады</p>
+            <div class="nav-group">
+              <p class="nav-group-title">Фасады</p>
               <ul>
-              <li><a href="/sayanmramor-site/categories/fasady.html">Фасады</a></li>
+                <li><a href="/sayanmramor-site/categories/fasady.html">Фасады</a></li>
               </ul>
             </div>
-            <div class="mast-group">
-              <p class="mast-group-title">Спа и вода</p>
+            <div class="nav-group">
+              <p class="nav-group-title">Спа и бассейны</p>
               <ul>
-              <li><a href="/sayanmramor-site/categories/spa-zony.html">Спа зоны</a></li>
-              <li><a href="/sayanmramor-site/categories/hammamy.html">Хаммамы</a></li>
-              <li><a href="/sayanmramor-site/categories/basseyny.html">Бассейны</a></li>
+                <li><a href="/sayanmramor-site/categories/spa-zony.html">Спа зоны</a></li>
+                <li><a href="/sayanmramor-site/categories/hammamy.html">Хаммамы</a></li>
+                <li><a href="/sayanmramor-site/categories/basseyny.html">Бассейны</a></li>
               </ul>
             </div>
           </div>
         </div>
       </details>
-      <a class="mast-pill" href="/sayanmramor-site/katalog.html">Готовые изделия</a>
-      <details class="mast-drop mast-drop-showroom">
-        <summary class="mast-pill">Шоурум<span class="mast-plus" aria-hidden="true"></span></summary>
-        <div class="mast-sheet">
-          <a class="mast-house" href="/sayanmramor-site/showroom.html" data-portal tabindex="-1" aria-hidden="true"><img src="/sayanmramor-site/assets/home/showroom-house-1600.webp" alt="" width="1600" height="1000" loading="lazy" decoding="async"></a>
-          <p class="mast-house-title">Дом из натурального камня</p>
-          <p class="mast-house-note">Фасад, холл, гостиная, кухня, лестница и ванная в 3D.</p>
-          <a class="mast-enter" href="/sayanmramor-site/showroom.html" data-portal>Открыть шоурум</a>
-          <ul class="mast-rooms" aria-label="Комнаты шоурума">
-            <li><a href="/sayanmramor-site/showroom.html#hall" data-portal>Холл</a></li>
-            <li><a href="/sayanmramor-site/showroom.html#living" data-portal>Гостиная</a></li>
-            <li><a href="/sayanmramor-site/showroom.html#kitchen" data-portal>Кухня</a></li>
-            <li><a href="/sayanmramor-site/showroom.html#staircase" data-portal>Лестница</a></li>
-            <li><a href="/sayanmramor-site/showroom.html#bathroom" data-portal>Ванная</a></li>
-          </ul>
+      <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
+      <details class="nav-drop nav-showroom">
+        <summary>Шоурум</summary>
+        <div class="nav-panel">
+          <div class="nav-showroom-inner">
+            <a class="nav-showroom-house" href="/sayanmramor-site/showroom.html" tabindex="-1" aria-hidden="true"><img src="/sayanmramor-site/assets/home/showroom-house-640.webp" srcset="/sayanmramor-site/assets/home/showroom-house-640.webp 640w, /sayanmramor-site/assets/home/showroom-house-1600.webp 1600w" sizes="(max-width: 1000px) 120px, 280px" alt="" width="640" height="400" loading="lazy" decoding="async"></a>
+            <div class="nav-showroom-text">
+              <p class="nav-showroom-title">Дом из натурального камня</p>
+              <p class="nav-showroom-note">Фасад, холл, гостиная, кухня, лестница и ванная в 3D. Выберите изделие прямо в доме и создайте своё.</p>
+              <a class="btn btn-primary nav-showroom-enter" href="/sayanmramor-site/showroom.html">Открыть шоурум</a>
+              <ul class="nav-showroom-rooms" aria-label="Комнаты шоурума">
+                <li><a href="/sayanmramor-site/showroom.html#hall">Холл</a></li>
+                <li><a href="/sayanmramor-site/showroom.html#living">Гостиная</a></li>
+                <li><a href="/sayanmramor-site/showroom.html#kitchen">Кухня</a></li>
+                <li><a href="/sayanmramor-site/showroom.html#staircase">Лестница</a></li>
+                <li><a href="/sayanmramor-site/showroom.html#bathroom">Ванная</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
       </details>
-      <a class="mast-pill" href="/sayanmramor-site/index.html#contacts">Контакты</a>
+      <a href="/sayanmramor-site/index.html#contacts">Контакты</a>
     </nav>
-    <details class="mast-drop mast-menu">
-      <summary class="mast-pill">Меню<span class="mast-plus" aria-hidden="true"></span></summary>
-      <div class="mast-sheet">
-        <p class="mast-menu-title">Изделия</p>
-        <div class="mast-groups">
-          <div class="mast-group">
-            <p class="mast-group-title">Лестницы и ступени</p>
-            <ul>
+    <a class="btn btn-primary site-header-cta" href="/calculator/sayanmramor-calculator.html" aria-label="Создать изделие"><span>Создать<span class="site-header-cta-tail"> изделие</span></span></a>
+    <button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Меню"><span class="nav-toggle-icon"></span></button>
+  </div>
+</header>
+
+<main class="home" id="main">
+  <section class="home-hero" aria-labelledby="heroTitle">
+    <picture class="home-hero-picture">
+      <source media="(max-aspect-ratio: 1/1), (max-width: 900px)" srcset="/sayanmramor-site/assets/hero/ai-washbasin-4x5-720.webp 720w, /sayanmramor-site/assets/hero/ai-washbasin-4x5-1121.webp 1121w" sizes="100vw" width="1121" height="1403">
+      <img src="/sayanmramor-site/assets/hero/ai-washbasin-1871.webp" srcset="/sayanmramor-site/assets/hero/ai-washbasin-1200.webp 1200w, /sayanmramor-site/assets/hero/ai-washbasin-1871.webp 1871w" sizes="100vw" alt="Раковина из кварцита на двух каменных опорах в светлой комнате, визуализация" width="1871" height="841" fetchpriority="high" decoding="async">
+    </picture>
+    <div class="wrap home-hero-content">
+      <h1 id="heroTitle">Изделия из натурального камня на заказ</h1>
+      <p class="lead">Лестницы, столешницы, полы, стены и фасады из мрамора, кварцита, оникса и гранита. Выберите камень из каталога и задайте размеры - изделие сразу появится в 3D с ориентировочной стоимостью.</p>
+      <div class="home-actions">
+        <a class="btn btn-primary" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
+        <a class="btn btn-secondary" href="/sayanmramor-site/showroom.html">Открыть 3D-шоурум</a>
+      </div>
+    </div>
+    <p class="wrap home-hero-note">Раковина из кварцита — визуализация</p>
+  </section>
+
+  <section class="wrap home-s2o" aria-labelledby="s2oTitle">
+    <div class="home-s2o-head">
+      <h2 id="s2oTitle">От камня к&nbsp;изделию</h2>
+      <p>Выбираем камень, проектируем форму и изготавливаем изделие по вашим размерам.</p>
+    </div>
+    <ol class="home-s2o-steps">
+      <li class="home-s2o-step">
+        <div class="home-s2o-card">
+          <div class="home-s2o-shot">
+            <img src="/sayanmramor-site/assets/home/s2o-quartz-white-640.webp" srcset="/sayanmramor-site/assets/home/s2o-quartz-white-640.webp 640w, /sayanmramor-site/assets/home/s2o-quartz-white-800.webp 800w" sizes="(max-width: 600px) calc(100vw - 32px), 300px" alt="Слэб полудрагоценного кварца Quartz White" width="640" height="800" loading="lazy" decoding="async">
+            <span class="home-s2o-chip" aria-hidden="true"><b><span>1</span></b>Камень</span>
+          </div>
+        </div>
+        <p class="home-s2o-cap"><strong>Натуральный камень</strong>Кварц Quartz White</p>
+      </li>
+      <li class="home-s2o-step">
+        <div class="home-s2o-card">
+          <span class="home-s2o-arrow" aria-hidden="true"><svg class="home-s2o-arrow-right" viewBox="0 0 16 10" width="16" height="10"><path d="M1 5h12.5M10 1.5L13.5 5 10 8.5"/></svg><svg class="home-s2o-arrow-down" viewBox="0 0 10 16" width="10" height="16"><path d="M5 1v12.5M1.5 10L5 13.5 8.5 10"/></svg></span>
+          <div class="home-s2o-shot">
+            <img src="/sayanmramor-site/assets/home/s2o-making-036-960.webp" srcset="/sayanmramor-site/assets/home/s2o-making-036-960.webp 960w, /sayanmramor-site/assets/home/s2o-making-036-1600.webp 1600w" sizes="(max-width: 600px) calc((100vw - 32px) * 1.875), 560px" alt="Распил каменной плиты на станке" width="960" height="640" loading="lazy" decoding="async">
+            <span class="home-s2o-chip" aria-hidden="true"><b><span>2</span></b>Производство</span>
+          </div>
+        </div>
+        <p class="home-s2o-cap"><strong>Раскрой и обработка</strong>Распил плиты и обработка кромки</p>
+      </li>
+      <li class="home-s2o-step">
+        <div class="home-s2o-card">
+          <span class="home-s2o-arrow" aria-hidden="true"><svg class="home-s2o-arrow-right" viewBox="0 0 16 10" width="16" height="10"><path d="M1 5h12.5M10 1.5L13.5 5 10 8.5"/></svg><svg class="home-s2o-arrow-down" viewBox="0 0 10 16" width="10" height="16"><path d="M5 1v12.5M1.5 10L5 13.5 8.5 10"/></svg></span>
+          <div class="home-s2o-shot">
+            <img src="/sayanmramor-site/assets/home/s2o-kitchen-155-640.webp" srcset="/sayanmramor-site/assets/home/s2o-kitchen-155-640.webp 640w, /sayanmramor-site/assets/home/s2o-kitchen-155-1280.webp 1280w" sizes="(max-width: 600px) calc(100vw - 32px), 300px" alt="Кухонная столешница и фартук с подсветкой из кварца Quartz White" width="640" height="800" loading="lazy" decoding="async">
+            <span class="home-s2o-chip" aria-hidden="true"><b><span>3</span></b>Изделие</span>
+          </div>
+        </div>
+        <p class="home-s2o-cap"><strong>Готовое изделие</strong>Столешница и фартук с подсветкой</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap home-products" aria-labelledby="productsTitle">
+    <div class="home-order">
+      <picture class="home-order-bg" aria-hidden="true">
+        <source media="(max-width: 900px)" srcset="/sayanmramor-site/assets/home/order/bg-majestic-900.webp">
+        <img src="/sayanmramor-site/assets/home/order/bg-majestic-1600.webp" alt="" width="1600" height="703" loading="lazy" decoding="async">
+      </picture>
+      <div class="home-order-head">
+        <div>
+          <p class="home-order-kicker">Каталог</p>
+          <h2 id="productsTitle">Что можно заказать</h2>
+        </div>
+        <p class="home-order-lead">Натуральный камень для интерьеров, фасадов и архитектурных решений</p>
+        <a class="home-order-go" href="/calculator/sayanmramor-calculator.html" aria-label="Создать изделие в конфигураторе" title="Создать изделие в конфигураторе"></a>
+      </div>
+      <div class="home-groups">
+        <div class="home-group">
+          <span class="home-group-frame"><img class="home-group-shot" src="/sayanmramor-site/assets/home/order/lestnitsy-720.webp" alt="" width="720" height="300" loading="lazy" decoding="async"></span>
+          <h3 class="home-group-title">Лестницы и ступени</h3>
+          <ul>
             <li><a href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a></li>
             <li><a href="/sayanmramor-site/categories/stupeni.html">Ступени</a></li>
-            </ul>
-          </div>
-          <div class="mast-group">
-            <p class="mast-group-title">Пространство</p>
-            <ul>
+          </ul>
+        </div>
+        <div class="home-group">
+          <span class="home-group-frame"><img class="home-group-shot" src="/sayanmramor-site/assets/home/order/prostranstvo-720.webp" alt="" width="720" height="300" loading="lazy" decoding="async"></span>
+          <h3 class="home-group-title">Пространство</h3>
+          <ul>
             <li><a href="/sayanmramor-site/categories/poly.html">Полы</a></li>
             <li><a href="/sayanmramor-site/categories/steny.html">Стены</a></li>
             <li><a href="/sayanmramor-site/categories/panno.html">Панно</a></li>
             <li><a href="/sayanmramor-site/categories/podokonniki.html">Подоконники</a></li>
             <li><a href="/sayanmramor-site/categories/kaminy.html">Камины</a></li>
-            </ul>
-          </div>
-          <div class="mast-group">
-            <p class="mast-group-title">Кухня и ванная</p>
-            <ul>
-            <li><a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Кухня</a></li>
-            <li><a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Ванная</a></li>
-            </ul>
-          </div>
-          <div class="mast-group">
-            <p class="mast-group-title">Фасады</p>
-            <ul>
+          </ul>
+        </div>
+        <div class="home-group">
+          <span class="home-group-frame"><img class="home-group-shot" src="/sayanmramor-site/assets/home/order/kuhnya-vannaya-720.webp" alt="" width="720" height="300" loading="lazy" decoding="async"></span>
+          <h3 class="home-group-title">Кухня и ванная</h3>
+          <ul>
+            <li><a href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html">Столешница на кухню</a></li>
+            <li><a href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html">Столешница в ванную</a></li>
+          </ul>
+        </div>
+        <div class="home-group">
+          <span class="home-group-frame"><img class="home-group-shot" src="/sayanmramor-site/assets/home/order/fasady-720.webp" alt="" width="720" height="300" loading="lazy" decoding="async"></span>
+          <h3 class="home-group-title">Фасады</h3>
+          <ul>
             <li><a href="/sayanmramor-site/categories/fasady.html">Фасады</a></li>
-            </ul>
-          </div>
-          <div class="mast-group">
-            <p class="mast-group-title">Спа и вода</p>
-            <ul>
+          </ul>
+        </div>
+        <div class="home-group">
+          <span class="home-group-frame"><img class="home-group-shot" src="/sayanmramor-site/assets/home/order/spa-basseyny-720.webp" alt="" width="720" height="300" loading="lazy" decoding="async"></span>
+          <h3 class="home-group-title">Спа и бассейны</h3>
+          <ul>
             <li><a href="/sayanmramor-site/categories/spa-zony.html">Спа зоны</a></li>
             <li><a href="/sayanmramor-site/categories/hammamy.html">Хаммамы</a></li>
             <li><a href="/sayanmramor-site/categories/basseyny.html">Бассейны</a></li>
-            </ul>
-          </div>
-        </div>
-        <ul class="mast-menu-links">
-          <li><a href="/sayanmramor-site/katalog.html">Готовые изделия</a></li>
-          <li><a href="/sayanmramor-site/showroom.html" data-portal>Шоурум</a></li>
-          <li><a href="/sayanmramor-site/index.html#contacts">Контакты</a></li>
-        </ul>
-        <a class="mast-pill mast-cta mast-menu-cta" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
-        <a class="mast-menu-phone" href="tel:+74952155145">+7 (495) 215-51-45</a>
-      </div>
-    </details>
-  </div>
-</header>
-
-<main class="home-main" id="main">
-  <section class="night-hero" aria-labelledby="heroTitle" data-hero>
-    <svg class="hero-defs" width="0" height="0" aria-hidden="true" focusable="false">
-      <!-- The slab photo's own colour balance, as in the showroom (js/showroom/stone-photos.js: mean -> target, linear light). -->
-      <filter id="slabBalance" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.990 0 0 0 0  0 0.980 0 0 0  0 0 1.141 0 0  0 0 0 1 0"/></filter>
-    </svg>
-    <p class="hero-mark" aria-hidden="true"><span class="hero-mark-word">Саянмрамор</span></p>
-    <div class="hero-stage">
-      <div class="wrap hero-copy">
-        <h1 class="hero-title" id="heroTitle">Изделия из натурального камня на заказ</h1>
-        <div class="hero-side">
-          <p class="hero-lead">Лестницы, столешницы, полы, стены и фасады из мрамора, кварцита, оникса и гранита. Выберите камень из каталога и задайте размеры - изделие сразу появится в 3D с ориентировочной стоимостью.</p>
-          <a class="night-cta" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
+          </ul>
         </div>
       </div>
-      <div class="hero-scene">
-        <figure class="hero-slab">
-          <span class="hero-floor-shadow" aria-hidden="true"></span>
-          <span class="hero-edge" aria-hidden="true"></span>
-          <div class="hero-raw" aria-hidden="true">
-            <span class="hero-stone-frame"><img class="hero-stone" src="/sayanmramor-site/assets/home/calacatta-nova-P0585309-1600.webp" srcset="/sayanmramor-site/assets/home/calacatta-nova-P0585309-1600.webp 1600w, /sayanmramor-site/assets/home/calacatta-nova-P0585309-2560.webp 2560w, /sayanmramor-site/assets/showroom/stone/calacatta-nova-P0585309.webp 4096w" sizes="(max-width: 767px) calc(100vw - 62px), (max-width: 1280px) calc(100vw - 48px), 1184px" alt="" width="4096" height="2437" fetchpriority="high" decoding="async"></span>
-            <span class="hero-dim hero-dim-w"><span class="hero-dim-line"></span><span class="hero-dim-label">2840</span></span>
-            <span class="hero-dim hero-dim-h"><span class="hero-dim-line"></span><span class="hero-dim-label">1660</span></span>
-          </div>
-          <div class="hero-made">
-            <img class="hero-photo" src="/sayanmramor-site/assets/hero/hero-stair-1920.webp" srcset="/sayanmramor-site/assets/hero/hero-stair-1200.webp 1200w, /sayanmramor-site/assets/hero/hero-stair-1920.webp 1920w, /sayanmramor-site/assets/hero/hero-stair-2880.webp 2880w" sizes="(max-width: 1280px) 100vw, 1180px" alt="Лестница из натурального камня" width="1920" height="1280" decoding="async">
-            <a class="hero-tag" href="/sayanmramor-site/categories/lestnitsy.html">Лестницы</a>
-          </div>
-          <span class="hero-cut" aria-hidden="true"></span>
-        </figure>
-      </div>
-      <div class="wrap hero-story">
-        <ol class="hero-steps">
-          <li class="hero-step" data-step="1"><span class="hero-step-number">01</span><span class="hero-step-name">Камень</span><span class="hero-step-note">Выберите камень из каталога</span></li>
-          <li class="hero-step" data-step="2"><span class="hero-step-number">02</span><span class="hero-step-name">Размеры</span><span class="hero-step-note">Задайте размеры</span></li>
-          <li class="hero-step" data-step="3"><span class="hero-step-number">03</span><span class="hero-step-name">3D и стоимость</span><span class="hero-step-note">Изделие сразу появится в 3D с ориентировочной стоимостью</span></li>
-        </ol>
-        <a class="night-cta hero-final-cta" href="/calculator/sayanmramor-calculator.html">Создать изделие</a>
-      </div>
     </div>
+    <a class="home-instock" href="/sayanmramor-site/katalog.html">
+      <span class="home-instock-title">Готовые изделия</span>
+      <span class="home-instock-text">Изделия из камня в наличии - фиксированная цена, без ожидания расчёта.</span>
+    </a>
   </section>
 
-  <section class="home-directions" aria-labelledby="directionsTitle" data-wall>
-    <div class="wrap wall-head">
-      <h2 class="wall-title" id="directionsTitle">Что можно заказать</h2>
-      <p class="wall-lead">От подоконника до фасада и бассейна. Десять направлений можно рассчитать в конфигураторе, а спа зоны, хаммамы и бассейны - выполнить по техническому заданию.</p>
-    </div>
-    <ul class="wall">
-      <li class="wall-bay" style="--n: 2">
-        <h3 class="wall-bay-name">Лестницы и ступени</h3>
-        <ul class="wall-slabs">
-          <li><a class="wall-slab is-open" href="/sayanmramor-site/categories/lestnitsy.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/184.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Лестницы</span><span class="wall-text">Мраморные и гранитные лестницы на заказ</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/stupeni.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/190.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Ступени</span><span class="wall-text">Ступени из мрамора и гранита на заказ</span></span></a></li>
-        </ul>
-      </li>
-      <li class="wall-bay" style="--n: 5">
-        <h3 class="wall-bay-name">Пространство</h3>
-        <ul class="wall-slabs">
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/poly.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/160.webp" alt="" width="1280" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Полы</span><span class="wall-text">Мраморные и гранитные полы на заказ</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/steny.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/049.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Стены</span><span class="wall-text">Отделка стен натуральным камнем</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/panno.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/096.webp" alt="" width="900" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Панно</span><span class="wall-text">Декоративные панно и мозаика из натурального камня</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/podokonniki.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/098.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Подоконники</span><span class="wall-text">Подоконники из мрамора и гранита на заказ</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/kaminy.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/014.webp" alt="" width="749" height="936" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Камины</span><span class="wall-text">Каминные порталы, облицовка каминного короба и подиумы из натурального камня</span></span></a></li>
-        </ul>
-      </li>
-      <li class="wall-bay" style="--n: 2">
-        <h3 class="wall-bay-name">Кухня и ванная</h3>
-        <ul class="wall-slabs">
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/stoleshnitsy-kuhnya.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/142.webp" alt="" width="1280" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Кухня</span><span class="wall-text">Кухонные столешницы из мрамора и гранита на заказ</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/stoleshnitsy-vannaya.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/053.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Ванная</span><span class="wall-text">Столешницы для ванной комнаты из мрамора и гранита</span></span></a></li>
-        </ul>
-      </li>
-      <li class="wall-bay" style="--n: 1">
-        <h3 class="wall-bay-name">Фасады</h3>
-        <ul class="wall-slabs">
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/fasady.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/170.webp" alt="" width="900" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Фасады</span><span class="wall-text">Отделка фасадов натуральным камнем</span></span></a></li>
-        </ul>
-      </li>
-      <li class="wall-bay" style="--n: 3">
-        <h3 class="wall-bay-name">Спа и вода</h3>
-        <ul class="wall-slabs">
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/spa-zony.html"><span class="wall-face"><img src="/sayanmramor-site/assets/portfolio/091.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Спа зоны</span><span class="wall-text">Пришлите техническое задание - подготовим коммерческое предложение.</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/hammamy.html"><span class="wall-face"><img src="/sayanmramor-site/assets/categories/hammam/m2_storis.webp" alt="" width="800" height="1200" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Хаммамы</span><span class="wall-text">Пришлите техническое задание - подготовим коммерческое предложение.</span></span></a></li>
-          <li><a class="wall-slab" href="/sayanmramor-site/categories/basseyny.html"><span class="wall-face"><img src="/sayanmramor-site/assets/categories/basseyny/m59.webp" alt="" width="1067" height="1600" loading="lazy" decoding="async"></span><span class="wall-label"><span class="wall-name">Бассейны</span><span class="wall-text">Пришлите техническое задание - подготовим коммерческое предложение.</span></span></a></li>
-        </ul>
-      </li>
-    </ul>
-  </section>
-
-  <section class="home-portal night" aria-labelledby="portalTitle">
-    <div class="wrap portal">
-      <div class="portal-text">
-        <h2 class="portal-title" id="portalTitle">Дом из натурального камня</h2>
-        <p class="portal-note">Фасад, холл, гостиная, кухня, лестница и ванная в 3D. Выберите изделие прямо в доме и создайте своё.</p>
-        <a class="portal-enter" href="/sayanmramor-site/showroom.html" data-portal>Открыть шоурум</a>
-        <ul class="portal-rooms" aria-label="Комнаты шоурума">
-          <li><a href="/sayanmramor-site/showroom.html#hall" data-portal>Холл</a></li>
-          <li><a href="/sayanmramor-site/showroom.html#living" data-portal>Гостиная</a></li>
-          <li><a href="/sayanmramor-site/showroom.html#kitchen" data-portal>Кухня</a></li>
-          <li><a href="/sayanmramor-site/showroom.html#staircase" data-portal>Лестница</a></li>
-          <li><a href="/sayanmramor-site/showroom.html#bathroom" data-portal>Ванная</a></li>
-        </ul>
+  <section class="home-showroom" aria-labelledby="showroomTitle">
+    <div class="home-showroom-inner">
+      <div class="home-showroom-text">
+        <h2 id="showroomTitle">Дом из натурального камня</h2>
+        <p>Фасад, холл, гостиная, кухня, лестница и ванная в 3D. Выберите изделие прямо в доме и создайте своё.</p>
+        <a class="btn btn-on-dark" href="/sayanmramor-site/showroom.html">Открыть шоурум</a>
       </div>
-      <a class="portal-house" href="/sayanmramor-site/showroom.html" data-portal aria-label="Открыть шоурум: дом из натурального камня в 3D">
-        <img src="/sayanmramor-site/assets/home/showroom-house-1600.webp" srcset="/sayanmramor-site/assets/home/showroom-house-1600.webp 1600w, /sayanmramor-site/assets/home/showroom-house-2560.webp 2560w" sizes="(max-width: 900px) 100vw, 64vw" alt="" width="1600" height="1000" loading="lazy" decoding="async">
-      </a>
-    </div>
-  </section>
-
-  <section class="home-ready" aria-labelledby="readyTitle">
-    <div class="wrap">
-      <a class="ready-line" href="/sayanmramor-site/katalog.html">
-        <h2 class="ready-title" id="readyTitle">Готовые изделия</h2>
-        <p class="ready-text">Изделия из камня в наличии - фиксированная цена, без ожидания расчёта.</p>
-        <span class="ready-more">Смотреть коллекцию</span>
-      </a>
+      <a class="home-showroom-house" href="/sayanmramor-site/showroom.html" tabindex="-1" aria-hidden="true"><img src="/sayanmramor-site/assets/home/showroom-house-1600.webp" alt="" width="1600" height="1000" loading="lazy" decoding="async"></a>
     </div>
   </section>
 
@@ -273,31 +233,6 @@
           <p class="offer-needs">Направление · Имя · Телефон · Техническое задание</p>
           <p class="offer-phone">Или позвоните: <a href="tel:+74952155145">+7 (495) 215-51-45</a></p>
         </div>
-        <!-- The sheet's drawing: the hero's slab in lines, at its real size, and the piece to be cut from it -- yours (js/home-request.js names it after the chosen direction). -->
-        <figure class="offer-drawing" aria-hidden="true">
-          <svg viewBox="0 0 640 410" focusable="false">
-            <g class="drawing-dim">
-              <path d="M60 52V24M560 52V24M60 32H560M55 37l10-10M555 37l10-10"/>
-              <path d="M568 60H596M568 352H596M588 60V352M583 65l10-10M583 357l10-10"/>
-            </g>
-            <text class="drawing-figure" x="310" y="22" text-anchor="middle">2840</text>
-            <text class="drawing-figure" x="0" y="0" text-anchor="middle" transform="translate(608 206) rotate(-90)">1660</text>
-            <rect class="drawing-slab" x="60" y="60" width="500" height="292"/>
-            <g class="drawing-axis">
-              <path d="M128 190H392M260 112V268"/>
-            </g>
-            <rect class="drawing-piece" x="150" y="130" width="220" height="120"/>
-            <path class="drawing-leader" d="M330 230L440 386H612"/>
-            <circle class="drawing-dot" cx="330" cy="230" r="3"/>
-            <text class="drawing-note" x="446" y="378" data-piece-name>Ваше изделие</text>
-          </svg>
-        </figure>
-        <!-- The sheet's notes, where a drawing keeps them, beside its title block: what the form needs, and the drawing's units. -->
-        <ol class="offer-notes">
-          <li>Обязательные поля - телефон и согласие на обработку данных.</li>
-          <li>Техническое задание можно приложить файлом: чертёж, эскиз или фото с размерами.</li>
-          <li>Размеры на чертеже - в миллиметрах.</li>
-        </ol>
         <div class="offer-reveal">
           <div class="offer-reveal-inner">
             <div data-offer-form></div>

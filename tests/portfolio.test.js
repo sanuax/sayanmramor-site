@@ -180,6 +180,13 @@ test('layoutMasonry measures every photo, then sets its row span', () => {
   assert.deepEqual(items.map(i => i.style.gridRowEnd), ['span 416', 'span 193', 'span 349']);
 });
 
+test('portfolio photos are named after their page when they have no caption (not decoration for a screen reader)', () => {
+  assert.equal(SiteCommon.portfolioAlt('Лестницы из камня', { image: 'a.webp', caption: '' }, 0), 'Лестницы из камня - работа 1');
+  assert.equal(SiteCommon.portfolioAlt('Лестницы из камня', { image: 'b.webp', caption: '' }, 4), 'Лестницы из камня - работа 5');
+  assert.equal(SiteCommon.portfolioAlt('Лестницы из камня', { image: 'c.webp', caption: 'Холл' }, 0), 'Холл', 'a caption wins');
+  assert.equal(SiteCommon.portfolioAlt('', { image: 'd.webp', caption: '' }, 0), '', 'no page title: nothing invented');
+});
+
 test('renderPortfolio switches the grid to masonry and keeps the photos in order', () => {
   // A minimal DOM, just enough for renderPortfolio.
   const el = tag => ({
@@ -204,8 +211,9 @@ test('renderPortfolio switches the grid to masonry and keeps the photos in order
       .map(image => ({ image, caption: '' }));
     SiteCommon.renderPortfolio(grid, items);
     assert.ok(grid.classList.contains('is-masonry'), 'masonry class is on');
-    assert.deepEqual(grid.children.map(f => f.children[0].src), items.map(i => i.image), 'order kept');
-    assert.ok(grid.children.every(f => f.children[0].loading === 'lazy'), 'still lazy-loaded');
+    assert.ok(grid.children.every(f => f.children[0].classList.contains('portfolio-shot')), 'each photo in its frame');
+    assert.deepEqual(grid.children.map(f => f.children[0].children[0].src), items.map(i => i.image), 'order kept');
+    assert.ok(grid.children.every(f => f.children[0].children[0].loading === 'lazy'), 'still lazy-loaded');
     assert.ok(grid.listeners.load && grid.listeners.load.length, 're-layout when a photo loads');
     frames.forEach(fn => fn());
     assert.deepEqual(grid.children.map(f => f.style.gridRowEnd), ['span 316', 'span 316']);

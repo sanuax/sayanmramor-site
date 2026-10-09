@@ -276,7 +276,7 @@ test('marker -> card: selecting an object opens its card, in its own zone, with 
   const d = State.describe(s);
   assert.equal(d.card.title, 'Кухонный остров');
   assert.equal(d.card.productLabel, 'Кухня');
-  assert.equal(d.card.ctaLabel, 'Создать изделие →');
+  assert.equal(d.card.ctaLabel, 'Создать изделие');
   assert.equal(d.card.ctaHref, '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya');
   assert.equal(d.card.categoryHref, '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html');
   assert.ok(d.markers.find(m => m.id === 'kitchen-island').selected);

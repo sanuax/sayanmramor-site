@@ -1,5 +1,17 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ---- Fonts -------------------------------------------------------------------
+   Local files, no CDN (assets/fonts/SOURCES.md): Unbounded for display, Source
+   Serif 4 for the group names, Montserrat for text. Each script is its own file;
+   a browser loads only the ranges a page uses (latin-ext: the rouble sign). */
+@font-face { font-family: 'Montserrat'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../assets/fonts/montserrat-cyrillic-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../assets/fonts/montserrat-latin-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../assets/fonts/montserrat-latin-ext-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 200 900; src: url(../assets/fonts/unbounded-cyrillic-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 200 900; src: url(../assets/fonts/unbounded-latin-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Source Serif 4'; font-style: normal; font-display: swap; font-weight: 200 900; src: url(../assets/fonts/source-serif-4-cyrillic-opsz-normal.woff2) format('woff2-variations'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: 'Source Serif 4'; font-style: normal; font-display: swap; font-weight: 200 900; src: url(../assets/fonts/source-serif-4-latin-opsz-normal.woff2) format('woff2-variations'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
 /* ---- Tokens ----------------------------------------------------------------
    «Basalt and serpentine»: a light limestone page, basalt type, a deep
    green-graphite for the dark sections, and one muted verde -- the colour of
@@ -30,7 +42,12 @@
   --accent-on-dark: #7fa698;  /* the same verde, lightened for the dark sections (5.9:1) */
   --link: #2a5446;          /* legal text links: the accent, underlined (7.3:1 on the page) */
 
-  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Type: Montserrat for text, Unbounded -- wide, the old site's character -- for the
+     page headings and the name, Source Serif 4 for the names of the home page's groups. */
+  --font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-brand: var(--font-display);
   /* Type scale: display / h1 / h2 / h3 / body / small / meta. The display
      size is the home page's one headline; every other page -- and the
      closing offer band -- tops out at h1. */
@@ -90,6 +107,7 @@ a { color: inherit; }
 .wrap { width: 100%; max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter); }
 
 h1, h2, h3 { font-weight: 700; letter-spacing: -0.02em; line-height: 1.12; color: var(--ink); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.015em; }
 h1 { font-size: var(--fs-h1); margin-bottom: var(--s-3); }
 h2 { font-size: var(--fs-h2); margin-bottom: var(--s-3); }
 h3 { font-size: var(--fs-h3); }
@@ -122,69 +140,87 @@ h3 { font-size: var(--fs-h3); }
 }
 .btn:active { transform: scale(0.98); }
 .btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-hover); }
+@media (hover: hover) { .btn-primary:hover { background: var(--accent-hover); } }
 .btn-secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
-.btn-secondary:hover { border-color: var(--ink); }
+@media (hover: hover) { .btn-secondary:hover { border-color: var(--ink); } }
 .btn-on-dark { background: transparent; color: var(--on-dark); border-color: var(--on-dark-line); }
-.btn-on-dark:hover { border-color: var(--on-dark); }
+@media (hover: hover) { .btn-on-dark:hover { border-color: var(--on-dark); } }
 
-/* ---- Header --------------------------------------------------------------- */
-.site-header {
-  --header-h: 64px;
-  position: sticky; top: 0; z-index: 20;
-  background: rgba(239, 237, 232, 0.94);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
-}
-/* One quiet row: the brand, four places -- the products, the ready-made
-   pieces, the showroom, the contacts -- and the one primary action. The 13
-   directions sit behind «Изделия», a native <details> (works without
-   JavaScript): a small panel under the button, the directions in five groups.
-   Under 1000 px the row becomes a menu button (js/header.js). */
+/* ---- Header: the capsule ------------------------------------------------------
+   One header for the whole site: a floating capsule over the page -- a thin
+   plate of milk-white stone, a little translucent, a hairline edge and a soft
+   shadow under it, never the page's full width. Inside it: the name on the
+   left, four places in the middle -- «Изделия» (a native <details> with the 13
+   directions in five groups; works without JavaScript), the ready-made
+   pieces, the showroom, the contacts -- and the one action on the right, a
+   pill set into the capsule's own curve. The same markup on every page
+   (tests/site.test.js); js/header.js adds Esc / click-outside, the line under
+   the current place and, under 1000 px, the menu button. On a phone the
+   capsule holds the name and the menu button, and opens downward into the menu
+   itself, with «Создать изделие» at its foot. Nothing about it moves on scroll. */
 :root {
-  /* The one arrow of the menu and the list of directions (a mask: it takes the text colour). */
-  --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='1.4'%3E%3Cpath d='M0 5h14.5M10.5 1l4 4-4 4'/%3E%3C/svg%3E");
+  /* The site's one arrow, everywhere (a mask: it takes the text colour): 2 px, square ends. */
+  --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
+}
+.site-header {
+  --header-h: 60px;
+  --capsule-bg: rgba(248, 247, 244, 0.8);
+  position: sticky; top: 12px; z-index: 20;
+  width: min(1120px, calc(100% - 2 * var(--gutter))); margin: 12px auto 0;
+  border-radius: 999px; background: var(--capsule-bg);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(28, 29, 27, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(28, 29, 27, 0.06), 0 14px 34px -20px rgba(28, 29, 27, 0.38);
+}
+/* Where the browser cannot blur behind it, the plate is simply solid. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .site-header { --capsule-bg: rgba(248, 247, 244, 0.97); }
 }
 .site-header-inner {
-  position: relative;
-  max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter);
-  height: var(--header-h); display: flex; align-items: center; gap: var(--s-5);
+  position: relative; height: var(--header-h);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--s-5);
+  padding: 0 8px;   /* the same on both sides: the places stand on the capsule's middle */
 }
+/* The name: the brand's own letters once their font is settled (--font-brand), the site's until then. */
 .site-logo {
   flex: none; font-size: 15px; font-weight: 800; letter-spacing: 0.12em;
   text-transform: uppercase; text-decoration: none; color: var(--ink);
 }
-.site-nav { flex: 1 1 auto; align-self: stretch; min-width: 0; display: flex; justify-content: flex-end; gap: var(--s-5); }
-.site-nav > a, .nav-products > summary {
-  display: flex; align-items: center; height: var(--header-h);
-  font-size: var(--fs-small); color: var(--ink-soft); text-decoration: none; white-space: nowrap;
-  border-bottom: 2px solid transparent; cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+.site-header .site-logo { justify-self: start; margin-left: 20px; font-family: var(--font-brand, var(--font)); white-space: nowrap; }
+/* The places: soft pills inside the capsule. The current place and the one
+   pointed at are a faint fill of the stone's own shade; the keyboard ring
+   follows the same shape. Only colour changes, in 150 ms. */
+.site-nav { grid-column: 2; align-self: center; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.site-nav > a, .nav-drop > summary {
+  display: flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 999px;
+  font-size: var(--fs-small); color: var(--ink-soft); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
 }
-.site-nav > a:hover, .nav-products > summary:hover, .nav-products[open] > summary { color: var(--ink); border-bottom-color: var(--line-strong); }
-.site-nav > a.active, .nav-products > summary.active { color: var(--ink); border-bottom-color: var(--ink); }
-.nav-products { position: static; }
-.nav-products > summary { position: relative; list-style: none; gap: 6px; }
-.nav-products > summary::-webkit-details-marker { display: none; }
-.nav-products > summary::after {
+.site-nav > a:focus-visible, .nav-drop > summary:focus-visible { outline-offset: 0; }
+.nav-drop[open] > summary { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
+@media (hover: hover) { .site-nav > a:hover, .nav-drop > summary:hover { color: var(--ink); background: rgba(28, 29, 27, 0.05); } }
+.site-nav > a.active, .nav-drop > summary.active { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
+.nav-drop { position: static; }
+.nav-drop > summary { position: relative; list-style: none; gap: 6px; }
+.nav-drop > summary::-webkit-details-marker { display: none; }
+.nav-drop > summary::after {
   content: ''; flex: none; width: 6px; height: 6px; margin-top: -3px;
   border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg);
 }
-.nav-products[open] > summary::after { margin-top: 3px; transform: rotate(-135deg); }
+.nav-drop[open]:not(.is-closing) > summary::after { margin-top: 3px; transform: rotate(-135deg); }
 
-/* The panel: a ledger. One row per group -- its number and name on the left,
-   small and quiet, its directions on the right -- with thin neutral rules
-   between the rows. Copper appears only as a line under the direction you
-   point at, and under the page you are on; the arrow slides in beside it.
-   It hangs from the header's rule at the right edge, as wide as the menu
-   and the action together, never across the page. */
+/* The panel: a ledger on a plate of the same stone, hanging under the capsule's
+   middle. One row per group -- its number and name on the left, small and
+   quiet, its directions on the right -- with thin neutral rules between the
+   rows; verde only as a line under the direction you point at and under the
+   page you are on. */
 .nav-panel {
-  position: absolute; top: calc(100% + 1px); right: var(--gutter); width: min(640px, calc(100% - 2 * var(--gutter)));
-  background: var(--surface); border: 1px solid var(--line); border-top: 0;
-  border-radius: 0 0 var(--radius-m) var(--radius-m);
-  box-shadow: 0 18px 36px -24px rgba(28, 29, 27, 0.3);
+  position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0; width: min(640px, calc(100vw - 2 * var(--gutter)));
+  background: rgba(248, 247, 244, 0.97); border: 1px solid rgba(28, 29, 27, 0.09); border-radius: 24px;
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 24px 48px -24px rgba(28, 29, 27, 0.4);
 }
-.nav-panel-inner { counter-reset: nav-group; padding: var(--s-1) var(--s-6) var(--s-2); }
+.nav-panel-inner { counter-reset: nav-group; padding: var(--s-2) var(--s-6) var(--s-3); }
 .nav-group {
   counter-increment: nav-group;
   display: grid; grid-template-columns: 184px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
@@ -196,7 +232,8 @@ h3 { font-size: var(--fs-h3); }
   transition: color 0.15s;
 }
 .nav-group-title::before { content: counter(nav-group, decimal-leading-zero); min-width: 1.5em; font-variant-numeric: tabular-nums; }
-.nav-group:hover .nav-group-title, .nav-group:focus-within .nav-group-title { color: var(--ink); }
+.nav-group:focus-within .nav-group-title { color: var(--ink); }
+@media (hover: hover) { .nav-group:hover .nav-group-title { color: var(--ink); } }
 .nav-group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); }
 .nav-group a {
   position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px 0;
@@ -211,14 +248,32 @@ h3 { font-size: var(--fs-h3); }
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   opacity: 0; transform: translateX(-4px); transition: opacity 0.15s, transform 0.2s var(--ease);
 }
-.nav-group a:hover::before, .nav-group a:focus-visible::before, .nav-group a.active::before { transform: scaleX(1); }
-.nav-group a:hover::after, .nav-group a:focus-visible::after { opacity: 1; transform: translateX(0); }
+.nav-group a:focus-visible::before, .nav-group a.active::before { transform: scaleX(1); }
+@media (hover: hover) { .nav-group a:hover::before { transform: scaleX(1); } }
+.nav-group a:focus-visible::after { opacity: 1; transform: translateX(0); }
+@media (hover: hover) { .nav-group a:hover::after { opacity: 1; transform: translateX(0); } }
+/* The showroom's panel: the house on the left, on the right its name, two lines,
+   the way in and its rooms -- the same plate as «Изделия». */
+.nav-showroom-inner { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--s-5); align-items: center; padding: var(--s-4); }
+.nav-showroom-house { display: block; border-radius: 16px; overflow: hidden; background: var(--surface-sunk); }
+.nav-showroom-house img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
+.nav-showroom-title { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; color: var(--ink); }
+.nav-showroom-note { margin-top: var(--s-2); font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+.nav-showroom-enter { margin-top: var(--s-4); min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); }
+.nav-showroom-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); margin-top: var(--s-3); }
+.nav-showroom-rooms a { display: inline-flex; align-items: center; min-height: 28px; font-size: 13px; color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
+.nav-showroom-rooms a:focus-visible { color: var(--ink); }
+@media (hover: hover) { .nav-showroom-rooms a:hover { color: var(--ink); } }
 
-.site-header-cta { flex: none; min-height: var(--control-h-s); padding: 0 18px; font-size: var(--fs-small); }
+/* The action: a verde pill set into the capsule's curve, 8 px from its edge. */
+.site-header-cta {
+  grid-column: 3; justify-self: end; flex: none;
+  min-height: 44px; padding: 0 22px; border-radius: 999px; font-size: var(--fs-small);
+}
 
 /* The menu button: only where there is a menu to open. */
 .nav-toggle {
-  display: none; flex: none; width: 44px; height: 44px; margin-right: -10px;
+  display: none; flex: none; width: 44px; height: 44px; border-radius: 50%;
   align-items: center; justify-content: center; background: none; border: 0; cursor: pointer; color: var(--ink);
 }
 .nav-toggle-icon, .nav-toggle-icon::before, .nav-toggle-icon::after {
@@ -234,77 +289,318 @@ h3 { font-size: var(--fs-h3); }
 .menu-open .nav-toggle-icon::after { transform: translateY(-6px) rotate(-45deg); }
 html.menu-lock { overflow: hidden; }
 
+/* Phones and tablets: the same capsule, a little lower and closer to the edges --
+   the name and the menu button. Opened, the capsule itself grows downward into
+   the menu: the directions, the places, and «Создать изделие» at its foot. */
 @media (max-width: 1000px) {
-  .site-header-inner { gap: var(--s-3); }
-  /* Without JavaScript: the logo and the action on one row, the links wrapping under them. */
+  .site-header { --header-h: 56px; top: 8px; margin-top: 8px; border-radius: 28px; }
+  .site-header-inner { display: flex; align-items: center; gap: var(--s-3); padding: 0 6px 0 20px; }
+  .site-header .site-logo { margin-left: 0; }
+  /* Without JavaScript: the capsule wraps -- the name and the action, the links under them. */
   html:not(.js) .site-header { position: static; }
-  html:not(.js) .site-header-inner { height: auto; flex-wrap: wrap; padding-top: var(--s-3); }
+  html:not(.js) .site-header-inner { height: auto; flex-wrap: wrap; padding: var(--s-2) 6px var(--s-2) 20px; }
   html:not(.js) .site-logo { order: 1; }
   html:not(.js) .site-header-cta { order: 2; margin-left: auto; }
   html:not(.js) .site-nav { order: 3; flex: 1 0 100%; flex-wrap: wrap; justify-content: flex-start; gap: 0 var(--s-5); }
-  html:not(.js) .site-nav > a, html:not(.js) .nav-products > summary { height: 44px; }
-  /* With JavaScript: logo, action, menu button; the menu drops under the header. */
+  html:not(.js) .site-nav > a, html:not(.js) .nav-drop > summary { height: 44px; padding: 0 10px; }
+  /* With JavaScript: the name and the menu button; the action waits inside the menu. */
   .js .site-logo { order: 1; }
-  .js .site-header-cta { order: 2; margin-left: auto; }
-  .js .nav-toggle { order: 3; display: inline-flex; }
+  .js .nav-toggle { order: 2; display: inline-flex; margin-left: auto; }
+  .js .site-header-cta { display: none; }
   .js .site-nav { display: none; }
-  .js .site-header.menu-open .site-nav {
-    display: flex; flex-direction: column; justify-content: flex-start; gap: 0;
-    position: absolute; top: 100%; left: 0; right: 0; height: calc(100vh - var(--header-h)); height: calc(100dvh - var(--header-h));
-    overflow-y: auto; overscroll-behavior: contain; background: var(--page); border-top: 1px solid var(--line);
-    padding: var(--s-5) var(--gutter) var(--s-8);
+  .js .site-header.menu-open {
+    --capsule-bg: rgba(248, 247, 244, 0.97);
+    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);
   }
-  /* In the open menu the products are always listed -- no second tap. */
-  .js .nav-products { position: static; }
-  .js .nav-products > summary {
-    height: auto; padding: 0 0 var(--s-3); border: 0; pointer-events: none;
+  .js .site-header.menu-open .site-header-inner { height: auto; flex-wrap: wrap; padding: 6px 6px 6px 20px; }
+  .js .site-header.menu-open .site-nav {
+    order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    margin: 6px 14px 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line);
+    /* Only the list scrolls: the name and the close button above it, the action under it, stay in view. */
+    max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overscroll-behavior: contain;
+  }
+  .js .site-header.menu-open .site-header-cta { order: 4; display: inline-flex; flex: 1 0 auto; margin: var(--s-5) 14px var(--s-3) 0; }
+  /* In the open menu the products and the showroom are always shown -- no second tap. */
+  .js .nav-drop { position: static; }
+  .js .nav-drop > summary {
+    height: auto; padding: 0 0 var(--s-3); border-radius: 0; background: none; pointer-events: none;
     font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
   }
-  .js .nav-products > summary::after { display: none; }
-  .js .nav-panel { position: static; width: auto; background: none; border: 0; border-radius: 0; box-shadow: none; }
+  .js .nav-drop > summary::after { display: none; }
+  .js .nav-panel {
+    position: static; translate: none; width: auto; background: none; border: 0; border-radius: 0; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
   .js .nav-panel-inner { display: grid; padding: 0 0 var(--s-5); }
   .js .nav-group { grid-template-columns: 1fr; align-content: start; row-gap: var(--s-2); padding: var(--s-4) 0; }
   .js .nav-group ul { flex-direction: column; gap: 0; }
-  .js .nav-group a { font-size: 17px; padding: 6px 0; }
+  .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
   .js .site-nav > a {
-    height: auto; padding: var(--s-4) 0; border-top: 1px solid var(--line); border-bottom: 0;
+    height: auto; min-height: 44px; padding: var(--s-3) 0; border-radius: 0; background: none; border-top: 1px solid var(--line);
     font-size: 17px; font-weight: 600; color: var(--ink);
   }
   .js .site-nav > a.active { color: var(--accent); }
+  /* The showroom in the menu: its name as a heading, then the house small and the way in. */
+  .js .nav-showroom { border-top: 1px solid var(--line); padding-top: var(--s-4); }
+  .js .nav-showroom-inner { grid-template-columns: 120px minmax(0, 1fr); gap: var(--s-4); padding: 0 0 var(--s-4); }
+  .js .nav-showroom-note, .js .nav-showroom-rooms { display: none; }
+  .js .nav-showroom-title { font-size: 16px; }
+  .js .nav-showroom-enter { min-height: 40px; padding: 0 16px; margin-top: var(--s-2); }
 }
-/* With the script, on a wide screen: one graphite line for the whole row
-   (js/header.js moves it), instead of a rule under each item. It rests under
-   the current section and travels to the item under the pointer or focus.
-   Opening «Изделия» lays a copper segment, the width of the item, on the
-   header's rule -- the place the panel is drawn from -- and the panel
-   unfolds downward from it. Nothing else moves. */
+/* The capsule marks places with its soft pills, not with a line: js/header.js still
+   places its travelling line (.nav-indicator), and the capsule simply does not
+   show it. On a wide screen a panel unfolds downward from the capsule and, when
+   it closes, folds back up into it (js/header.js keeps the <details> open while
+   it folds -- .is-closing -- and closes it after). */
 .nav-indicator { display: none; }
 @media (min-width: 1001px) {
-  .js .site-nav > a, .js .nav-products > summary { border-bottom-color: transparent; }
-  .js .nav-indicator {
-    display: block; position: absolute; left: 0; bottom: 0; width: 1px; height: 2px;
-    background: var(--ink); transform-origin: 0 0; opacity: 0; pointer-events: none;
-  }
-  .js .nav-indicator.is-on { opacity: 1; }
-  .js .nav-indicator.is-ready { transition: transform 0.25s var(--ease), opacity 0.15s; }
-  .nav-products > summary::before {
-    content: ''; position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 2px;
-    background: var(--accent); transform: scaleX(0); transform-origin: left;
-  }
-  .nav-products[open] > summary::before { transform: scaleX(1); transition: transform 0.2s var(--ease); }
-  .nav-products[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }
+  .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }
+  .nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }
 }
 @keyframes nav-panel-unfold {
-  from { clip-path: inset(0 0 100% 0); }
-  to { clip-path: inset(0 0 0 0); }
+  from { clip-path: inset(0 0 100% 0 round 24px); }
+  to { clip-path: inset(0 0 0 0 round 24px); }
+}
+@keyframes nav-panel-fold {
+  from { clip-path: inset(0 0 0 0 round 24px); opacity: 1; }
+  to { clip-path: inset(0 0 100% 0 round 24px); opacity: 0.6; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nav-products[open] > .nav-panel { animation: none; }
+  .nav-drop[open] > .nav-panel, .nav-drop.is-closing > .nav-panel { animation: none; }
 }
 @media (min-width: 601px) and (max-width: 1000px) {
   .js .nav-panel-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-6); }
   .js .nav-group:nth-child(2) { border-top: 0; }
 }
+
+/* ---- Home (static) -----------------------------------------------------------
+   The home page in the site's own system -- the header, type, buttons and
+   verde of every other page -- laid out as the first home page (4ad72f4):
+   the headline over one picture with two plain actions; what can be
+   ordered, in the menu's five groups on a stone panel, and the
+   way to the ready-made pieces; the showroom's band; the request form standing
+   open; where we are. Nothing moves but colour on hover and focus (150 ms):
+   no scroll scenes, nothing held, nothing that needs JavaScript to be seen. */
+.home { --gap: 24px; }   /* the gap of the contacts' 12-column row (1024 px and wider) */
+
+.home-hero {
+  display: grid; position: relative; isolation: isolate; overflow: hidden;
+  /* The picture runs under the floating header: pulled up by its margin, height and border (12 + 60 + 2 px). */
+  margin-top: -74px;
+  min-height: max(560px, min(100svh, 62vw));
+  background: var(--surface-sunk);
+}
+/* The visualised washbasin: one generated picture, the whole hero, the words on its empty wall.
+   The washbasin stands in the right half; 66 % keeps it clear of the words from 1024 to 1920 px. */
+.home-hero-picture, .home-hero-content, .home-hero-note { grid-area: 1 / 1; }
+.home-hero-picture { display: block; }
+.home-hero-picture img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 66% 70%; }
+.home-hero-content { position: relative; z-index: 1; padding-top: calc(74px + clamp(40px, 12vh, 140px)); padding-bottom: var(--s-8); }
+.home-hero h1 { max-width: 460px; font-size: clamp(36px, 3.4vw, 52px); line-height: 1.06; letter-spacing: -0.03em; margin-bottom: var(--s-5); text-wrap: balance; }
+.home-hero .lead { max-width: 420px; margin-bottom: var(--s-6); color: var(--ink); }   /* the grey would fall under 4.5:1 on the wall */
+.home-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.home-hero-note { position: relative; z-index: 1; align-self: end; padding-bottom: var(--s-5); font-size: 13px; color: var(--ink-soft); }
+@media (max-width: 1000px) {
+  .js .home-hero { margin-top: -66px; }          /* the phone capsule: 8 + 56 + 2 px */
+  html:not(.js) .home-hero { margin-top: 0; }    /* without JavaScript the header stays in the flow: nothing to run under */
+}
+/* Phones and any upright window: the upright picture, held to the bottom; above it the wall goes on
+   in its own colour, so the words always stand on the wall and room is kept under them for the
+   washbasin (62 % of the width), however long they run. */
+@media (max-aspect-ratio: 1/1), (max-width: 900px) {
+  .home-hero { display: block; min-height: 0; container-type: inline-size; background: #93877a; }
+  /* The picture at 162 % of the width, so the washbasin spans about 0.25-0.85 of it; the room's
+     sides and part of the floor fall outside. Its top meets the wall colour through a soft band. */
+  .home-hero-picture { position: absolute; inset: 0; overflow: hidden; }
+  .home-hero-picture img { position: absolute; left: -50cqw; bottom: -36cqw; width: 162cqw; max-width: none; height: auto; aspect-ratio: 1121 / 1403; }
+  .home-hero-picture::before {
+    content: ''; position: absolute; left: 0; right: 0; bottom: calc(166cqw - 34cqw); height: 34cqw; z-index: 1;
+    background: linear-gradient(#93877a, rgba(147, 135, 122, 0));
+  }
+  .home-hero-content { padding-top: calc(66px + var(--s-6)); padding-bottom: calc(62cqw + var(--s-6)); }
+  .home-hero h1 { font-size: 32px; }
+  .home-hero-note { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: var(--s-4); }
+}
+
+/* From stone to object: three real photographs of one way -- the stone, its
+   cutting, the finished piece -- laid like prints on a table. The cards share
+   one size (4:5); each lies over the one before by a seventh of its width and
+   the middle one sits lower. The arrows sit on the seams, where two
+   photographs overlap, and all three captions share one line under the
+   lowest card. Nothing moves by itself; under a pointer the card lifts a little
+   (the owner's request, 2026-10-04) -- the one exception to the static home. */
+.home-s2o {
+  --s2o-dy: 56px;          /* how much lower the middle card sits */
+  --s2o-arrow: 44px;
+  --s2o-radius: 20px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: var(--s-7);
+  align-items: start; padding-top: var(--section); padding-bottom: var(--section);
+}
+.home-s2o-head p { margin-top: var(--s-3); max-width: 19em; color: var(--ink-soft); }
+/* A card is 7 units wide and lies over its neighbour by 1: W-O | O | W-2O | O | W-O. */
+.home-s2o-steps {
+  list-style: none; display: grid; row-gap: 22px;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 1fr) minmax(0, 5fr) minmax(0, 1fr) minmax(0, 6fr);
+  grid-template-rows: auto auto;
+}
+.home-s2o-step { display: grid; grid-row: 1 / 3; grid-template-rows: subgrid; grid-template-columns: subgrid; }
+.home-s2o-step:nth-child(1) { grid-column: 1 / 3; z-index: 1; }
+.home-s2o-step:nth-child(2) { grid-column: 2 / 5; z-index: 2; }
+.home-s2o-step:nth-child(3) { grid-column: 4 / 6; z-index: 3; }
+.home-s2o-card { grid-row: 1; grid-column: 1 / -1; position: relative; align-self: start; }
+.home-s2o-step:nth-child(2) .home-s2o-card { margin-top: var(--s2o-dy); }
+.home-s2o-shot {
+  position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--s2o-radius); background: var(--surface-sunk);
+  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.10), 0 10px 22px -12px rgba(28, 29, 27, 0.30), 0 36px 60px -34px rgba(28, 29, 27, 0.45);
+}
+.home-s2o-shot::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.home-s2o-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.home-s2o-step:nth-child(2) .home-s2o-shot img { object-position: 50% 100%; }   /* the blade and the strip, not the guard */
+.home-s2o-chip {
+  position: absolute; left: 14px; top: 14px; z-index: 1;
+  display: inline-flex; align-items: center; gap: var(--s-2); height: 30px; padding: 0 12px 0 6px; border-radius: 999px;
+  background: rgba(248, 247, 244, 0.92); border: 1px solid rgba(28, 29, 27, 0.08);
+  font-size: 13px; line-height: 1; color: var(--ink);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .home-s2o-chip { background: rgba(248, 247, 244, 0.82); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+}
+.home-s2o-chip b { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--graphite); color: #fff; font-size: 11px; font-weight: 600; }
+/* The digit's box trimmed to the cap height, so the circle centres the figure itself, not the font's line. */
+.home-s2o-chip b span { display: block; line-height: 1; font-variant-numeric: tabular-nums; text-box: trim-both cap alphabetic; }
+.home-s2o-step:first-child .home-s2o-chip b span { margin-left: 1px; }   /* the «1» carries its ink left of its advance: half a pixel back */
+/* On the seam: centred on the card's left edge, half-way down the strip where both photographs show. */
+.home-s2o-arrow {
+  position: absolute; z-index: 2; left: calc(var(--s2o-arrow) / -2);
+  display: grid; place-items: center; width: var(--s2o-arrow); height: var(--s2o-arrow); border-radius: 50%;
+  background: #f8f7f4; color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(248, 247, 244, 0.35), 0 2px 4px rgba(28, 29, 27, 0.15), 0 10px 22px -8px rgba(28, 29, 27, 0.45);
+}
+.home-s2o-arrow svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: square; }
+.home-s2o-arrow-down { display: none; }
+.home-s2o-step:nth-child(2) .home-s2o-arrow { top: calc((100% - var(--s2o-dy)) / 2 - var(--s2o-arrow) / 2); }
+.home-s2o-step:nth-child(3) .home-s2o-arrow { top: calc((100% + var(--s2o-dy)) / 2 - var(--s2o-arrow) / 2); }
+/* Pointer only, and only when motion is welcome: the photograph rises a little, its shadow
+   deepens (a second shadow fading in, so nothing repaints) and the picture inside comes a
+   touch closer. The arrows stay on their seams. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .home-s2o-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--s2o-radius); opacity: 0;
+    box-shadow: 0 2px 4px rgba(28, 29, 27, 0.12), 0 22px 40px -18px rgba(28, 29, 27, 0.40), 0 56px 80px -40px rgba(28, 29, 27, 0.50);
+    transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .home-s2o-shot { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+  .home-s2o-shot img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .home-s2o-card:hover .home-s2o-shot, .home-s2o-card:hover::before { transform: translateY(-6px); }
+  .home-s2o-card:hover::before { opacity: 1; }
+  .home-s2o-card:hover .home-s2o-shot img { transform: scale(1.04); }
+}
+/* Captions: one line under the lowest card, each from its card's left edge. */
+.home-s2o-cap { grid-row: 2; padding-right: var(--s-4); font-size: var(--fs-small); line-height: 1.4; color: var(--ink-soft); }
+.home-s2o-cap strong { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+.home-s2o-step:nth-child(1) .home-s2o-cap { grid-column: 1 / 2; }
+.home-s2o-step:nth-child(2) .home-s2o-cap { grid-column: 1 / 3; }
+.home-s2o-step:nth-child(3) .home-s2o-cap { grid-column: 1 / -1; }
+@supports not (grid-template-columns: subgrid) {
+  .home-s2o-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--s-5); }
+  .home-s2o-step { display: block; grid-row: auto; grid-column: auto !important; }
+  .home-s2o-step:nth-child(2) .home-s2o-card { margin-top: 0; }
+  .home-s2o-arrow { display: none; }
+  .home-s2o-cap { margin-top: var(--s-4); }
+}
+
+/* What can be ordered: one stone panel -- warm dark marble under a veil -- with
+   the menu's five groups, each a photograph of its work, its name and its links. */
+.home-products { padding-bottom: var(--section); }
+.home-order {
+  --order-ink: #f6f2ec; --order-dim: rgba(246, 242, 236, 0.78); --order-rule: rgba(246, 242, 236, 0.3);
+  position: relative; isolation: isolate; overflow: hidden; border-radius: 20px;
+  padding: clamp(28px, 4.4vw, 56px); background: #3b3129; color: var(--order-ink); font-family: var(--font);
+}
+.home-order-bg { position: absolute; inset: 0; z-index: -2; }
+.home-order-bg img { width: 100%; height: 100%; object-fit: cover; }
+.home-order::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(100deg, rgba(40, 31, 24, 0.9) 0%, rgba(62, 49, 38, 0.8) 55%, rgba(52, 42, 33, 0.72) 100%);
+}
+.home-order-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 17em) auto; align-items: end; gap: var(--s-5);
+  padding-bottom: var(--s-6); border-bottom: 1px solid var(--order-rule);
+}
+.home-order-kicker { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--order-dim); }
+.home-order-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
+.home-products h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 3.4vw, 46px); letter-spacing: -0.01em; line-height: 1.1; color: var(--order-ink); }
+.home-order-lead { font-size: var(--fs-small); line-height: 1.5; color: var(--order-dim); }
+.home-order-go { display: grid; place-items: center; width: var(--control-h); height: var(--control-h); color: var(--order-ink); transition: opacity 0.15s; }
+.home-order-go::after { content: ''; width: 30px; height: 19px; background: currentColor; -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; }
+.home-groups { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-5); margin-top: var(--s-6); }
+.home-group { min-width: 0; }
+.home-group-frame { display: block; overflow: hidden; border-radius: 10px; background: rgba(246, 242, 236, 0.08); }   /* moves with the works' frames */
+.home-group-shot { width: 100%; height: auto; aspect-ratio: 12 / 5; object-fit: cover; }
+.home-group-title {
+  margin: var(--s-4) 0 var(--s-1); padding-bottom: var(--s-3); border-bottom: 1px solid var(--order-rule);
+  font-family: var(--font-serif); font-size: clamp(18px, 1.45vw, 21px); font-weight: 400; line-height: 1.2; letter-spacing: -0.01em; color: var(--order-ink);
+  white-space: nowrap;   /* five abreast: one line each, so the rules under the names meet */
+}
+.home-group ul { list-style: none; }
+.home-group li + li { border-top: 1px solid rgba(246, 242, 236, 0.12); }
+.home-group a {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 40px;
+  font-size: var(--fs-small); font-weight: 500; line-height: 1.3; color: var(--order-dim); text-decoration: none;
+  transition: color 0.15s;
+}
+.home-group a::after {
+  content: ''; flex: none; width: 14px; height: 9px; background: currentColor; opacity: 0.6; transition: opacity 0.15s;
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+}
+.home-order :focus-visible { outline-color: var(--order-ink); }
+/* The ready-made pieces: their own line, not one of the configurator's directions. */
+.home-instock {
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) auto; align-items: center; column-gap: var(--s-6);
+  margin-top: var(--s-7); padding: var(--s-5) 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
+  color: var(--ink); text-decoration: none;
+}
+.home-instock::after {
+  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+}
+.home-instock-title { font-size: var(--fs-h3); font-weight: 600; letter-spacing: -0.01em; transition: color 0.15s; }
+.home-instock-text { color: var(--ink-soft); }
+@media (hover: hover) {
+  .home-group a:hover { color: var(--order-ink); }
+  .home-group a:hover::after { opacity: 1; }
+  .home-order-go:hover { opacity: 0.75; }
+  .home-instock:hover .home-instock-title { color: var(--accent); }
+}
+@media (max-width: 1100px) {
+  .home-groups { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: var(--s-6); }
+  .home-group-title { white-space: normal; }
+}
+@media (max-width: 760px) {
+  .home-order-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .home-order-head > div { grid-column: 1 / -1; }
+  .home-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-4); }
+}
+@media (max-width: 520px) {
+  .home-order { border-radius: 16px; }
+  .home-groups { grid-template-columns: minmax(0, 1fr); }
+  .home-group a { min-height: 44px; }   /* a finger's target */
+}
+
+/* The showroom: the site's one dark band on the page -- the words, the way in, the house. */
+.home-showroom { background: var(--graphite); color: var(--on-dark); }
+.home-showroom-inner {
+  max-width: var(--measure); margin: 0 auto; padding: var(--section) var(--gutter);
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-7); align-items: center;
+}
+.home-showroom h2 { color: var(--on-dark); margin-bottom: var(--s-3); }
+.home-showroom p { max-width: 30em; margin-bottom: var(--s-6); color: var(--on-dark-muted); }
+.home-showroom-house { display: block; }
+.home-showroom-house img { display: block; width: 100%; height: auto; border-radius: var(--radius-m); }
+.home-showroom :focus-visible { outline-color: var(--on-dark); }
 
 /* ---- Home palette: limestone, with one dark opening -----------------------------
    The home page is light: limestone ground, paper, thin lines, basalt type and
@@ -392,12 +688,13 @@ html:has(.mast) { scrollbar-gutter: stable; }
   transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.15s var(--ease);
 }
 .mast-pill::-webkit-details-marker { display: none; }
-.mast-pill:hover { border-color: var(--pill-line-strong); background: var(--pill-fill); }
+@media (hover: hover) { .mast-pill:hover { border-color: var(--pill-line-strong); background: var(--pill-fill); } }
 .mast-pill:active { transform: scale(0.97); }
 .mast-pill:focus-visible { outline: 2px solid var(--mast-ink); outline-offset: 3px; }
-.mast-cta, .mast-cta:hover { border-color: transparent; }
+.mast-cta { border-color: transparent; }
+@media (hover: hover) { .mast-cta:hover { border-color: transparent; } }
 .mast-cta { background: var(--verde); color: #f3eee5; }
-.mast-cta:hover { background: var(--verde-lit); }
+@media (hover: hover) { .mast-cta:hover { background: var(--verde-lit); } }
 /* «+», which turns into «×» while the plane is open. */
 .mast-plus { position: relative; flex: none; width: 9px; height: 9px; }
 .mast-plus::before, .mast-plus::after {
@@ -412,7 +709,8 @@ html:has(.mast) { scrollbar-gutter: stable; }
    above the plane, and its words now stand on the stone. */
 .mast-drop { position: relative; }
 .mast-drop > summary { z-index: 2; }
-.mast-drop[open] > summary, .mast-drop[open] > summary:hover { border-color: transparent; background: transparent; color: var(--sheet-ink); }
+.mast-drop[open] > summary { border-color: transparent; background: transparent; color: var(--sheet-ink); }
+@media (hover: hover) { .mast-drop[open] > summary:hover { border-color: transparent; background: transparent; color: var(--sheet-ink); } }
 .mast-sheet {
   position: absolute; top: 0; right: 0; z-index: 1; width: var(--sheet-w, 600px);
   padding: calc(var(--pill-h) + 26px) 32px 30px;
@@ -451,13 +749,14 @@ html:has(.mast) { scrollbar-gutter: stable; }
   text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; text-decoration-color: transparent;
   transition: text-decoration-color 0.2s;
 }
-.mast-group a:hover, .mast-group a:focus-visible, .mast-menu-links a:hover, .mast-menu-links a:focus-visible { text-decoration-color: currentColor; }
+.mast-group a:focus-visible, .mast-menu-links a:focus-visible { text-decoration-color: currentColor; }
+@media (hover: hover) { .mast-group a:hover, .mast-menu-links a:hover { text-decoration-color: currentColor; } }
 
 /* «Шоурум»: the house, and the way into it; the rooms a quiet second way. */
 .mast-drop-showroom { --sheet-w: 400px; }
 .mast-house { display: block; margin-bottom: var(--s-4); border-radius: 14px; overflow: hidden; background: #1e1a16; }
 .mast-house img { width: 100%; height: auto; transition: transform 0.6s var(--ease); }
-.mast-house:hover img { transform: scale(1.02); }
+@media (hover: hover) { .mast-house:hover img { transform: scale(1.02); } }
 .mast-house-title { font-size: 19px; font-weight: 500; line-height: 1.25; }
 .mast-house-note { margin-top: 4px; font-size: 14px; line-height: 1.5; color: var(--sheet-soft); }
 .mast-enter {
@@ -469,20 +768,25 @@ html:has(.mast) { scrollbar-gutter: stable; }
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   transition: transform 0.2s var(--ease);
 }
-.mast-enter:hover::after, .mast-enter:focus-visible::after { transform: translateX(4px); }
+.mast-enter:focus-visible::after { transform: translateX(4px); }
+@media (hover: hover) { .mast-enter:hover::after { transform: translateX(4px); } }
 .mast-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 2px 14px; margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--sheet-line); }
 .mast-rooms a { font-size: 14px; line-height: 1.6; color: var(--sheet-soft); text-decoration: none; transition: color 0.2s; }
-.mast-rooms a:hover, .mast-rooms a:focus-visible { color: var(--sheet-ink); }
+.mast-rooms a:focus-visible { color: var(--sheet-ink); }
+@media (hover: hover) { .mast-rooms a:hover { color: var(--sheet-ink); } }
 
 /* «Меню» (narrower screens): everything on one plane. */
 .mast-menu { --sheet-w: min(440px, calc(100vw - 2 * var(--gutter))); }
 .mast-menu .mast-sheet { max-height: calc(100svh - 28px); overflow-y: auto; overscroll-behavior: contain; }
 .mast-menu-title { margin-bottom: var(--s-3); font-size: 12.5px; color: var(--sheet-soft); }
-.mast-menu .mast-groups { grid-template-columns: 1fr; gap: var(--s-4); }
+.mast-menu .mast-groups { grid-template-columns: 1fr; gap: var(--s-1); }   /* its 44 px rows bring their own air */
 .mast-menu-links { list-style: none; display: grid; gap: 2px; margin-top: var(--s-5); padding-top: var(--s-4); border-top: 1px solid var(--sheet-line); }
 .mast-menu-links a { font-size: 20px; font-weight: 500; }
-.mast-menu-cta { margin-top: var(--s-5); height: 46px; padding: 0 22px; border-radius: 23px; font-size: 15px; }
-.mast-menu-phone { display: block; margin-top: var(--s-4); font-size: 15px; font-weight: 600; color: var(--sheet-ink); text-decoration: none; }
+/* «Меню» is the touch screens' menu: every link in it a finger's target, 44 px tall. */
+.mast-menu .mast-group ul { row-gap: 0; }
+.mast-menu .mast-group a, .mast-menu-links a { display: inline-flex; align-items: center; min-height: 44px; }
+.mast-menu-cta { margin-top: var(--s-4); height: 46px; padding: 0 22px; border-radius: 23px; font-size: 15px; }
+.mast-menu-phone { display: flex; align-items: center; min-height: 44px; margin-top: var(--s-2); font-size: 15px; font-weight: 600; color: var(--sheet-ink); text-decoration: none; }
 
 @media (max-width: 1179px) {
   .mast-nav { display: none; }
@@ -556,9 +860,10 @@ html:has(.mast) { scrollbar-gutter: stable; }
   background: var(--verde); color: #f3eee5; font-size: 15px; font-weight: 600; white-space: nowrap; text-decoration: none;
   transition: background-color 0.2s, transform 0.15s var(--ease);
 }
-.night-cta:hover { background: var(--verde-lit); }
+@media (hover: hover) { .night-cta:hover { background: var(--verde-lit); } }
 .night-cta:active { transform: scale(0.98); }
-.night-cta:hover::after, .night-cta:focus-visible::after { transform: translateX(4px); }
+.night-cta:focus-visible::after { transform: translateX(4px); }
+@media (hover: hover) { .night-cta:hover::after { transform: translateX(4px); } }
 
 /* The object. */
 .hero-scene { max-width: var(--measure); margin: var(--s-8) auto 0; padding: 0 var(--gutter); }
@@ -644,7 +949,8 @@ html:has(.mast) { scrollbar-gutter: stable; }
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   transition: opacity 0.2s, transform 0.2s var(--ease);
 }
-.hero-tag:hover::after, .hero-tag:focus-visible::after { opacity: 1; transform: translateX(3px); }
+.hero-tag:focus-visible::after { opacity: 1; transform: translateX(3px); }
+@media (hover: hover) { .hero-tag:hover::after { opacity: 1; transform: translateX(3px); } }
 
 /* The three steps, standing still: a quiet list under the object. */
 .hero-story { margin-top: var(--s-6); }
@@ -814,7 +1120,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   content: ''; position: absolute; inset: 0; pointer-events: none;
   box-shadow: inset 1px 1px 0 rgba(255, 252, 245, 0.32), inset -1px -1px 0 rgba(0, 0, 0, 0.32);
 }
-.wall-slab:hover .wall-face img { filter: brightness(1.08); }
+@media (hover: hover) { .wall-slab:hover .wall-face img { filter: brightness(1.08); } }
 .wall-slab:focus-visible { z-index: 3; outline: 2px solid var(--figure); outline-offset: 3px; }
 /* The name, turned up the slab's edge (read from the floor up, as on a book's spine). */
 .wall-label { position: absolute; z-index: 1; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; }
@@ -900,11 +1206,14 @@ html:has(.mast) { scrollbar-gutter: stable; }
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   transition: transform 0.2s var(--ease);
 }
-.portal-enter:hover, .portal-enter:focus-visible { background: var(--sr-copper-hover); }
-.portal-enter:hover::after, .portal-enter:focus-visible::after, .home-portal:has(.portal-house:hover) .portal-enter::after { transform: translateX(4px); }
+.portal-enter:focus-visible { background: var(--sr-copper-hover); }
+@media (hover: hover) { .portal-enter:hover { background: var(--sr-copper-hover); } }
+.portal-enter:focus-visible::after { transform: translateX(4px); }
+@media (hover: hover) { .portal-enter:hover::after, .home-portal:has(.portal-house:hover) .portal-enter::after { transform: translateX(4px); } }
 .portal-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 4px var(--s-4); margin-top: var(--s-5); font-size: var(--fs-small); }
 .portal-rooms a { color: var(--figure-soft); text-decoration: none; text-underline-offset: 4px; transition: color 0.2s; }
-.portal-rooms a:hover, .portal-rooms a:focus-visible { color: var(--figure); text-decoration: underline; text-decoration-thickness: 1px; }
+.portal-rooms a:focus-visible { color: var(--figure); text-decoration: underline; text-decoration-thickness: 1px; }
+@media (hover: hover) { .portal-rooms a:hover { color: var(--figure); text-decoration: underline; text-decoration-thickness: 1px; } }
 .portal-house { display: block; }
 .portal-house img {   /* the scene's own frame, its edges given back to the dark */
   display: block; width: 100%; height: auto;
@@ -912,7 +1221,8 @@ html:has(.mast) { scrollbar-gutter: stable; }
   mask-image: radial-gradient(ellipse 70% 68% at 50% 52%, #000 56%, transparent 100%);
   transition: filter 0.3s var(--ease);
 }
-.portal-house:hover img, .portal-house:focus-visible img { filter: brightness(1.06); }
+.portal-house:focus-visible img { filter: brightness(1.06); }
+@media (hover: hover) { .portal-house:hover img { filter: brightness(1.06); } }
 .home-portal :focus-visible { outline-color: var(--figure); }
 .portal-veil {   /* the quiet step into the showroom: the page fades into its graphite */
   position: fixed; inset: 0; z-index: 100; background: var(--sr-graphite);
@@ -943,9 +1253,12 @@ html:has(.mast) { scrollbar-gutter: stable; }
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   transition: transform 0.3s var(--ease);
 }
-.ready-line:hover::before, .ready-line:focus-visible::before { transform: scaleX(1); }
-.ready-line:hover .ready-more, .ready-line:focus-visible .ready-more { color: var(--figure); }
-.ready-line:hover .ready-more::after, .ready-line:focus-visible .ready-more::after { transform: translateX(4px); }
+.ready-line:focus-visible::before { transform: scaleX(1); }
+@media (hover: hover) { .ready-line:hover::before { transform: scaleX(1); } }
+.ready-line:focus-visible .ready-more { color: var(--figure); }
+@media (hover: hover) { .ready-line:hover .ready-more { color: var(--figure); } }
+.ready-line:focus-visible .ready-more::after { transform: translateX(4px); }
+@media (hover: hover) { .ready-line:hover .ready-more::after { transform: translateX(4px); } }
 .ready-line:focus-visible { outline: 2px solid var(--figure); outline-offset: 8px; }
 
 /* The request, the home page's last word: «мне понравилось -> я хочу своё». A sheet of a project drawing
@@ -1023,7 +1336,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .home-main .offer-form > * { background: var(--surface); }
 .home-main .offer-field { align-content: start; gap: 2px; min-height: 82px; padding: 10px 16px 12px; transition: background-color 0.2s ease; }
 .home-main .offer-form > .offer-field:first-child, .home-main .offer-field-file { grid-column: 1 / -1; }
-.home-main .offer-field:hover { background: #fbfaf8; }
+@media (hover: hover) { .home-main .offer-field:hover { background: #fbfaf8; } }
 .home-main .offer-field:focus-within, .home-main .offer-consent:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
 .home-main .offer-label { font-size: 12px; font-weight: 400; line-height: 1.4; color: var(--muted); }
 /* Each entry is written on a line, as on a printed title block: the caption small above,
@@ -1043,7 +1356,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   font-size: 17px; font-weight: 600; letter-spacing: 0;
 }
 .home-main .offer-form > .offer-submit { background: var(--accent); color: #fff; }
-.home-main .offer-form > .offer-submit:hover { background: var(--accent-hover); }
+@media (hover: hover) { .home-main .offer-form > .offer-submit:hover { background: var(--accent-hover); } }
 .home-main .offer-submit:active { transform: none; }
 .home-main .offer-submit:focus-visible { outline: 2px solid var(--surface); outline-offset: -6px; }
 .home-main .offer-status { grid-column: 1 / -1; padding: 14px 16px; line-height: 1.5; }
@@ -1083,7 +1396,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 }
 .contacts-layout { display: contents; }
 .contacts-head { grid-column: 1; grid-row: 1; margin-bottom: var(--s-5); }
-.contacts-head h2 { margin-bottom: 0; font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; }
+.contacts-head h2 { margin-bottom: 0; }   /* the site's h2 */
 .contacts-head p { display: none; }   /* the same words head the column below */
 .contacts-card {
   grid-column: 1; grid-row: 2;
@@ -1093,7 +1406,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .contacts-card address { display: grid; gap: var(--s-3); font-style: normal; }
 .contacts-address { font-size: var(--fs-h3); line-height: 1.4; }
 .contacts-phone { justify-self: start; font-size: var(--fs-h3); font-weight: 600; text-decoration: none; }
-.contacts-phone:hover { color: var(--accent); }
+@media (hover: hover) { .contacts-phone:hover { color: var(--accent); } }
 .contacts-actions { display: grid; gap: var(--s-3); margin-top: var(--s-3); padding-top: var(--s-5); border-top: 1px solid var(--line-strong); }
 .contacts-note { font-size: var(--fs-meta); color: var(--muted); }
 
@@ -1111,7 +1424,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   width: 36px; height: 36px; line-height: 34px; font-size: 20px; font-weight: 400;
   color: var(--ink); background: var(--surface); border-bottom-color: var(--line);
 }
-.contacts-map .leaflet-bar a:hover { background: var(--page); color: var(--ink); }
+@media (hover: hover) { .contacts-map .leaflet-bar a:hover { background: var(--page); color: var(--ink); } }
 .contacts-map .leaflet-bar a.leaflet-disabled { color: var(--line-strong); background: var(--surface); }
 .contacts-map .leaflet-control-attribution {
   font-size: 11px; color: var(--muted); background: rgba(248, 247, 244, 0.82); padding: 1px 6px;
@@ -1122,7 +1435,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .map-pin svg { display: block; }
 .map-pin path { fill: currentColor; stroke: var(--surface); stroke-width: 2; }
 .map-pin circle { fill: var(--surface); }
-.map-pin:hover { color: var(--accent-hover); }
+@media (hover: hover) { .map-pin:hover { color: var(--accent-hover); } }
 
 .map-popup .leaflet-popup-content-wrapper {
   border-radius: var(--radius-s); background: var(--surface); color: var(--ink);
@@ -1134,7 +1447,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .map-popup .leaflet-popup-content strong { font-size: 15px; }
 .map-popup .leaflet-popup-content span:nth-child(2) { color: var(--muted); font-size: var(--fs-meta); margin-bottom: 4px; }
 .map-popup a.leaflet-popup-close-button { color: var(--muted); top: 4px; right: 4px; }
-.map-popup a.leaflet-popup-close-button:hover { color: var(--ink); }
+@media (hover: hover) { .map-popup a.leaflet-popup-close-button:hover { color: var(--ink); } }
 
 .contacts-map-hint {
   position: absolute; left: 50%; bottom: var(--s-6); z-index: 1; transform: translateX(-50%);
@@ -1170,10 +1483,10 @@ html:has(.mast) { scrollbar-gutter: stable; }
     --gap: 24px;
   }
   /* The opening scenes -- the hero and the directions -- in one material language:
-     depth from layers, overlap and a real shadow, not from lines; one arrow, a
-     little heavier; a second stone, the plane things are lifted over. */
+     depth from layers, overlap and a real shadow, not from lines; a second
+     stone, the plane things are lifted over. (Their heavier arrow is now the
+     site's one arrow, in :root.) */
   .night-hero, .home-directions {
-    --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
     --stone-2: #e3ded5;
   }
   .mast-inner, .home-main .wrap, .home-main .offer-band-inner,
@@ -1236,7 +1549,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   .home-main .offer-form > .offer-field:first-child { grid-column: auto; }
   .home-main .offer-field-file, .home-main .offer-consent { grid-column: 1 / 3; }
   .home-main .offer-submit { grid-column: 3; grid-row: 2 / 4; align-items: flex-end; padding: 18px 20px; font-size: 19px; }
-  .home-main .offer-submit svg { flex: none; }
+  .home-main .offer-submit svg { flex: none; margin-bottom: 0.28em; }   /* the arrow on the word's middle, not its foot */
 
   /* Where we are: the address in five columns, the map in seven, its height from its width. */
   .home-contacts { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
@@ -1269,12 +1582,39 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .portfolio-grid.is-masonry { grid-auto-rows: 1px; row-gap: 0; }
 .portfolio-grid.is-masonry .portfolio-item { align-self: start; }
 .portfolio-item { margin: 0; }
-.portfolio-item img {
-  display: block; width: 100%; height: auto; aspect-ratio: auto 2 / 3;
-  border-radius: var(--radius-m); background: var(--surface-sunk);
-}
+.portfolio-item img { display: block; width: 100%; height: auto; aspect-ratio: auto 2 / 3; }   /* framed by .portfolio-shot */
 .portfolio-item.image-broken { aspect-ratio: 2 / 3; background: var(--surface-sunk); border-radius: var(--radius-m); }
 .portfolio-item figcaption { font-size: var(--fs-small); color: var(--muted); margin-top: var(--s-2); }
+
+/* ---- Works in frames: the photographs of real works ---------------------------
+   The direction pages' examples (and the photographs of the home page's stone panel), framed like the
+   «От камня к изделию» cards but side by side, never over each other: rounded,
+   a soft shadow, a hairline edge (a dark one outside, a light one inside).
+   Under a pointer, and only when motion is welcome, the frame lifts a little,
+   its shadow deepens and the photograph inside comes a touch closer. The
+   photographs keep their own proportions; the frame never crops a portfolio photo. */
+.portfolio-shot {
+  position: relative; display: block; overflow: hidden; border-radius: 20px; background: var(--surface-sunk);
+  box-shadow: 0 0 0 1px rgba(28, 29, 27, 0.06), 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 22px -12px rgba(28, 29, 27, 0.28), 0 30px 50px -34px rgba(28, 29, 27, 0.38);
+}
+.portfolio-shot::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .portfolio-shot { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+  .portfolio-shot img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .portfolio-item:hover .portfolio-shot {
+    transform: translateY(-6px);
+    box-shadow: 0 0 0 1px rgba(28, 29, 27, 0.06), 0 2px 4px rgba(28, 29, 27, 0.12), 0 22px 40px -18px rgba(28, 29, 27, 0.40), 0 56px 80px -40px rgba(28, 29, 27, 0.50);
+  }
+  .portfolio-item:hover .portfolio-shot img { transform: scale(1.04); }
+  /* The stone panel's photographs: the same lift under a pointer anywhere on the group, a darker shadow on the dark stone. */
+  .home-group-frame { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+  .home-group-frame img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .home-group:hover .home-group-frame { transform: translateY(-6px); box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.55); }
+  .home-group:hover .home-group-frame img { transform: scale(1.04); }
+}
 
 /* ---- Готовые изделия (каталог) ---------------------------------------------- */
 .catalog-grid {
@@ -1364,7 +1704,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   font: inherit; font-size: var(--fs-small); cursor: pointer;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
-.stone-type:hover { border-color: var(--ink); color: var(--ink); }
+@media (hover: hover) { .stone-type:hover { border-color: var(--ink); color: var(--ink); } }
 .stone-type[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
 .stone-status { font-size: var(--fs-small); color: var(--muted); margin-bottom: var(--s-4); min-height: 1em; }
 
@@ -1381,7 +1721,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   transition: box-shadow 0.15s;
 }
 .stone-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s var(--ease); }
-.stone-card:hover .stone-card-media img { transform: scale(1.03); }
+@media (hover: hover) { .stone-card:hover .stone-card-media img { transform: scale(1.03); } }
 .stone-card[aria-pressed="true"] .stone-card-media { box-shadow: 0 0 0 2px var(--page), 0 0 0 4px var(--accent); }
 .stone-card-name { font-size: 15px; font-weight: 600; line-height: 1.3; }
 .stone-card-type { font-size: var(--fs-small); color: var(--muted); }
@@ -1390,7 +1730,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 /* Where the collection's stone comes from: a quiet line under the catalogue. */
 .stone-supplier { margin-top: var(--s-6); font-size: var(--fs-small); line-height: 1.5; color: var(--muted); max-width: 620px; }
 .stone-supplier a { color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
-.stone-supplier a:hover { color: var(--ink); text-decoration-color: currentColor; }
+@media (hover: hover) { .stone-supplier a:hover { color: var(--ink); text-decoration-color: currentColor; } }
 
 .configure-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
@@ -1445,15 +1785,17 @@ html:has(.mast) { scrollbar-gutter: stable; }
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   transition: transform 0.25s var(--ease);
 }
-.offer-toggle:hover::after, .offer-toggle:focus-visible::after, .is-open .offer-toggle::after { transform: scaleX(1); }
-.offer-toggle:hover .offer-toggle-arrow, .offer-toggle:focus-visible .offer-toggle-arrow { transform: translateX(4px); }
+.offer-toggle:focus-visible::after, .is-open .offer-toggle::after { transform: scaleX(1); }
+@media (hover: hover) { .offer-toggle:hover::after { transform: scaleX(1); } }
+.offer-toggle:focus-visible .offer-toggle-arrow { transform: translateX(4px); }
+@media (hover: hover) { .offer-toggle:hover .offer-toggle-arrow { transform: translateX(4px); } }
 .is-open .offer-toggle .offer-toggle-arrow { transform: rotate(90deg); }
 .offer-meta {
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-2) var(--s-6);
   padding-top: var(--s-4); font-size: var(--fs-small); line-height: 1.5; color: var(--ink-soft);
 }
 .offer-phone a { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; }
-.offer-phone a:hover { color: var(--accent-hover); }
+@media (hover: hover) { .offer-phone a:hover { color: var(--accent-hover); } }
 
 /* The unfolding: the row grows from nothing to the form's height; hidden, the
    form cannot take the focus. Only once the script has made the heading a
@@ -1483,7 +1825,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   width: 100%; min-height: var(--control-h); padding: 0; border: 0; border-bottom: 1px solid var(--line-control); border-radius: 0;
   font: inherit; font-size: 17px; background: transparent; color: var(--ink);
 }
-.offer-input:hover { border-bottom-color: var(--ink); }
+@media (hover: hover) { .offer-input:hover { border-bottom-color: var(--ink); } }
 .offer-input:focus-visible { outline: none; border-bottom-color: var(--accent); }
 .offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface-sunk); -webkit-text-fill-color: var(--ink); }
 .offer-select {
@@ -1501,14 +1843,14 @@ html:has(.mast) { scrollbar-gutter: stable; }
   display: flex; align-items: center; gap: var(--s-3); min-height: var(--control-h); min-width: 0; padding: var(--s-1) 0;
   border-bottom: 1px solid var(--line-control); cursor: pointer;
 }
-.offer-file:hover { border-bottom-color: var(--ink); }
+@media (hover: hover) { .offer-file:hover { border-bottom-color: var(--ink); } }
 .offer-file-input:focus-visible + .offer-file, .offer-field-file:focus-within .offer-file { border-bottom-color: var(--accent); }
 .offer-file-icon {
   flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
   border: 1px solid var(--muted); color: var(--ink); transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 .offer-file-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.offer-file:hover .offer-file-icon { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
+@media (hover: hover) { .offer-file:hover .offer-file-icon { background: var(--ink); border-color: var(--ink); color: var(--on-dark); } }
 .offer-file-text { display: grid; gap: 2px; min-width: 0; }
 .offer-file-title { font-size: var(--fs-body); font-weight: 600; color: var(--ink); }
 .offer-file-name { font-size: var(--fs-small); color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1521,8 +1863,9 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .offer-consent a { color: var(--ink); text-underline-offset: 3px; }
 /* The action: the site's primary button, under the lines. */
 .offer-submit { grid-column: 1 / -1; justify-self: start; gap: var(--s-3); margin: 0; padding: 0 var(--s-5); font-size: var(--fs-body); }
-.offer-submit svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s var(--ease); }
-.offer-submit:hover svg { transform: translateX(3px); }
+/* The site's one arrow (as --arrow), drawn inline. */
+.offer-submit svg { flex: none; width: 16px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; transition: transform 0.15s var(--ease); }
+@media (hover: hover) { .offer-submit:hover svg { transform: translateX(3px); } }
 .offer-status { grid-column: 1 / -1; font-size: var(--fs-small); color: var(--ink); }
 .offer-status:empty { display: none; }
 .offer-noscript { color: var(--ink-soft); }
@@ -1553,7 +1896,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .site-footer p + p { margin-top: var(--s-2); }
 .site-footer-phone a { font-size: 17px; font-weight: 700; }
 .site-footer a { color: var(--on-dark); text-decoration: none; text-underline-offset: 3px; }
-.site-footer a:hover { text-decoration: underline; }
+@media (hover: hover) { .site-footer a:hover { text-decoration: underline; } }
 .site-footer :focus-visible { outline-color: var(--on-dark); }
 .site-footer-bottom {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s-2) var(--s-6);
@@ -1577,7 +1920,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   color: var(--link); text-decoration: underline; text-decoration-thickness: 1px;
   text-underline-offset: 3px; text-decoration-color: rgba(47, 93, 80, 0.35);
 }
-.legal-page a:hover { text-decoration-color: currentColor; }
+@media (hover: hover) { .legal-page a:hover { text-decoration-color: currentColor; } }
 .legal-page a[href^="tel:"] { white-space: nowrap; }
 
 /* ---- Responsive -------------------------------------------------------------- */
@@ -1595,17 +1938,36 @@ html:has(.mast) { scrollbar-gutter: stable; }
   /* Offer: heading, phone, then the form, in one column. */
   .offer-band-inner { grid-template-columns: 1fr; row-gap: var(--s-3); }
   .offer-kicker { padding-top: 0; }
+  /* Home: the house under its words. */
+  /* From stone to object: the words above the three photographs. */
+  .home-s2o { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
+  .home-showroom-inner { grid-template-columns: 1fr; gap: var(--s-6); }
 
+}
+/* The ready-made pieces' line: the name and the arrow on one row, the words under them. */
+@media (max-width: 700px) {
+  .home-instock { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--s-2); }
+  .home-instock-text { grid-column: 1 / -1; grid-row: 2; }
+  .home-instock::after { grid-column: 2; grid-row: 1; }
 }
 @media (max-width: 600px) {
   .offer-form { grid-template-columns: 1fr; }
+  /* From stone to object on phones: one under another, each caption under its photograph;
+     the arrow lies on the next photograph, top right, across from its step's label. */
+  .home-s2o-steps { display: block; }
+  .home-s2o-step { display: block; }
+  .home-s2o-step + .home-s2o-step { margin-top: var(--s-6); }
+  .home-s2o-step:nth-child(2) .home-s2o-card { margin-top: 0; }
+  .home-s2o-cap { margin-top: var(--s-3); padding-right: 0; }
+  .home-s2o-step:nth-child(n) .home-s2o-arrow { top: 7px; right: 7px; left: auto; }
+  .home-s2o-arrow-right { display: none; }
+  .home-s2o-arrow-down { display: block; }
   .offer-toggle-arrow { width: 20px; height: 13px; margin-bottom: 6px; }
   .nav-group { grid-template-columns: 1fr; row-gap: var(--s-2); }
   :root { --gutter: 16px; --fs-h3: 17px; }
   .site-header-cta { padding: 0 16px; }
   .subtitle, .lead { font-size: var(--fs-body); }
   .contacts-head p { font-size: var(--fs-body); }
-  .contacts-card { padding: var(--s-5); }
   .contacts-map-frame { min-height: 340px; }
   .page-head { padding-top: var(--s-6); }
   .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
@@ -1624,15 +1986,18 @@ html:has(.mast) { scrollbar-gutter: stable; }
 
 
 }
-/* Very narrow phones: the configure bar's button «Рассчитать в конфигураторе»
-   left the stone ~40 px, so the choice showed as «Не в…». Only the short
-   forms here -- «Рассчитать», «Не выбран» -- the bar keeps its height. */
+/* Phones: the configure bar keeps its height, so its words get shorter
+   instead of cut off. «Не выбран - подберёте в конфигураторе» beside the
+   full button needs ~530 px; under that the choice reads «Не выбран».
+   The button's «Рассчитать в конфигураторе» leaves a chosen stone's name too
+   little room under ~420 px; there it reads «Рассчитать». */
+@media (max-width: 540px) {
+  .configure-stone .configure-tail { display: none; }
+}
+@media (max-width: 420px) {
+  .configure-cta .configure-tail { display: none; }
+}
 @media (max-width: 360px) {
-  .configure-tail { display: none; }
-  /* The header's «Создать изделие» no longer fits beside the logo and the
-     menu button on the narrowest phones: here it reads «Создать»;
-     aria-label keeps the full name. */
-  .site-header-cta-tail { display: none; }
   /* The home page's project sheet: its title block one cell to a row. */
   .home-main .offer-form { grid-template-columns: minmax(0, 1fr); }
   /* The home page's masthead: its name a size smaller still beside «Меню». */

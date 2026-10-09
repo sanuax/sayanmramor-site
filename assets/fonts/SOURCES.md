@@ -56,3 +56,20 @@ f2ea9c12d2fe9bd3a9589b02ad2c0909da88f30938c91adc838c4f4098f9f9e0  source-serif-4
 9a69d0aa4734c4022224c002a3d944a702e0204972a49d892789f5668b922c2a  golos-text-latin-wght-normal.woff2
 05befabe4813f41238ce6ea4f5ecd6b758591e9ef2f303a9932bff68ba66dc66  golos-text-latin-ext-wght-normal.woff2
 ```
+
+## Montserrat и Unbounded (добавлены 2026-10-09)
+
+Пара для замены Arial по решению владельца: Unbounded — заголовки (бесплатная замена широкому
+EuropeExt со старого sayanmramor.ru, который платный, ParaType), Montserrat — текст (тот же
+шрифт, что на старом сайте). Оба под SIL Open Font License 1.1, лицензии рядом:
+`LICENSE-montserrat.txt`, `LICENSE-unbounded.txt`.
+
+| Шрифт | Файлы | Источник |
+|---|---|---|
+| Montserrat, переменный `wght` 100–900 | `montserrat-cyrillic-wght-normal.woff2`, `montserrat-latin-wght-normal.woff2` | `@fontsource-variable/montserrat@5.3.0/files/` |
+| Unbounded, переменный `wght` 200–900 | `unbounded-cyrillic-wght-normal.woff2`, `unbounded-latin-wght-normal.woff2` | `@fontsource-variable/unbounded@5.3.0/files/` |
+
+Скачаны с `cdn.jsdelivr.net/npm/...` 2026-10-09, файлы не изменялись. `unicode-range` — как в
+`wght.css` этих пакетов (cyrillic: `U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116`).
+`montserrat-latin-ext-wght-normal.woff2` (70 КБ) — ради знака ₽ (U+20BD) в ценах каталога; браузер
+скачивает его только там, где на странице есть символы этого диапазона. У Unbounded `latin-ext` не скачан.
