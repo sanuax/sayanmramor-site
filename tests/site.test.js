@@ -1102,7 +1102,10 @@ test('«Что можно заказать»: one stone panel with the menu\'s f
   ground.forEach(([, src]) => assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src));
   assert.match(sec, /<a class="home-order-go" href="\/calculator\/sayanmramor-calculator\.html" aria-label="Создать изделие в конфигураторе"/);
   assert.doesNotMatch(sec, /home-feature/, 'the four works are gone: the panel has the photographs');
-  assert.match(sec, /<a class="home-instock" href="\/sayanmramor-site\/katalog\.html">\s*<span class="home-instock-title">Готовые изделия<\/span>/);
+  assert.match(sec, /<a class="home-instock" href="\/sayanmramor-site\/katalog\.html">[\s\S]*?<span class="home-instock-title">Готовые изделия из камня<\/span>/);
+  // Its two promises, each an icon (hidden from screen readers) and two lines.
+  assert.deepEqual([...sec.matchAll(/<span class="home-instock-point"><svg [^>]*aria-hidden="true">[\s\S]*?<\/svg><span><b>([^<]+)<\/b>([^<]+)<\/span><\/span>/g)].map(m => [m[1], m[2]]),
+    [['Фиксированная цена', 'Стоимость известна заранее'], ['Без ожидания расчёта', 'Сразу к выбору изделия']]);
   const groupLinks = sec.slice(sec.indexOf('home-groups'), sec.indexOf('home-instock'));
   assert.doesNotMatch(groupLinks, /katalog\.html/, 'the ready-made pieces are not one of the groups');
 });
