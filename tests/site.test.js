@@ -564,7 +564,7 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
 
 // ---- Typography: the site's own -------------------------------------------------------
 
-test('typography: Montserrat for text, Unbounded for h1 / h2 and the name, Source Serif 4 for the home groups -- local files (no CDN, no preload), each with its licence; the showroom reads Montserrat too', () => {
+test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- local files (no CDN, no preload), each with its licence; the showroom reads Montserrat too', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /--font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
   assert.match(css, /--font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;/);
@@ -575,10 +575,10 @@ test('typography: Montserrat for text, Unbounded for h1 / h2 and the name, Sourc
   assert.equal((sr.match(/@font-face \{ font-family: 'Montserrat';[^}]*url\(\.\.\/assets\/fonts\/montserrat-[a-z-]+-wght-normal\.woff2\)/g) || []).length, 3);
   const faces = [...css.matchAll(/@font-face \{ font-family: '([^']+)';[^}]*src: url\(\.\.\/assets\/fonts\/([^)]+\.woff2)\) format\('woff2-variations'\); unicode-range: [^;]+; \}/g)];
   assert.equal(faces.length, (css.match(/@font-face/g) || []).length, 'every face a local woff2 with its unicode-range');
-  assert.deepEqual([...new Set(faces.map(f => f[1]))], ['Montserrat', 'Unbounded', 'Source Serif 4']);
+  assert.deepEqual([...new Set(faces.map(f => f[1]))], ['Montserrat', 'Unbounded']);
   faces.forEach(([, , file]) => assert.ok(fs.existsSync(path.join(site, 'assets', 'fonts', file)), file));
-  ['montserrat', 'unbounded', 'source-serif-4'].forEach(f => assert.ok(fs.existsSync(path.join(site, 'assets', 'fonts', 'LICENSE-' + f + '.txt')), f));
-  assert.doesNotMatch(css, /Golos|fonts\.googleapis|fonts\.gstatic/);
+  ['montserrat', 'unbounded'].forEach(f => assert.ok(fs.existsSync(path.join(site, 'assets', 'fonts', 'LICENSE-' + f + '.txt')), f));
+  assert.doesNotMatch(css, /Golos|Source Serif|fonts\.googleapis|fonts\.gstatic/);
   headerPages.concat(['showroom.html', 'index.html']).forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.doesNotMatch(html, /\.woff2|rel="preload" [^>]*as="font"|fonts\.googleapis|fonts\.gstatic/, page);

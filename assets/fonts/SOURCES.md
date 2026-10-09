@@ -73,3 +73,6 @@ EuropeExt со старого sayanmramor.ru, который платный, Par
 `wght.css` этих пакетов (cyrillic: `U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116`).
 `montserrat-latin-ext-wght-normal.woff2` (70 КБ) — ради знака ₽ (U+20BD) в ценах каталога; браузер
 скачивает его только там, где на странице есть символы этого диапазона. У Unbounded `latin-ext` не скачан.
+
+С 2026-10-09 на сайте подключены только Montserrat и Unbounded. Файлы Source Serif 4 и Golos Text
+остаются в папке, но в `css/site.css` не подключены и браузером не скачиваются.
