@@ -1,7 +1,8 @@
 // js/showroom/showroom-state.js
 //
 // The showroom's UI state as a pure reducer: which zone the client is in,
-// which object's card is open, whether «Все изделия» is open. The renderer
+// which object's card is open, whether «Все изделия» or «Связаться» is
+// open (one sheet at a time). The renderer
 // and the DOM only read describe(state) -- no business rules live in click
 // handlers. Also: the layout mode for a viewport width and WebGL detection
 // (fallback decision), both pure/injectable for tests.
@@ -16,7 +17,7 @@
   // stoneId: the stone the client arrived with from the configurator (or
   // null). It is context, not a selection: every "Создать изделие" link
   // carries it back, and it survives moving around the house.
-  const INITIAL = Object.freeze({ zone: 'exterior', selectedObjectId: null, panelOpen: false, stoneId: null });
+  const INITIAL = Object.freeze({ zone: 'exterior', selectedObjectId: null, panelOpen: false, contactOpen: false, stoneId: null });
 
   function initialState(zoneId) {
     return Object.assign({}, INITIAL, Data.zoneById(zoneId) ? { zone: zoneId } : {});
@@ -26,22 +27,27 @@
     switch (action.type) {
       case 'goToZone': {
         if (!Data.zoneById(action.zone)) return state;
-        return Object.assign({}, state, { zone: action.zone, selectedObjectId: null, panelOpen: false });
+        return Object.assign({}, state, { zone: action.zone, selectedObjectId: null, panelOpen: false, contactOpen: false });
       }
       case 'goOutside':
-        return Object.assign({}, state, { zone: 'exterior', selectedObjectId: null, panelOpen: false });
+        return Object.assign({}, state, { zone: 'exterior', selectedObjectId: null, panelOpen: false, contactOpen: false });
       case 'selectObject': {
         const object = Data.objectById(action.id);
         if (!object) return state;
         // Selecting an object always takes the client to where it is.
-        return Object.assign({}, state, { zone: object.zone, selectedObjectId: object.id, panelOpen: false });
+        return Object.assign({}, state, { zone: object.zone, selectedObjectId: object.id, panelOpen: false, contactOpen: false });
       }
       case 'closeCard':
         return Object.assign({}, state, { selectedObjectId: null });
       case 'openPanel':
-        return Object.assign({}, state, { panelOpen: true, selectedObjectId: null });
+        return Object.assign({}, state, { panelOpen: true, contactOpen: false, selectedObjectId: null });
       case 'closePanel':
         return Object.assign({}, state, { panelOpen: false });
+      // «Связаться»: the phone and Telegram, over the house wherever the client is.
+      case 'openContact':
+        return Object.assign({}, state, { contactOpen: true, panelOpen: false, selectedObjectId: null });
+      case 'closeContact':
+        return Object.assign({}, state, { contactOpen: false });
       case 'chooseProduct': {
         const object = Data.primaryObjectFor(action.productKey);
         if (!object) return state;
@@ -83,6 +89,7 @@
       productsHere: products,
       card,
       panelOpen: state.panelOpen,
+      contactOpen: state.contactOpen,
       backVisible: zone.id !== 'exterior',
       cameraView: object ? Data.objectView(object) : zone.view,
     };
@@ -101,9 +108,10 @@
   // open card/panel sheet covers about half the screen.
   // On wide screens the zone caption always sits top-left (~350 px).
   const CAPTION_WIDTH = 350;
-  function viewInsets(mode, { cardOpen, panelOpen }, size) {
-    if (mode === 'compact') return { left: 0, right: 0, bottom: Math.round(size.height * (cardOpen || panelOpen ? 0.5 : 0.24)) };
-    return { left: CAPTION_WIDTH, right: panelOpen ? 380 : cardOpen ? 400 : 0, bottom: 0 };
+  function viewInsets(mode, { cardOpen, panelOpen, contactOpen }, size) {
+    const sheet = panelOpen || contactOpen;
+    if (mode === 'compact') return { left: 0, right: 0, bottom: Math.round(size.height * (cardOpen || sheet ? 0.5 : 0.24)) };
+    return { left: CAPTION_WIDTH, right: sheet ? 380 : cardOpen ? 400 : 0, bottom: 0 };
   }
 
   // Views are composed for a landscape screen (aspect ~1.5, 38deg). On a
@@ -128,33 +136,44 @@
     };
   }
 
-  // Deep link: showroom.html#kitchen opens straight in that zone.
+  // Deep link: showroom.html#kitchen opens straight in that zone;
+  // #kitchen/kitchen-island opens that object's card in it -- a link a
+  // manager can send to a client, or a client to whoever decides with them.
   function zoneFromHash(hash) {
-    const id = String(hash || '').replace(/^#/, '');
+    const id = String(hash || '').replace(/^#/, '').split('/')[0];
     return Data.zoneById(id) ? id : null;
+  }
+  function objectFromHash(hash) {
+    const parts = String(hash || '').replace(/^#/, '').split('/');
+    const object = parts.length === 2 ? Data.objectById(parts[1]) : null;
+    return object && object.zone === parts[0] ? object.id : null;
   }
 
   // Entry from the configurator: showroom.html?product=<key>[&stone=<id>].
   // A known product opens its main object in the house (its zone, camera
   // on it, its card open) -- only as the starting point, the client can go
   // anywhere from there. Anything unknown or malformed is ignored and the
-  // showroom opens as usual (or at a #zone deep link).
+  // showroom opens as usual (or at a #zone or #zone/object deep link).
   function initialStateFromLocation(search, hash) {
     const params = new URLSearchParams(search || '');
     const stone = params.get('stone');
     const stoneId = Data.isStoneId(stone) ? stone : null;
     const productKey = params.get('product');
+    const objectId = objectFromHash(hash);
     const base = Data.productByKey(productKey)
       ? reduce(INITIAL, { type: 'chooseProduct', productKey })
+      : objectId ? reduce(INITIAL, { type: 'selectObject', id: objectId })
       : initialState(zoneFromHash(hash));
     return Object.assign({}, base, { stoneId });
   }
 
-  // The address bar while moving around: the zone as #hash (as before) and
-  // the carried stone, so a reload keeps both. The product entry is not
-  // repeated -- it was a starting point, not a place.
+  // The address bar while moving around: the zone as #hash (as before), the
+  // open card as #zone/object, and the carried stone, so a reload -- or the
+  // link sent to someone else -- keeps all three. The ?product entry is not
+  // repeated: its object is already in the hash.
   function locationFor(state) {
-    return (state.stoneId ? '?stone=' + encodeURIComponent(state.stoneId) : '') + (state.zone === 'exterior' ? '' : '#' + state.zone);
+    const hash = state.selectedObjectId ? '#' + state.zone + '/' + state.selectedObjectId : state.zone === 'exterior' ? '' : '#' + state.zone;
+    return (state.stoneId ? '?stone=' + encodeURIComponent(state.stoneId) : '') + hash;
   }
 
   function canUseWebGL(doc) {
@@ -166,5 +185,5 @@
     }
   }
 
-  return { INITIAL, initialState, initialStateFromLocation, locationFor, reduce, describe, layoutMode, viewInsets, zoneFromHash, canUseWebGL, distanceScale, scaleView, COMPACT_MAX_WIDTH };
+  return { INITIAL, initialState, initialStateFromLocation, locationFor, reduce, describe, layoutMode, viewInsets, zoneFromHash, objectFromHash, canUseWebGL, distanceScale, scaleView, COMPACT_MAX_WIDTH };
 });

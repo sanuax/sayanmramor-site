@@ -986,7 +986,7 @@ test('the showroom draws its icons: no ✕ / ← / → typed as text; the cross 
   const ui = fs.readFileSync(path.join(site, 'js', 'showroom', 'showroom-ui.js'), 'utf8').replace(/\/\/.*$/gm, '');
   const state = fs.readFileSync(path.join(site, 'js', 'showroom', 'showroom-state.js'), 'utf8').replace(/\/\/.*$/gm, '');
   [html.replace(/<!--[\s\S]*?-->/g, ''), ui, state].forEach(src => assert.doesNotMatch(src, /[✕×←→]/));
-  assert.equal((html.match(/class="sr-close"[^>]*aria-label="Закрыть"><svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">/g) || []).length, 2);
+  assert.equal((html.match(/class="sr-close"[^>]*aria-label="Закрыть"><svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">/g) || []).length, 3, 'the card, «Все изделия», «Связаться»');
   const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
   assert.match(sr, /--sr-arrow: url\([^)]*stroke-width='2' stroke-linecap='square'/);
 });

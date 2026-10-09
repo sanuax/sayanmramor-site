@@ -19,8 +19,9 @@ const doc = document;
 
 function showFallback(reason) {
   doc.getElementById('srFallback').hidden = false;
-  ['srStage', 'srCaption', 'srZones', 'srBack', 'srCard', 'srPanel', 'srHint'].forEach(id => { doc.getElementById(id).hidden = true; });
+  ['srStage', 'srCaption', 'srZones', 'srBack', 'srCard', 'srPanel', 'srContact', 'srHint'].forEach(id => { doc.getElementById(id).hidden = true; });
   doc.getElementById('srPanelBtn').hidden = true;
+  doc.getElementById('srContactBtn').hidden = true;   // the fallback lists the phone and Telegram itself
   if (reason === 'error') {
     doc.getElementById('srFallbackText').textContent = 'Не удалось загрузить 3D-дом. Все направления - ниже: выберите изделие и создайте своё.';
   }
@@ -63,7 +64,7 @@ function start() {
 
   function layoutInsets() {
     const described = State.describe(state);
-    return State.viewInsets(State.layoutMode(size.width), { cardOpen: !!described.card, panelOpen: described.panelOpen }, size);
+    return State.viewInsets(State.layoutMode(size.width), { cardOpen: !!described.card, panelOpen: described.panelOpen, contactOpen: described.contactOpen }, size);
   }
 
   function resize() {
@@ -98,10 +99,10 @@ function start() {
         duration: zoneChanged ? 1300 : 900,
       });
     }
-    if (zoneChanged) {
-      history.replaceState(null, '', location.pathname + State.locationFor(state));
-      if (photosStarted) loadZonePhotos(state.zone, true);
-    }
+    // The address bar follows the zone and the open card, so «Поделиться»
+    // (and a reload) gives exactly this view.
+    if (zoneChanged || focusChanged) history.replaceState(null, '', location.pathname + State.locationFor(state));
+    if (zoneChanged && photosStarted) loadZonePhotos(state.zone, true);
     occlusionDue = true;
     requestRender();
   }
@@ -130,12 +131,17 @@ function start() {
   window.addEventListener('resize', resize);
   doc.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (state.panelOpen) dispatch({ type: 'closePanel' });
+    if (state.contactOpen) dispatch({ type: 'closeContact' });
+    else if (state.panelOpen) dispatch({ type: 'closePanel' });
     else if (state.selectedObjectId) dispatch({ type: 'closeCard' });
   });
+  // A #zone or #zone/object typed or pasted into the address bar.
   window.addEventListener('hashchange', () => {
+    const object = State.objectFromHash(location.hash);
     const zone = State.zoneFromHash(location.hash);
-    if (zone && zone !== state.zone) dispatch({ type: 'goToZone', zone });
+    if (object) { if (object !== state.selectedObjectId) dispatch({ type: 'selectObject', id: object }); }
+    else if (zone && zone !== state.zone) dispatch({ type: 'goToZone', zone });
+    else if (zone && state.selectedObjectId) dispatch({ type: 'closeCard' });
   });
 
   // First frame: the arrival zone -- or, entering from the configurator,

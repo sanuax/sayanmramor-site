@@ -131,6 +131,7 @@
   // with glass get a pane, a slim metal frame and mullions.
   function wall(parts, spec) {
     const { axis, outer, inward, u, v, openings = [], layers, group } = spec;
+    const [ct0, ct1] = spec.cladTrim || [0, 0], [kt0, kt1] = spec.coreTrim || [0, 0];
     const rects = solidRects(u[0], u[1], v[0], v[1], openings);
     const tag = layer => (spec.object && layer.object ? spec.object : null);
     // Corners: two walls must never fill the same space, or their faces
@@ -163,6 +164,20 @@
           const [min, max] = wallBox(axis, r.u0, r.u1, v[1], v[1] + 0.012, n0, n1);
           parts.push(box(min, max, 'poche', group));
         }
+        // The same at the wall's ends: a candidate dark end, kept only if
+        // another wall buries it (sectionEnds) -- it shows when that wall
+        // is cut away, never on a corner seen from outside.
+        if (spec.cap) {
+          const [t0, t1] = layer.clad ? [ct0, ct1] : [kt0, kt1];
+          const top = r.v1 >= v[1] - 1e-6 ? v[1] + 0.011 : r.v1;
+          const lo = Math.min(n0, n1) + 0.001, hi = Math.max(n0, n1) - 0.001;
+          const end = (a, b) => {
+            const [min, max] = wallBox(axis, a, b, r.v0, top, lo, hi);
+            pendingEnds.push(box(min, max, 'poche', group));
+          };
+          if (r.u0 <= u[0] + t0 + 1e-6) end(r.u0 - 0.012, r.u0);
+          if (r.u1 >= u[1] - t1 - 1e-6) end(r.u1, r.u1 + 0.012);
+        }
       });
       depth += layer.t;
     });
@@ -190,6 +205,23 @@
       });
     });
     return rects;
+  }
+
+  // Keeps the candidate wall ends that lie wholly inside other groups' solids
+  // (sampled on a grid): those are ends against another wall, which a zone's
+  // cut-away may remove. An end in the open (an outside corner, a jamb) is
+  // dropped -- it was never a section.
+  function sectionEnds(parts) {
+    const solids = parts.filter(p => p.kind === 'box' || p.kind === 'cladding').map(p => ({ group: p.group, b: partBounds(p) }));
+    const F = [0.15, 0.5, 0.85];
+    return pendingEnds.filter(cap => {
+      const near = solids.filter(s => s.group !== cap.group && [0, 1, 2].every(k => s.b.min[k] < cap.max[k] && s.b.max[k] > cap.min[k]));
+      if (!near.length) return false;
+      return F.every(fx => F.every(fy => F.every(fz => {
+        const pt = [fx, fy, fz].map((f, k) => cap.min[k] + (cap.max[k] - cap.min[k]) * f);
+        return near.some(s => [0, 1, 2].every(k => pt[k] >= s.b.min[k] - 1e-6 && pt[k] <= s.b.max[k] + 1e-6));   // a point on a seam between two solids counts
+      })));
+    });
   }
 
   function wallDepth(spec) {
@@ -337,7 +369,9 @@
   }
 
   // ---- the house ----------------------------------------------------------------
+  let pendingEnds = [];
   function buildHouse() {
+    pendingEnds = [];
     const parts = [];
     buildSite(parts);
 
@@ -872,7 +906,7 @@
     parts.push(box([3.36, 4.55, bz0], [UF.x1 - 0.005, 4.562, -0.87], 'poche', 'uf-interior'));
     parts.push(box([2.95, 4.55, -3.7], [3.36, 4.605, -1.5], 'calacatta-nova', 'uf-interior', { bevel: 0.005, object: 'bath-sill' }));
 
-    return parts;
+    return parts.concat(sectionEnds(parts));
   }
 
   // Warm light sources the renderer adds as point lights.

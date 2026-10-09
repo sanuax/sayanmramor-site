@@ -132,8 +132,20 @@ function oakPixels(w, h, y0 = 0, y1 = h) {
 
 // Small colour maps for the non-stone roles.
 function detailPixels(kind, size) {
-  const rand = rng({ speckle: 41, wood: 53, lawn: 67 }[kind]);
+  const rand = rng({ speckle: 41, wood: 53, lawn: 67, meadow: 79 }[kind]);
   const n1 = lattice(4, rand), n2 = lattice(16, rand), n3 = lattice(64, rand);
+  if (kind === 'meadow') {
+    // Unmown grass beyond the fence, one tile ~36 m: patches of drier,
+    // yellower grass and of lusher, darker grass tens of metres across,
+    // tussocks, and a fine grain -- so the far ground is not one flat green.
+    const m2 = lattice(2, rand), m5 = lattice(5, rand), m40 = lattice(40, rand), m160 = lattice(160, rand);
+    return paintPixels(size, (u, v) => {
+      const macro = m2(u * 2, v * 2) * 0.6 + m5(u * 5, v * 5) * 0.4;
+      const dry = Math.min(1, Math.max(0, (macro - 0.42) * 2.2));
+      const l = 1 + (macro - 0.5) * 0.24 + (m40(u * 40, v * 40) - 0.5) * 0.15 + (m160(u * 160, v * 160) - 0.5) * 0.1;
+      return [230 * l * (1 + dry * 0.15), 230 * l * (1 + dry * 0.06), 230 * l * (1 - dry * 0.08)].map(clamp255);
+    });
+  }
   const fbm = (u, v) => n1(u * 4, v * 4) * 0.55 + n2(u * 16, v * 16) * 0.3 + n3(u * 64, v * 64) * 0.15;
   const tone = (d, warm) => [236 + d * 26, 236 + d * (26 - warm * 4), 236 + d * (26 - warm * 10)].map(clamp255);
   return paintPixels(size, (u, v) => {
@@ -294,12 +306,14 @@ const ROLES = {
   grass:              ['#8b8762', 0.95, { detail: 'lawn', leafy: true }],
   bark:               ['#4f4337', 0.9, { detail: 'wood' }],
   lawn:               ['#6c7654', 0.96, { detail: 'lawn' }],
-  meadow:             ['#626d4e', 0.98, { detail: 'lawn' }],
+  meadow:             ['#626d4e', 0.98, { detail: 'meadow' }],
   gravel:             ['#b0a898', 0.95, { stone: true, detail: 'speckle' }],
 };
 
 // How many metres one tile of each detail map covers.
-const DETAIL_SIZE = { speckle: 0.5, wood: 1.2, lawn: 2.5 };
+const DETAIL_SIZE = { speckle: 0.5, wood: 1.2, lawn: 2.5, meadow: 36 };
+// Pixels per tile, where a map needs more than the usual 256.
+const DETAIL_PX = { meadow: 512 };
 const LIMESTONE_SIZE = 4;   // metres covered by one limestone image
 const OAK_SIZE = [4, 1];    // metres covered by one oak image (along, across the grain)
 
@@ -343,7 +357,10 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
   const oakImage = painted(2048, 512, 'oak', [2048, 512], { bands: 4, cost: 4 });
   const grainImage = painted(256, 256, 'grain', [256, 24]);
   const detailImages = {};
-  Object.keys(DETAIL_SIZE).forEach(kind => { detailImages[kind] = painted(256, 256, 'detail', [kind, 256]); });
+  Object.keys(DETAIL_SIZE).forEach(kind => {
+    const px = DETAIL_PX[kind] || 256;
+    detailImages[kind] = painted(px, px, 'detail', [kind, px]);
+  });
 
   const grain = new THREE.CanvasTexture(grainImage);
   grain.wrapS = grain.wrapT = THREE.RepeatWrapping;

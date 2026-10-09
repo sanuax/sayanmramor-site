@@ -463,6 +463,53 @@ test('locationFor: zone as #hash, the carried stone as ?stone, the product entry
   assert.equal(back.stoneId, 'delicato-brown', 'a reload keeps the zone and the stone');
 });
 
+test('deep link to an object: #zone/object opens its card there; the address bar follows the open card', () => {
+  assert.equal(State.objectFromHash('#kitchen/kitchen-island'), 'kitchen-island');
+  assert.equal(State.zoneFromHash('#kitchen/kitchen-island'), 'kitchen');
+  assert.equal(State.objectFromHash('#kitchen'), null);
+  assert.equal(State.objectFromHash('#bathroom/kitchen-island'), null, 'an object is only found in its own zone');
+  assert.equal(State.objectFromHash('#kitchen/nope'), null);
+  const s = State.initialStateFromLocation('?stone=delicato-brown', '#kitchen/kitchen-island');
+  assert.deepEqual([s.zone, s.selectedObjectId, s.stoneId], ['kitchen', 'kitchen-island', 'delicato-brown']);
+  assert.equal(State.describe(s).card.objectId, 'kitchen-island');
+  assert.equal(State.locationFor(s), '?stone=delicato-brown#kitchen/kitchen-island');
+  assert.equal(State.locationFor(State.reduce(s, { type: 'closeCard' })), '?stone=delicato-brown#kitchen');
+  assert.equal(State.locationFor(State.reduce(State.INITIAL, { type: 'selectObject', id: 'facade' })), '#exterior/facade');
+  assert.equal(State.initialStateFromLocation('', '#exterior/facade').selectedObjectId, 'facade');
+  assert.equal(State.initialStateFromLocation('?product=lestnitsa', '#kitchen/kitchen-island').zone, 'staircase', 'a valid product still wins');
+  // Every object's own link brings it back.
+  Data.OBJECTS.forEach(o => {
+    const at = State.initialStateFromLocation('', State.locationFor(State.reduce(State.INITIAL, { type: 'selectObject', id: o.id })));
+    assert.equal(at.selectedObjectId, o.id, o.id);
+  });
+});
+
+test('«Связаться»: one sheet at a time with the card and «Все изделия»; moving around closes it; it keeps the house clear', () => {
+  let s = State.reduce(State.initialStateFromLocation('', '#kitchen/kitchen-island'), { type: 'openContact' });
+  assert.deepEqual([s.contactOpen, s.selectedObjectId, s.panelOpen, s.zone], [true, null, false, 'kitchen']);
+  assert.equal(State.describe(s).contactOpen, true);
+  assert.equal(State.reduce(s, { type: 'openPanel' }).contactOpen, false);
+  assert.equal(State.reduce(State.reduce(State.INITIAL, { type: 'openPanel' }), { type: 'openContact' }).panelOpen, false);
+  assert.equal(State.reduce(s, { type: 'selectObject', id: 'bath-sill' }).contactOpen, false);
+  assert.equal(State.reduce(s, { type: 'goToZone', zone: 'hall' }).contactOpen, false);
+  assert.equal(State.reduce(s, { type: 'goOutside' }).contactOpen, false);
+  assert.equal(State.reduce(s, { type: 'closeContact' }).contactOpen, false);
+  assert.equal(State.INITIAL.contactOpen, false);
+  assert.equal(State.viewInsets('wide', { cardOpen: false, panelOpen: false, contactOpen: true }, { width: 1440, height: 900 }).right, 380);
+  assert.equal(State.viewInsets('compact', { cardOpen: false, panelOpen: false, contactOpen: true }, { width: 390, height: 844 }).bottom, 422);
+});
+
+test('showroom.html: «Связаться» with the phone and Telegram, «Поделиться» in the card, the contacts in the no-3D fallback too', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'showroom.html'), 'utf8');
+  assert.match(html, /<button type="button" class="sr-btn sr-btn-ghost sr-btn-contact" id="srContactBtn" aria-controls="srContact" aria-expanded="false" aria-label="Связаться">/);
+  const sheet = html.slice(html.indexOf('id="srContact"'), html.indexOf('</aside>', html.indexOf('id="srContact"')));
+  assert.match(sheet, /href="tel:\+74952155145"/);
+  assert.match(sheet, /href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener"/);
+  assert.match(html, /<button type="button" class="sr-share" id="srCardShare">/);
+  const fallback = html.slice(html.indexOf('id="srFallback"'), html.indexOf('</section>', html.indexOf('id="srFallback"')));
+  assert.match(fallback, /tel:\+74952155145[\s\S]*t\.me\/TeaN_SayanMramor/);
+});
+
 // ---- the stone palette ---------------------------------------------------------
 
 const Photos = require('../js/showroom/stone-photos.js');

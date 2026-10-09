@@ -1,8 +1,8 @@
 // js/showroom/showroom-ui.js
 //
 // The DOM around the 3D stage, rendered from ShowroomState.describe():
-// zone bar, "where am I" caption, «На улицу», the object card and the
-// «Все изделия» panel. Sends intents back as reducer actions -- no product
+// zone bar, "where am I" caption, «На улицу», the object card (with
+// «Поделиться»), the «Все изделия» panel and the «Связаться» sheet. Sends intents back as reducer actions -- no product
 // logic lives in these handlers.
 export function createUI(doc, { Data, dispatch }) {
   const $ = id => doc.getElementById(id);
@@ -11,7 +11,9 @@ export function createUI(doc, { Data, dispatch }) {
     captionZone: $('srCaptionZone'), captionTitle: $('srCaptionTitle'), captionText: $('srCaptionText'), chips: $('srChips'),
     card: $('srCard'), cardProduct: $('srCardProduct'), cardTitle: $('srCardTitle'), cardText: $('srCardText'),
     cardContext: $('srCardContext'), cardCta: $('srCardCta'), cardExamples: $('srCardExamples'), cardClose: $('srCardClose'),
+    cardShare: $('srCardShare'), cardShareLabel: $('srCardShareLabel'),
     panel: $('srPanel'), panelBtn: $('srPanelBtn'), panelClose: $('srPanelClose'), panelList: $('srPanelList'),
+    contact: $('srContact'), contactBtn: $('srContactBtn'), contactClose: $('srContactClose'),
     hint: $('srHint'),
   };
 
@@ -52,10 +54,51 @@ export function createUI(doc, { Data, dispatch }) {
   el.cardClose.addEventListener('click', () => dispatch({ type: 'closeCard' }));
   el.panelBtn.addEventListener('click', () => dispatch({ type: el.panel.hidden ? 'openPanel' : 'closePanel' }));
   el.panelClose.addEventListener('click', () => dispatch({ type: 'closePanel' }));
+  el.contactBtn.addEventListener('click', () => dispatch({ type: el.contact.hidden ? 'openContact' : 'closeContact' }));
+  el.contactClose.addEventListener('click', () => dispatch({ type: 'closeContact' }));
+
+  // «Поделиться»: the address bar already names the zone and the open card
+  // (ShowroomState.locationFor), so the link is the page's own. A phone
+  // offers its share sheet; elsewhere the link is copied, and the button
+  // says so for a moment.
+  let shareTimer = null;
+  function shareDone(text) {
+    el.cardShareLabel.textContent = text;
+    clearTimeout(shareTimer);
+    shareTimer = setTimeout(() => { el.cardShareLabel.textContent = 'Поделиться'; }, 2400);
+  }
+  // The Clipboard API first; where it is missing or refused, the old way.
+  function copyLink(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(url).catch(() => copyByCommand(url));
+    return copyByCommand(url);
+  }
+  function copyByCommand(url) {
+    const field = doc.createElement('textarea');
+    field.value = url;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    doc.body.appendChild(field);
+    field.select();
+    const ok = doc.execCommand('copy');
+    field.remove();
+    el.cardShare.focus({ preventScroll: true });
+    return ok ? Promise.resolve() : Promise.reject(new Error('copy'));
+  }
+  el.cardShare.addEventListener('click', () => {
+    const url = window.location.href;
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    if (touch && navigator.share) {
+      navigator.share({ title: el.cardTitle.textContent + ' - Саянмрамор', url }).catch(() => {});
+      return;
+    }
+    copyLink(url).then(() => shareDone('Ссылка скопирована'), () => shareDone('Ссылка - в адресной строке'));
+  });
 
   let lastCardId = null;
   let lastZoneId = null;
   let lastPanelOpen = false;
+  let lastContactOpen = false;
 
   // What opened the card, so that closing it (✕ or Escape) puts the keyboard
   // back there instead of on <body>. Kept as a way to find that control
@@ -122,7 +165,11 @@ export function createUI(doc, { Data, dispatch }) {
       el.cardCta.textContent = card.ctaLabel;
       el.cardCta.href = card.ctaHref;
       el.cardExamples.href = card.categoryHref;
-      if (card.objectId !== lastCardId) el.cardCta.focus({ preventScroll: true });
+      if (card.objectId !== lastCardId) {
+        el.cardCta.focus({ preventScroll: true });
+        clearTimeout(shareTimer);
+        el.cardShareLabel.textContent = 'Поделиться';
+      }
     }
     if (focusWasInCard) restoreFocus(lastCardId);
     if (!card) cardOpener = null;
@@ -130,11 +177,17 @@ export function createUI(doc, { Data, dispatch }) {
     lastZoneId = view.zone.id;
 
     el.panel.hidden = !view.panelOpen;
-    doc.body.classList.toggle('has-sheet', !!card || view.panelOpen);
+    el.contact.hidden = !view.contactOpen;
+    doc.body.classList.toggle('has-sheet', !!card || view.panelOpen || view.contactOpen);
     el.panelBtn.setAttribute('aria-expanded', view.panelOpen ? 'true' : 'false');
     if (view.panelOpen && !lastPanelOpen) el.panelList.querySelector('button').focus({ preventScroll: true });
-    if (!view.panelOpen && lastPanelOpen && !card) el.panelBtn.focus({ preventScroll: true });
+    if (!view.panelOpen && lastPanelOpen && !card && !view.contactOpen) el.panelBtn.focus({ preventScroll: true });
     lastPanelOpen = view.panelOpen;
+
+    el.contactBtn.setAttribute('aria-expanded', view.contactOpen ? 'true' : 'false');
+    if (view.contactOpen && !lastContactOpen) el.contact.querySelector('.sr-contact-item').focus({ preventScroll: true });
+    if (!view.contactOpen && lastContactOpen && !card && !view.panelOpen) el.contactBtn.focus({ preventScroll: true });
+    lastContactOpen = view.contactOpen;
   }
 
   // First-visit hint; fades after the first real interaction.
