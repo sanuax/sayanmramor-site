@@ -1711,37 +1711,141 @@ html:has(.mast) { scrollbar-gutter: stable; }
   .home-group:hover .home-group-frame img { transform: scale(1.04); }
 }
 
-/* ---- Готовые изделия (каталог) ---------------------------------------------- */
-.catalog-grid {
-  max-width: var(--measure); margin: 0 auto var(--section); padding: 0 var(--gutter);
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--s-7) var(--s-5);
+/* ---- Готовые изделия (каталог) ----------------------------------------------
+   A gallery, not a shop window (js/catalog.js): the page stays light, the
+   pieces stand in one dark room on it -- a warm basalt panel, rounded like the
+   home page's stone panel, where they are lit. The head as on the home page --
+   «В НАЛИЧИИ» over the title, a quiet line, the count. On a wide screen one piece at a time:
+   its name set large, the price, «Запросить», the thumbnails; the count with
+   the arrows and a quiet index of all the pieces; beside them its photograph,
+   tall, edge to edge of its column. On a narrow screen the pieces one under
+   another. No buttons in a row, no shadows, no rounded cards: the photographs
+   and the type do the work. */
+.catalog-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--s-5);
+  padding-top: var(--s-7); padding-bottom: var(--s-6);
 }
-/* A card: the photo, the name, and at its foot -- over a hairline -- the
-   price and «Купить» on one line. Rows: photo / name / description / free
-   space / hairline / foot; the free space takes up what a shorter name
-   leaves, so in a row of cards the hairlines, prices and buttons line up. */
-.product-tile {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--s-3);
-  grid-template-rows: auto auto auto 1fr auto auto; align-items: center;
+.catalog-kicker {
+  display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4);
+  font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
 }
+.catalog-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
+.catalog-head h1 { margin: 0; font-size: clamp(34px, 4vw, 56px); }
+.catalog-lead { max-width: 34em; margin-top: var(--s-4); color: var(--ink-soft); }
+.catalog-count { font-size: var(--fs-small); letter-spacing: 0.04em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.catalog-host { padding-bottom: var(--section); }
+
+/* The request: a line of text with the site's arrow; a pointer draws a line under it. */
+.ask {
+  display: inline-flex; align-items: center; gap: var(--s-2); padding-bottom: 4px;
+  font-size: var(--fs-small); font-weight: 600; letter-spacing: 0.02em; color: var(--cat-ink, var(--ink)); text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.23, 1, 0.32, 1), color 0.15s;
+}
+.ask::after {
+  content: ''; flex: none; width: 16px; height: 10px; background: currentColor; transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ask:hover { background-size: 100% 1px; }
+  .ask:hover::after { transform: translateX(3px); }
+}
+
+/* Wide: the words (5 of 12) and the photograph (7 of 12), as tall as most of the screen. */
+.collection {
+  --cat-ink: #f1ece4;                         /* travertine: 15:1 on the panel */
+  --cat-dim: #b4aa9c;                         /* 8:1 */
+  --cat-faint: rgba(241, 236, 228, 0.56);     /* the index at rest: 5:1 */
+  --cat-line: rgba(241, 236, 228, 0.14);
+  --cat-sunk: #24211d;                        /* the photograph's place before it arrives */
+  --stage-h: clamp(440px, calc(100svh - 300px), 720px);   /* the panel fills the screen once the page scrolls to it */
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(40px, 6vw, 96px); align-items: stretch;
+  padding: clamp(28px, 4.4vw, 56px); border-radius: 20px; background: #1a1714; color: var(--cat-ink);
+}
+.collection :focus-visible { outline-color: var(--cat-ink); }
+.collection-info { display: flex; flex-direction: column; min-width: 0; min-height: var(--stage-h); padding-top: var(--s-2); }
+.collection-thumbs + .collection-list, .collection-ask + .collection-list { margin-top: auto; }
+.collection-title {
+  margin: 0; font-family: var(--font-display); font-size: clamp(36px, 4.2vw, 64px); font-weight: 500;
+  line-height: 1.04; letter-spacing: -0.02em; color: var(--cat-ink); text-wrap: balance;
+}
+.collection-price { margin-top: var(--s-4); font-size: 18px; letter-spacing: 0.02em; color: var(--cat-dim); font-variant-numeric: tabular-nums; }
+.collection-ask { margin-top: var(--s-6); }
+.collection-thumbs { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-6); }
+.collection-thumbs:empty { display: none; }
+.collection-thumbs button {
+  width: 56px; height: 70px; padding: 0; border: 0; border-radius: 2px; overflow: hidden; background: var(--cat-sunk); cursor: pointer;
+  opacity: 0.45; outline: 1px solid transparent; outline-offset: 3px; transition: opacity 0.2s ease, outline-color 0.2s ease;
+}
+.collection-thumbs button[aria-current="true"] { opacity: 1; outline-color: var(--cat-ink); }
+@media (hover: hover) and (pointer: fine) { .collection-thumbs button:hover { opacity: 0.85; } }
+.collection-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+
+/* The count between the arrows, at the foot of the words, level with the photograph's. */
+.collection-nav { display: flex; align-items: center; gap: var(--s-4); margin-top: var(--s-5); }
+.collection-arrow {
+  display: grid; place-items: center; width: var(--control-h); height: var(--control-h); padding: 0; border-radius: 50%;
+  border: 1px solid var(--cat-line); background: transparent; color: var(--cat-ink); cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.collection-arrow::after {
+  content: ''; width: 18px; height: 11px; background: currentColor;
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+}
+.collection-prev::after { transform: scaleX(-1); }
+.collection-arrow:active { transform: scale(0.95); }
+@media (hover: hover) and (pointer: fine) { .collection-arrow:hover { border-color: var(--cat-ink); background: rgba(241, 236, 228, 0.06); } }
+.collection-count { min-width: 6ch; text-align: center; font-size: var(--fs-small); letter-spacing: 0.12em; color: var(--cat-dim); font-variant-numeric: tabular-nums; }
+
+/* The index: every piece by name, quiet; the one shown in full ink with a line under it. */
+.collection-list {
+  display: flex; flex-wrap: wrap; gap: 2px var(--s-5); margin-top: auto; padding-top: var(--s-5);
+  border-top: 1px solid var(--cat-line); list-style: none;
+}
+.collection-item {
+  position: relative; padding: 8px 0; border: 0; background: none; font: inherit; font-size: var(--fs-small);
+  color: var(--cat-faint); cursor: pointer; transition: color 0.2s ease;
+}
+.collection-item::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: left; transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.collection-row.is-on .collection-item { color: var(--cat-ink); }
+.collection-row.is-on .collection-item::after { transform: scaleX(1); }
+@media (hover: hover) and (pointer: fine) { .collection-item:hover { color: var(--cat-ink); } }
+
+/* The photograph: the whole column, the screen's height; a new one fades in and settles. */
+.collection-stage { min-width: 0; }
+.collection-photo { position: relative; height: var(--stage-h); overflow: hidden; border-radius: 6px; background: var(--cat-sunk); }
+.collection-shot { position: absolute; inset: 0; opacity: 0; transform: scale(1.04); transition: opacity 0.7s ease, transform 1.6s cubic-bezier(0.23, 1, 0.32, 1); }
+.collection-shot.is-on { opacity: 1; transform: none; }
+.collection-shot img { width: 100%; height: 100%; object-fit: cover; }
+.collection-shot .product-tile-placeholder { color: var(--cat-dim); }
+@media (prefers-reduced-motion: reduce) {
+  .collection-shot { transform: none; transition: opacity 0.3s ease; }
+  .collection-item::after { transition: none; }
+}
+
+/* Narrow: no stage -- the pieces one under another, each its photo and its label. */
+.collection-cards { display: none; }
+@media (max-width: 860px) {
+  .collection { display: block; padding: var(--s-4) var(--s-4) var(--s-6); border-radius: 16px; }
+  .collection-info, .collection-stage { display: none; }
+  .collection-cards { display: grid; gap: var(--s-8); }
+}
+.product-tile { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: var(--s-4); }
 .product-tile-image {
-  grid-column: 1 / -1; grid-row: 1;
-  position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-m); overflow: hidden;
-  background: var(--surface-sunk); margin-bottom: var(--s-4);
-}
-.product-tile::after {
-  content: ''; grid-column: 1 / -1; grid-row: 5;
-  margin: var(--s-4) 0 var(--s-3); border-top: 1px solid var(--line-strong);
+  grid-column: 1 / -1; position: relative; aspect-ratio: 4 / 5; margin-bottom: var(--s-4);
+  overflow: hidden; border-radius: 2px; background: var(--cat-sunk, var(--surface-sunk));
 }
 .product-tile-image img { width: 100%; height: 100%; object-fit: cover; }
-/* No photograph yet: the same stone-coloured area, one quiet line centred. */
+/* No photograph yet: the same quiet area, one line centred. */
 .product-tile-placeholder {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  padding: var(--s-4); text-align: center; font-size: var(--fs-small); color: var(--ink-soft);
+  padding: var(--s-4); text-align: center; font-size: var(--fs-small); color: var(--cat-dim, var(--ink-soft));
 }
 /* Several photos: one row of full-size frames, swiped (or scrolled with the
-   keyboard once focused) one frame at a time. The ring sits inside the
-   rounded area, which clips anything outside it. */
+   keyboard once focused) one frame at a time. */
 .product-tile-strip {
   display: flex; width: 100%; height: 100%; overflow-x: auto;
   scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
@@ -1751,33 +1855,22 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .product-tile-strip .product-tile-placeholder { position: relative; inset: auto; }
 .product-tile-strip:focus-visible { outline-offset: -2px; }
 .product-tile-name {
-  grid-column: 1 / -1; grid-row: 2; align-self: start;
-  font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em;
+  padding-top: var(--s-4); border-top: 1px solid var(--cat-line, var(--line-strong));
+  font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; color: var(--cat-ink, var(--ink));
 }
-.product-tile-description {
-  grid-column: 1 / -1; grid-row: 3; align-self: start; margin-top: var(--s-1);
-  font-size: var(--fs-small); color: var(--muted); line-height: 1.45;
-}
-/* The price: plain text, the card's strongest line after the name --
-   larger, in ink, lining figures of one width. */
 .product-tile-price {
-  grid-column: 1; grid-row: 6; white-space: nowrap;
-  font-size: 19px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: var(--ink);
-  font-variant-numeric: lining-nums tabular-nums;
+  padding-top: var(--s-4); border-top: 1px solid var(--cat-line, var(--line-strong));
+  font-size: var(--fs-small); color: var(--cat-dim, var(--ink-soft)); white-space: nowrap; font-variant-numeric: lining-nums tabular-nums;
 }
-/* «Купить»: .btn .btn-primary as in the header («Создать изделие»), at the
-   same compact height, beside the price. */
-.product-tile-buy {
-  grid-column: 2; grid-row: 6;
-  min-height: var(--control-h-s); padding: 0 20px; font-size: var(--fs-small);
-}
+.product-tile-description { grid-column: 1 / -1; margin-top: var(--s-2); font-size: var(--fs-small); color: var(--cat-dim, var(--muted)); line-height: 1.45; }
+.product-tile .ask { grid-column: 1 / -1; justify-self: start; margin-top: var(--s-4); }
 .badge-oos, .product-tile-count {
   position: absolute; top: var(--s-3); left: var(--s-3); padding: 4px 10px; border-radius: 999px;
-  background: rgba(28, 29, 27, 0.78); color: var(--on-dark); font-size: var(--fs-meta);
+  background: rgba(23, 21, 18, 0.72); color: #f1ece4; font-size: var(--fs-meta);
 }
 /* «5 фото»: the same quiet pill, in the other corner, above the photos. */
 .product-tile-count { top: auto; left: auto; right: var(--s-3); bottom: var(--s-3); pointer-events: none; }
-.catalog-empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: var(--s-8) 0; }
+.catalog-empty { text-align: center; color: var(--cat-dim, var(--muted)); padding: var(--s-8) 0; }
 
 /* ---- Category page: stone gallery + hand-off to the configurator ------------ */
 .stone-section { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter) var(--section); }
@@ -2113,13 +2206,8 @@ main .offer-input::placeholder { color: var(--muted); opacity: 1; }
   .contacts-map-frame { min-height: 340px; }
   .page-head { padding-top: var(--s-6); }
   .portfolio-grid { --row-h: 200px; gap: var(--s-2); }
+  .catalog-head { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }   /* the catalogue: the count under the words */
   .stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4) var(--s-3); }
-  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-3); }
-  /* Two cards abreast leave no room beside the price: «Купить» goes under
-     it, across the card, the same width in every card. */
-  .product-tile-name { font-size: var(--fs-body); }
-  .product-tile-price { grid-column: 1 / -1; font-size: 17px; }
-  .product-tile-buy { grid-column: 1 / -1; grid-row: 7; margin-top: var(--s-3); }
   .configure-bar-inner { gap: var(--s-3); }
   .configure-stone.is-empty { font-size: 13px; }
   .configure-cta { min-height: var(--control-h-s); padding: 0 16px; font-size: var(--fs-small); }

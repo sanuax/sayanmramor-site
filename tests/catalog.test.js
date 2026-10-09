@@ -33,7 +33,12 @@ function fakeDocument() {
     const node = {
       tagName: tag.toUpperCase(), className: '', textContent: '', children: [], parent: null, listeners: {}, attrs: {},
       setAttribute(name, value) { node.attrs[name] = String(value); },
-      classList: { add(c) { node.className = (node.className + ' ' + c).trim(); } },
+      classList: {
+        add(c) { if (!node.classList.contains(c)) node.className = (node.className + ' ' + c).trim(); },
+        remove(c) { node.className = node.className.split(' ').filter(x => x && x !== c).join(' '); },
+        contains(c) { return node.className.split(' ').includes(c); },
+      },
+      set innerHTML(v) { node.children = []; },
       appendChild(child) { child.parent = node; node.children.push(child); return child; },
       addEventListener(type, fn) { node.listeners[type] = fn; },
       replaceWith(other) {
@@ -139,19 +144,83 @@ test('products.json: the 8 finished goods with the owner prices, real photo file
   assert.equal(products.find(p => p.id === 'svetilnik-01').photos.length, 5);
 });
 
-test('the price is plain text; «Купить» is the primary button of the site, leading to the contacts', () => withDocument(() => {
+test('a piece\'s label: the price is plain text; «Запросить» is a quiet link to the request form, naming the piece', () => withDocument(() => {
   const card = Catalog.buildProductCard({ name: 'Ракушка', price_rub: 37000, photos: ['/r.jpg'] });
   const price = card.children.find(c => c.className === 'product-tile-price');
   assert.equal(price.tagName, 'DIV');
-  assert.equal(price.textContent, '37 000 ₽');
-  const buy = card.children[card.children.length - 1];
-  assert.equal(buy.tagName, 'A');
-  assert.equal(buy.className, 'btn btn-primary product-tile-buy');
-  assert.equal(buy.textContent, 'Купить');
-  assert.equal(buy.href, Catalog.ORDER_URL);
-  assert.equal(Catalog.ORDER_URL, '/sayanmramor-site/index.html#contacts');
-  assert.equal(buy.attrs['aria-label'], 'Купить: Ракушка');
+  assert.equal(price.textContent, '37\u00a0000\u00a0₽');
+  const ask = card.children[card.children.length - 1];
+  assert.equal(ask.tagName, 'A');
+  assert.equal(ask.className, 'ask');
+  assert.equal(ask.textContent, 'Запросить');
+  assert.equal(ask.href, Catalog.ORDER_URL);
+  assert.equal(Catalog.ORDER_URL, '/sayanmramor-site/index.html#offer');
+  assert.equal(ask.attrs['aria-label'], 'Запросить: Ракушка');
+  assert.ok(!card.children.some(c => /btn/.test(c.className)), 'no button in a row of buttons');
 }));
+
+test('the gallery: one piece at a time -- its words, its photograph; the arrows, the index and ← → change it', () => withDocument(() => {
+  const products = [
+    { name: 'Ракушка', price_rub: 37000, photos: ['/r.jpg'] },
+    { name: 'Светильник', price_rub: 20000, photos: ['/s1.webp', '/s2.webp', '/s3.webp'] },
+    { name: 'Стол', price_rub: 3177000, photos: [] },
+  ];
+  const c = Catalog.buildCollection(products);
+  assert.deepEqual(c.root.children.map(x => x.className), ['collection-info', 'collection-stage', 'collection-cards']);
+  const [info, stage, cards] = c.root.children;
+  assert.deepEqual(info.children.map(x => x.className), ['collection-piece', 'collection-thumbs', 'collection-list', 'collection-nav']);
+  const [piece, thumbs, list, nav] = info.children;
+  const frame = stage.children[0];
+  const words = () => [piece.children[0].textContent, piece.children[1].textContent, piece.children[2].children[0].textContent];
+  const count = () => nav.children[1].textContent;
+  const current = () => c.rows.map(b => b.attrs['aria-current']);
+  const shown = () => frame.children.filter(s => s.classList.contains('is-on'));
+  // The first piece: its name as a heading, its price, «Запросить».
+  assert.equal(piece.children[0].tagName, 'H2');
+  assert.deepEqual(words(), ['Ракушка', '37 000 ₽', 'Запросить']);
+  assert.equal(count(), '01 / 03');
+  assert.deepEqual(current(), ['true', 'false', 'false']);
+  assert.equal(thumbs.children.length, 0, 'one photo: no thumbnails');
+  assert.equal(list.tagName, 'OL');
+  assert.deepEqual(c.rows.map(b => [b.tagName, b.type, b.textContent]), [['BUTTON', 'button', 'Ракушка'], ['BUTTON', 'button', 'Светильник'], ['BUTTON', 'button', 'Стол']]);
+  // The arrow: the next piece; its photographs as thumbnails; one photograph at a time.
+  c.next.listeners.click();
+  assert.deepEqual(words(), ['Светильник', '20 000 ₽', 'Запросить']);
+  assert.equal(count(), '02 / 03');
+  assert.equal(thumbs.children.length, 3);
+  thumbs.children[2].listeners.click();
+  assert.deepEqual(thumbs.children.map(t => t.attrs['aria-current']), ['false', 'false', 'true']);
+  assert.equal(shown().length, 1);
+  assert.equal(shown()[0].children[0].src, '/s3.webp');
+  // The index (the keyboard reaches it): no photo -- the quiet line.
+  c.rows[2].listeners.focus();
+  assert.equal(shown()[0].children[0].textContent, Catalog.NO_PHOTO_TEXT);
+  // Past the last piece: the first again; back from the first: the last. ← → do the same.
+  c.next.listeners.click();
+  assert.equal(count(), '01 / 03');
+  c.prev.listeners.click();
+  assert.equal(count(), '03 / 03');
+  let prevented = 0;
+  c.root.listeners.keydown({ key: 'ArrowRight', preventDefault: () => prevented++ });
+  assert.equal(count(), '01 / 03');
+  assert.equal(prevented, 1);
+  // A touch passing over the index does not preview.
+  c.rows[1].listeners.pointerenter({ pointerType: 'touch' });
+  assert.equal(count(), '01 / 03');
+  // The narrow screen's column: every piece, as a card.
+  assert.equal(cards.children.length, 3);
+  assert.ok(cards.children.every(x => x.className === 'product-tile'));
+}));
+
+test('the place in the collection: two figures each', () => {
+  assert.equal(Catalog.position(0, 8), '01 / 08');
+  assert.equal(Catalog.position(11, 12), '12 / 12');
+});
+
+test('the count: «1 изделие», «3 изделия», «8 изделий», «11 изделий», «21 изделие»', () => {
+  assert.deepEqual([1, 3, 8, 11, 21, 22, 25].map(Catalog.countLabel),
+    ['1 изделие', '3 изделия', '8 изделий', '11 изделий', '21 изделие', '22 изделия', '25 изделий']);
+});
 
 test('the ruble sign never wraps away from its number', () => {
   assert.ok(Catalog.formatProductPrice(3977000).endsWith(' ₽'));

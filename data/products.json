@@ -7,7 +7,7 @@
       "category": "rakushki",
       "price_rub": 37000,
       "description": null,
-      "photos": ["/sayanmramor-site/assets/products/rakushka-01/1.jpg"],
+      "photos": ["/sayanmramor-site/assets/products/rakushka-01/1.webp"],
       "available": true
     },
     {
@@ -25,7 +25,7 @@
       "category": "stoly",
       "price_rub": 2377000,
       "description": null,
-      "photos": ["/sayanmramor-site/assets/products/art-stol-belyy-01/1.jpg"],
+      "photos": ["/sayanmramor-site/assets/products/art-stol-belyy-01/1.webp"],
       "available": true
     },
     {
@@ -61,7 +61,7 @@
       "category": "vanny",
       "price_rub": 3977000,
       "description": null,
-      "photos": ["/sayanmramor-site/assets/products/vanna-oniks-01/1.jpg"],
+      "photos": ["/sayanmramor-site/assets/products/vanna-oniks-01/1.webp"],
       "available": true
     },
     {

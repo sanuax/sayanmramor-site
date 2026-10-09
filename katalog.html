@@ -88,12 +88,16 @@
 </header>
 
 <main id="main">
-<div class="wrap page-head">
-  <h1>Готовые изделия</h1>
-  <p class="subtitle">Изделия из камня в наличии - фиксированная цена, без ожидания расчёта.</p>
-</div>
+<header class="wrap catalog-head">
+  <div>
+    <p class="catalog-kicker">В наличии</p>
+    <h1>Готовые изделия</h1>
+    <p class="catalog-lead">Изделия из натурального камня в наличии: фиксированная цена, без ожидания расчёта.</p>
+  </div>
+  <p class="catalog-count" id="catalogCount"></p>
+</header>
 
-<div class="catalog-grid" id="catalogGrid"></div>
+<div class="wrap catalog-host" id="catalogGrid"></div>
 </main>
 
 <footer class="site-footer">
@@ -140,7 +144,11 @@
 <script>
   fetch('/sayanmramor-site/data/products.json')
     .then(r => r.json())
-    .then(data => Catalog.renderCatalog(document.getElementById('catalogGrid'), data.products || []))
+    .then(data => {
+      const products = data.products || [];
+      if (products.length) document.getElementById('catalogCount').textContent = Catalog.countLabel(products.length);
+      Catalog.renderCatalog(document.getElementById('catalogGrid'), products);
+    })
     .catch(() => {
       document.getElementById('catalogGrid').textContent = 'Не удалось загрузить каталог изделий.';
     });
