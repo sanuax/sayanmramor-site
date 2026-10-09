@@ -16,11 +16,14 @@ const webps = fs.readdirSync(assetDir).filter(f => f.endsWith('.webp')).sort();
 const sha256 = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 
 // Photos per direction, from photo_classification.csv (confirmed, use_on_site=yes,
-// portfolio_keys). A photo may belong to several directions.
+// portfolio_keys), plus the owner's photos from the Yandex Maps card
+// (assets/portfolio-yandex: pol 2, stena 2, panno 2, stoleshnitsa_kuhnya 1).
+// A photo may belong to several directions.
 const EXPECTED_COUNTS = {
-  lestnitsa: 11, stupeni: 7, stoleshnitsa_kuhnya: 25, stoleshnitsa_vannaya: 21, podokonnik: 2,
-  pol: 16, stena: 38, fasad: 7, panno: 20, kaminy: 6,
+  lestnitsa: 11, stupeni: 7, stoleshnitsa_kuhnya: 26, stoleshnitsa_vannaya: 21, podokonnik: 2,
+  pol: 18, stena: 40, fasad: 7, panno: 22, kaminy: 6,
 };
+const YANDEX_DIR = path.join(site, 'assets', 'portfolio-yandex');
 
 // Minimal RFC 4180 reader: quoted fields may contain commas, quotes ("") and newlines.
 function parseCsv(text) {
@@ -107,8 +110,28 @@ test('every shipped portfolio photo is in SOURCES.md with its archive path and m
     assert.equal(sha256(path.join(assetDir, f)), e.sha, f + ': content matches SOURCES.md');
   });
   // Not every file must be in the portfolio: some photos wait for the home page or products.
-  const used = new Set(Object.values(portfolio).flat().map(i => path.basename(i.image)));
+  const used = new Set(Object.values(portfolio).flat().filter(i => i.image.startsWith('/sayanmramor-site/assets/portfolio/')).map(i => path.basename(i.image)));
   used.forEach(f => { if (f.endsWith('.webp')) assert.ok(f in listed, f + ' is used but not listed'); });
+});
+
+test('the owner\'s photos from the Yandex Maps card: their own folder and SOURCES.md (size and SHA-256), the first in their galleries', () => {
+  const files = fs.readdirSync(YANDEX_DIR).filter(f => f.endsWith('.webp')).sort();
+  assert.deepEqual(files, ['ya-01.webp', 'ya-02.webp', 'ya-03.webp', 'ya-04.webp', 'ya-05.webp', 'ya-06.webp', 'ya-07.webp', 'ya-08.webp']);
+  const text = fs.readFileSync(path.join(YANDEX_DIR, 'SOURCES.md'), 'utf8');
+  files.forEach(f => {
+    const block = text.split('### ' + f)[1];
+    assert.ok(block, f + ' is in SOURCES.md');
+    assert.equal((block.match(/SHA-256 `([0-9a-f]{64})`/) || [])[1], sha256(path.join(YANDEX_DIR, f)), f);
+  });
+  const first = key => portfolio[key].filter(i => i.image.includes('/portfolio-yandex/')).map(i => path.basename(i.image));
+  assert.deepEqual(first('pol'), ['ya-01.webp', 'ya-06.webp']);
+  assert.deepEqual(first('stena'), ['ya-06.webp', 'ya-07.webp']);
+  assert.deepEqual(first('panno'), ['ya-03.webp', 'ya-08.webp']);
+  assert.deepEqual(first('stoleshnitsa_kuhnya'), ['ya-05.webp']);
+  ['pol', 'stena', 'panno', 'stoleshnitsa_kuhnya'].forEach(key =>
+    assert.ok(portfolio[key].slice(0, first(key).length).every(i => i.image.includes('/portfolio-yandex/')), key + ': the new photos come first'));
+  assert.match(fs.readFileSync(path.join(site, 'categories', 'spa-zony.html'), 'utf8'), /renderPortfolio\(document\.getElementById\('portfolioGrid'\), \[\n    \{ image: '\/sayanmramor-site\/assets\/portfolio-yandex\/ya-02\.webp'/);
+  assert.match(fs.readFileSync(path.join(site, 'categories', 'hammamy.html'), 'utf8'), /renderPortfolio\(document\.getElementById\('portfolioGrid'\), \[\n    \{ image: '\/sayanmramor-site\/assets\/portfolio-yandex\/ya-04\.webp'/);
 });
 
 // The export manifest lives outside the repository (D:\photo_marble); check it when present.
