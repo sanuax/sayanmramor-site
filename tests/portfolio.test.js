@@ -92,7 +92,8 @@ test('a photo appears once per direction; sharing one file between directions is
   // Shared photos are one physical file referenced from several directions, not copies.
   const shared = Object.entries(directionsOf).filter(([, keys]) => keys.length > 1);
   shared.forEach(([img]) => assert.ok(fs.existsSync(path.join(site, img.slice('/sayanmramor-site/'.length))), img));
-  assert.ok(fs.readdirSync(assetDir, { withFileTypes: true }).every(e => !e.isDirectory()),
+  // The only folder is w640: the grid's smaller copy of each photo (scripts/portfolio_media.js), not a direction's copy.
+  assert.deepEqual(fs.readdirSync(assetDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name), ['w640'],
     'assets/portfolio/ is flat: one file per photo, no per-direction copies');
 });
 
@@ -136,7 +137,7 @@ test('portfolio photos are shown whole: no forced crop to a fixed frame', () => 
     assert.ok(!/object-fit\s*:\s*cover/.test(body), selector.trim() + ' must not use object-fit: cover'));
 });
 
-// ---- Masonry ------------------------------------------------------------------
+// ---- Rows ---------------------------------------------------------------------
 const SiteCommon = require('../js/site.js');
 const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
 const ruleBody = selector => {
@@ -154,70 +155,163 @@ const mediaBlock = query => {
   return '';
 };
 
-test('masonry CSS: 1px rows, no row gap, items keep their own height; 4 / 3 / 2 columns', () => {
-  const masonry = ruleBody('.portfolio-grid.is-masonry');
-  assert.ok(masonry, '.portfolio-grid.is-masonry rule exists');
-  assert.match(masonry, /grid-auto-rows\s*:\s*1px/);
-  assert.match(masonry, /row-gap\s*:\s*0/);
-  assert.match(ruleBody('.portfolio-grid.is-masonry .portfolio-item'), /align-self\s*:\s*start/);
-  assert.doesNotMatch(masonry + ruleBody('.portfolio-grid'), /grid-auto-flow\s*:[^;]*dense/, 'dense packing would reorder photos');
-  assert.match(ruleBody('.portfolio-grid'), /grid-template-columns\s*:\s*repeat\(4,/);
-  assert.match(mediaBlock('max-width: 900px'), /\.portfolio-grid\s*\{[^}]*repeat\(3,/);
-  assert.match(mediaBlock('max-width: 600px'), /\.portfolio-grid\s*\{[^}]*repeat\(2,/);
+test('rows CSS: full rows of one height -- each photo starts at the row height times its proportion and grows by it; the row height 340 / 230 / 200 px', () => {
+  assert.match(ruleBody('.portfolio-grid'), /--row-h: 340px; display: flex; flex-wrap: wrap;/);
+  assert.match(ruleBody('.portfolio-item'), /flex: var\(--ar, 0\.6667\) 1 calc\(var\(--ar, 0\.6667\) \* var\(--row-h\)\);/);
+  assert.match(ruleBody('.portfolio-grid::after'), /flex: 1000 1 0;/, 'without the script the last row keeps the row height');
+  assert.match(ruleBody('.portfolio-grid.is-planned::after'), /display: none;/, 'with it every row is full');
+  assert.doesNotMatch(css, /is-masonry|grid-auto-rows: 1px/, 'no masonry left');
+  assert.match(mediaBlock('max-width: 900px'), /\.portfolio-grid \{ --row-h: 230px; \}/);
+  assert.match(mediaBlock('max-width: 600px'), /\.portfolio-grid \{ --row-h: 200px; gap: var\(--s-2\); \}/);
 });
 
-test('masonry span: a photo takes as many 1px rows as its height plus the gap', () => {
-  assert.equal(SiteCommon.masonrySpan(399, 16), 415);
-  assert.equal(SiteCommon.masonrySpan(398.9, 16), 415);
-  assert.equal(SiteCommon.masonrySpan(177.3, 12), 190);
-  assert.equal(SiteCommon.masonrySpan(0, 0), 1);
-});
-
-test('layoutMasonry measures every photo, then sets its row span', () => {
-  const heights = [399.2, 177, 332.6];
-  const items = heights.map(h => ({ style: {}, getBoundingClientRect: () => ({ height: h }) }));
-  SiteCommon.layoutMasonry({ children: items }, 16);
-  assert.deepEqual(items.map(i => i.style.gridRowEnd), ['span 416', 'span 193', 'span 349']);
-});
-
-test('portfolio photos are named after their page when they have no caption (not decoration for a screen reader)', () => {
-  assert.equal(SiteCommon.portfolioAlt('Лестницы из камня', { image: 'a.webp', caption: '' }, 0), 'Лестницы из камня - работа 1');
-  assert.equal(SiteCommon.portfolioAlt('Лестницы из камня', { image: 'b.webp', caption: '' }, 4), 'Лестницы из камня - работа 5');
-  assert.equal(SiteCommon.portfolioAlt('Лестницы из камня', { image: 'c.webp', caption: 'Холл' }, 0), 'Холл', 'a caption wins');
-  assert.equal(SiteCommon.portfolioAlt('', { image: 'd.webp', caption: '' }, 0), '', 'no page title: nothing invented');
-});
-
-test('renderPortfolio switches the grid to masonry and keeps the photos in order', () => {
-  // A minimal DOM, just enough for renderPortfolio.
-  const el = tag => ({
-    tagName: tag, children: [], style: {}, dataset: {}, listeners: {},
-    classList: { set: new Set(), add(c) { this.set.add(c); }, contains(c) { return this.set.has(c); } },
-    set className(v) { this.classList.set = new Set(v.split(' ')); },
-    set innerHTML(v) { this.children = []; },
-    appendChild(c) { this.children.push(c); return c; },
-    addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); },
-    getBoundingClientRect: () => ({ height: 300 }),
+test('every photo has its size, its 640 px grid copy and its 16 px preview listed -- all of them its own (scripts/portfolio_media.js)', () => {
+  const sizeOf = file => {
+    const b = fs.readFileSync(file);
+    const chunk = b.toString('ascii', 12, 16);
+    if (chunk === 'VP8X') return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+    if (chunk === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+    const bits = b.readUInt32LE(21);
+    return [(bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1];
+  };
+  const fileOf = url => path.join(site, url.replace('/sayanmramor-site/', ''));
+  const check = (item, where) => {
+    const [w, h] = sizeOf(fileOf(item.image));
+    assert.deepEqual([item.width, item.height], [w, h], where + ': ' + item.image);
+    assert.equal(item.thumb, item.image.replace(/\/([^/]+)\.webp$/, '/w640/$1.webp'), where + ': ' + item.image);
+    const [tw, th] = sizeOf(fileOf(item.thumb));
+    assert.equal(tw, 640, item.thumb);
+    assert.ok(Math.abs(tw / th - w / h) < 0.01, item.thumb + ': the same proportions');
+    assert.match(item.preview, /^data:image\/webp;base64,[A-Za-z0-9+/=]{40,600}$/, where + ': ' + item.image);
+  };
+  Object.entries(portfolio).forEach(([key, items]) => items.forEach(item => check(item, key)));
+  ['spa-zony', 'hammamy', 'basseyny'].forEach(slug => {
+    const html = fs.readFileSync(path.join(site, 'categories', slug + '.html'), 'utf8');
+    const items = [...html.matchAll(/\{ image: '([^']+)', caption: '([^']*)', width: (\d+), height: (\d+), thumb: '([^']+)', preview: '([^']+)' \}/g)]
+      .map(([, image, caption, width, height, thumb, preview]) => ({ image, caption, width: +width, height: +height, thumb, preview }));
+    assert.ok(items.length > 0, slug);
+    assert.equal(items.length, (html.match(/\{ image: '/g) || []).length, slug + ': every photo listed in full');
+    items.forEach(item => check(item, slug));
   });
+});
+
+test('photoRatio: width / height when listed, 2:3 otherwise', () => {
+  assert.equal(SiteCommon.photoRatio({ width: 1600, height: 1067 }), 1600 / 1067);
+  assert.equal(SiteCommon.photoRatio({ image: 'a.webp' }), 2 / 3);
+  assert.equal(SiteCommon.photoRatio({ width: 0, height: 100 }), 2 / 3);
+});
+
+test('rowPlan: the photos in their order, shared out so the rows come close to the row height and to each other', () => {
+  const sum = a => a.reduce((x, y) => x + y, 0);
+  // 11 portraits at 1232 px and 340 px rows: two rows, 6 + 5.
+  const portraits = Array(11).fill(2 / 3);
+  assert.deepEqual(SiteCommon.rowPlan(portraits, 1232, 16, 340), [6, 5]);
+  // A landscape counts for more than a portrait: the rows' total proportions stay even.
+  const mixed = [2 / 3, 1.5, 2 / 3, 2 / 3, 2 / 3, 0.8, 0.8, 0.8, 0.8, 1.5, 2 / 3];
+  const plan = SiteCommon.rowPlan(mixed, 1232, 16, 340);
+  assert.equal(sum(plan), mixed.length, 'every photo once');
+  let start = 0;
+  const totals = plan.map(n => { const t = sum(mixed.slice(start, start + n)); start += n; return t; });
+  assert.ok(Math.max(...totals) - Math.min(...totals) < 1, totals.join(' / '));
+  // A few photos: one row; none: no rows; no width yet: no plan.
+  assert.deepEqual(SiteCommon.rowPlan([2 / 3, 2 / 3], 1232, 16, 340), [2]);
+  assert.deepEqual(SiteCommon.rowPlan([], 1232, 16, 340), []);
+  assert.deepEqual(SiteCommon.rowPlan([1, 1], 0, 16, 340), []);
+  // Every direction of the site: every photo once, every row in the plan, at 1232 px.
+  Object.entries(portfolio).forEach(([key, items]) => {
+    const p = SiteCommon.rowPlan(items.map(SiteCommon.photoRatio), 1232, 16, 340);
+    assert.equal(sum(p), items.length, key);
+    assert.ok(p.every(n => n > 0), key);
+  });
+});
+
+// A minimal DOM, just enough for renderPortfolio and layoutRows.
+const fakeEl = tag => ({
+  tagName: tag, children: [], dataset: {}, listeners: {}, attrs: {},
+  style: { props: {}, setProperty(k, v) { this.props[k] = v; } },
+  classList: { set: new Set(), add(c) { this.set.add(c); }, contains(c) { return this.set.has(c); } },
+  set className(v) { this.classList.set = new Set(v.split(' ')); },
+  set innerHTML(v) { this.children = []; },
+  appendChild(c) { this.children.push(c); return c; },
+  addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); },
+});
+function withFakeDom(fn) {
   const frames = [];
   const saved = { document: global.document, ResizeObserver: global.ResizeObserver,
     requestAnimationFrame: global.requestAnimationFrame, getComputedStyle: global.getComputedStyle };
-  global.document = { createElement: el };
+  global.document = { createElement: fakeEl };
   global.ResizeObserver = class { observe() {} };
-  global.requestAnimationFrame = fn => frames.push(fn);
-  global.getComputedStyle = () => ({ columnGap: '16px' });
-  try {
-    const grid = el('div');
-    const items = ['/sayanmramor-site/assets/portfolio/001.webp', '/sayanmramor-site/assets/portfolio/002.webp']
-      .map(image => ({ image, caption: '' }));
-    SiteCommon.renderPortfolio(grid, items);
-    assert.ok(grid.classList.contains('is-masonry'), 'masonry class is on');
-    assert.ok(grid.children.every(f => f.children[0].classList.contains('portfolio-shot')), 'each photo in its frame');
-    assert.deepEqual(grid.children.map(f => f.children[0].children[0].src), items.map(i => i.image), 'order kept');
-    assert.ok(grid.children.every(f => f.children[0].children[0].loading === 'lazy'), 'still lazy-loaded');
-    assert.ok(grid.listeners.load && grid.listeners.load.length, 're-layout when a photo loads');
-    frames.forEach(fn => fn());
-    assert.deepEqual(grid.children.map(f => f.style.gridRowEnd), ['span 316', 'span 316']);
-  } finally {
-    Object.assign(global, saved);
-  }
+  global.requestAnimationFrame = f => frames.push(f);
+  global.getComputedStyle = () => ({ columnGap: '16px', getPropertyValue: p => (p === '--row-h' ? ' 340px' : '') });
+  try { fn(frames); } finally { Object.assign(global, saved); }
+}
+
+test('layoutRows: a full row shares the width by proportion (less its gaps); a row that would stand too tall keeps 1.5 x the row height', () => withFakeDom(() => {
+  const grid = fakeEl('div');
+  grid.clientWidth = 1232;
+  grid.children = [2 / 3, 2 / 3, 2 / 3, 2 / 3].map(r => { const f = fakeEl('figure'); f.dataset.ar = String(r); return f; });
+  SiteCommon.layoutRows(grid);
+  assert.ok(grid.classList.contains('is-planned'));
+  grid.children.forEach(f => assert.match(f.style.flex, /^0\.6666\d* 1 calc\(\(100% - 48px\) \* 0\.250000 - 1px\)$/));
+  const pair = fakeEl('div');
+  pair.clientWidth = 1232;
+  pair.children = [2 / 3, 2 / 3].map(r => { const f = fakeEl('figure'); f.dataset.ar = String(r); return f; });
+  SiteCommon.layoutRows(pair);
+  pair.children.forEach(f => assert.equal(f.style.flex, '0 0 340.00px'), 'two photos: 510 px tall, not 900');
+}));
+
+test('renderPortfolio: the photos in order, each in its frame with its proportion and size; the rows planned once the width is known', () => withFakeDom(frames => {
+  const grid = fakeEl('div');
+  grid.clientWidth = 1232;
+  const items = [
+    { image: '/sayanmramor-site/assets/portfolio/001.webp', caption: '', width: 1067, height: 1600 },
+    { image: '/sayanmramor-site/assets/portfolio/002.webp', caption: '', width: 1600, height: 1067 },
+    { image: '/sayanmramor-site/assets/portfolio/003.webp', caption: '' },
+  ];
+  SiteCommon.renderPortfolio(grid, items);
+  assert.ok(grid.children.every(f => f.children[0].classList.contains('portfolio-shot')), 'each photo in its frame');
+  const imgs = grid.children.map(f => f.children[0].children[0]);
+  assert.deepEqual(imgs.map(i => i.src), items.map(i => i.image), 'order kept');
+  assert.ok(imgs.every(i => i.loading === 'lazy'), 'still lazy-loaded');
+  assert.deepEqual(grid.children.map(f => f.style.props['--ar']), ['0.6669', '1.4995', '0.6667']);
+  assert.deepEqual(grid.children.map(f => f.dataset.ar), ['0.6669', '1.4995', '0.6667']);
+  assert.deepEqual([imgs[0].width, imgs[0].height], [1067, 1600], 'the size is on the photo: its box is right before it loads');
+  assert.ok(imgs[2].listeners.load, 'an unlisted photo takes its proportion when it loads');
+  assert.ok(grid.listeners.load && grid.listeners.load.length, 're-plan when a photo loads');
+  frames.forEach(f => f());
+  assert.ok(grid.classList.contains('is-planned'));
+  assert.ok(grid.children.every(f => /calc\(/.test(f.style.flex)));
+}));
+
+test('photoSources: the 640 px copy and the original for dense screens, sized by the tallest row of each layout', () => {
+  const src = SiteCommon.photoSources({ image: '/a/184.webp', thumb: '/a/w640/184.webp', width: 1067, height: 1600 });
+  assert.equal(src.srcset, '/a/w640/184.webp 640w, /a/184.webp 1067w');
+  assert.equal(src.sizes, '(max-width: 600px) 174px, (max-width: 900px) 201px, 294px');
+  assert.equal(SiteCommon.photoSources({ image: '/a/1.webp' }), null, 'no copy: the photo alone');
+});
+
+test('the viewer: a photo grows from its frame to the screen; whole, centred, clear of the edges', () => {
+  const stage = { left: 0, top: 80, width: 1440, height: 700 };
+  const portrait = SiteCommon.fitRect(stage, 2 / 3, 88);
+  assert.equal(Math.round(portrait.height), 684, 'a portrait: as tall as the stage allows');
+  assert.equal(Math.round(portrait.left + portrait.width / 2), 720, 'centred');
+  const wide = SiteCommon.fitRect(stage, 3, 88);
+  assert.equal(Math.round(wide.width), 1440 - 176, 'a wide photo: as wide as the stage allows, less the arrows');
+  const src = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
+  assert.match(src, /setAttribute\('role', 'dialog'\)/);
+  assert.match(src, /setAttribute\('aria-modal', 'true'\)/);
+  assert.match(src, /e\.key === 'Escape'/);
+  assert.match(src, /opener\.focus\(\{ preventScroll: true \}\)/, 'the focus goes back to the photo it came from');
+  assert.match(src, /matchMedia\('\(prefers-reduced-motion: reduce\)'\)/);
+  assert.match(css, /\.portfolio-item\[role="button"\] \{ cursor: zoom-in; \}/);
+  // The reveal: one quiet movement -- a fade and a 24 px rise; with reduced motion, the fade alone.
+  assert.match(css, /\.portfolio-item\.will-reveal \{ opacity: 0; transform: translateY\(24px\); \}/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.portfolio-item\.will-reveal \{ transform: none; \}/);
+  assert.doesNotMatch(css, /will-reveal[^{]*\{[^}]*clip-path/, 'no wipe');
+});
+
+test('reveal: the photos entering together rise top to bottom, left to right', () => {
+  const at = (top, left) => ({ getBoundingClientRect: () => ({ top, left }) });
+  const a = at(0, 300), b = at(0, 0), c = at(400, 0);
+  assert.deepEqual(SiteCommon.revealOrder([c, a, b]), [b, a, c]);
 });

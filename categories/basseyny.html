@@ -97,11 +97,12 @@
   <div class="portfolio-grid" id="portfolioGrid"></div>
 </section>
 
-<section class="offer-band" id="offer" aria-labelledby="offerTitle">
+<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>
   <div class="offer-band-inner">
     <p class="offer-kicker">Проект</p>
     <div class="offer-main">
       <h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту</span></h2>
+      <p class="offer-lead">Оставьте заявку: мы свяжемся с вами, уточним детали и подготовим индивидуальный расчёт в кратчайшие сроки.</p>
       <div class="offer-meta">
         <p class="offer-needs">Направление · Имя · Телефон · Техническое задание</p>
         <p class="offer-phone">Или позвоните: <a href="tel:+74952155145">+7 (495) 215-51-45</a></p>
@@ -161,14 +162,14 @@
 <script>
   // A direction of the site only (no configurator product): its photos are listed here.
   SiteCommon.renderPortfolio(document.getElementById('portfolioGrid'), [
-    { image: '/sayanmramor-site/assets/categories/basseyny/pool.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/basseyny/pool_2.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/basseyny/pool_1.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/basseyny/m59.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/basseyny/m60.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/basseyny/m61.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/portfolio/168.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/portfolio/169.webp', caption: '' }
+    { image: '/sayanmramor-site/assets/categories/basseyny/pool.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/categories/basseyny/w640/pool.webp', preview: 'data:image/webp;base64,UklGRpwAAABXRUJQVlA4IJAAAABQBACdASoQABgAPu1iqU2ppaOiMAgBMB2JbACdMoRwABoNXKGcYTig39G0AP6iZp5JreUzjjmXBRkHzyik4w3+jPjc2lWXcKsb2yyvBypFRLBVn3FK19vXZ54o50gsr7WGokQSJNx0PD3d/JvzbbOb+zqJMKWH+lIokEzsxrel8s8QUpl0S2yuqckEgLp5AAA=' },
+    { image: '/sayanmramor-site/assets/categories/basseyny/pool_2.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/categories/basseyny/w640/pool_2.webp', preview: 'data:image/webp;base64,UklGRnwAAABXRUJQVlA4IHAAAACwAwCdASoQABgAPu1iqU2ppaOiMAgBMB2JagCdABU7KpdoN+7VQAD9IPY2+5xEn1+G++6niTxfBoAxVNGh9EtP1UC6e3Rftn9HdBf4tbzqRrRHYKic1ccfxRjcUbNbS1pGWURC3WSXHq0VM/cbarAA' },
+    { image: '/sayanmramor-site/assets/categories/basseyny/pool_1.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/categories/basseyny/w640/pool_1.webp', preview: 'data:image/webp;base64,UklGRpwAAABXRUJQVlA4IJAAAACQBACdASoQABgAPu1iqU2ppaOiMAgBMB2JbACdMoR4PoADx0vCwQNHszKzbogA9odR4ZeBfHyl1zgCBghni0aeXRzjwH+pcyeQfztriPPpvzXkU8X4dP41cQ7I0qm/nLEWHcQT3Maqt2n7l3Vwn+oNmaWvKH5q1yOixem5S9bMqaxZxHDyZule1GWvEEYAAAA=' },
+    { image: '/sayanmramor-site/assets/categories/basseyny/m59.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/categories/basseyny/w640/m59.webp', preview: 'data:image/webp;base64,UklGRqAAAABXRUJQVlA4IJQAAABwBACdASoQABgAPu1iqk2ppaQiMAgBMB2JaACdMoAKQ4Xo3Auc7QjT8zPqoAD+ZeHEyzs2MVMCSoeU9ljqicNB1Mn6IJaiJJk1VenEOSv4cH9NaDM+AG3i57AeRbxIvVHaoJvKi+z6UGNtKo44UJUBxFIxrWaQPtYrfsm+lbCzhcvk3dXcG8e7HC/cC2xIJ2N8FBAA' },
+    { image: '/sayanmramor-site/assets/categories/basseyny/m60.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/categories/basseyny/w640/m60.webp', preview: 'data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAABQBACdASoQABgAPu1iqU2ppaOiMAgBMB2JYgC7MoADTtQir9R7KjUzOIkAAM2x4GHJP6tuXrJf4LtOELmRR5emqtLmrhGobWB2/Pmx92V2znrMVWLdcuk8mkaI/W60Oe1F+FWpKTESs38OZm92sI+anwtw4CsV2EyRUAAA' },
+    { image: '/sayanmramor-site/assets/categories/basseyny/m61.webp', caption: '', width: 1600, height: 1067, thumb: '/sayanmramor-site/assets/categories/basseyny/w640/m61.webp', preview: 'data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQAgCdASoQAAoAA4BaJZACdH8AFV8W4+QAAM3svOlIb4tWT50A9Qs6lIuvlRoQrNF6CKpSJNXIRHDXKEh4fgJRSTSQQPA/Rck+2gwQS9NAAA==' },
+    { image: '/sayanmramor-site/assets/portfolio/168.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/portfolio/w640/168.webp', preview: 'data:image/webp;base64,UklGRp4AAABXRUJQVlA4IJIAAACwAwCdASoQABgAPu1iqU2ppaOiMAgBMB2JQBZwAuy/cKZcakiyAAD+mBLfEdAqhN9DhT+ExUY9ZDDRzhD63VF8xWDsWai3oWXDurfXquw45ulrQgzrS+/J1dovOQcmGQjkN0sw4XGzON1UPzkrR2m3C4JGoM6Vd/LrdW048LFxv3TXG3FzoHtQli0gKa0IWRYAAA==' },
+    { image: '/sayanmramor-site/assets/portfolio/169.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/portfolio/w640/169.webp', preview: 'data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAACQAwCdASoQABgAPu1mq04ppaQiMAgBMB2JQAALaFqQPVYkHj4AAP6O5ykU4llmpQICkmZlouEffkwwUIL3H+6ZZGy7dfAOD35lO4wbws0XmNE3XcoNImieI15tVDovq4KwQaBtG1wvlhFf3TkgAA==' }
   ]);
 </script>
 </body>

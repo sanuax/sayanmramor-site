@@ -97,11 +97,12 @@
   <div class="portfolio-grid" id="portfolioGrid"></div>
 </section>
 
-<section class="offer-band" id="offer" aria-labelledby="offerTitle">
+<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>
   <div class="offer-band-inner">
     <p class="offer-kicker">Проект</p>
     <div class="offer-main">
       <h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту</span></h2>
+      <p class="offer-lead">Оставьте заявку: мы свяжемся с вами, уточним детали и подготовим индивидуальный расчёт в кратчайшие сроки.</p>
       <div class="offer-meta">
         <p class="offer-needs">Направление · Имя · Телефон · Техническое задание</p>
         <p class="offer-phone">Или позвоните: <a href="tel:+74952155145">+7 (495) 215-51-45</a></p>
@@ -161,13 +162,13 @@
 <script>
   // A direction of the site only (no configurator product): its photos are listed here.
   SiteCommon.renderPortfolio(document.getElementById('portfolioGrid'), [
-    { image: '/sayanmramor-site/assets/categories/hammam/m1_storis.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/hammam/m2_storis.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/hammam/m3_storis.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/hammam/m4_storis.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/hammam/m5_storis.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/hammam/m6_storis.webp', caption: '' },
-    { image: '/sayanmramor-site/assets/categories/hammam/m7_storis.webp', caption: '' }
+    { image: '/sayanmramor-site/assets/categories/hammam/m1_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m1_storis.webp', preview: 'data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAAAQBACdASoQABgAPu1iqk4ppaQiMAgBMB2JZwAAW+zSvL1GgWzmz/cucAD+7pcAkQKgnqrYNFhofBGxaFV2m36kj1yoTxzHmlO6oGxM3jm7uOKYZH1ZVlDXcrDdFOpApjE90CRKSpXTQKzMu4yjQIDle2UAHxYAAAA=' },
+    { image: '/sayanmramor-site/assets/categories/hammam/m2_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m2_storis.webp', preview: 'data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAAAQBACdASoQABgAPu1kq04ppaQiMAgBMB2JZwAAW4Yi5f9bQrKrBUw+AAD93YuxLXGBfoAvoEmY4TERSP/5DT+BFiEobhPqlWdDQLoM9Ar7F/SHxAumvIVZiQiNbw+DVbG638gW7OoAgAAA' },
+    { image: '/sayanmramor-site/assets/categories/hammam/m3_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m3_storis.webp', preview: 'data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAADwAwCdASoQABgAPu1kq04ppaQiMAgBMB2JZwC7ACHffm9EoV9YoMegAP7ugeeozUmotYEElqhvIN+yWmQPrnnN1aHJCpmTtU+YXw9FI/d2ihDtevGP7znkERCE6tXZ0Uyl2cHx3l+T3sXlW0AAAA==' },
+    { image: '/sayanmramor-site/assets/categories/hammam/m4_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m4_storis.webp', preview: 'data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAAAwBACdASoQABgAPu1iqk2ppaQiMAgBMB2JZQDCgCKpQl37yXN//oPGHUAA/pawOSCVUPT/CYoVuwEVJSYeNe+W4sIcTHV1jsxlhQ3HtnL4V8jAA/+f9ROjeSImCVLWRf86TYuTtenv7/WlGtpOCrd4ubAy5j15kNu/3pSWNBhe9m2KnfeOUboLIf3FkmgA' },
+    { image: '/sayanmramor-site/assets/categories/hammam/m5_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m5_storis.webp', preview: 'data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAAAQBACdASoQABgAPu1iqU2ppaOiMAgBMB2JZwDE2CHfE+cpwVTYpE7OAAD+9B1aqKNc1bpxbjbmNKsiyH6BMi1YCUkj9EQc5ekXXCrfjqr7T05T45q0KMmFu9cKwQJO6Pw/xWhq45ImzWgA' },
+    { image: '/sayanmramor-site/assets/categories/hammam/m6_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m6_storis.webp', preview: 'data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAwCdASoQABgAPu1kqk2ppaQiMAgBMB2JZQAAW+imSejbk44LLAAA/vDXr4HDc8imYiP8IAS/BwQOtReHjClMrL+Ie7w8ukgSh58WHjdJUBrLgQIeizpAQVZdv4kAAAA=' },
+    { image: '/sayanmramor-site/assets/categories/hammam/m7_storis.webp', caption: '', width: 800, height: 1200, thumb: '/sayanmramor-site/assets/categories/hammam/w640/m7_storis.webp', preview: 'data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBACdASoQABgAPu1krU2ppaSiMAgBMB2JZQC7AGmft/PAEC/zPXCsAAD+/e+xTDGfZWGXtQZIib3hFB+LgLL0aPIDZmsKANcgQfEFvUvGRTnXaYTGR7FYjlMzTGTAAAA=' }
   ]);
 </script>
 </body>

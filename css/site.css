@@ -604,58 +604,9 @@ html.menu-lock { overflow: hidden; }
   .home-group a { min-height: 44px; }   /* a finger's target */
 }
 
-/* The request on the home page: a light card in the measure, under the dark showroom band
-   and over the dark footer. It keeps the stone panel's padding and five columns: the words
-   over the first two, the form from the third (under «Кухня и ванная») to the end.
-   .offer-main and .offer-meta step aside (display: contents) so their parts take the card's grid. */
-.home .offer-band { background: transparent; padding: var(--section) var(--gutter) 0; }   /* below it, the contacts keep their own top space */
-.home .offer-band-inner {
-  max-width: calc(var(--measure) - 2 * var(--gutter)); margin: 0 auto; padding: var(--order-pad);
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: auto auto auto 1fr; column-gap: var(--s-5); align-items: start;
-  border-radius: 20px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
-}
-.home .offer-main, .home .offer-meta { display: contents; }
-.home .offer-kicker {
-  grid-column: 1 / 3; grid-row: 1; display: flex; align-items: center; gap: var(--s-3); padding: 0;
-  font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
-}
-.home .offer-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
-.home .offer-title {
-  grid-column: 1 / 3; grid-row: 2; margin-top: var(--s-4); padding: 0; border: 0;
-  font-size: clamp(26px, 2.5vw, 36px); font-weight: 600; line-height: 1.12; letter-spacing: -0.015em;
-}
-.home .offer-title-soft { margin-top: 4px; font-weight: 300; color: var(--ink-soft); }
-.home .offer-lead { grid-column: 1 / 3; grid-row: 3; max-width: 32em; margin-top: var(--s-5); font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
-.home .offer-phone {
-  grid-column: 1 / 3; grid-row: 4; align-self: end; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--s-3);   /* the icon, «Или позвоните:» over the number */
-  margin-top: var(--s-6); font-size: var(--fs-small); color: var(--ink-soft);
-}
-.home .offer-phone::before {
-  content: ''; grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; background: var(--surface-sunk) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23474944' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16.4v2.8a1.9 1.9 0 0 1-2 1.9 18.6 18.6 0 0 1-8.1-2.9 18.3 18.3 0 0 1-5.6-5.6A18.6 18.6 0 0 1 2.4 4.5a1.9 1.9 0 0 1 1.9-2h2.8a1.9 1.9 0 0 1 1.9 1.6c.1.9.4 1.8.7 2.6a1.9 1.9 0 0 1-.4 2L8.1 9.9a15 15 0 0 0 5.6 5.6l1.2-1.2a1.9 1.9 0 0 1 2-.4c.8.3 1.7.6 2.6.7a1.9 1.9 0 0 1 1.6 1.9z'/%3E%3C/svg%3E") center / 18px no-repeat;
-}
-.home .offer-needs {
-  grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; gap: var(--s-4);
-  font-size: 13px; color: var(--muted);
-}
-.home .offer-needs::after { content: ''; flex: 1; height: 1px; background: var(--line); }
-.home .offer-phone a { font-size: var(--fs-body); }
-.home .offer-reveal, .home .offer-noscript { grid-column: 3 / 6; grid-row: 2 / 5; }
-.home .offer-form { margin-top: var(--s-4); column-gap: var(--s-6); }
-.home .offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface); }
-.home .offer-input::placeholder { color: var(--muted); opacity: 1; }
-/* Narrower than the panel's five columns: the words over the form, each the card's width. */
-@media (max-width: 1100px) {
-  .home .offer-band-inner { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
-  .home .offer-kicker, .home .offer-title, .home .offer-lead, .home .offer-phone, .home .offer-needs,
-  .home .offer-reveal, .home .offer-noscript { grid-column: 1; grid-row: auto; }
-  .home .offer-phone { margin-top: var(--s-5); }
-  .home .offer-needs { margin-top: var(--s-7); }
-  .home .offer-needs, .home .offer-reveal, .home .offer-noscript { order: 1; }   /* the phone stays with the words, the line of fields goes to the form */
-}
-@media (max-width: 520px) {
-  .home .offer-band { padding-left: var(--gutter); padding-right: var(--gutter); }
-  .home .offer-band-inner { border-radius: 16px; }
-}
+/* The request: the card of «Коммерческое предложение» below; here only the home page's
+   difference -- the contacts follow it with their own top space. */
+.home .offer-band { padding-bottom: 0; }
 
 /* The showroom: the site's one dark band on the page -- the words, the way in, the house. */
 .home-showroom { background: var(--graphite); color: var(--on-dark); }
@@ -1638,20 +1589,97 @@ html:has(.mast) { scrollbar-gutter: stable; }
 /* ---- Category page: examples ------------------------------------------------ */
 .page-head { padding-top: var(--s-7); }
 .portfolio-section { max-width: var(--measure); margin: 0 auto var(--section); padding: 0 var(--gutter); }
-/* Photos keep their own proportions (most are vertical) and are never cropped.
-   Before a photo loads it holds a 2:3 box, the usual portrait shape, so lazy
-   loading has real boxes to watch; once loaded, `auto` switches to the photo's ratio. */
-.portfolio-grid {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); align-items: start;
-}
-/* Masonry (js/site.js, enableMasonry): 1px rows, each photo spans its own height
-   plus the column gap, so the vertical gap equals the horizontal one. */
-.portfolio-grid.is-masonry { grid-auto-rows: 1px; row-gap: 0; }
-.portfolio-grid.is-masonry .portfolio-item { align-self: start; }
-.portfolio-item { margin: 0; }
+/* Rows of photos: each row the full width and one height, the photos whole in
+   their own proportions -- never cropped, never zoomed. Every photo starts at the
+   row height (--row-h) times its proportion (--ar, set by js/site.js from the
+   photo's size) and grows by the same proportion, so a row's photos stay one
+   height as they fill it. Without the script the last row keeps the row height
+   (::after takes its free space); with it (js/site.js, layoutRows) the photos are
+   shared out so that every row is full. The 2:3 below is only the box before an
+   unlisted photo loads. */
+.portfolio-grid { --row-h: 340px; display: flex; flex-wrap: wrap; gap: var(--s-4); }
+.portfolio-grid::after { content: ''; flex: 1000 1 0; }
+.portfolio-grid.is-planned::after { display: none; }
+.portfolio-item { flex: var(--ar, 0.6667) 1 calc(var(--ar, 0.6667) * var(--row-h)); min-width: 0; margin: 0; }
 .portfolio-item img { display: block; width: 100%; height: auto; aspect-ratio: auto 2 / 3; }   /* framed by .portfolio-shot */
-.portfolio-item.image-broken { aspect-ratio: 2 / 3; background: var(--surface-sunk); border-radius: var(--radius-m); }
+.portfolio-item.image-broken { aspect-ratio: var(--ar, 2 / 3); background: var(--surface-sunk); border-radius: var(--radius-m); }
 .portfolio-item figcaption { font-size: var(--fs-small); color: var(--muted); margin-top: var(--s-2); }
+
+/* While a photo loads, its frame shows the photo itself at 16 px (--preview,
+   js/site.js), blurred; the photo fades in over it. */
+.portfolio-shot::before {
+  content: ''; position: absolute; inset: -12px; z-index: 0;
+  background: var(--preview, none) center / cover no-repeat; filter: blur(14px); transform: scale(1.06);
+}
+.portfolio-grid .portfolio-shot img { position: relative; z-index: 0; opacity: 0; transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.portfolio-grid .portfolio-shot.is-loaded img { opacity: 1; }
+/* The rows come into view once (js/site.js, enableReveal): one quiet movement --
+   each photo fades in as it rises 24 px, quick to start and soft to land, left to
+   right 60 ms apart. */
+.portfolio-item.will-reveal { opacity: 0; transform: translateY(24px); }
+.portfolio-item.is-revealed {
+  opacity: 1; transform: none;
+  transition: opacity 0.6s ease var(--reveal-delay, 0ms), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) var(--reveal-delay, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-item.will-reveal { transform: none; }
+  .portfolio-item.is-revealed { transition: opacity 0.4s ease; }
+}
+@media print {
+  .portfolio-item.will-reveal { opacity: 1; transform: none; }
+  .portfolio-grid .portfolio-shot img { opacity: 1; }
+}
+/* Every photo opens in the viewer. */
+.portfolio-item[role="button"] { cursor: zoom-in; }
+.portfolio-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 22px; }
+
+/* ---- The viewer (js/site.js, enableViewer) -------------------------------------
+   A dark veil over the page, the count and × on top, the photo in the middle,
+   the strip of all the photos below. The photo itself is placed in viewport
+   pixels (position: fixed + transform) so it can grow out of its frame. */
+.viewer-open { overflow: hidden; }
+.viewer { position: fixed; inset: 0; z-index: 1000; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; color: #f3f1ec; }
+.viewer[hidden] { display: none; }
+.viewer-veil { position: absolute; inset: 0; background: rgba(18, 20, 18, 0.94); opacity: 0; transition: opacity 0.28s ease; }
+.viewer.is-open .viewer-veil { opacity: 1; }
+.viewer-top, .viewer-strip, .viewer-prev, .viewer-next { opacity: 0; transition: opacity 0.2s ease; }
+.viewer.is-open .viewer-top, .viewer.is-open .viewer-strip, .viewer.is-open .viewer-prev, .viewer.is-open .viewer-next { opacity: 1; transition-delay: 0.12s; }
+.viewer-top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px, 3vw, 32px); }
+.viewer-count { font-size: var(--fs-small); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; color: rgba(243, 241, 236, 0.72); }
+.viewer-count b { font-weight: 600; color: #f3f1ec; }
+.viewer-btn {
+  display: grid; place-items: center; width: var(--control-h); height: var(--control-h); padding: 0; border-radius: 50%;
+  border: 1px solid rgba(243, 241, 236, 0.22); background: rgba(243, 241, 236, 0.06); color: inherit; cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.viewer-btn:active { transform: scale(0.95); }
+@media (hover: hover) and (pointer: fine) { .viewer-btn:hover { background: rgba(243, 241, 236, 0.16); } }
+.viewer-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.viewer :focus-visible { outline: 2px solid #f3f1ec; outline-offset: 3px; }
+.viewer-stage { position: relative; z-index: 1; touch-action: none; }
+.viewer-prev, .viewer-next { position: absolute; top: 50%; z-index: 3; margin-top: calc(var(--control-h) / -2); }
+.viewer-prev { left: clamp(12px, 2vw, 28px); }
+.viewer-next { right: clamp(12px, 2vw, 28px); }
+.viewer-img {
+  position: fixed; left: 0; top: 0; z-index: 1; max-width: none; transform-origin: 0 0; border-radius: 12px;
+  background: #2a2d2a center / cover no-repeat;   /* the grid's copy, shown until the original arrives */
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); user-select: none; -webkit-user-drag: none; will-change: transform;
+}
+.viewer-strip { position: relative; z-index: 2; display: flex; justify-content: safe center; gap: var(--s-2); padding: 14px 16px 18px; overflow-x: auto; scrollbar-width: none; }
+.viewer-strip button {
+  flex: none; height: 56px; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: #2a2d2a; cursor: pointer;
+  opacity: 0.45; outline: 2px solid transparent; outline-offset: 2px; transition: opacity 0.15s ease, outline-color 0.15s ease;
+}
+.viewer-strip button[aria-current="true"] { opacity: 1; outline-color: #f3f1ec; }
+@media (hover: hover) and (pointer: fine) { .viewer-strip button:hover { opacity: 0.85; } }
+.viewer-strip img { display: block; width: auto; height: 100%; }
+@media (max-width: 700px) {
+  .viewer-prev, .viewer-next { display: none; }   /* a swipe on a phone */
+  .viewer-strip button { height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewer-veil, .viewer-top, .viewer-strip, .viewer-prev, .viewer-next { transition: none; }
+}
 
 /* ---- Works in frames: the photographs of real works ---------------------------
    The direction pages' examples (and the photographs of the home page's stone panel), framed like the
@@ -1938,6 +1966,59 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .offer-noscript { color: var(--ink-soft); }
 .offer-noscript a { color: var(--ink); }
 
+/* The request as a card, the same on the home page and on every direction page: a light
+   card in the measure. It keeps the home page's stone panel's padding and five columns: the
+   words over the first two, the form from the third (on the home page, under «Кухня и ванная»).
+   .offer-main and .offer-meta step aside (display: contents) so their parts take the card's grid. */
+main .offer-band { --order-pad: clamp(28px, 4.4vw, 56px); background: transparent; padding: var(--section) var(--gutter); }
+main .offer-band-inner {
+  max-width: calc(var(--measure) - 2 * var(--gutter)); margin: 0 auto; padding: var(--order-pad);
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: auto auto auto 1fr; column-gap: var(--s-5); align-items: start;
+  border-radius: 20px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+}
+main .offer-main, main .offer-meta { display: contents; }
+main .offer-kicker {
+  grid-column: 1 / 3; grid-row: 1; display: flex; align-items: center; gap: var(--s-3); padding: 0;
+  font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+main .offer-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
+main .offer-title {
+  grid-column: 1 / 3; grid-row: 2; margin-top: var(--s-4); padding: 0; border: 0;
+  font-size: clamp(26px, 2.5vw, 36px); font-weight: 600; line-height: 1.12; letter-spacing: -0.015em;
+}
+main .offer-title-soft { margin-top: 4px; font-weight: 300; color: var(--ink-soft); }
+main .offer-lead { grid-column: 1 / 3; grid-row: 3; max-width: 32em; margin-top: var(--s-5); font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+main .offer-phone {
+  grid-column: 1 / 3; grid-row: 4; align-self: end; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--s-3);   /* the icon, «Или позвоните:» over the number */
+  margin-top: var(--s-6); font-size: var(--fs-small); color: var(--ink-soft);
+}
+main .offer-phone::before {
+  content: ''; grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; background: var(--surface-sunk) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23474944' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16.4v2.8a1.9 1.9 0 0 1-2 1.9 18.6 18.6 0 0 1-8.1-2.9 18.3 18.3 0 0 1-5.6-5.6A18.6 18.6 0 0 1 2.4 4.5a1.9 1.9 0 0 1 1.9-2h2.8a1.9 1.9 0 0 1 1.9 1.6c.1.9.4 1.8.7 2.6a1.9 1.9 0 0 1-.4 2L8.1 9.9a15 15 0 0 0 5.6 5.6l1.2-1.2a1.9 1.9 0 0 1 2-.4c.8.3 1.7.6 2.6.7a1.9 1.9 0 0 1 1.6 1.9z'/%3E%3C/svg%3E") center / 18px no-repeat;
+}
+main .offer-needs {
+  grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; gap: var(--s-4);
+  font-size: 13px; color: var(--muted);
+}
+main .offer-needs::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+main .offer-phone a { font-size: var(--fs-body); }
+main .offer-reveal, main .offer-noscript { grid-column: 3 / 6; grid-row: 2 / 5; }
+main .offer-form { margin-top: var(--s-4); column-gap: var(--s-6); }
+main .offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface); }
+main .offer-input::placeholder { color: var(--muted); opacity: 1; }
+/* Narrower than the panel's five columns: the words over the form, each the card's width. */
+@media (max-width: 1100px) {
+  main .offer-band-inner { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  main .offer-kicker, main .offer-title, main .offer-lead, main .offer-phone, main .offer-needs,
+  main .offer-reveal, main .offer-noscript { grid-column: 1; grid-row: auto; }
+  main .offer-phone { margin-top: var(--s-5); }
+  main .offer-needs { margin-top: var(--s-7); }
+  main .offer-needs, main .offer-reveal, main .offer-noscript { order: 1; }   /* the phone stays with the words, the line of fields goes to the form */
+}
+@media (max-width: 520px) {
+  main .offer-band { padding-left: var(--gutter); padding-right: var(--gutter); }
+  main .offer-band-inner { border-radius: 16px; }
+}
+
 /* ---- Footer ------------------------------------------------------------------
    The graphite of the showroom band: the wordmark, the directions, the
    contacts; under a rule, the company's details and the privacy policy.
@@ -1992,7 +2073,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 
 /* ---- Responsive -------------------------------------------------------------- */
 @media (max-width: 900px) {
-  .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .portfolio-grid { --row-h: 230px; }
   /* The address first, the map under it. */
   .contacts-layout { grid-template-columns: 1fr; }
   .home-contacts { grid-template-columns: 1fr; }
@@ -2031,7 +2112,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
   .contacts-head p { font-size: var(--fs-body); }
   .contacts-map-frame { min-height: 340px; }
   .page-head { padding-top: var(--s-6); }
-  .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+  .portfolio-grid { --row-h: 200px; gap: var(--s-2); }
   .stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4) var(--s-3); }
   .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-3); }
   /* Two cards abreast leave no room beside the price: «Купить» goes under

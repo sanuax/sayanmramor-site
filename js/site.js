@@ -6,41 +6,100 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
 
-  // Portfolio masonry. The grid has 1px rows; each photo spans as many rows as
-  // it is tall plus the gap, and the grid's ordinary (sparse) auto-placement
-  // puts every next photo in the first free spot to the right / below, so the
-  // photos read left to right, top to bottom, and close up vertically.
-  function masonrySpan(height, gap) {
-    return Math.max(1, Math.ceil(height + gap));
+  // Portfolio rows: every row the full width and one height, every photo whole
+  // in its own proportions -- never cropped. The proportion (--ar, width /
+  // height) is the photo's own, from its listed size, so the rows stand before
+  // the photos arrive; a photo listed without a size takes 2:3 until it loads.
+  // css/site.css alone already makes full rows of one height (each photo grows
+  // in step with its proportion), but leaves the last row short. The plan below
+  // shares the photos out between the rows -- in their order -- so that every
+  // row, the last one too, is full and the rows are about the row height.
+  const DEFAULT_RATIO = 2 / 3;
+  const MAX_SCALE = 1.5;   // a row may stand up to 1.5 x the row height; past that it stops short of the edge
+  function photoRatio(item) {
+    return item && item.width > 0 && item.height > 0 ? item.width / item.height : DEFAULT_RATIO;
+  }
+  function setRatio(figure, ratio) {
+    const r = Math.round(ratio * 10000) / 10000;
+    figure.style.setProperty('--ar', String(r));
+    figure.dataset.ar = String(r);
   }
 
-  function layoutMasonry(container, gap) {
+  // How many photos go into each row. The number of rows is what the row height
+  // asks for; the photos are then split, in order, so that the rows' total
+  // proportions are as even as they can be (least squares over all splits),
+  // which keeps the rows' heights close to each other.
+  function rowPlan(ratios, width, gap, rowHeight) {
+    const n = ratios.length;
+    if (!n || !(width > 0) || !(rowHeight > 0)) return [];
+    const total = ratios.reduce((a, b) => a + b, 0);
+    const rows = Math.max(1, Math.min(n, Math.round((total * rowHeight + gap * n) / (width + gap))));
+    const prefix = [0];
+    ratios.forEach(r => prefix.push(prefix[prefix.length - 1] + r));
+    const ideal = total / rows;
+    const cost = (i, j) => (prefix[j] - prefix[i] - ideal) ** 2;   // photos i..j-1 in one row
+    // best[k][j]: the least cost of putting the first j photos into k rows.
+    const best = [Array(n + 1).fill(Infinity)];
+    const cut = [Array(n + 1).fill(0)];
+    best[0][0] = 0;
+    for (let k = 1; k <= rows; k++) {
+      best[k] = Array(n + 1).fill(Infinity);
+      cut[k] = Array(n + 1).fill(0);
+      for (let j = k; j <= n; j++) {
+        for (let i = k - 1; i < j; i++) {
+          const c = best[k - 1][i] + cost(i, j);
+          if (c < best[k][j]) { best[k][j] = c; cut[k][j] = i; }
+        }
+      }
+    }
+    const counts = [];
+    for (let k = rows, j = n; k > 0; k--) { const i = cut[k][j]; counts.unshift(j - i); j = i; }
+    return counts;
+  }
+
+  // Each photo's flex: a full row shares the width (less its gaps) by
+  // proportion and grows by proportion (the 1px it is short of absorbs
+  // rounding); a row that would stand taller than MAX_SCALE x the row height
+  // (a page with two photos) keeps that height and stops short of the edge.
+  function layoutRows(container) {
     const items = Array.from(container.children);
-    const heights = items.map(el => el.getBoundingClientRect().height);   // read everything, then write
-    items.forEach((el, i) => { el.style.gridRowEnd = 'span ' + masonrySpan(heights[i], gap); });
+    const style = getComputedStyle(container);
+    const gap = parseFloat(style.columnGap) || 0;
+    const rowHeight = parseFloat(style.getPropertyValue('--row-h')) || 300;
+    const width = container.clientWidth;
+    const ratios = items.map(el => parseFloat(el.dataset.ar) || DEFAULT_RATIO);
+    let start = 0;
+    rowPlan(ratios, width, gap, rowHeight).forEach(count => {
+      const row = ratios.slice(start, start + count);
+      const sum = row.reduce((a, b) => a + b, 0);
+      const gaps = gap * (count - 1);
+      const tooTall = (width - gaps) / sum > rowHeight * MAX_SCALE;
+      row.forEach((r, k) => {
+        items[start + k].style.flex = tooTall
+          ? '0 0 ' + (r * rowHeight * MAX_SCALE).toFixed(2) + 'px'
+          : r + ' 1 calc((100% - ' + gaps + 'px) * ' + (r / sum).toFixed(6) + ' - 1px)';
+      });
+      start += count;
+    });
+    container.classList.add('is-planned');
   }
 
-  function enableMasonry(container) {
-    // Without ResizeObserver the plain grid (no masonry class) stays in place.
-    if (container.dataset.masonry || typeof ResizeObserver === 'undefined') return;
-    container.dataset.masonry = 'on';
-    container.classList.add('is-masonry');
+  function enableRows(container) {
+    // Without ResizeObserver the CSS rows stay (the last one may be short).
+    if (container.dataset.rows || typeof ResizeObserver === 'undefined') return;
+    container.dataset.rows = 'on';
     let queued = false;
     const relayout = () => {
       if (queued) return;
       queued = true;
-      requestAnimationFrame(() => {
-        queued = false;
-        layoutMasonry(container, parseFloat(getComputedStyle(container).columnGap) || 0);
-      });
+      requestAnimationFrame(() => { queued = false; layoutRows(container); });
     };
     let width = -1;
     new ResizeObserver(entries => {
       const w = entries[entries.length - 1].contentRect.width;
       if (w !== width) { width = w; relayout(); }
     }).observe(container);
-    container.addEventListener('load', relayout, true);    // a photo arrived: its real height is known
-    container.addEventListener('error', relayout, true);
+    container.addEventListener('load', relayout, true);   // an unlisted photo arrived: its proportion is known
     relayout();
   }
 
@@ -51,20 +110,43 @@
     return pageTitle ? pageTitle + ' - работа ' + (i + 1) : '';
   }
 
+  // The grid's copy of a photo (640 px) and the original, for dense screens;
+  // `sizes` is the photo's width at the tallest row of each layout (css/site.css).
+  function photoSources(item) {
+    if (!item.thumb || !item.width) return null;
+    const r = photoRatio(item);
+    return {
+      srcset: item.thumb + ' 640w, ' + item.image + ' ' + item.width + 'w',
+      sizes: '(max-width: 600px) ' + Math.ceil(r * 260) + 'px, (max-width: 900px) ' + Math.ceil(r * 300) + 'px, ' + Math.ceil(r * 440) + 'px',
+    };
+  }
+
   function renderPortfolio(container, items) {
     container.innerHTML = '';
+    items = items || [];
     const h1 = document.querySelector ? document.querySelector('h1') : null;
     const pageTitle = h1 ? h1.textContent.trim() : '';
-    (items || []).forEach((item, i) => {
+    items.forEach((item, i) => {
       const figure = document.createElement('figure');
       figure.className = 'portfolio-item';
       // The frame: rounded, a soft shadow and a hairline edge; under a pointer it lifts (css/site.css).
+      // Until the photo arrives the frame shows its 16 px preview, blurred.
       const shot = document.createElement('span');
       shot.className = 'portfolio-shot';
+      if (item.preview) shot.style.setProperty('--preview', 'url("' + item.preview + '")');
+      setRatio(figure, photoRatio(item));
       const img = document.createElement('img');
-      img.src = item.image;
+      const sources = photoSources(item);
+      if (sources) { img.srcset = sources.srcset; img.sizes = sources.sizes; }
+      img.src = item.thumb || item.image;
       img.alt = portfolioAlt(pageTitle, item, i);
       img.loading = 'lazy';
+      img.decoding = 'async';
+      if (item.width && item.height) { img.width = item.width; img.height = item.height; }
+      img.addEventListener('load', () => {
+        if (!(item.width && item.height) && img.naturalHeight) setRatio(figure, img.naturalWidth / img.naturalHeight);
+        shot.classList.add('is-loaded');
+      });
       img.addEventListener('error', () => { figure.classList.add('image-broken'); img.remove(); });
       shot.appendChild(img);
       figure.appendChild(shot);
@@ -75,7 +157,300 @@
       }
       container.appendChild(figure);
     });
-    enableMasonry(container);
+    enableRows(container);
+    enableReveal(container);
+    enableViewer(container, items);
+  }
+
+  // The rows come into view once, as they come up the screen: each photo fades
+  // in as it rises a little, left to right 60 ms apart (css/site.css). Then the
+  // classes go: the photo is the plain photo again.
+  const REVEAL_STEP = 60;
+  function revealOrder(figures) {
+    return figures.slice().sort((a, b) => {
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      return ra.top - rb.top || ra.left - rb.left;
+    });
+  }
+  function enableReveal(container) {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const figures = Array.from(container.children);
+    figures.forEach(f => f.classList.add('will-reveal'));
+    const io = new IntersectionObserver(entries => {
+      const entering = revealOrder(entries.filter(e => e.isIntersecting).map(e => e.target));
+      entering.forEach((f, n) => {
+        io.unobserve(f);
+        f.style.setProperty('--reveal-delay', Math.min(n, 8) * REVEAL_STEP + 'ms');
+        f.classList.add('is-revealed');
+        let settled = false;
+        const settle = e => {
+          if (settled || (e && (e.target !== f || e.propertyName !== 'transform'))) return;
+          settled = true;
+          f.removeEventListener('transitionend', settle);
+          f.classList.remove('will-reveal', 'is-revealed');
+          f.style.removeProperty('--reveal-delay');
+        };
+        f.addEventListener('transitionend', settle);
+        setTimeout(settle, 1000 + Math.min(n, 8) * REVEAL_STEP);   // a page not being drawn sends no transitionend
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    // Watched once the rows are laid out (enableRows plans them in the next frame), so a row
+    // rises when it really comes up the screen, not where it stood before the plan.
+    requestAnimationFrame(() => requestAnimationFrame(() => figures.forEach(f => io.observe(f))));
+  }
+
+  // ---- The viewer ----------------------------------------------------------------
+  // A photo opens where it stands: it grows from its frame to the whole screen
+  // (the frame's place stays empty meanwhile), on a dark veil, with the count,
+  // the close button, the arrows and a strip of all the photos. ← → and the
+  // strip switch at once; the arrows and a swipe slide the next photo in from
+  // its side. Esc, ×, the veil or a swipe down close it: the photo goes back
+  // into its frame, quicker than it came out. The focus stays inside while it
+  // is open and returns to the photo it came from.
+  const VIEWER_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';   // quick to answer, soft to land
+  const SLIDE_EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  const SVG = {
+    close: '<path d="M6 6l12 12M18 6 6 18"/>', prev: '<path d="m15 5-7 7 7 7"/>', next: '<path d="m9 5 7 7-7 7"/>',
+  };
+  function iconButton(doc, cls, label, icon) {
+    const b = doc.createElement('button');
+    b.type = 'button';
+    b.className = 'viewer-btn ' + cls;
+    b.setAttribute('aria-label', label);
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + SVG[icon] + '</svg>';
+    return b;
+  }
+  // Where a photo stands whole in the stage (contain), in viewport pixels.
+  function fitRect(stageRect, ratio, pad) {
+    let w = stageRect.width - pad * 2, h = w / ratio;
+    if (h > stageRect.height - 16) { h = stageRect.height - 16; w = h * ratio; }
+    return { left: stageRect.left + (stageRect.width - w) / 2, top: stageRect.top + (stageRect.height - h) / 2, width: w, height: h };
+  }
+
+  function enableViewer(container, items) {
+    if (typeof document === 'undefined' || !document.body || !items.length || container.dataset.viewer) return;
+    container.dataset.viewer = 'on';
+    const doc = document;
+    const figures = Array.from(container.children);
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let lb = null, stage, count, strip, veil, index = -1, img = null, opener = null, busy = false;
+
+    figures.forEach((f, i) => {
+      const alt = f.querySelector('img') ? f.querySelector('img').alt : '';
+      f.tabIndex = 0;
+      f.setAttribute('role', 'button');
+      f.setAttribute('aria-label', (alt || 'Фото ' + (i + 1)) + ': открыть крупно');
+      f.addEventListener('click', () => open(i));
+      f.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i); } });
+    });
+
+    function build() {
+      lb = doc.createElement('div');
+      lb.className = 'viewer';
+      lb.setAttribute('role', 'dialog');
+      lb.setAttribute('aria-modal', 'true');
+      lb.setAttribute('aria-label', 'Просмотр фото');
+      lb.hidden = true;
+      veil = doc.createElement('div');
+      veil.className = 'viewer-veil';
+      const top = doc.createElement('div');
+      top.className = 'viewer-top';
+      count = doc.createElement('span');
+      count.className = 'viewer-count';
+      count.setAttribute('aria-live', 'polite');
+      const close = iconButton(doc, 'viewer-close', 'Закрыть', 'close');
+      top.append(count, close);
+      stage = doc.createElement('div');
+      stage.className = 'viewer-stage';
+      const prev = iconButton(doc, 'viewer-prev', 'Предыдущее фото', 'prev');
+      const next = iconButton(doc, 'viewer-next', 'Следующее фото', 'next');
+      stage.append(prev, next);
+      strip = doc.createElement('div');
+      strip.className = 'viewer-strip';
+      strip.setAttribute('role', 'group');
+      strip.setAttribute('aria-label', 'Все фото');
+      items.forEach((item, i) => {
+        const b = doc.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Фото ' + (i + 1));
+        const t = doc.createElement('img');
+        t.src = item.thumb || item.image;
+        t.alt = '';
+        t.loading = 'lazy';
+        t.height = 56;
+        t.width = Math.round(56 * photoRatio(item));
+        b.appendChild(t);
+        b.addEventListener('click', () => go(i, 0, true));
+        strip.appendChild(b);
+      });
+      lb.append(veil, top, stage, strip);
+      doc.body.appendChild(lb);
+
+      close.addEventListener('click', closeViewer);
+      veil.addEventListener('click', closeViewer);
+      stage.addEventListener('click', e => { if (e.target === stage) closeViewer(); });
+      prev.addEventListener('click', () => go(index - 1, -1));
+      next.addEventListener('click', () => go(index + 1, 1));
+      lb.addEventListener('keydown', onKey);
+      addEventListener('resize', () => { if (img && !busy) place(img, target(index)); });
+      enableSwipe();
+    }
+
+    const target = i => fitRect(stage.getBoundingClientRect(), photoRatio(items[i]), innerWidth < 700 ? 12 : 88);
+    const shotOf = i => figures[i].querySelector('.portfolio-shot');
+    function place(el, r) {
+      el._rect = r;
+      el.style.width = r.width + 'px';
+      el.style.height = r.height + 'px';
+      el.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px)';
+    }
+    function photo(i) {
+      const el = doc.createElement('img');
+      el.className = 'viewer-img';
+      el.alt = figures[i].querySelector('img') ? figures[i].querySelector('img').alt : '';
+      el.src = items[i].image;   // the original: the grid's copy is already cached as a stand-in below
+      el.style.backgroundImage = 'url("' + (items[i].thumb || items[i].image) + '")';
+      el.draggable = false;
+      stage.appendChild(el);
+      return el;
+    }
+    function setCurrent(i) {
+      index = i;
+      count.innerHTML = '<b>' + (i + 1) + '</b> / ' + items.length;
+      Array.from(strip.children).forEach((b, n) => b.setAttribute('aria-current', String(n === i)));
+      strip.children[i].scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    }
+
+    function open(i) {
+      if (busy) return;
+      if (!lb) build();
+      busy = true;
+      opener = figures[i];
+      const gutter = innerWidth - doc.documentElement.clientWidth;   // the page must not jump when its scrollbar goes
+      doc.documentElement.classList.add('viewer-open');
+      if (gutter > 0) doc.body.style.paddingRight = gutter + 'px';
+      lb.hidden = false;
+      requestAnimationFrame(() => {
+        lb.classList.add('is-open');
+        setCurrent(i);
+        img = photo(i);
+        const from = shotOf(i).getBoundingClientRect(), to = target(i);
+        place(img, to);
+        shotOf(i).style.visibility = 'hidden';
+        flip(img, from, to, 520).finished.then(() => {
+          busy = false;
+          lb.querySelector('.viewer-close').focus({ preventScroll: true });
+        });
+      });
+    }
+
+    // FLIP: an element already standing at b animates from rect a.
+    function flip(el, a, b, ms) {
+      const sx = a.width / b.width, sy = a.height / b.height;
+      return el.animate([
+        { transform: 'translate(' + a.left + 'px,' + a.top + 'px) scale(' + sx + ',' + sy + ')', borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
+        { transform: 'translate(' + b.left + 'px,' + b.top + 'px) scale(1,1)', borderRadius: '12px' },
+      ], { duration: reduce ? 0 : ms, easing: VIEWER_EASE });
+    }
+
+    function closeViewer() {
+      if (busy || !img) return;
+      busy = true;
+      const i = index, shot = shotOf(i), from = img._rect;
+      shot.scrollIntoView({ block: 'nearest' });
+      const to = shot.getBoundingClientRect();
+      lb.classList.remove('is-open');
+      const sx = to.width / from.width, sy = to.height / from.height;
+      img.animate([
+        { transform: 'translate(' + from.left + 'px,' + from.top + 'px) scale(1,1)', borderRadius: '12px' },
+        { transform: 'translate(' + to.left + 'px,' + to.top + 'px) scale(' + sx + ',' + sy + ')', borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
+      ], { duration: reduce ? 0 : 340, easing: VIEWER_EASE, fill: 'forwards' }).finished.then(() => {
+        shot.style.visibility = '';
+        img.remove();
+        img = null;
+        lb.hidden = true;
+        busy = false;
+        doc.documentElement.classList.remove('viewer-open');
+        doc.body.style.paddingRight = '';
+        opener.focus({ preventScroll: true });
+      });
+    }
+
+    // Another photo: from the arrows and a swipe it slides in from its side;
+    // from the keys and the strip it is simply there (a key is pressed often).
+    function go(i, dir, instant) {
+      if (busy || !img || i === index || i < 0 || i >= items.length) return;
+      dir = dir || (i > index ? 1 : -1);
+      const old = img, next = photo(i), r = target(i);
+      place(next, r);
+      shotOf(index).style.visibility = '';
+      shotOf(i).style.visibility = 'hidden';
+      setCurrent(i);
+      img = next;
+      if (instant || reduce) { old.remove(); return; }
+      busy = true;
+      const shift = Math.min(innerWidth * 0.18, 160) * dir, o = old._rect;
+      old.animate([
+        { transform: 'translate(' + o.left + 'px,' + o.top + 'px)', opacity: 1 },
+        { transform: 'translate(' + (o.left - shift) + 'px,' + o.top + 'px) scale(0.96)', opacity: 0 },
+      ], { duration: 260, easing: SLIDE_EASE, fill: 'forwards' }).finished.then(() => old.remove());
+      next.animate([
+        { transform: 'translate(' + (r.left + shift) + 'px,' + r.top + 'px) scale(0.96)', opacity: 0, filter: 'blur(4px)' },
+        { transform: 'translate(' + r.left + 'px,' + r.top + 'px) scale(1)', opacity: 1, filter: 'blur(0)' },
+      ], { duration: 320, easing: SLIDE_EASE }).finished.then(() => { busy = false; });
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); closeViewer(); }
+      else if (e.key === 'ArrowRight') go(index + 1, 1, true);
+      else if (e.key === 'ArrowLeft') go(index - 1, -1, true);
+      else if (e.key === 'Tab') {   // the focus stays inside the viewer
+        const all = Array.from(lb.querySelectorAll('button')).filter(b => b.offsetParent !== null);
+        const first = all[0], last = all[all.length - 1];
+        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+
+    // A finger or a mouse on the photo: it follows; sideways switches (a quick
+    // flick is enough), down closes; past the first and the last photo it
+    // drags with friction; let go short of that and it springs back.
+    function enableSwipe() {
+      let start = null;
+      stage.addEventListener('pointerdown', e => {
+        if (busy || !img || e.target !== img || start) return;
+        start = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId, base: img._rect };
+        img.setPointerCapture(e.pointerId);
+      });
+      stage.addEventListener('pointermove', e => {
+        if (!start || e.pointerId !== start.id) return;
+        const dx = e.clientX - start.x, dy = e.clientY - start.y, b = start.base;
+        if (dy > 0 && Math.abs(dy) > Math.abs(dx)) {
+          const s = Math.max(0.75, 1 - dy / 1600);
+          img.style.transform = 'translate(' + (b.left + dx * 0.4 + b.width * (1 - s) / 2) + 'px,' + (b.top + dy) + 'px) scale(' + s + ')';
+          veil.style.opacity = String(Math.max(0.3, 1 - dy / 500));
+        } else {
+          const edge = (dx > 0 && index === 0) || (dx < 0 && index === items.length - 1);
+          img.style.transform = 'translate(' + (b.left + (edge ? dx * 0.25 : dx)) + 'px,' + b.top + 'px)';
+        }
+      });
+      const end = e => {
+        if (!start || e.pointerId !== start.id) return;
+        const dx = e.clientX - start.x, dy = e.clientY - start.y;
+        const speed = Math.hypot(dx, dy) / Math.max(1, performance.now() - start.t);
+        const b = start.base;
+        start = null;
+        veil.style.opacity = '';
+        if (dy > 120 || (dy > 30 && speed > 0.11 && dy > Math.abs(dx))) { place(img, b); closeViewer(); return; }
+        const i = index + (dx < 0 ? 1 : -1);
+        if ((Math.abs(dx) > 80 || (Math.abs(dx) > 20 && speed > 0.11)) && i >= 0 && i < items.length) { place(img, b); go(i, dx < 0 ? 1 : -1); return; }
+        const from = img.style.transform;
+        place(img, b);
+        img.animate([{ transform: from }, { transform: img.style.transform }], { duration: 260, easing: SLIDE_EASE });
+      };
+      stage.addEventListener('pointerup', end);
+      stage.addEventListener('pointercancel', end);
+    }
   }
 
   function loadPortfolio(productKey, container) {
@@ -116,5 +491,5 @@
   }
   if (typeof document !== 'undefined') reserveFixedUi(document);
 
-  return { renderPortfolio, loadPortfolio, portfolioAlt, revealActiveNav, reserveFixedUi, masonrySpan, layoutMasonry };
+  return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi };
 });

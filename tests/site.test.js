@@ -693,12 +693,14 @@ test('the offer form: fields in the order they are filled in, written lines (lab
   assert.match(phone, /\.offer-form \{ grid-template-columns: 1fr; \}/, 'one line per field on a phone');
 });
 
-test('the home page\'s request stands open (data-offer-open): no toggle, the form in view; the direction pages keep the unfolding band', () => {
+test('the request stands open (data-offer-open) on the home page and on every direction page: no toggle, the form in view, the same lead line', () => {
   const OfferForm = require('../js/offer-form.js');
   const home = homeHtml();
   assert.match(home, /<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>/);
   fs.readdirSync(path.join(site, 'categories')).forEach(f => {
-    assert.doesNotMatch(fs.readFileSync(path.join(site, 'categories', f), 'utf8'), /data-offer-open/, f);
+    const html = fs.readFileSync(path.join(site, 'categories', f), 'utf8');
+    assert.match(html, /<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>/, f);
+    assert.match(html, /<p class="offer-lead">Оставьте заявку: мы свяжемся с вами, уточним детали и подготовим индивидуальный расчёт в кратчайшие сроки\.<\/p>/, f);
   });
   const fakeBand = open => {
     const classes = new Set();
