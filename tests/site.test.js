@@ -1241,3 +1241,82 @@ test('the static home in CSS: colour on hover and focus only -- no sticky, no tr
   assert.match(block, /\.home-hero \{\s*display: grid;/);
   assert.match(block, /\.home-groups \{ display: grid; grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
 });
+
+// ---- Liquid glass (2026-10-10, the owner's choice: all five places from .claude/concepts/liquid-glass.html) ----
+const glassRule = (css, sel) => { const i = css.indexOf('\n' + sel + ' {'); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
+
+test('liquid glass in site.css: the configure bar a floating capsule, the groups of «Что можно заказать», the chips and arrows on the photos, the viewer -- frosted, a rim of light; refraction only under .glass-bend; solid where less transparency is asked', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const root = css.slice(css.indexOf(':root {'), css.indexOf('\n}', css.indexOf(':root {')));
+  assert.match(root, /--glass-frost: blur\(\d+px\) saturate\(1\.\d\);/);
+  assert.match(root, /--glass-bend: url\(#lg-bend\) var\(--glass-frost\);/);
+  ['.configure-bar', '.home-group', '.home-s2o-chip', '.home-s2o-arrow', '.home-about-chip', '.viewer-btn'].forEach(sel => {
+    const rule = glassRule(css, sel);
+    assert.match(rule, /-webkit-backdrop-filter: var\(--glass-frost\); backdrop-filter: var\(--glass-frost\);/, sel);
+    assert.match(rule, /box-shadow: var\(--glass-rim/, sel + ': the rim of light');
+    const bent = [...css.matchAll(/([^{}]+)\{[^}]*backdrop-filter: var\(--glass-bend\)/g)].map(m => m[1].replace(/\/\*[\s\S]*?\*\//g, '').split(',').map(x => x.trim()));
+    assert.ok(bent.some(list => list.includes('.glass-bend ' + sel)), sel + ': refraction only under .glass-bend');
+  });
+  const bar = glassRule(css, '.configure-bar');
+  assert.match(bar, /border-radius: 999px;/, 'a capsule, as the header');
+  assert.match(bar, /bottom: 12px;/);
+  assert.doesNotMatch(bar, /left: 0; right: 0;/, 'not the full width any more');
+  assert.match(glassRule(css, '.viewer-veil'), /backdrop-filter: blur\(\d+px\)/, 'the page shows, blurred, behind the photo');
+  const calm = css.slice(css.indexOf('@media (prefers-reduced-transparency: reduce) {\n  .configure-bar'));
+  assert.ok(calm.length > 0, 'one block for less transparency');
+  assert.match(calm.slice(0, calm.indexOf('\n}\n')), /backdrop-filter: none;/);
+});
+
+test('liquid glass in showroom.css: the caption, the zones, the hint, the card, the panel, «На улицу» and the ghost buttons over the scene; solid where less transparency is asked; showroom.html loads site.js for the refraction', () => {
+  const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
+  assert.match(sr, /--sr-glass: rgba\(30, 26, 22, 0\.\d+\);/);
+  const glass = sr.slice(sr.indexOf('/* ---- liquid glass'));
+  assert.ok(glass.length > 100);
+  ['.sr-caption', '.sr-zones', '.sr-hint', '.sr-card', '.sr-panel', '.sr-back', '.sr-btn-ghost'].forEach(sel =>
+    assert.ok(glass.slice(glass.indexOf('*/') + 2, glass.indexOf('{')).split(',').map(x => x.trim()).includes(sel), sel));
+  assert.match(glass, /backdrop-filter: var\(--sr-glass-frost\);/);
+  assert.match(glass, /\.glass-bend [^{]*\{[^}]*backdrop-filter: var\(--sr-glass-bend\);/);
+  assert.match(glass, /@media \(prefers-reduced-transparency: reduce\) \{[^]*?backdrop-filter: none;/);
+  const html = fs.readFileSync(path.join(site, 'showroom.html'), 'utf8');
+  assert.ok(html.includes('<script src="/sayanmramor-site/js/site.js"></script>'));
+});
+
+test('mountGlass: in Chromium the refraction filter goes into the page once and <html> gets .glass-bend; not in Safari / Firefox, not when less transparency is asked', () => {
+  const fakeDoc = () => {
+    const classes = new Set(); const added = [];
+    return {
+      classes, added,
+      documentElement: { classList: { add: c => classes.add(c) } },
+      getElementById: id => added.some(n => n.id === id) ? added[0] : null,
+      createElement: () => { const holder = { set innerHTML(v) { holder.firstChild = { id: (v.match(/id="([^"]+)"/) || [])[1], html: v }; } }; return holder; },
+      body: { appendChild: n => added.push(n) },
+    };
+  };
+  const chromium = { userAgentData: {} };
+  const quiet = q => ({ matches: false });
+  let doc = fakeDoc();
+  assert.equal(SiteCommon.mountGlass(doc, chromium, quiet), true);
+  assert.equal(SiteCommon.mountGlass(doc, chromium, quiet), true);
+  assert.equal(doc.added.length, 1, 'the filter once');
+  assert.equal(doc.added[0].id, 'lg-bend-defs');
+  assert.match(doc.added[0].html, /<filter id="lg-bend"[^>]*>[\s\S]*<feDisplacementMap /);
+  assert.ok(doc.classes.has('glass-bend'));
+  doc = fakeDoc();
+  assert.equal(SiteCommon.mountGlass(doc, {}, quiet), false, 'Safari and Firefox: frost only');
+  assert.equal(doc.added.length, 0); assert.ok(!doc.classes.has('glass-bend'));
+  doc = fakeDoc();
+  assert.equal(SiteCommon.mountGlass(doc, chromium, q => ({ matches: /reduced-transparency/.test(q) })), false);
+  assert.ok(!doc.classes.has('glass-bend'));
+});
+
+test('reserveFixedUi: the floating configure bar keeps its height and its gap to the bottom clear', () => {
+  const props = {};
+  const bar = { getBoundingClientRect: () => ({ height: 64 }) };
+  const doc = {
+    documentElement: { style: { setProperty: (k, v) => { props[k] = v; } } },
+    querySelector: s => s === '.configure-bar' ? bar : null,
+    defaultView: { getComputedStyle: el => ({ bottom: el === bar ? '12px' : 'auto' }) },
+  };
+  SiteCommon.reserveFixedUi(doc);
+  assert.equal(props['--fixed-bottom'], '92px', '64 + 12 + the focus gap of 16');
+});

@@ -80,6 +80,17 @@
   --sr-line: rgba(241, 236, 228, 0.18);
   --sr-copper: #b4562b;
   --sr-copper-hover: #9b4824;
+  /* Liquid glass (2026-10-10, the owner's choice; section «Liquid glass» below): the frost --
+     a light blur with raised saturation, so the stone's colour comes through; the bend -- the
+     backdrop refracted near the edges, Chromium only, under .glass-bend (js/site.js mountGlass);
+     the rim of light -- a bright hairline along the top, a dim one along the bottom; the shine --
+     a soft band of light in the upper half. Light glass on photographs, dark glass on the dark. */
+  --glass-frost: blur(12px) saturate(1.7);
+  --glass-bend: url(#lg-bend) var(--glass-frost);
+  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  --glass-rim-dark: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 1px rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --glass-shine: linear-gradient(rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 50%);
+  --glass-shine-dark: linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 50%);
 }
 
 /* --sticky-top / --fixed-bottom: the sticky header and the fixed configure bar,
@@ -489,11 +500,10 @@ html.menu-lock { overflow: hidden; }
 .home-s2o-chip {
   position: absolute; left: 14px; top: 14px; z-index: 1;
   display: inline-flex; align-items: center; gap: var(--s-2); height: 30px; padding: 0 12px 0 6px; border-radius: 999px;
-  background: rgba(248, 247, 244, 0.92); border: 1px solid rgba(28, 29, 27, 0.08);
+  background: var(--glass-shine), rgba(248, 247, 244, 0.7);
+  -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
+  box-shadow: var(--glass-rim), 0 1px 2px rgba(28, 29, 27, 0.10), 0 6px 16px -8px rgba(28, 29, 27, 0.40);
   font-size: 13px; line-height: 1; color: var(--ink);
-}
-@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .home-s2o-chip { background: rgba(248, 247, 244, 0.82); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
 }
 .home-s2o-chip b { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--graphite); color: #fff; font-size: 11px; font-weight: 600; }
 /* The digit's box trimmed to the cap height, so the circle centres the figure itself, not the font's line. */
@@ -503,8 +513,9 @@ html.menu-lock { overflow: hidden; }
 .home-s2o-arrow {
   position: absolute; z-index: 2; left: calc(var(--s2o-arrow) / -2);
   display: grid; place-items: center; width: var(--s2o-arrow); height: var(--s2o-arrow); border-radius: 50%;
-  background: #f8f7f4; color: var(--ink);
-  box-shadow: 0 0 0 4px rgba(248, 247, 244, 0.35), 0 2px 4px rgba(28, 29, 27, 0.15), 0 10px 22px -8px rgba(28, 29, 27, 0.45);
+  background: var(--glass-shine), rgba(248, 247, 244, 0.55); color: var(--ink);
+  -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
+  box-shadow: var(--glass-rim), 0 2px 4px rgba(28, 29, 27, 0.15), 0 10px 22px -8px rgba(28, 29, 27, 0.45);
 }
 .home-s2o-arrow svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: square; }
 .home-s2o-arrow-down { display: none; }
@@ -563,8 +574,14 @@ html.menu-lock { overflow: hidden; }
 .home-order-lead { font-size: var(--fs-small); line-height: 1.5; color: var(--order-dim); }
 .home-order-go { display: grid; place-items: center; width: var(--control-h); height: var(--control-h); color: var(--order-ink); transition: opacity 0.15s; }
 .home-order-go::after { content: ''; width: 30px; height: 19px; background: currentColor; -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; }
-.home-groups { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-5); margin-top: var(--s-6); }
-.home-group { min-width: 0; }
+.home-groups { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-3); margin-top: var(--s-6); }
+/* Each group on a pane of glass over the marble (liquid glass, 2026-10-10): the veins show through. */
+.home-group {
+  min-width: 0; padding: 10px 12px 4px; border-radius: 16px;
+  background: var(--glass-shine-dark), rgba(246, 242, 236, 0.06);
+  -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
+  box-shadow: var(--glass-rim-dark), 0 14px 30px -20px rgba(0, 0, 0, 0.6);
+}
 .home-group-frame { display: block; overflow: hidden; border-radius: 10px; background: rgba(246, 242, 236, 0.08); }   /* moves with the works' frames */
 .home-group-shot { width: 100%; height: auto; aspect-ratio: 12 / 5; object-fit: cover; }
 .home-group-title {
@@ -688,11 +705,10 @@ html.menu-lock { overflow: hidden; }
 .home-about-chip {
   position: absolute; left: 14px; top: 14px; z-index: 1;
   display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px;
-  background: rgba(248, 247, 244, 0.92); border: 1px solid rgba(28, 29, 27, 0.08);
+  background: var(--glass-shine), rgba(248, 247, 244, 0.7);
+  -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
+  box-shadow: var(--glass-rim), 0 1px 2px rgba(28, 29, 27, 0.10), 0 6px 16px -8px rgba(28, 29, 27, 0.40);
   font-size: 13px; line-height: 1; color: var(--ink); white-space: nowrap;
-}
-@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .home-about-chip { background: rgba(248, 247, 244, 0.82); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
 }
 
 /* The figures: two by two, each over its word, thin lines between them. */
@@ -1847,7 +1863,10 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .viewer-open { overflow: hidden; }
 .viewer { position: fixed; inset: 0; z-index: 1000; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; color: #f3f1ec; }
 .viewer[hidden] { display: none; }
-.viewer-veil { position: absolute; inset: 0; background: rgba(18, 20, 18, 0.94); opacity: 0; transition: opacity 0.28s ease; }
+.viewer-veil {
+  position: absolute; inset: 0; background: rgba(18, 20, 18, 0.72); opacity: 0; transition: opacity 0.28s ease;
+  -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3);   /* the page shows, blurred, behind the photo */
+}
 .viewer.is-open .viewer-veil { opacity: 1; }
 .viewer-top, .viewer-strip, .viewer-prev, .viewer-next { opacity: 0; transition: opacity 0.2s ease; }
 .viewer.is-open .viewer-top, .viewer.is-open .viewer-strip, .viewer.is-open .viewer-prev, .viewer.is-open .viewer-next { opacity: 1; transition-delay: 0.12s; }
@@ -1855,12 +1874,14 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .viewer-count { font-size: var(--fs-small); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; color: rgba(243, 241, 236, 0.72); }
 .viewer-count b { font-weight: 600; color: #f3f1ec; }
 .viewer-btn {
-  display: grid; place-items: center; width: var(--control-h); height: var(--control-h); padding: 0; border-radius: 50%;
-  border: 1px solid rgba(243, 241, 236, 0.22); background: rgba(243, 241, 236, 0.06); color: inherit; cursor: pointer;
+  display: grid; place-items: center; width: var(--control-h); height: var(--control-h); padding: 0; border: 0; border-radius: 50%;
+  background: var(--glass-shine-dark), rgba(243, 241, 236, 0.08); color: inherit; cursor: pointer;
+  -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
+  box-shadow: var(--glass-rim-dark), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
   transition: background-color 0.15s ease, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .viewer-btn:active { transform: scale(0.95); }
-@media (hover: hover) and (pointer: fine) { .viewer-btn:hover { background: rgba(243, 241, 236, 0.16); } }
+@media (hover: hover) and (pointer: fine) { .viewer-btn:hover { background-color: rgba(243, 241, 236, 0.18); } }
 .viewer-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .viewer :focus-visible { outline: 2px solid #f3f1ec; outline-offset: 3px; }
 .viewer-stage { position: relative; z-index: 1; touch-action: none; }
@@ -2258,19 +2279,22 @@ html:has(.mast) { scrollbar-gutter: stable; }
 @media (hover: hover) { .stone-supplier a:hover { color: var(--ink); text-decoration-color: currentColor; } }
 
 .configure-bar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-  background: var(--graphite); color: var(--on-dark); padding: var(--s-3) var(--gutter);
-  border-top: 1px solid var(--on-dark-line);
+  position: fixed; left: 50%; bottom: 12px; z-index: 10; translate: -50% 0;
+  width: min(1120px, calc(100% - 2 * var(--gutter)));   /* the header's capsule, at the foot of the page */
+  padding: 8px 8px 8px 24px; border-radius: 999px; color: var(--on-dark);
+  background: var(--glass-shine-dark), rgba(30, 35, 32, 0.74);
+  -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
+  box-shadow: var(--glass-rim-dark), 0 1px 2px rgba(0, 0, 0, 0.12), 0 14px 34px -18px rgba(0, 0, 0, 0.55);
 }
 .configure-bar-inner {
   max-width: calc(var(--measure) - 2 * var(--gutter)); margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between; gap: var(--s-4);
 }
 .configure-choice { display: grid; gap: 2px; min-width: 0; }
-.configure-label { font-size: var(--fs-meta); color: var(--on-dark-muted); }
+.configure-label { font-size: var(--fs-meta); color: rgba(233, 231, 225, 0.8); }   /* brighter than --on-dark-muted: the glass lets light through */
 .configure-stone { font-size: var(--fs-body); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.configure-stone.is-empty { font-size: var(--fs-small); font-weight: 400; color: var(--on-dark-muted); }
-.configure-cta { flex: none; }
+.configure-stone.is-empty { font-size: var(--fs-small); font-weight: 400; color: rgba(233, 231, 225, 0.8); }
+.configure-cta { flex: none; border-radius: 999px; }   /* a pill inside the capsule, as the header's action */
 
 /* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
    The closing band of the home page and every direction page, built from the
@@ -2645,6 +2669,28 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 }
 @media (hover: hover) { .legal-page a:hover { text-decoration-color: currentColor; } }
 .legal-page a[href^="tel:"] { white-space: nowrap; }
+
+/* ---- Liquid glass (2026-10-10, the owner's choice: .claude/concepts/liquid-glass.html) ----
+   Only where something lies over a photograph, the stone or the page itself: the
+   configure bar, the groups of «Что можно заказать», the chips and arrows on the
+   photographs of the home page, the viewer's buttons and veil (the showroom has its
+   own, css/showroom.css). The frost and the rim are in each rule; here, the bend --
+   Chromium only (js/site.js mountGlass) -- and the glass made solid where the visitor
+   asks for less transparency or the browser cannot blur. */
+.glass-bend .configure-bar, .glass-bend .home-group, .glass-bend .home-s2o-chip, .glass-bend .home-s2o-arrow,
+.glass-bend .home-about-chip, .glass-bend .viewer-btn { backdrop-filter: var(--glass-bend); }
+@media (prefers-reduced-transparency: reduce) {
+  .configure-bar { background: var(--graphite); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .home-group { background: rgba(246, 242, 236, 0.06); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .home-s2o-chip, .home-about-chip, .home-s2o-arrow { background: #f8f7f4; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .viewer-btn { background: #2a2d2a; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .viewer-veil { background: rgba(18, 20, 18, 0.96); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .configure-bar { background: var(--graphite); }
+  .home-s2o-chip, .home-about-chip, .home-s2o-arrow { background: rgba(248, 247, 244, 0.94); }
+  .viewer-veil { background: rgba(18, 20, 18, 0.94); }
+}
 
 /* ---- Responsive -------------------------------------------------------------- */
 @media (max-width: 900px) {
