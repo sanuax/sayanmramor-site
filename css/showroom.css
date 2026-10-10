@@ -25,14 +25,18 @@
   --sr-fs-ui: 14px;
   --sr-fs-body: 15px;
   --sr-fs-title: 22px;
+  --sr-font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;
   /* The site's one arrow (css/site.css --arrow): a mask, it takes the text colour. */
   --sr-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
 }
 
-/* Montserrat, the site's text face (local files; css/site.css has the others). */
+/* The site's two faces, the same local files as css/site.css: Montserrat for text,
+   Unbounded for the name and the titles (as the site's logo and h1 / h2, 2026-10-10). */
 @font-face { font-family: 'Montserrat'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../assets/fonts/montserrat-cyrillic-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
 @font-face { font-family: 'Montserrat'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../assets/fonts/montserrat-latin-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: 'Montserrat'; font-style: normal; font-display: swap; font-weight: 100 900; src: url(../assets/fonts/montserrat-latin-ext-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 200 900; src: url(../assets/fonts/unbounded-cyrillic-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: 'Unbounded'; font-style: normal; font-display: swap; font-weight: 200 900; src: url(../assets/fonts/unbounded-latin-wght-normal.woff2) format('woff2-variations'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -78,7 +82,7 @@ button { font: inherit; color: inherit; }
   pointer-events: none;
 }
 .sr-top > * { pointer-events: auto; }
-.sr-logo { font-size: 15px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; text-decoration: none; color: var(--sr-ink); }
+.sr-logo { font-family: var(--sr-font-display); font-size: 15px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; color: var(--sr-ink); }
 .sr-top-title { font-size: var(--sr-fs-meta); letter-spacing: 1.6px; text-transform: uppercase; color: var(--sr-muted); padding-left: 16px; border-left: 1px solid var(--sr-line-strong); }
 .sr-top-actions { margin-left: auto; display: flex; gap: 8px; }
 
@@ -120,7 +124,7 @@ body.is-interior .sr-caption { top: 128px; }
   box-shadow: var(--sr-shadow);
 }
 .sr-eyebrow { font-size: var(--sr-fs-meta); letter-spacing: 1.4px; text-transform: uppercase; color: var(--sr-muted); }
-.sr-caption-title { margin: 6px 0 6px; font-size: var(--sr-fs-title); font-weight: 600; letter-spacing: -0.2px; line-height: 1.2; }
+.sr-caption-title { margin: 6px 0 6px; font-family: var(--sr-font-display); font-size: var(--sr-fs-title); font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
 .sr-caption-text { margin: 0 0 14px; font-size: var(--sr-fs-ui); color: var(--sr-muted); }
 .sr-caption-label { display: block; font-size: var(--sr-fs-meta); color: var(--sr-dim); margin-bottom: 8px; }
 .sr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -244,7 +248,7 @@ body.is-interior .sr-caption { top: 128px; }
 /* ---- all products panel ---------------------------------------------------- */
 .sr-panel { width: 340px; max-height: calc(100vh - 110px); overflow-y: auto; }
 .sr-panel-head { display: flex; align-items: center; }
-.sr-panel-title { margin: 0; font-size: var(--sr-fs-title); font-weight: 600; }
+.sr-panel-title { margin: 0; font-family: var(--sr-font-display); font-size: var(--sr-fs-title); font-weight: 600; letter-spacing: -0.015em; }
 .sr-panel .sr-close { position: static; margin-left: auto; }
 .sr-panel-sub { margin: 6px 0 16px; font-size: var(--sr-fs-ui); color: var(--sr-muted); }
 .sr-panel-list { list-style: none; margin: 0 0 18px; padding: 0; border-top: 1px solid var(--sr-line); }
@@ -277,7 +281,7 @@ body.is-interior .sr-caption { top: 128px; }
 /* ---- fallback -------------------------------------------------------------- */
 .sr-fallback { position: fixed; inset: 0; overflow-y: auto; background: var(--sr-stage); z-index: 19; }
 .sr-fallback-inner { max-width: 720px; margin: 0 auto; padding: 110px 24px 60px; }
-.sr-fallback-title { margin: 8px 0 12px; font-size: 32px; font-weight: 600; line-height: 1.15; }
+.sr-fallback-title { margin: 8px 0 12px; font-family: var(--sr-font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.15; }
 .sr-fallback-text { color: var(--sr-muted); margin: 0 0 28px; }
 .sr-fallback-list { list-style: none; margin: 0 0 32px; padding: 0; border-top: 1px solid var(--sr-line); }
 .sr-fallback-list li { display: flex; align-items: center; gap: 18px; min-height: 58px; border-bottom: 1px solid var(--sr-line); flex-wrap: wrap; padding: 8px 0; }
@@ -326,6 +330,12 @@ body.is-interior .sr-caption { top: 128px; }
   .sr-close { width: 44px; height: 44px; }
   .sr-fallback-inner { padding-top: 84px; }
   .sr-fallback-title { font-size: 26px; }
+}
+
+/* Narrow phones: the name (Unbounded is wide) a little smaller and closer-set, so «Все изделия»
+   and «Связаться» keep their place beside it. */
+@media (max-width: 380px) {
+  .sr-logo { font-size: 12px; letter-spacing: 0.06em; }
 }
 
 @media (prefers-reduced-motion: reduce) {

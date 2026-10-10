@@ -113,6 +113,12 @@ h3 { font-size: var(--fs-h3); }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
+/* Words for screen readers only (e.g. «откроется в новой вкладке» on the outside links). */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; padding: 0;
+}
+
 /* Skip link: off screen until a keyboard user tabs to it. */
 .skip-link {
   position: absolute; left: var(--s-4); top: var(--s-2); z-index: 30;
@@ -616,9 +622,184 @@ html.menu-lock { overflow: hidden; }
 }
 .home-showroom h2 { color: var(--on-dark); margin-bottom: var(--s-3); }
 .home-showroom p { max-width: 30em; margin-bottom: var(--s-6); color: var(--on-dark-muted); }
-.home-showroom-house { display: block; }
-.home-showroom-house img { display: block; width: 100%; height: auto; border-radius: var(--radius-m); }
+.home-showroom-house { display: block; overflow: hidden; border-radius: var(--radius-m); }   /* the frame: the photo comes closer inside it on hover («Works in frames») */
+.home-showroom-house img { display: block; width: 100%; height: auto; }
 .home-showroom :focus-visible { outline-color: var(--on-dark); }
+
+/* About the company (2026-10-10, the owner's brief: no video, a beautiful block, the work or a slab):
+   on the left the words -- a kicker, the heading, one line -- and at their foot the four figures
+   in a square of thin lines; on the right two photographs from the workshop laid like prints, as
+   «От камня к изделию» lays them: the cutter on a slab, upright, and over its lower left corner
+   the Italian bridge saw, in a ring of the page's own colour. Nothing moves. */
+.home-about {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto 1fr;
+  grid-template-areas: "text media" "facts media"; column-gap: var(--s-8); row-gap: var(--s-7);
+  padding-top: var(--section);
+}
+.home-about-text { grid-area: text; padding-top: var(--s-5); }
+.home-about-kicker, .home-trust-kicker {
+  display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4);
+  font-size: var(--fs-meta); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+.home-about-kicker::after, .home-trust-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
+.home-about h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); line-height: 1.12; text-wrap: balance; }
+.home-about-lead { max-width: 28em; margin-top: var(--s-5); font-size: 18px; line-height: 1.55; color: var(--ink-soft); }
+
+.home-about-media { grid-area: media; position: relative; align-self: start; padding-bottom: 18%; }
+.home-about-shot {
+  position: relative; overflow: hidden; border-radius: 20px; background: var(--surface-sunk);
+  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.10), 0 10px 22px -12px rgba(28, 29, 27, 0.30), 0 36px 60px -34px rgba(28, 29, 27, 0.45);
+}
+.home-about-shot::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.home-about-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.home-about-shot-main { width: 70%; margin-left: auto; aspect-ratio: 4 / 5; }
+.home-about-shot-main img { object-position: 40% 50%; }
+.home-about-shot-side {
+  position: absolute; left: 0; bottom: 0; z-index: 1; width: 62%; aspect-ratio: 3 / 2;
+  box-shadow: 0 0 0 6px var(--page), 0 10px 22px -10px rgba(28, 29, 27, 0.35), 0 40px 64px -34px rgba(28, 29, 27, 0.5);
+}
+.home-about-chip {
+  position: absolute; left: 14px; top: 14px; z-index: 1;
+  display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px;
+  background: rgba(248, 247, 244, 0.92); border: 1px solid rgba(28, 29, 27, 0.08);
+  font-size: 13px; line-height: 1; color: var(--ink); white-space: nowrap;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .home-about-chip { background: rgba(248, 247, 244, 0.82); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+}
+
+/* The figures: two by two, each over its word, thin lines between them. */
+.home-about-facts {
+  grid-area: facts; align-self: end;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-strong);
+}
+.home-about-facts > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s-1); padding: var(--s-5) var(--s-4) var(--s-5) 0; }
+.home-about-facts > div:nth-child(even) { padding-left: var(--s-5); border-left: 1px solid var(--line); }
+.home-about-facts > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.home-about-facts dd {
+  display: flex; align-items: baseline; gap: 0.3em;
+  font-family: var(--font-display); font-size: clamp(32px, 3.2vw, 44px); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.home-about-facts dd small { font-family: var(--font); font-size: 0.42em; font-weight: 600; letter-spacing: 0; }
+.home-about-facts dt { font-size: var(--fs-small); color: var(--muted); }
+
+/* Why us (2026-10-10, the owner's choice: concept A in the request card's colours): the four
+   promises as cards on the green-graphite card of «Получить расчёт» -- the same ground, type and
+   verde -- so the page goes light and dark in turn: the showroom, about, why us, who trusts us,
+   the request. Each card: the icon and its number above, the promise, and under a dashed line
+   the words -- the first part bright, the rest quiet. */
+.home-why { padding-top: var(--section); }
+.home-why-panel { padding: 44px 52px 52px; border-radius: 20px; background: var(--graphite); color: var(--on-dark); }
+.home-why-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24em); gap: var(--s-6); align-items: end;
+  padding-bottom: var(--s-6); border-bottom: 1px dashed rgba(233, 231, 225, 0.25);
+}
+.home-why-kicker { margin-bottom: var(--s-3); font-size: var(--fs-meta); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-dark-muted); }
+.home-why h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); line-height: 1.12; color: var(--on-dark); }
+.home-why h2 em { font-style: normal; color: var(--accent-on-dark); }
+.home-why-lead { font-size: 15px; line-height: 1.55; color: var(--on-dark-muted); }
+.home-why-list { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-3); margin-top: var(--s-6); }
+.home-why-item {
+  display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-6) var(--s-5) var(--s-5);
+  border-radius: 14px; background: rgba(233, 231, 225, 0.05); box-shadow: inset 0 0 0 1px rgba(233, 231, 225, 0.12);
+}
+.home-why-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.home-why-icon { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: rgba(233, 231, 225, 0.1); color: var(--on-dark); }
+.home-why-icon svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.home-why-num {
+  font-family: var(--font-display); font-size: 40px; font-weight: 600; line-height: 1; letter-spacing: -0.02em;
+  color: rgba(233, 231, 225, 0.22); font-variant-numeric: tabular-nums; transition: color 0.15s;
+}
+.home-why-title { min-height: 2.6em; margin-top: var(--s-4); font-size: 18px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: var(--on-dark); }
+.home-why-text { padding-top: var(--s-4); border-top: 1px dashed rgba(233, 231, 225, 0.22); font-size: 15px; line-height: 1.5; color: var(--on-dark); }
+.home-why-text span { color: var(--on-dark-muted); }
+@media (hover: hover) {
+  .home-why-item:hover .home-why-num { color: var(--accent-on-dark); }
+}
+
+/* Who trusts us (2026-10-10, the owner's choice: concept C): a panel of warm stone, the words
+   on the left, on the right the six names on light tiles laid as a stone wall -- the second
+   course half a tile over. Each tile a link to the company's site; the logos quiet (grey)
+   until the pointer or focus is on them, then a verde arrow in the corner. */
+.home-trust { padding-top: var(--section); }   /* the request below brings its own top space */
+.home-trust-panel {
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--s-7); align-items: center;
+  padding: clamp(28px, 4vw, 52px); border-radius: 24px; background: var(--stone);
+}
+.home-trust h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); }
+.home-trust-lead { max-width: 22em; margin-top: var(--s-4); color: var(--ink-soft); }
+.home-trust-wall { list-style: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s-3); }
+.home-trust-wall li { display: flex; grid-column: span 2; }
+.home-trust-wall li:nth-child(4) { grid-column: 2 / span 2; }   /* the second course: half a tile over */
+.home-trust-item {
+  position: relative; flex: 1; display: grid; place-items: center; height: 150px; padding: var(--s-4);
+  border-radius: 12px; background: var(--surface); text-decoration: none; color: var(--ink);
+  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 22px -16px rgba(28, 29, 27, 0.35);
+}
+.home-trust-item::after {
+  content: ''; position: absolute; right: 12px; top: 12px; width: 14px; height: 9px; background: var(--accent);
+  opacity: 0; transition: opacity 0.15s;
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+}
+.home-trust-logo { width: auto; max-width: 100%; filter: grayscale(1); opacity: 0.72; transition: opacity 0.15s; }
+.trust-reso { height: 60px; }
+.trust-rshb { height: 28px; }
+.trust-bamboo { height: 74px; }
+.trust-vtb { height: 38px; }
+.trust-hleb { height: 56px; }
+.home-trust-mcx { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.trust-mcx { height: 48px; }
+.home-trust-mcx-name { max-width: 19em; font-size: 10px; font-weight: 600; line-height: 1.3; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; color: var(--muted); transition: color 0.15s; }
+.home-trust-item:focus-visible { outline-offset: 3px; }
+.home-trust-item:focus-visible .home-trust-logo { filter: none; opacity: 1; }
+.home-trust-item:focus-visible::after { opacity: 1; }
+@media (hover: hover) {
+  .home-trust-item:hover .home-trust-logo { filter: none; opacity: 1; }
+  .home-trust-item:hover .home-trust-mcx-name { color: var(--ink); }
+  .home-trust-item:hover::after { opacity: 1; }
+}
+
+@media (max-width: 1100px) {
+  .home-why-panel { padding: 40px; }
+  .home-trust-panel { grid-template-columns: minmax(0, 1fr); row-gap: var(--s-6); }
+  .home-why-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .home-why-head { grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+}
+@media (max-width: 640px) {
+  .home-why-list { grid-template-columns: minmax(0, 1fr); }
+  .home-trust-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-trust-wall li, .home-trust-wall li:nth-child(4) { grid-column: auto; }
+  .home-why-title { min-height: 0; margin-top: var(--s-2); }
+}
+@media (max-width: 960px) {
+  .home-about { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "text" "media" "facts"; row-gap: var(--s-6); }
+  .home-about-text { padding-top: 0; }
+  .home-about-media { width: 100%; max-width: 640px; }
+}
+@media (max-width: 520px) {
+  .home-trust-panel { padding: 28px 20px 20px; border-radius: 16px; }
+  .home-about-shot { border-radius: 16px; }
+  .home-about-shot-main { width: 72%; }
+  .home-about-shot-side { width: 64%; box-shadow: 0 0 0 4px var(--page), 0 10px 22px -10px rgba(28, 29, 27, 0.35); }
+  .home-about-chip { left: 10px; top: 10px; height: 26px; padding: 0 10px; font-size: 12px; }
+  .home-why-panel { padding: 28px 20px 20px; border-radius: 16px; }
+  .home-why-icon { width: 40px; height: 40px; border-radius: 10px; }
+  .home-why-num { font-size: 32px; }
+  .home-trust-item { height: 120px; padding: var(--s-3); }
+  .trust-reso { height: 50px; }
+  .trust-rshb { height: 22px; }
+  .trust-bamboo { height: 62px; }
+  .trust-vtb { height: 30px; }
+  .trust-hleb { height: 48px; }
+  .trust-mcx { height: 38px; }
+  .home-trust-mcx-name { font-size: 9px; }
+}
 
 /* ---- Home palette: limestone, with one dark opening -----------------------------
    The home page is light: limestone ground, paper, thin lines, basalt type and
@@ -1709,6 +1890,11 @@ html:has(.mast) { scrollbar-gutter: stable; }
   .home-group-frame img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
   .home-group:hover .home-group-frame { transform: translateY(-6px); box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.55); }
   .home-group:hover .home-group-frame img { transform: scale(1.04); }
+  /* The showroom's house on the home page: the same lift under a pointer, a darker shadow on the dark band. */
+  .home-showroom-house { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+  .home-showroom-house img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .home-showroom-house:hover { transform: translateY(-6px); box-shadow: 0 22px 40px -18px rgba(0, 0, 0, 0.6), 0 56px 80px -40px rgba(0, 0, 0, 0.55); }
+  .home-showroom-house:hover img { transform: scale(1.04); }
 }
 
 /* ---- Готовые изделия (каталог) ----------------------------------------------

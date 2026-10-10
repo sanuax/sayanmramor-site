@@ -564,7 +564,7 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
 
 // ---- Typography: the site's own -------------------------------------------------------
 
-test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- local files (no CDN, no preload), each with its licence; the showroom reads Montserrat too', () => {
+test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- local files (no CDN, no preload), each with its licence; the showroom reads both, as the site', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /--font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
   assert.match(css, /--font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;/);
@@ -573,6 +573,9 @@ test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- loc
   const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
   assert.match(sr, /font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
   assert.equal((sr.match(/@font-face \{ font-family: 'Montserrat';[^}]*url\(\.\.\/assets\/fonts\/montserrat-[a-z-]+-wght-normal\.woff2\)/g) || []).length, 3);
+  assert.equal((sr.match(/@font-face \{ font-family: 'Unbounded';[^}]*url\(\.\.\/assets\/fonts\/unbounded-[a-z-]+-wght-normal\.woff2\)/g) || []).length, 2);
+  ['.sr-logo', '.sr-caption-title', '.sr-panel-title', '.sr-fallback-title'].forEach(sel =>
+    assert.match(sr, new RegExp('\\n\\' + sel + ' \\{[^}]*font-family: var\\(--sr-font-display\\);'), sel + ': the name and the titles in Unbounded (2026-10-10)'));
   const faces = [...css.matchAll(/@font-face \{ font-family: '([^']+)';[^}]*src: url\(\.\.\/assets\/fonts\/([^)]+\.woff2)\) format\('woff2-variations'\); unicode-range: [^;]+; \}/g)];
   assert.equal(faces.length, (css.match(/@font-face/g) || []).length, 'every face a local woff2 with its unicode-range');
   assert.deepEqual([...new Set(faces.map(f => f[1]))], ['Montserrat', 'Unbounded']);
@@ -993,11 +996,11 @@ test('the showroom draws its icons: no ✕ / ← / → typed as text; the cross 
 
 // ---- Home: the static page (rebuilt on 4ad72f4's structure, in the site's own system) -----
 
-test('the home page is static: header, hero, from stone to object, what can be ordered, the showroom, the request, where we are, footer -- and no script of the redesign', () => {
+test('the home page is static: header, hero, from stone to object, what can be ordered, the showroom, about, why us, who trusts us, the request, where we are, footer -- and no script of the redesign', () => {
   const html = homeHtml();
   const main = html.slice(html.indexOf('<main'), html.indexOf('</main>'));
   const order = [...main.matchAll(/<section class="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'offer-band offer-talk', 'wrap home-contacts']);
+  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-why', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', ''));
   assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-form.js', 'js/site.js']);
@@ -1005,6 +1008,34 @@ test('the home page is static: header, hero, from stone to object, what can be o
   // The redesign's modules are kept until the clean-up step.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
     assert.ok(fs.existsSync(path.join(site, 'js', f)), f + ' is kept for now'));
+});
+
+test('about, why us, who trusts us: the old site\'s three blocks -- its words and figures, the six companies each a link to its site, the logos on disk', () => {
+  const html = homeHtml();
+  const about = sectionOf(html, '<section class="wrap home-about"');
+  assert.match(about, /<p class="home-about-kicker">О компании<\/p>/);
+  assert.match(about, /<h2 id="aboutTitle">Собственное производство в&nbsp;Московской области<\/h2>/);
+  assert.match(about, /современным итальянским оборудованием/);
+  const facts = [...about.matchAll(/<dt>([^<]+)<\/dt><dd>(.+?)<\/dd>/g)].map(m => [m[2].replace(/<[^>]+>/g, ' ').replace('&#8239;', ''), m[1]]);
+  assert.deepEqual(facts, [['12 лет ', 'на рынке'], ['7320', 'изделий'], ['130', 'камней'], ['2301', 'клиент']]);
+  assert.equal((about.match(/<figure class="home-about-shot /g) || []).length, 2, 'two photographs from the workshop');
+  assert.doesNotMatch(about, /rutube|home-about-video/, 'no video (the owner, 2026-10-10)');
+
+  const why = sectionOf(html, '<section class="wrap home-why"');
+  assert.match(why, /<h2 id="whyTitle">Почему выбирают <em>нас<\/em>\?<\/h2>/);
+  assert.deepEqual([...why.matchAll(/<span class="home-why-num" aria-hidden="true">(\d+)<\/span>/g)].map(m => m[1]), ['01', '02', '03', '04']);
+  const titles = [...why.matchAll(/<h3 class="home-why-title">([^<]+)<\/h3>/g)].map(m => m[1]);
+  assert.deepEqual(titles, ['Оперативность выполнения', 'Оптимальная стоимость', 'Высокое качество продукции', 'Подготовка дизайн-проектов']);
+  assert.equal((why.match(/<p class="home-why-text">/g) || []).length, 4);
+
+  const trust = sectionOf(html, '<section class="wrap home-trust"');
+  assert.match(trust, /<h2 id="trustTitle">Нам доверяют<\/h2>/);
+  assert.match(trust, /<div class="home-trust-panel">[\s\S]*<ul class="home-trust-wall">/, 'the words and the wall of tiles on one stone panel (concept C, 2026-10-10)');
+  assert.doesNotMatch(trust, /2&#8239;301|home-trust-num/, 'no figure and no numbers on the tiles');
+  const links = [...trust.matchAll(/<a class="home-trust-item" href="([^"]+)" target="_blank" rel="noopener">/g)].map(m => m[1]);
+  assert.deepEqual(links, ['https://resobank.com/', 'https://www.rshb.ru/', 'https://bamboobar.su/', 'https://www.vtb.ru/', 'https://mcx.gov.ru/', 'https://hlebnasushny.ru/']);
+  assert.equal((trust.match(/откроется в новой вкладке/g) || []).length, 6, 'each outside link says it opens a new tab');
+  [...html.matchAll(/\/sayanmramor-site\/(assets\/(?:home\/trust\/|home\/about-|portfolio\/035)[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
 });
 
 test('the home hero: the headline, one line and two plain actions on the wall of one generated picture -- the washbasin, called a visualisation; wide and upright versions; nothing moves', () => {
