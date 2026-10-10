@@ -366,6 +366,19 @@ test('every page: the header button keeps its full name, with «изделие»
   assert.match(css, /\.js \.site-header\.menu-open \.site-header-cta \{ order: 4; display: inline-flex;/);
 });
 
+test('every page: «Заказать» beside «Создать изделие» -- to the request form on the page where it has one, else to the home page\'s; at the open menu\'s foot on a phone, and the menu closes on it', () => {
+  headerPages.forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    const href = html.includes('id="offer"') ? '#offer' : '/sayanmramor-site/index.html#offer';
+    assert.ok(html.includes('<div class="site-header-actions"><a class="btn btn-secondary site-header-order" href="' + href + '">Заказать</a><a class="btn btn-primary site-header-cta"'), page);
+  });
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.js \.site-header-actions \{ display: none; \}/);
+  assert.match(css, /\.js \.site-header\.menu-open \.site-header-actions \{ order: 4; display: flex;/);
+  const js = fs.readFileSync(path.join(site, 'js', 'header.js'), 'utf8');
+  assert.match(js, /closest\('\.site-nav a, \.site-header-actions a'\)/);
+});
+
 test('header.js is loaded deferred on every header page; the «js» flag is set before the stylesheet', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
@@ -398,7 +411,7 @@ function fakeHeaderDom(mobile) {
     }, extra);
   }
   const summary = el('summary');
-  const link = el('a', { closest: sel => (sel === '.site-nav a' ? link : null) });
+  const link = el('a', { closest: sel => (sel.split(', ').includes('.site-nav a') ? link : null) });
   const outside = el('outside', { closest: () => null });
   const toggle = el('toggle');
   const products = el('products', { open: false });

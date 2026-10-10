@@ -268,10 +268,29 @@ h3 { font-size: var(--fs-h3); }
 .nav-showroom-rooms a:focus-visible { color: var(--ink); }
 @media (hover: hover) { .nav-showroom-rooms a:hover { color: var(--ink); } }
 
-/* The action: a verde pill set into the capsule's curve, 8 px from its edge. */
+/* The actions, on the right: «Заказать» -- to the request form (on the page itself where it
+   has one, else the home page's), a quiet outlined pill -- and the verde pill «Создать
+   изделие» set into the capsule's curve, 8 px from its edge (2026-10-10, the owner's request). */
+.site-header-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 6px; }
 .site-header-cta {
   grid-column: 3; justify-self: end; flex: none;
   min-height: 44px; padding: 0 22px; border-radius: 999px; font-size: var(--fs-small);
+}
+.site-header-order { flex: none; min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); background: transparent; }
+
+/* Narrow phones: the two actions in the open menu one over the other, each its full name. */
+@media (max-width: 380px) {
+  .js .site-header.menu-open div.site-header-actions { flex-direction: column; align-items: stretch; }
+  .js .site-header.menu-open .site-header-actions > a.btn { flex: none; }
+  /* The list a row shorter, so both actions stay in view under it. */
+  .js .site-header.menu-open nav.site-nav { max-height: calc(100vh - 228px); max-height: calc(100dvh - 228px); }
+}
+
+/* Small desktops (1001..1200 px): the places and the two actions a little closer-set, so the
+   actions keep clear of the places. */
+@media (min-width: 1001px) and (max-width: 1200px) {
+  .site-nav > a, .nav-drop > summary { padding: 0 11px; }
+  .site-header-order, .site-header-cta { padding: 0 16px; }
 }
 
 /* The menu button: only where there is a menu to open. */
@@ -304,12 +323,14 @@ html.menu-lock { overflow: hidden; }
   html:not(.js) .site-header-inner { height: auto; flex-wrap: wrap; padding: var(--s-2) 6px var(--s-2) 20px; }
   html:not(.js) .site-logo { order: 1; }
   html:not(.js) .site-header-cta { order: 2; margin-left: auto; }
+  html:not(.js) .site-header-actions { order: 2; margin-left: auto; }
   html:not(.js) .site-nav { order: 3; flex: 1 0 100%; flex-wrap: wrap; justify-content: flex-start; gap: 0 var(--s-5); }
   html:not(.js) .site-nav > a, html:not(.js) .nav-drop > summary { height: 44px; padding: 0 10px; }
   /* With JavaScript: the name and the menu button; the action waits inside the menu. */
   .js .site-logo { order: 1; }
   .js .nav-toggle { order: 2; display: inline-flex; margin-left: auto; }
   .js .site-header-cta { display: none; }
+  .js .site-header-actions { display: none; }
   .js .site-nav { display: none; }
   .js .site-header.menu-open {
     --capsule-bg: rgba(248, 247, 244, 0.97);
@@ -323,6 +344,9 @@ html.menu-lock { overflow: hidden; }
     max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overscroll-behavior: contain;
   }
   .js .site-header.menu-open .site-header-cta { order: 4; display: inline-flex; flex: 1 0 auto; margin: var(--s-5) 14px var(--s-3) 0; }
+  /* Both actions at the menu's foot, side by side, as wide as the menu. */
+  .js .site-header.menu-open .site-header-actions { order: 4; display: flex; flex: 1 0 100%; gap: var(--s-2); margin: var(--s-5) 14px var(--s-3) 0; }
+  .js .site-header.menu-open .site-header-actions > * { flex: 1 1 0; min-width: 0; margin: 0; padding: 0 12px; justify-content: center; white-space: nowrap; }
   /* In the open menu the products and the showroom are always shown -- no second tap. */
   .js .nav-drop { position: static; }
   .js .nav-drop > summary {

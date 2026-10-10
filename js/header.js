@@ -98,7 +98,7 @@
     }
     // A link inside the menu leaves the page -- or, for an anchor on this page, must not leave the menu on top of it.
     header.addEventListener('click', e => {
-      const a = e.target.closest && e.target.closest('.site-nav a');
+      const a = e.target.closest && e.target.closest('.site-nav a, .site-header-actions a');
       if (a && menuOpen()) setMenu(false);
     });
     doc.addEventListener('keydown', e => {
