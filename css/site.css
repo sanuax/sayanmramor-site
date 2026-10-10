@@ -2095,18 +2095,99 @@ html:has(.mast) { scrollbar-gutter: stable; }
 #stoneSearch::placeholder { color: var(--muted); }
 /* The darker border stays; the keyboard ring comes from :focus-visible above. */
 #stoneSearch:focus { border-color: var(--ink); }
-.stone-types { display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.stone-type {
-  min-height: 36px; padding: 0 14px; border-radius: 999px;
+/* The filters, as in the configurator's stone picker (2026-10-10): «Страна», «Тип», «Цвет» --
+   pills opening a list to tick (any number at once), «Цена» opening the price fields and
+   slider, «Сбросить» once anything is set; the sort «A-Z» / «Цена ↑» on the right. A pill
+   with something chosen turns dark and names it. One panel open at a time. */
+.stone-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3) var(--s-5); }
+.stone-filters[hidden] { display: none; }
+.stone-filter-row { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.stone-dd { position: relative; }
+.stone-dd-btn {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px; border-radius: 999px;
   border: 1px solid var(--line-control); background: transparent; color: var(--ink-soft);
-  font: inherit; font-size: var(--fs-small); cursor: pointer;
+  font: inherit; font-size: var(--fs-small); cursor: pointer; white-space: nowrap;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
-@media (hover: hover) { .stone-type:hover { border-color: var(--ink); color: var(--ink); } }
-.stone-type[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
+.stone-dd-caret { flex: none; width: 6px; height: 6px; margin-top: -3px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); }
+.stone-dd-btn[aria-expanded="true"] .stone-dd-caret { margin-top: 3px; transform: rotate(-135deg); }
+@media (hover: hover) { .stone-dd-btn:hover { border-color: var(--ink); color: var(--ink); } }
+.stone-dd-btn.is-active { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
+.stone-dd-panel {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 6;
+  min-width: 220px; max-height: 320px; overflow-y: auto; padding: var(--s-2);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 18px 40px -18px rgba(28, 29, 27, 0.38);
+}
+.stone-dd-panel[hidden] { display: none; }
+.stone-dd-option {
+  display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border-radius: 8px;
+  font-size: var(--fs-small); color: var(--ink); cursor: pointer;
+}
+@media (hover: hover) { .stone-dd-option:hover { background: var(--surface-sunk); } }
+.stone-dd-option input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.stone-dd-panel.stone-dd-price { width: 360px; max-height: none; overflow: visible; padding: 14px 14px 4px; }
+.stone-reset {
+  min-height: 40px; padding: 0 10px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: var(--fs-small); color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+}
+.stone-reset[hidden] { display: none; }
+@media (hover: hover) { .stone-reset:hover { color: var(--ink); } }
+.stone-sort { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-sunk); }
+.stone-sort-btn {
+  min-height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: none; cursor: pointer;
+  font: inherit; font-size: 13px; color: var(--muted); white-space: nowrap; transition: background-color 0.15s, color 0.15s;
+}
+@media (hover: hover) { .stone-sort-btn:hover { color: var(--ink); } }
+.stone-sort-btn[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(28, 29, 27, 0.14); }
+/* Phones: a panel across the whole filter row, under it -- wherever its pill wrapped to. */
+@media (max-width: 640px) {
+  .stone-dd { position: static; }
+  .stone-dd-panel, .stone-dd-panel.stone-dd-price { left: 0; right: 0; width: auto; }
+}
 .stone-status { font-size: var(--fs-small); color: var(--muted); margin-bottom: var(--s-4); min-height: 1em; }
 
-/* Stone cards: the photo is the card. Name and type sit under it, quietly. */
+/* The price filter (js/price-filter.js), in the «Цена» panel: «от» and «до» fields over a
+   two-handled slider, as on the old site; by the stone's lowest price per m2, on a logarithmic
+   scale (most stones are under 50 000 ₽/м², a few agates near 730 000). */
+.pf-fields { display: flex; gap: var(--s-2); }
+.pf-field {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s-2); height: var(--control-h); padding: 0 14px;
+  border: 1px solid var(--line-control); border-radius: var(--radius-s); background: var(--surface); cursor: text;
+}
+.pf-field:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pf-cap { flex: none; font-size: var(--fs-small); color: var(--muted); }
+.pf-input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; font: inherit; font-size: 15px; color: var(--ink); font-variant-numeric: tabular-nums; outline: none; }
+.pf-input::placeholder { color: var(--muted); opacity: 1; }
+.pf-slider { position: relative; height: 52px; margin-top: var(--s-3); }
+.pf-track { position: absolute; left: 11px; right: 11px; top: 12px; height: 4px; border-radius: 2px; background: var(--line); }
+.pf-fill { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--accent); }
+.pf-thumb {
+  position: absolute; left: 0; top: 0; width: 100%; height: 28px; margin: 0; padding: 0;
+  background: none; pointer-events: none; -webkit-appearance: none; appearance: none;
+}
+.pf-thumb:focus { outline: none; }
+.pf-thumb::-webkit-slider-runnable-track { height: 28px; background: none; border: 0; }
+.pf-thumb::-moz-range-track { height: 28px; background: none; border: 0; }
+.pf-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; pointer-events: auto; cursor: grab;
+  width: 22px; height: 22px; margin-top: 3px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 1px 3px rgba(28, 29, 27, 0.25);
+}
+.pf-thumb::-moz-range-thumb {
+  pointer-events: auto; cursor: grab; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 1px 3px rgba(28, 29, 27, 0.25);
+}
+.pf-thumb:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pf-thumb:focus-visible::-moz-range-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pf-thumb + .pf-thumb { z-index: 1; }
+.pf-from-on-top .pf-thumb:first-of-type { z-index: 2; }
+.pf-ticks { position: absolute; left: 11px; right: 11px; top: 30px; }
+.pf-tick { position: absolute; transform: translateX(-50%); font-size: var(--fs-meta); color: var(--muted); white-space: nowrap; }
+.pf-tick:first-child { transform: none; }
+.pf-tick:last-child { transform: translateX(-100%); }
+
+/* Stone cards: the photo is the card. Name, type and the price «от … ₽/м²» sit under it, quietly. */
 .stone-grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--s-5) var(--s-4); }
 .stone-card {
   width: 100%; height: 100%; display: flex; flex-direction: column; gap: 2px; text-align: left;
@@ -2123,6 +2204,8 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .stone-card[aria-pressed="true"] .stone-card-media { box-shadow: 0 0 0 2px var(--page), 0 0 0 4px var(--accent); }
 .stone-card-name { font-size: 15px; font-weight: 600; line-height: 1.3; }
 .stone-card-type { font-size: var(--fs-small); color: var(--muted); }
+/* «от … ₽/м²» under the type, as on the configurator's card: the stone's lowest price per m2. */
+.stone-card-price { margin-top: 2px; font-size: var(--fs-small); font-weight: 600; line-height: 1.35; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stone-more { display: flex; margin: var(--s-6) auto 0; }
 .stone-more[hidden] { display: none; }
 /* Where the collection's stone comes from: a quiet line under the catalogue. */

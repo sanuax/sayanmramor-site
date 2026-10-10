@@ -661,20 +661,18 @@ test('header.js: the line rests under the current section, follows the pointer a
 
 // ---- Коммерческое предложение -------------------------------------------------------
 
-test('the offer band on the 13 direction pages: «Проект», one heading row, the line of what is needed, the phone, the form inside the unfolding block, the <noscript> fallback (the home page has its own: three questions, below)', () => {
+test('the offer band on the 13 direction pages: the home page\'s «Получить расчёт» -- the master\'s photo, «Проект», the heading, the phone and Telegram, the questions starting at the name, the <noscript> fallback (2026-10-10)', () => {
   const offerPages = fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f);
   offerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    const band = html.slice(html.indexOf('<section class="offer-band"'), html.indexOf('</section>', html.indexOf('<section class="offer-band"')));
+    const band = html.slice(html.indexOf('<section class="offer-band'), html.indexOf('</section>', html.indexOf('<section class="offer-band')));
+    assert.match(band, /<img class="offer-talk-photo" src="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp"/, page);
     assert.match(band, /<p class="offer-kicker">Проект<\/p>/, page);
     assert.match(band, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/, page);
-    assert.match(band, /<p class="offer-needs">Направление · Имя · Телефон · Техническое задание<\/p>/, page);
-    assert.match(band, /<p class="offer-phone">Или позвоните: <a href="tel:\+74952155145">\+7 \(495\) 215-51-45<\/a><\/p>/, page);
-    assert.match(band, /<div class="offer-reveal">\s*<div class="offer-reveal-inner">\s*<div data-offer-form[^>]*><\/div>\s*<\/div>\s*<\/div>/, page);
-    assert.match(band, /<noscript><p class="offer-noscript">/, page);
-    assert.ok(band.indexOf('</noscript>') > band.indexOf('offer-reveal'), page + ': the fallback stands outside the folding block');
-    assert.match(band, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: [\s\S]*?<\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor<\/a><\/p>\s*<\/div>/, page + ': Telegram under the phone');
-    assert.doesNotMatch(band, /Получите коммерческое предложение/, page);
+    assert.match(band, /<p class="offer-lead">Мастер задаст пару коротких вопросов - этого хватит, чтобы подготовить расчёт\. Без длинных анкет\.<\/p>/, page + ': the direction is known, so two questions are left');
+    assert.match(band, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: <a href="tel:\+74952155145">\+7 \(495\) 215-51-45<\/a><\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor<\/a><\/p>\s*<\/div>/, page + ': Telegram under the phone');
+    assert.match(band, /<div class="offer-talk-main">\s*<div data-offer-form data-offer-steps data-preselect="[a-z-]+"><\/div>\s*<noscript><p class="offer-noscript">/, page);
+    assert.doesNotMatch(band, /offer-reveal|offer-needs|Получите коммерческое предложение/, page + ': no trace of the old form');
   });
 });
 
@@ -710,14 +708,13 @@ test('the offer form: fields in the order they are filled in, written lines (lab
   assert.match(phone, /\.offer-form \{ grid-template-columns: 1fr; \}/, 'one line per field on a phone');
 });
 
-test('the request stands open (data-offer-open) on the home page and on every direction page: no toggle, the form in view, the same lead line', () => {
+test('the request stands open (data-offer-open) on the home page and on every direction page: no toggle, the questions in view', () => {
   const OfferForm = require('../js/offer-form.js');
   const home = homeHtml();
   assert.match(home, /<section class="offer-band offer-talk" id="offer" aria-labelledby="offerTitle" data-offer-open>/);
   fs.readdirSync(path.join(site, 'categories')).forEach(f => {
     const html = fs.readFileSync(path.join(site, 'categories', f), 'utf8');
-    assert.match(html, /<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>/, f);
-    assert.match(html, /<p class="offer-lead">Оставьте заявку: мы свяжемся с вами, уточним детали и подготовим индивидуальный расчёт в кратчайшие сроки\.<\/p>/, f);
+    assert.match(html, /<section class="offer-band offer-talk" id="offer" aria-labelledby="offerTitle" data-offer-open>/, f);
   });
   const fakeBand = open => {
     const classes = new Set();
@@ -732,7 +729,7 @@ test('the request stands open (data-offer-open) on the home page and on every di
   assert.equal(OfferForm.enhanceBand(opened.container, {}, 1), null);
   assert.equal(opened.classes.size, 0, 'the open band is not made collapsible');
   const folded = fakeBand(false);
-  assert.ok(OfferForm.enhanceBand(folded.container, {}, 2), 'a direction page gets its toggle');
+  assert.ok(OfferForm.enhanceBand(folded.container, {}, 2), 'a band without data-offer-open still gets its toggle');
   assert.ok(folded.classes.has('is-collapsible'));
   // Only the home page's band is laid out anew (a project sheet, below); every rule of it is scoped to the home page.
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
@@ -897,7 +894,7 @@ test('the site-only directions: their own page and photos, the offer form for th
     const html = fs.readFileSync(path.join(site, 'categories', slug + '.html'), 'utf8');
     assert.match(html, new RegExp('<h1>' + label + ' из камня</h1>'), slug);
     assert.ok(html.includes('<a class="active" href="/sayanmramor-site/categories/' + slug + '.html" aria-current="page">' + label + '</a>'), slug);
-    assert.ok(html.includes('<div data-offer-form data-preselect="' + slug + '"></div>'), slug);
+    assert.ok(html.includes('<div data-offer-form data-offer-steps data-preselect="' + slug + '"></div>'), slug);
     assert.doesNotMatch(html, /CategoryPage|configure-bar|product=/, slug + ' is not a configurator product');
     const photos = [...html.matchAll(/image: '([^']+)'/g)].map(m => m[1]);
     assert.ok(photos.length >= 2, slug);
@@ -947,11 +944,11 @@ test('the offer band: on the home page and all 13 direction pages, each preselec
   directionPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.equal(band(html), 1, page);
-    const key = (html.match(/<div data-offer-form data-preselect="([^"]+)"><\/div>/) || [])[1];
+    const key = (html.match(/<div data-offer-form data-offer-steps data-preselect="([^"]+)"><\/div>/) || [])[1];
     const active = (html.match(/<a class="active"[^>]*>([^<]+)<\/a>/) || [])[1];
     assert.equal(labelOf[key], active, page + ': the form picks the page\'s own direction');
     assert.ok(html.includes('<script src="/sayanmramor-site/js/offer-form.js"></script>'), page);
-    assert.ok(html.indexOf('class="offer-band"') < html.indexOf('</main>'), page + ': inside main, before the footer');
+    assert.ok(html.indexOf('class="offer-band offer-talk"') > 0 && html.indexOf('class="offer-band offer-talk"') < html.indexOf('</main>'), page + ': inside main, before the footer');
   });
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
   assert.equal(band(home), 1);
