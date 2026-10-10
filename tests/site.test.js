@@ -1040,7 +1040,9 @@ test('about, why us, who trusts us: the old site\'s three blocks -- its words an
 
   const trust = sectionOf(html, '<section class="wrap home-trust"');
   assert.match(trust, /<h2 id="trustTitle">Нам доверяют<\/h2>/);
-  assert.match(trust, /<div class="home-trust-panel">[\s\S]*<ul class="home-trust-wall">/, 'the words and the wall of tiles on one stone panel (concept C, 2026-10-10)');
+  assert.match(trust, /<div class="home-trust-panel">[\s\S]*<ul class="home-trust-wall">/, 'the words and the wall of tiles side by side (concept C, 2026-10-10)');
+  const trustPanel = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8').match(/\.home-trust-panel \{[^}]*\}/)[0];
+  assert.doesNotMatch(trustPanel, /background/, 'no ground of its own: between the two dark cards it stays on the limestone, so light and dark take turns');
   assert.doesNotMatch(trust, /2&#8239;301|home-trust-num/, 'no figure and no numbers on the tiles');
   const links = [...trust.matchAll(/<a class="home-trust-item" href="([^"]+)" target="_blank" rel="noopener">/g)].map(m => m[1]);
   assert.deepEqual(links, ['https://resobank.com/', 'https://www.rshb.ru/', 'https://bamboobar.su/', 'https://www.vtb.ru/', 'https://mcx.gov.ru/', 'https://hlebnasushny.ru/']);

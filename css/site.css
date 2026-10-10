@@ -745,14 +745,16 @@ html.menu-lock { overflow: hidden; }
   .home-why-item:hover .home-why-num { color: var(--accent-on-dark); }
 }
 
-/* Who trusts us (2026-10-10, the owner's choice: concept C): a panel of warm stone, the words
-   on the left, on the right the six names on light tiles laid as a stone wall -- the second
-   course half a tile over. Each tile a link to the company's site; the logos quiet (grey)
-   until the pointer or focus is on them, then a verde arrow in the corner. */
+/* Who trusts us (2026-10-10, the owner's choice: concept C): the words on the left, on the
+   right the six names on paper tiles laid as a stone wall -- the second course half a tile
+   over. No ground of its own (since 2026-10-10, the owner's request): it stands between two
+   dark cards, «Почему выбирают нас?» and «Получить расчёт», so it stays on the page's limestone,
+   as «О компании» does, and the light and dark sections keep taking turns. Each tile a link
+   to the company's site; the logos quiet (grey) until the pointer or focus is on them, then
+   a verde arrow in the corner. */
 .home-trust { padding-top: var(--section); }   /* the request below brings its own top space */
 .home-trust-panel {
   display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--s-7); align-items: center;
-  padding: clamp(28px, 4vw, 52px); border-radius: 24px; background: var(--stone);
 }
 .home-trust h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); }
 .home-trust-lead { max-width: 22em; margin-top: var(--s-4); color: var(--ink-soft); }
@@ -761,8 +763,8 @@ html.menu-lock { overflow: hidden; }
 .home-trust-wall li:nth-child(4) { grid-column: 2 / span 2; }   /* the second course: half a tile over */
 .home-trust-item {
   position: relative; flex: 1; display: grid; place-items: center; height: 150px; padding: var(--s-4);
-  border-radius: 12px; background: var(--surface); text-decoration: none; color: var(--ink);
-  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 22px -16px rgba(28, 29, 27, 0.35);
+  border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  text-decoration: none; color: var(--ink);
 }
 .home-trust-item::after {
   content: ''; position: absolute; right: 12px; top: 12px; width: 14px; height: 9px; background: var(--accent);
@@ -782,6 +784,7 @@ html.menu-lock { overflow: hidden; }
 .home-trust-item:focus-visible .home-trust-logo { filter: none; opacity: 1; }
 .home-trust-item:focus-visible::after { opacity: 1; }
 @media (hover: hover) {
+  .home-trust-item:hover { box-shadow: inset 0 0 0 1px var(--line-strong); }
   .home-trust-item:hover .home-trust-logo { filter: none; opacity: 1; }
   .home-trust-item:hover .home-trust-mcx-name { color: var(--ink); }
   .home-trust-item:hover::after { opacity: 1; }
@@ -807,7 +810,6 @@ html.menu-lock { overflow: hidden; }
   .home-about-media { width: 100%; max-width: 640px; }
 }
 @media (max-width: 520px) {
-  .home-trust-panel { padding: 28px 20px 20px; border-radius: 16px; }
   .home-about-shot { border-radius: 16px; }
   .home-about-shot-main { width: 72%; }
   .home-about-shot-side { width: 64%; box-shadow: 0 0 0 4px var(--page), 0 10px 22px -10px rgba(28, 29, 27, 0.35); }
