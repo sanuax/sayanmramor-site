@@ -424,6 +424,7 @@ python D:\sayanmramor-site\scripts\dev_server.py
 **Страницы:**
 
 - `index.html` — hero, «Что можно заказать» (9 направлений), блок шоурума, «Где мы находимся» (Leaflet 1.9.4 + OSM, `js/contacts-map.js`, офис: Ивантеевка, Толмачёва 80, тел. +7 495 215-51-45).
+- «Получить расчёт» на главной (2026-10-10, концепт владельца «Три вопроса мастеру»): `<section class="offer-band offer-talk">`, тёмная карточка — слева фото мастера за работой (`assets/home/offer-master-040-*.webp`, источник в `assets/home/SOURCES.md`), заголовок, телефон и Telegram; справа три вопроса по одному (изделие → имя, можно пропустить → телефон + согласие + файл), ответы копятся «чеком» сверху. Режим `data-offer-steps` в `js/offer-form.js` (`mountSteps`), стили — раздел «три вопроса мастеру» в `css/site.css`. Страницы разделов — прежняя форма (`mount`). Бэкенда нет: последний экран честно пишет, что отправка настраивается, и даёт телефон и Telegram.
 - `katalog.html` — «Готовые изделия» из `data/products.json` через `js/catalog.js`.
 - `categories/*.html` — 9 страниц: `stoleshnitsy-vannaya`, `stoleshnitsy-kuhnya`, `lestnitsy`, `stupeni`, `poly`, `steny`, `panno`, `podokonniki`, `fasady`. На каждой:
   - примеры работ из `data/portfolio.json`, **сейчас только плейсхолдер**;

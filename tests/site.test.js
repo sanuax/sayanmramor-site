@@ -645,8 +645,8 @@ test('header.js: the line rests under the current section, follows the pointer a
 
 // ---- Коммерческое предложение -------------------------------------------------------
 
-test('the offer band on all 14 pages: «Проект», one heading row, the line of what is needed, the phone, the form inside the unfolding block, the <noscript> fallback', () => {
-  const offerPages = ['index.html'].concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f));
+test('the offer band on the 13 direction pages: «Проект», one heading row, the line of what is needed, the phone, the form inside the unfolding block, the <noscript> fallback (the home page has its own: three questions, below)', () => {
+  const offerPages = fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f);
   offerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     const band = html.slice(html.indexOf('<section class="offer-band"'), html.indexOf('</section>', html.indexOf('<section class="offer-band"')));
@@ -697,7 +697,7 @@ test('the offer form: fields in the order they are filled in, written lines (lab
 test('the request stands open (data-offer-open) on the home page and on every direction page: no toggle, the form in view, the same lead line', () => {
   const OfferForm = require('../js/offer-form.js');
   const home = homeHtml();
-  assert.match(home, /<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>/);
+  assert.match(home, /<section class="offer-band offer-talk" id="offer" aria-labelledby="offerTitle" data-offer-open>/);
   fs.readdirSync(path.join(site, 'categories')).forEach(f => {
     const html = fs.readFileSync(path.join(site, 'categories', f), 'utf8');
     assert.match(html, /<section class="offer-band" id="offer" aria-labelledby="offerTitle" data-offer-open>/, f);
@@ -918,7 +918,7 @@ test('the offer form lists every direction of the site, the three new ones inclu
   ['Спа зоны', 'Хаммамы', 'Бассейны', 'Ванная', 'Кухня', 'Камины', 'Готовые изделия'].forEach(l => assert.ok(labels.includes(l), l));
   assert.equal(new Set(OfferForm.DIRECTIONS.map(d => d.key)).size, OfferForm.DIRECTIONS.length);
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
-  assert.ok(home.includes('<div data-offer-form></div>'));
+  assert.ok(home.includes('<div data-offer-form data-offer-steps></div>'));
   assert.equal((home.match(/data-offer-form/g) || []).length, 1, 'one offer block on the home page');
 });
 
@@ -927,7 +927,7 @@ test('the offer band: on the home page and all 13 direction pages, each preselec
   const labelOf = Object.fromEntries(OfferForm.DIRECTIONS.map(d => [d.key, d.label]));
   const directionPages = fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f);
   assert.equal(directionPages.length, 13);
-  const band = html => (html.match(/<section class="offer-band" id="offer"/g) || []).length;
+  const band = html => (html.match(/<section class="offer-band[^"]*" id="offer"/g) || []).length;
   directionPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.equal(band(html), 1, page);
@@ -939,7 +939,7 @@ test('the offer band: on the home page and all 13 direction pages, each preselec
   });
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
   assert.equal(band(home), 1);
-  assert.ok(home.includes('<div data-offer-form></div>'), 'the home page lets the visitor choose');
+  assert.ok(home.includes('<div data-offer-form data-offer-steps></div>'), 'the home page lets the visitor choose (no preselect), in three questions');
   const katalog = fs.readFileSync(path.join(site, 'katalog.html'), 'utf8');
   assert.equal(band(katalog), 0);
   assert.doesNotMatch(katalog, /data-offer-form|offer-form\.js/);
@@ -997,7 +997,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   const html = homeHtml();
   const main = html.slice(html.indexOf('<main'), html.indexOf('</main>'));
   const order = [...main.matchAll(/<section class="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'offer-band', 'wrap home-contacts']);
+  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', ''));
   assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-form.js', 'js/site.js']);
@@ -1140,12 +1140,51 @@ test('the home showroom band: words, a plain link into the showroom and its hous
   assert.doesNotMatch(sec, /data-portal/);
 });
 
-test('the home request is the direction pages\' form, standing open: no drawing, no notes, no sheet', () => {
-  const sec = sectionOf(homeHtml(), '<section class="offer-band"');
+test('the home request is three questions to a master: a workshop photo, the heading and contacts on the left, the talk on the right; the noscript line stays', () => {
+  const sec = sectionOf(homeHtml(), '<section class="offer-band offer-talk"');
   assert.match(sec, /data-offer-open/);
   assert.match(sec, /<p class="offer-kicker">Проект<\/p>/);
-  assert.match(sec, /<div data-offer-form><\/div>/);
+  assert.match(sec, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/);
+  assert.match(sec, /<p class="offer-lead">Мастер задаст три коротких вопроса/);
+  // The photo: a real one from the workshop (assets/home/SOURCES.md), two sizes, lazy, described.
+  const img = (sec.match(/<img class="offer-talk-photo"[^>]*>/) || [''])[0];
+  assert.match(img, /srcset="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp 480w, \/sayanmramor-site\/assets\/home\/offer-master-040-960\.webp 960w"/);
+  assert.match(img, /alt="Мастер обрабатывает каменную плиту на станке"/);
+  assert.match(img, /loading="lazy"/);
+  ['offer-master-040-480.webp', 'offer-master-040-960.webp'].forEach(f => assert.ok(fs.existsSync(path.join(site, 'assets', 'home', f)), f));
+  assert.match(sec, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: [\s\S]*?<\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor"/);
+  assert.match(sec, /<div data-offer-form data-offer-steps><\/div>\s*<noscript><p class="offer-noscript">/);
   assert.doesNotMatch(sec, /offer-drawing|offer-notes|<svg/);
+});
+
+test('three questions (offer-form.js): what, how to address you, where to call; a phone has ten digits; the end says honestly that nothing is sent yet', () => {
+  const OfferForm = require('../js/offer-form.js');
+  assert.deepEqual(OfferForm.STEPS.map(s => s.chip), ['Изделие', 'Имя', 'Телефон']);
+  assert.deepEqual(OfferForm.STEPS.map(s => s.q.join('')), ['Что будем делать из камня?', 'Как к вам обращаться?', 'Куда позвонить с расчётом?']);
+  ['+7 999 123-45-67', '89991234567', '+7 (495) 215-51-45'].forEach(v => assert.ok(OfferForm.phoneOk(v), v));
+  ['', '123', '+7 999', 'abc'].forEach(v => assert.ok(!OfferForm.phoneOk(v), v));
+  assert.match(OfferForm.DONE_NOTE, /ещё настраивается/);
+  const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  // Every direction of the site is an answer, and «Пока не знаю»; the name may be skipped; the phone and the consent are required.
+  assert.match(src, /DIRECTIONS\.map\(d => d\.label\)\.concat\(\[UNSURE\]\)/);
+  assert.match(src, /linkButton\('Можно без имени'/);
+  assert.match(src, /if \(!phoneOk\(phone\.value\)\)/);
+  assert.match(src, /if \(!consent\.checked\)/);
+  assert.match(src, /c\.hasAttribute\('data-offer-steps'\) \? mountSteps\(c\) : mount\(c\)/);
+  assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon/, 'nothing leaves the page yet');
+});
+
+test('three questions in CSS: scoped to the home page\'s band, hover only where there is a pointer, motion off when asked, a phone stacks each answer', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* ---- «Получить расчёт» на главной: три вопроса мастеру'), css.indexOf('/* ---- Footer'));
+  assert.ok(block.length > 2000);
+  // Every selector belongs to the home page's band (or its keyframes).
+  const noComments = block.replace(/\/\*[\s\S]*?\*\//g, '');
+  [...noComments.matchAll(/([^{}]+)\{/g)].map(m => m[1].trim()).filter(sel => !sel.startsWith('@')).forEach(sel => {
+    sel.replace(/\([^)]*\)/g, '()').split(',').forEach(s => assert.match(s.trim(), /^(main \.offer-talk|\.offer-talk|\.talk-|\.offer-file-input:focus-visible \+ \.talk-file|from|to)\b/, s.trim()));
+  });
+  assert.match(block, /@media \(prefers-reduced-motion: reduce\) \{ \.talk-step \{ animation: none; \} \}/);
+  assert.match(block, /@media \(max-width: 560px\) \{[\s\S]*\.talk-answer \{ flex-direction: column; \}/);
 });
 
 test('the static home in CSS: colour on hover and focus only -- no sticky, no transforms, no animations, transitions of 150 ms; hover only where there is a pointer', () => {

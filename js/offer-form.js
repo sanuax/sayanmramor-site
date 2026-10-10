@@ -189,11 +189,188 @@
     return toggle;
   }
 
+  // ---- Three questions (the home page: <div data-offer-form data-offer-steps>) ----
+  // The same request as a short talk: one question at a time -- what to make,
+  // how to address you, where to call -- and the answers gather above as a
+  // receipt (each chip takes you back to its question). The phone and the
+  // consent are required, as in the form; the name is not; a drawing or a
+  // photo can be attached at the last question. There is no backend yet: the
+  // last screen says so, sums the request up and gives the phone and Telegram.
+  const STEPS = [
+    { chip: 'Изделие', q: ['Что будем делать ', 'из камня?'], hint: 'Выберите направление - его можно будет поменять.' },
+    { chip: 'Имя', q: ['Как к вам ', 'обращаться?'], hint: 'Чтобы мастер знал, кому звонить с расчётом.' },
+    { chip: 'Телефон', q: ['Куда позвонить ', 'с расчётом?'], hint: 'Мастер перезвонит, уточнит детали и подготовит расчёт.' },
+  ];
+  const UNSURE = 'Пока не знаю';
+  const TELEGRAM = 'https://t.me/TeaN_SayanMramor';
+  const DONE_NOTE = 'Отправка заявок с сайта ещё настраивается. Позвоните или напишите нам в Telegram и назовите вашу заявку - мастер сразу возьмётся за расчёт.';
+
+  // A phone is a phone with at least ten digits («+7 999 123-45-67», «89991234567»).
+  function phoneOk(value) {
+    return String(value || '').replace(/\D/g, '').length >= 10;
+  }
+
+  function mountSteps(container) {
+    const doc = container.ownerDocument;
+    const n = ++formCount;
+    const id = name => 'offer-' + n + '-' + name;
+    const answers = { direction: '', name: '', phone: '' };
+    let current = 0;
+
+    const question = (i, extra) => {
+      const q = el(doc, 'p', { className: 'talk-q', id: id('q' + i) }, [doc.createTextNode(STEPS[i].q[0]), el(doc, 'em', { textContent: STEPS[i].q[1] })]);
+      return el(doc, 'section', { className: 'talk-step', 'data-step': String(i), 'aria-labelledby': id('q' + i) },
+        [q, el(doc, 'p', { className: 'talk-hint', textContent: STEPS[i].hint })].concat(extra));
+    };
+    const linkButton = (text, onClick) => {
+      const b = el(doc, 'button', { type: 'button', className: 'talk-link', textContent: text });
+      b.addEventListener('click', onClick);
+      return b;
+    };
+    const nextButton = (text, type) => el(doc, 'button', { type: type || 'button', className: 'talk-next' }, [el(doc, 'span', { textContent: text }), icon(doc, 'arrow')]);
+
+    // The receipt: one chip per question, and where you are.
+    const chips = STEPS.map((s, i) => {
+      const chip = el(doc, 'button', { type: 'button', className: 'talk-chip', textContent: s.chip });
+      chip.addEventListener('click', () => { if (reachable(i)) go(i); });
+      return chip;
+    });
+    const count = el(doc, 'span', { className: 'talk-count', 'aria-live': 'polite' });
+    const receipt = el(doc, 'div', { className: 'talk-receipt' }, chips.concat([count]));
+
+    // 1. What to make: every direction of the site, and «Пока не знаю».
+    const options = DIRECTIONS.map(d => d.label).concat([UNSURE]).map(label => {
+      const b = el(doc, 'button', { type: 'button', className: 'talk-option', 'aria-pressed': 'false', textContent: label });
+      b.addEventListener('click', () => {
+        answers.direction = label;
+        options.forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+        go(1);
+      });
+      return b;
+    });
+    const step1 = question(0, [el(doc, 'div', { className: 'talk-options', role: 'group', 'aria-labelledby': id('q0') }, options)]);
+
+    // 2. The name (may be left out).
+    const name = el(doc, 'input', { type: 'text', id: id('name'), name: 'name', className: 'talk-input', autocomplete: 'name', placeholder: 'Ваше имя', 'aria-labelledby': id('q1') });
+    const nameNext = nextButton('Дальше');
+    const toPhone = () => { answers.name = name.value.trim(); go(2); };
+    nameNext.addEventListener('click', toPhone);
+    name.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); toPhone(); } });
+    const step2 = question(1, [
+      el(doc, 'div', { className: 'talk-answer' }, [name, nameNext]),
+      el(doc, 'div', { className: 'talk-links' }, [
+        linkButton('← Изменить изделие', () => go(0)),
+        linkButton('Можно без имени', () => { name.value = ''; toPhone(); }),
+      ]),
+    ]);
+
+    // 3. The phone, a drawing or photo if there is one, the consent, and the request.
+    const phone = el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'talk-input', autocomplete: 'tel', inputmode: 'tel', placeholder: '+7 (___) ___-__-__', required: '', 'aria-labelledby': id('q2') });
+    const file = el(doc, 'input', { type: 'file', id: id('file'), name: 'file', className: 'offer-file-input' });
+    const fileName = el(doc, 'span', { className: 'talk-file-name', textContent: 'Есть чертёж или фото? Прикрепите файл' });
+    file.addEventListener('change', () => {
+      fileName.textContent = file.files && file.files.length ? file.files[0].name : 'Есть чертёж или фото? Прикрепите файл';
+    });
+    const consent = el(doc, 'input', { type: 'checkbox', id: id('consent'), name: 'consent', required: '' });
+    const status = el(doc, 'p', { className: 'offer-status talk-status', role: 'status' });
+    // A hint goes as soon as the field it was about is put right.
+    phone.addEventListener('input', () => { if (phoneOk(phone.value)) status.textContent = ''; });
+    consent.addEventListener('change', () => { if (consent.checked) status.textContent = ''; });
+    const step3 = question(2, [
+      el(doc, 'div', { className: 'talk-answer' }, [phone, nextButton('Получить расчёт', 'submit')]),
+      el(doc, 'div', { className: 'talk-extra' }, [
+        file,
+        el(doc, 'label', { className: 'talk-file', htmlFor: id('file') }, [el(doc, 'span', { className: 'talk-file-icon' }, [icon(doc, 'clip')]), fileName]),
+        el(doc, 'div', { className: 'offer-consent talk-consent' }, [
+          consent,
+          el(doc, 'label', { htmlFor: id('consent') }, [
+            doc.createTextNode('даю свое согласие на обработку моих персональных данных ('),
+            el(doc, 'a', { href: '/sayanmramor-site/privacy.html', textContent: 'политика конфиденциальности' }),
+            doc.createTextNode(')'),
+          ]),
+        ]),
+      ]),
+      status,
+      el(doc, 'div', { className: 'talk-links' }, [linkButton('← Назад', () => go(1))]),
+    ]);
+
+    // 4. Done: the request summed up, and the honest way to send it today.
+    const summary = el(doc, 'p', { className: 'talk-summary' });
+    const done = el(doc, 'section', { className: 'talk-step talk-done', 'data-step': '3', 'aria-labelledby': id('q3') }, [
+      el(doc, 'p', { className: 'talk-q', id: id('q3') }, [doc.createTextNode('Заявка '), el(doc, 'em', { textContent: 'собрана' })]),
+      summary,
+      el(doc, 'p', { className: 'talk-hint', textContent: DONE_NOTE }),
+      el(doc, 'div', { className: 'talk-answer talk-done-actions' }, [
+        el(doc, 'a', { className: 'talk-next', href: 'tel:' + PHONE.replace(/[^+\d]/g, '') }, [el(doc, 'span', { textContent: 'Позвонить ' + PHONE })]),
+        el(doc, 'a', { className: 'talk-ghost', href: TELEGRAM, target: '_blank', rel: 'noopener', textContent: 'Написать в Telegram' }),
+      ]),
+      el(doc, 'div', { className: 'talk-links' }, [linkButton('← Изменить ответы', () => go(2))]),
+    ]);
+
+    const steps = [step1, step2, step3, done];
+    const form = el(doc, 'form', { className: 'offer-talk-form', novalidate: '' }, [receipt].concat(steps));
+
+    function reachable(i) {
+      return i === 0 || !!answers.direction;
+    }
+    function render() {
+      steps.forEach((s, i) => { s.hidden = i !== current; });
+      // An answered question shows its answer («✓ Кухня», «✓ Анна»; a skipped
+      // name, once passed, «✓ Без имени»); the others their question's name.
+      const values = [answers.direction, answers.name || (current > 1 ? 'Без имени' : ''), answers.phone];
+      chips.forEach((chip, i) => {
+        const answered = !!values[i] && i !== current;
+        chip.textContent = answered ? '✓ ' + values[i] : STEPS[i].chip;
+        chip.classList.toggle('is-done', answered);
+        chip.classList.toggle('is-current', i === current);
+        chip.disabled = !reachable(i) || current === 3;
+      });
+      count.textContent = current < 3 ? 'Вопрос ' + (current + 1) + ' из 3' : 'Готово';
+    }
+    function go(i, focus) {
+      current = i;
+      status.textContent = '';
+      render();
+      if (focus === false) return;
+      const target = i === 0 ? (options.find(o => o.getAttribute('aria-pressed') === 'true') || options[0]) : i === 1 ? name : i === 2 ? phone : done.querySelector('.talk-next');
+      if (target && target.focus) target.focus({ preventScroll: true });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (current !== 2) return;
+      if (!phoneOk(phone.value)) {
+        status.textContent = 'Укажите телефон, чтобы мастер мог перезвонить вам.';
+        phone.focus();
+        return;
+      }
+      if (!consent.checked) {
+        status.textContent = 'Отметьте согласие на обработку персональных данных.';
+        consent.focus();
+        return;
+      }
+      answers.phone = phone.value.trim();
+      summary.textContent = [answers.direction, answers.name, answers.phone].filter(Boolean).join(' · ');
+      go(3);
+    });
+
+    // A page may name its direction (data-preselect): then the talk starts at the name.
+    const preselect = DIRECTIONS.find(d => d.key === container.getAttribute('data-preselect'));
+    if (preselect) {
+      answers.direction = preselect.label;
+      options.forEach(o => o.setAttribute('aria-pressed', String(o.textContent === preselect.label)));
+      current = 1;
+    }
+    render();
+    container.replaceChildren(form);
+    return form;
+  }
+
   function mountAll(doc) {
-    return [...doc.querySelectorAll('[data-offer-form]')].map(mount);
+    return [...doc.querySelectorAll('[data-offer-form]')].map(c => (c.hasAttribute('data-offer-steps') ? mountSteps(c) : mount(c)));
   }
 
   if (typeof document !== 'undefined') mountAll(document);
 
-  return { DIRECTIONS, FIELDS, NOT_SENT, mount, mountAll, enhanceBand };
+  return { DIRECTIONS, FIELDS, NOT_SENT, STEPS, DONE_NOTE, phoneOk, mount, mountSteps, mountAll, enhanceBand };
 });
