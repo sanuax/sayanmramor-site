@@ -261,7 +261,7 @@
       const dd = dropdown('price', panel => {
         panel.classList.add('stone-dd-price');
         control = PriceFilter.mount(panel, {
-          min: ends.min, max: ends.max, label: 'Цена камня, ₽/м²',
+          min: ends.min, max: ends.max, label: 'Цена камня, ₽/м²', prices: stones.map(s => s.price),
           onChange: value => { state.price = value; update(); apply(); },
         });
       });

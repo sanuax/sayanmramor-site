@@ -75,3 +75,9 @@ test('the site and the configurator carry the same file', () => {
   const norm = f => fs.readFileSync(f, 'utf8').replace(/\r\n/g, '\n').replace(/^\/\/ (js\/)?price-filter\.js\n/, '');
   assert.equal(norm(path.join(__dirname, '..', 'js', 'price-filter.js')), norm(calc));
 });
+
+test('histogram: how many prices fall in each equal part of the logarithmic scale; no price, no count', () => {
+  assert.deepEqual(PriceFilter.histogram([2100, 5000, 26000, 26000, 700000, null, 0], 2100, 728000, 8), [1, 1, 0, 2, 0, 0, 0, 1]);
+  assert.equal(PriceFilter.histogram([], 2100, 728000).length, 32, '32 bars by default');
+  assert.equal(PriceFilter.histogram([728000], 2100, 728000, 4)[3], 1, 'the top price lands in the last bar');
+});
