@@ -16,8 +16,8 @@
    serpentine marble -- as the only accent. The accent is functional: the
    primary action, hover / active / focus, the lines that answer the pointer.
    Never decoration.
-   The site and the configurator no longer share a palette (the configurator
-   keeps its limestone-and-copper V2 on purpose). The showroom keeps its own
+   The configurator wears this palette too (since 2026-10-10, the owner's
+   request: its own tokens set to these values). The showroom keeps its own
    graphite and copper too (css/showroom.css); the doorway into it on the home
    page wears the showroom's colours (--sr-* below), and only there. */
 :root {
