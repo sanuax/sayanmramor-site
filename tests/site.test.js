@@ -1025,14 +1025,35 @@ test('the home page is static: header, hero, from stone to object, what can be o
     assert.ok(fs.existsSync(path.join(site, 'js', f)), f + ' is kept for now'));
 });
 
+test('years on the market: full years since the founding day, the figure turning over each 6 February, the word agreeing', () => {
+  const at = s => new Date(s + 'T12:00:00');
+  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2026-10-11')), 12);
+  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2027-02-05')), 12);
+  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2027-02-06')), 13);
+  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2035-01-31')), 20);
+  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2035-02-06')), 21);
+  assert.deepEqual([12, 13, 20, 21, 22, 24, 25, 111, 101].map(SiteCommon.yearsWord),
+    ['лет', 'лет', 'лет', 'год', 'года', 'года', 'лет', 'лет', 'год']);
+
+  const el = { dataset: { since: '2014-02-06' }, figure: { textContent: '12' }, word: { textContent: 'лет' },
+    querySelector(s) { return s === '[data-years]' ? this.figure : s === '[data-years-word]' ? this.word : null; } };
+  const doc = { querySelectorAll: s => (s === '[data-since]' ? [el] : []) };
+  SiteCommon.showYearsOnMarket(doc, at('2036-03-01'));
+  assert.deepEqual([el.figure.textContent, el.word.textContent], ['22', 'года']);
+  SiteCommon.showYearsOnMarket(doc, at('2026-10-11'));
+  assert.deepEqual([el.figure.textContent, el.word.textContent], ['12', 'лет']);
+});
+
 test('about, why us, who trusts us: the old site\'s three blocks -- its words and figures, the six companies each a link to its site, the logos on disk', () => {
   const html = homeHtml();
   const about = sectionOf(html, '<section class="wrap home-about"');
   assert.match(about, /<p class="home-about-kicker">О компании<\/p>/);
   assert.match(about, /<h2 id="aboutTitle">Собственное производство в&nbsp;Московской области<\/h2>/);
   assert.match(about, /современным итальянским оборудованием/);
-  const facts = [...about.matchAll(/<dt>([^<]+)<\/dt><dd>(.+?)<\/dd>/g)].map(m => [m[2].replace(/<[^>]+>/g, ' ').replace('&#8239;', ''), m[1]]);
-  assert.deepEqual(facts, [['12 лет ', 'на рынке'], ['7320', 'изделий'], ['130', 'камней'], ['2301', 'клиент']]);
+  const facts = [...about.matchAll(/<dt>([^<]+)<\/dt><dd[^>]*>(.+?)<\/dd>/g)].map(m => [m[2].replace(/<[^>]+>/g, ' ').replace('&#8239;', '').replace(/\s+/g, ' ').trim(), m[1]]);
+  assert.deepEqual(facts, [['12 лет', 'на рынке'], ['8120', 'изделий'], ['145', 'камней'], ['2702', 'клиента']]);
+  assert.match(about, /<dd data-since="2014-02-06"><span data-years>12<\/span><small data-years-word>лет<\/small><\/dd>/,
+    'the years on the market count from the founding day, 6 February 2014 (the date itself is not shown)');
   assert.equal((about.match(/<figure class="home-about-shot /g) || []).length, 2, 'two photographs from the workshop');
   assert.doesNotMatch(about, /rutube|home-about-video/, 'no video (the owner, 2026-10-10)');
 
