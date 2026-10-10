@@ -156,7 +156,38 @@
     return { show, rest, bar };
   }
 
+  // Liquid glass (2026-10-10, the owner's choice: the five places of
+  // .claude/concepts/liquid-glass.html, then the configurator's step track).
+  // Here, in the one script the site, the showroom and the configurator all
+  // load. css/site.css, css/showroom.css and the configurator frost the glass
+  // everywhere; where the browser can bend the backdrop
+  // through an SVG filter -- Chromium; Safari and Firefox do not draw url()
+  // in backdrop-filter -- the glass also refracts near its edges: the filter
+  // goes into the page once and <html> gets .glass-bend, which the CSS reads.
+  // Not when the visitor asks for less transparency (the CSS then makes the
+  // glass solid).
+  const GLASS_FILTER = '<svg id="lg-bend-defs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">' +
+    '<filter id="lg-bend" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">' +
+    '<feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="noise"/>' +
+    '<feGaussianBlur in="noise" stdDeviation="2" result="soft"/>' +
+    '<feDisplacementMap in="SourceGraphic" in2="soft" scale="38" xChannelSelector="R" yChannelSelector="G"/>' +
+    '</filter></svg>';
+  function mountGlass(doc, nav, matchMedia) {
+    if (!doc || !doc.body || !nav || !('userAgentData' in nav)) return false;
+    if (matchMedia && matchMedia('(prefers-reduced-transparency: reduce)').matches) return false;
+    if (!doc.getElementById('lg-bend-defs')) {
+      const holder = doc.createElement('div');
+      holder.innerHTML = GLASS_FILTER;
+      doc.body.appendChild(holder.firstChild);
+    }
+    doc.documentElement.classList.add('glass-bend');
+    return true;
+  }
+  if (typeof document !== 'undefined' && typeof navigator !== 'undefined') {
+    mountGlass(document, navigator, typeof window !== 'undefined' && window.matchMedia ? q => window.matchMedia(q) : null);
+  }
+
   if (typeof document !== 'undefined' && typeof window !== 'undefined') init(document, window);
 
-  return { init, initIndicator, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
+  return { init, initIndicator, mountGlass, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
 });

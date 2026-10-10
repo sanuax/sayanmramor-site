@@ -303,7 +303,7 @@ body.is-interior .sr-caption { top: 128px; }
 /* ---- liquid glass (2026-10-10, the owner's choice: .claude/concepts/liquid-glass.html) ----
    Everything that floats over the scene is dark glass: the scene shows through, blurred,
    a rim of light along the top. In Chromium the glass also bends the scene near its edges
-   (js/site.js mountGlass puts .glass-bend on <html>); where the visitor asks for less
+   (js/header.js mountGlass puts .glass-bend on <html>); where the visitor asks for less
    transparency, or the browser cannot blur, the panels are solid as before. */
 .sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost {
   background: var(--sr-glass-shine), var(--sr-glass);

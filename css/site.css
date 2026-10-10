@@ -82,7 +82,7 @@
   --sr-copper-hover: #9b4824;
   /* Liquid glass (2026-10-10, the owner's choice; section «Liquid glass» below): the frost --
      a light blur with raised saturation, so the stone's colour comes through; the bend -- the
-     backdrop refracted near the edges, Chromium only, under .glass-bend (js/site.js mountGlass);
+     backdrop refracted near the edges, Chromium only, under .glass-bend (js/header.js mountGlass);
      the rim of light -- a bright hairline along the top, a dim one along the bottom; the shine --
      a soft band of light in the upper half. Light glass on photographs, dark glass on the dark. */
   --glass-frost: blur(12px) saturate(1.7);
@@ -139,276 +139,9 @@ h3 { font-size: var(--fs-h3); }
 }
 .skip-link:focus { transform: none; }
 
-/* ---- Buttons -----------------------------------------------------------------
-   The same shapes as in the configurator and the showroom: primary = the one
-   action that moves the client on, secondary = an equal alternative. One
-   shape in three heights (--control-h-s / --control-h / --control-h-l); the
-   places that use the compact or large one set only height, padding and size. */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
-  min-height: var(--control-h); padding: 0 24px; border-radius: var(--radius-s);
-  font: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; letter-spacing: 0.01em;
-  text-decoration: none;
-  cursor: pointer; border: 1px solid transparent;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.12s var(--ease);
-}
-.btn:active { transform: scale(0.98); }
-.btn-primary { background: var(--accent); color: #fff; }
-@media (hover: hover) { .btn-primary:hover { background: var(--accent-hover); } }
-.btn-secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
-@media (hover: hover) { .btn-secondary:hover { border-color: var(--ink); } }
-.btn-on-dark { background: transparent; color: var(--on-dark); border-color: var(--on-dark-line); }
-@media (hover: hover) { .btn-on-dark:hover { border-color: var(--on-dark); } }
-
-/* ---- Header: the capsule ------------------------------------------------------
-   One header for the whole site: a floating capsule over the page -- a thin
-   plate of milk-white stone, a little translucent, a hairline edge and a soft
-   shadow under it, never the page's full width. Inside it: the name on the
-   left, four places in the middle -- «Изделия» (a native <details> with the 13
-   directions in five groups; works without JavaScript), the ready-made
-   pieces, the showroom, the contacts -- and the one action on the right, a
-   pill set into the capsule's own curve. The same markup on every page
-   (tests/site.test.js); js/header.js adds Esc / click-outside, the line under
-   the current place and, under 1000 px, the menu button. On a phone the
-   capsule holds the name and the menu button, and opens downward into the menu
-   itself, with «Создать изделие» at its foot. Nothing about it moves on scroll. */
 :root {
   /* The site's one arrow, everywhere (a mask: it takes the text colour): 2 px, square ends. */
   --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
-}
-.site-header {
-  --header-h: 60px;
-  --capsule-bg: rgba(248, 247, 244, 0.8);
-  position: sticky; top: 12px; z-index: 20;
-  width: min(1120px, calc(100% - 2 * var(--gutter))); margin: 12px auto 0;
-  border-radius: 999px; background: var(--capsule-bg);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
-  border: 1px solid rgba(28, 29, 27, 0.09);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(28, 29, 27, 0.06), 0 14px 34px -20px rgba(28, 29, 27, 0.38);
-}
-/* Where the browser cannot blur behind it, the plate is simply solid. */
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .site-header { --capsule-bg: rgba(248, 247, 244, 0.97); }
-}
-.site-header-inner {
-  position: relative; height: var(--header-h);
-  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--s-5);
-  padding: 0 8px;   /* the same on both sides: the places stand on the capsule's middle */
-}
-/* The name: the brand's own letters once their font is settled (--font-brand), the site's until then. */
-.site-logo {
-  flex: none; font-size: 15px; font-weight: 800; letter-spacing: 0.12em;
-  text-transform: uppercase; text-decoration: none; color: var(--ink);
-}
-.site-header .site-logo { justify-self: start; margin-left: 20px; font-family: var(--font-brand, var(--font)); white-space: nowrap; }
-/* The places: soft pills inside the capsule. The current place and the one
-   pointed at are a faint fill of the stone's own shade; the keyboard ring
-   follows the same shape. Only colour changes, in 150 ms. */
-.site-nav { grid-column: 2; align-self: center; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
-.site-nav > a, .nav-drop > summary {
-  display: flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 999px;
-  font-size: var(--fs-small); color: var(--ink-soft); text-decoration: none; white-space: nowrap; cursor: pointer;
-  transition: color 0.15s, background-color 0.15s;
-}
-.site-nav > a:focus-visible, .nav-drop > summary:focus-visible { outline-offset: 0; }
-.nav-drop[open] > summary { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
-@media (hover: hover) { .site-nav > a:hover, .nav-drop > summary:hover { color: var(--ink); background: rgba(28, 29, 27, 0.05); } }
-.site-nav > a.active, .nav-drop > summary.active { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
-.nav-drop { position: static; }
-.nav-drop > summary { position: relative; list-style: none; gap: 6px; }
-.nav-drop > summary::-webkit-details-marker { display: none; }
-.nav-drop > summary::after {
-  content: ''; flex: none; width: 6px; height: 6px; margin-top: -3px;
-  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg);
-}
-.nav-drop[open]:not(.is-closing) > summary::after { margin-top: 3px; transform: rotate(-135deg); }
-
-/* The panel: a ledger on a plate of the same stone, hanging under the capsule's
-   middle. One row per group -- its number and name on the left, small and
-   quiet, its directions on the right -- with thin neutral rules between the
-   rows; verde only as a line under the direction you point at and under the
-   page you are on. */
-.nav-panel {
-  position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0; width: min(640px, calc(100vw - 2 * var(--gutter)));
-  background: rgba(248, 247, 244, 0.97); border: 1px solid rgba(28, 29, 27, 0.09); border-radius: 24px;
-  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
-  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 24px 48px -24px rgba(28, 29, 27, 0.4);
-}
-.nav-panel-inner { counter-reset: nav-group; padding: var(--s-2) var(--s-6) var(--s-3); }
-.nav-group {
-  counter-increment: nav-group;
-  display: grid; grid-template-columns: 184px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
-  padding: var(--s-4) 0; border-top: 1px solid var(--line);
-}
-.nav-group:first-child { border-top: 0; }
-.nav-group-title {
-  display: flex; gap: var(--s-3); font-size: 13px; line-height: 1.5; color: var(--muted);
-  transition: color 0.15s;
-}
-.nav-group-title::before { content: counter(nav-group, decimal-leading-zero); min-width: 1.5em; font-variant-numeric: tabular-nums; }
-.nav-group:focus-within .nav-group-title { color: var(--ink); }
-@media (hover: hover) { .nav-group:hover .nav-group-title { color: var(--ink); } }
-.nav-group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); }
-.nav-group a {
-  position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px 0;
-  font-size: 16px; line-height: 1.4; color: var(--ink); text-decoration: none;
-}
-.nav-group a::before {
-  content: ''; position: absolute; left: 0; right: 22px; bottom: 0; height: 1px; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease);
-}
-.nav-group a::after {
-  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  opacity: 0; transform: translateX(-4px); transition: opacity 0.15s, transform 0.2s var(--ease);
-}
-.nav-group a:focus-visible::before, .nav-group a.active::before { transform: scaleX(1); }
-@media (hover: hover) { .nav-group a:hover::before { transform: scaleX(1); } }
-.nav-group a:focus-visible::after { opacity: 1; transform: translateX(0); }
-@media (hover: hover) { .nav-group a:hover::after { opacity: 1; transform: translateX(0); } }
-/* The showroom's panel: the house on the left, on the right its name, two lines,
-   the way in and its rooms -- the same plate as «Изделия». */
-.nav-showroom-inner { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--s-5); align-items: center; padding: var(--s-4); }
-.nav-showroom-house { display: block; border-radius: 16px; overflow: hidden; background: var(--surface-sunk); }
-.nav-showroom-house img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
-.nav-showroom-title { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; color: var(--ink); }
-.nav-showroom-note { margin-top: var(--s-2); font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
-.nav-showroom-enter { margin-top: var(--s-4); min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); }
-.nav-showroom-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); margin-top: var(--s-3); }
-.nav-showroom-rooms a { display: inline-flex; align-items: center; min-height: 28px; font-size: 13px; color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
-.nav-showroom-rooms a:focus-visible { color: var(--ink); }
-@media (hover: hover) { .nav-showroom-rooms a:hover { color: var(--ink); } }
-
-/* The actions, on the right: «Заказать» -- to the request form (on the page itself where it
-   has one, else the home page's), a quiet outlined pill -- and the verde pill «Создать
-   изделие» set into the capsule's curve, 8 px from its edge (2026-10-10, the owner's request). */
-.site-header-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 6px; }
-.site-header-cta {
-  grid-column: 3; justify-self: end; flex: none;
-  min-height: 44px; padding: 0 22px; border-radius: 999px; font-size: var(--fs-small);
-}
-.site-header-order { flex: none; min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); background: transparent; }
-
-/* Narrow phones: the two actions in the open menu one over the other, each its full name. */
-@media (max-width: 380px) {
-  .js .site-header.menu-open div.site-header-actions { flex-direction: column; align-items: stretch; }
-  .js .site-header.menu-open .site-header-actions > a.btn { flex: none; }
-  /* The list a row shorter, so both actions stay in view under it. */
-  .js .site-header.menu-open nav.site-nav { max-height: calc(100vh - 228px); max-height: calc(100dvh - 228px); }
-}
-
-/* Small desktops (1001..1200 px): the places and the two actions a little closer-set, so the
-   actions keep clear of the places. */
-@media (min-width: 1001px) and (max-width: 1200px) {
-  .site-nav > a, .nav-drop > summary { padding: 0 11px; }
-  .site-header-order, .site-header-cta { padding: 0 16px; }
-}
-
-/* The menu button: only where there is a menu to open. */
-.nav-toggle {
-  display: none; flex: none; width: 44px; height: 44px; border-radius: 50%;
-  align-items: center; justify-content: center; background: none; border: 0; cursor: pointer; color: var(--ink);
-}
-.nav-toggle-icon, .nav-toggle-icon::before, .nav-toggle-icon::after {
-  display: block; width: 20px; height: 2px; background: currentColor; border-radius: 1px;
-  transition: transform 0.2s var(--ease), background-color 0.2s;
-}
-.nav-toggle-icon { position: relative; }
-.nav-toggle-icon::before, .nav-toggle-icon::after { content: ''; position: absolute; left: 0; }
-.nav-toggle-icon::before { top: -6px; }
-.nav-toggle-icon::after { top: 6px; }
-.menu-open .nav-toggle-icon { background: transparent; }
-.menu-open .nav-toggle-icon::before { transform: translateY(6px) rotate(45deg); }
-.menu-open .nav-toggle-icon::after { transform: translateY(-6px) rotate(-45deg); }
-html.menu-lock { overflow: hidden; }
-
-/* Phones and tablets: the same capsule, a little lower and closer to the edges --
-   the name and the menu button. Opened, the capsule itself grows downward into
-   the menu: the directions, the places, and «Создать изделие» at its foot. */
-@media (max-width: 1000px) {
-  .site-header { --header-h: 56px; top: 8px; margin-top: 8px; border-radius: 28px; }
-  .site-header-inner { display: flex; align-items: center; gap: var(--s-3); padding: 0 6px 0 20px; }
-  .site-header .site-logo { margin-left: 0; }
-  /* Without JavaScript: the capsule wraps -- the name and the action, the links under them. */
-  html:not(.js) .site-header { position: static; }
-  html:not(.js) .site-header-inner { height: auto; flex-wrap: wrap; padding: var(--s-2) 6px var(--s-2) 20px; }
-  html:not(.js) .site-logo { order: 1; }
-  html:not(.js) .site-header-cta { order: 2; margin-left: auto; }
-  html:not(.js) .site-header-actions { order: 2; margin-left: auto; }
-  html:not(.js) .site-nav { order: 3; flex: 1 0 100%; flex-wrap: wrap; justify-content: flex-start; gap: 0 var(--s-5); }
-  html:not(.js) .site-nav > a, html:not(.js) .nav-drop > summary { height: 44px; padding: 0 10px; }
-  /* With JavaScript: the name and the menu button; the action waits inside the menu. */
-  .js .site-logo { order: 1; }
-  .js .nav-toggle { order: 2; display: inline-flex; margin-left: auto; }
-  .js .site-header-cta { display: none; }
-  .js .site-header-actions { display: none; }
-  .js .site-nav { display: none; }
-  .js .site-header.menu-open {
-    --capsule-bg: rgba(248, 247, 244, 0.97);
-    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);
-  }
-  .js .site-header.menu-open .site-header-inner { height: auto; flex-wrap: wrap; padding: 6px 6px 6px 20px; }
-  .js .site-header.menu-open .site-nav {
-    order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; gap: 0;
-    margin: 6px 14px 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line);
-    /* Only the list scrolls: the name and the close button above it, the action under it, stay in view. */
-    max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overscroll-behavior: contain;
-  }
-  .js .site-header.menu-open .site-header-cta { order: 4; display: inline-flex; flex: 1 0 auto; margin: var(--s-5) 14px var(--s-3) 0; }
-  /* Both actions at the menu's foot, side by side, as wide as the menu. */
-  .js .site-header.menu-open .site-header-actions { order: 4; display: flex; flex: 1 0 100%; gap: var(--s-2); margin: var(--s-5) 14px var(--s-3) 0; }
-  .js .site-header.menu-open .site-header-actions > * { flex: 1 1 0; min-width: 0; margin: 0; padding: 0 12px; justify-content: center; white-space: nowrap; }
-  /* In the open menu the products and the showroom are always shown -- no second tap. */
-  .js .nav-drop { position: static; }
-  .js .nav-drop > summary {
-    height: auto; padding: 0 0 var(--s-3); border-radius: 0; background: none; pointer-events: none;
-    font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
-  }
-  .js .nav-drop > summary::after { display: none; }
-  .js .nav-panel {
-    position: static; translate: none; width: auto; background: none; border: 0; border-radius: 0; box-shadow: none;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-  }
-  .js .nav-panel-inner { display: grid; padding: 0 0 var(--s-5); }
-  .js .nav-group { grid-template-columns: 1fr; align-content: start; row-gap: var(--s-2); padding: var(--s-4) 0; }
-  .js .nav-group ul { flex-direction: column; gap: 0; }
-  .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
-  .js .site-nav > a {
-    height: auto; min-height: 44px; padding: var(--s-3) 0; border-radius: 0; background: none; border-top: 1px solid var(--line);
-    font-size: 17px; font-weight: 600; color: var(--ink);
-  }
-  .js .site-nav > a.active { color: var(--accent); }
-  /* The showroom in the menu: its name as a heading, then the house small and the way in. */
-  .js .nav-showroom { border-top: 1px solid var(--line); padding-top: var(--s-4); }
-  .js .nav-showroom-inner { grid-template-columns: 120px minmax(0, 1fr); gap: var(--s-4); padding: 0 0 var(--s-4); }
-  .js .nav-showroom-note, .js .nav-showroom-rooms { display: none; }
-  .js .nav-showroom-title { font-size: 16px; }
-  .js .nav-showroom-enter { min-height: 40px; padding: 0 16px; margin-top: var(--s-2); }
-}
-/* The capsule marks places with its soft pills, not with a line: js/header.js still
-   places its travelling line (.nav-indicator), and the capsule simply does not
-   show it. On a wide screen a panel unfolds downward from the capsule and, when
-   it closes, folds back up into it (js/header.js keeps the <details> open while
-   it folds -- .is-closing -- and closes it after). */
-.nav-indicator { display: none; }
-@media (min-width: 1001px) {
-  .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }
-  .nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }
-}
-@keyframes nav-panel-unfold {
-  from { clip-path: inset(0 0 100% 0 round 24px); }
-  to { clip-path: inset(0 0 0 0 round 24px); }
-}
-@keyframes nav-panel-fold {
-  from { clip-path: inset(0 0 0 0 round 24px); opacity: 1; }
-  to { clip-path: inset(0 0 100% 0 round 24px); opacity: 0.6; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .nav-drop[open] > .nav-panel, .nav-drop.is-closing > .nav-panel { animation: none; }
-}
-@media (min-width: 601px) and (max-width: 1000px) {
-  .js .nav-panel-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-6); }
-  .js .nav-group:nth-child(2) { border-top: 0; }
 }
 
 /* ---- Home (static) -----------------------------------------------------------
@@ -2675,7 +2408,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
    configure bar, the groups of «Что можно заказать», the chips and arrows on the
    photographs of the home page, the viewer's buttons and veil (the showroom has its
    own, css/showroom.css). The frost and the rim are in each rule; here, the bend --
-   Chromium only (js/site.js mountGlass) -- and the glass made solid where the visitor
+   Chromium only (js/header.js mountGlass) -- and the glass made solid where the visitor
    asks for less transparency or the browser cannot blur. */
 .glass-bend .configure-bar, .glass-bend .home-group, .glass-bend .home-s2o-chip, .glass-bend .home-s2o-arrow,
 .glass-bend .home-about-chip, .glass-bend .viewer-btn { backdrop-filter: var(--glass-bend); }
@@ -2726,9 +2459,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .home-s2o-arrow-right { display: none; }
   .home-s2o-arrow-down { display: block; }
   .offer-toggle-arrow { width: 20px; height: 13px; margin-bottom: 6px; }
-  .nav-group { grid-template-columns: 1fr; row-gap: var(--s-2); }
   :root { --gutter: 16px; --fs-h3: 17px; }
-  .site-header-cta { padding: 0 16px; }
   .subtitle, .lead { font-size: var(--fs-body); }
   .contacts-head p { font-size: var(--fs-body); }
   .contacts-map-frame { min-height: 340px; }

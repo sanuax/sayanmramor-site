@@ -10,6 +10,11 @@ const site = path.join(__dirname, '..');
 const pages = ['index.html', 'katalog.html', 'showroom.html']
   .concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f));
 
+// The header and the buttons it uses live in css/header.css, shared with the
+// configurator; the site loads it before css/site.css.
+const headerAndSiteCss = () => fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8') + '\n' + fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+const headerSection = () => { const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8'); return h.slice(h.indexOf('/* ---- Header: the capsule')); };
+
 function filesIn(dir, ext) {
   return fs.readdirSync(path.join(site, dir), { withFileTypes: true }).flatMap(e =>
     e.isDirectory() ? filesIn(path.join(dir, e.name), ext) : e.name.endsWith(ext) ? [path.join(dir, e.name)] : []);
@@ -360,7 +365,7 @@ test('every page: the header button keeps its full name, with «изделие»
     assert.equal((html.match(/<button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Меню">/g) || []).length, 1, page);
     assert.ok(html.includes('id="siteNav"'), page);
   });
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const css = headerAndSiteCss();
   // On a phone the capsule holds the name and the menu button; «Создать изделие» waits inside the open menu, full width.
   assert.match(css, /\.js \.site-header-cta \{ display: none; \}/);
   assert.match(css, /\.js \.site-header\.menu-open \.site-header-cta \{ order: 4; display: inline-flex;/);
@@ -372,7 +377,7 @@ test('every page: «Заказать» beside «Создать изделие» 
     const href = html.includes('id="offer"') ? '#offer' : '/sayanmramor-site/index.html#offer';
     assert.ok(html.includes('<div class="site-header-actions"><a class="btn btn-secondary site-header-order" href="' + href + '">Заказать</a><a class="btn btn-primary site-header-cta"'), page);
   });
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const css = headerAndSiteCss();
   assert.match(css, /\.js \.site-header-actions \{ display: none; \}/);
   assert.match(css, /\.js \.site-header\.menu-open \.site-header-actions \{ order: 4; display: flex;/);
   const js = fs.readFileSync(path.join(site, 'js', 'header.js'), 'utf8');
@@ -386,7 +391,7 @@ test('header.js is loaded deferred on every header page; the «js» flag is set 
     const flag = html.indexOf("document.documentElement.classList.add('js')");
     assert.ok(flag > 0 && flag < html.indexOf('<link rel="stylesheet"'), page);
   });
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const css = headerAndSiteCss();
   assert.ok(css.includes('@media (max-width: 1000px)'));
   assert.ok(css.includes('html.menu-lock'));
   assert.equal(SiteHeader.MOBILE_QUERY, '(max-width: 1000px)');
@@ -553,9 +558,9 @@ test('the header points only at what exists: «Контакты» lands on the h
 });
 
 test('the header is a floating capsule: sticky, never full width, fully rounded, a little translucent over a soft blur (solid where blur is missing), a hairline edge; it opens downward into the menu on a phone', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const css = headerAndSiteCss();
   assert.doesNotMatch(css, /nav-fade|nav-edges/);
-  const header = css.slice(css.indexOf('/* ---- Header: the capsule'), css.indexOf('/* ---- Home (static)'));
+  const header = headerSection();
   const start = header.indexOf('\n.site-header {');
   const rule = header.slice(start, header.indexOf('}', start));
   assert.match(rule, /position: sticky; top: 12px;/);
@@ -602,8 +607,8 @@ test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- loc
 });
 
 test('header: the places are soft pills in the capsule -- the current one and the pointed one a faint fill, the keyboard ring the same shape; no line, no springs; the «Изделия» panel unfolds downward', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const header = css.slice(css.indexOf('/* ---- Header: the capsule'), css.indexOf('/* ---- Home (static)'));
+  const css = headerAndSiteCss();
+  const header = headerSection();
   assert.match(header, /\.site-nav > a, \.nav-drop > summary \{[^}]*height: 36px; padding: 0 14px; border-radius: 999px;[^}]*transition: color 0\.15s, background-color 0\.15s;/);
   assert.match(header, /\.site-nav > a\.active, \.nav-drop > summary\.active \{ color: var\(--ink\); background: rgba\(28, 29, 27, 0\.06\); \}/);
   assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: rgba\(28, 29, 27, 0\.05\); \} \}/);
@@ -827,7 +832,7 @@ test('«Где мы находимся»: one limestone plane, no cards -- the a
 });
 
 test('the «Изделия» panel is a ledger about 640 px wide: numbered group rows, thin neutral rules, copper only for hover / the current page', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const css = headerAndSiteCss();
   const rule = sel => { const i = css.indexOf('\n' + sel + ' {'); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
   assert.match(rule('.nav-panel'), /width: min\(640px,/);
   assert.match(rule('.nav-panel-inner'), /counter-reset: nav-group/);
@@ -986,7 +991,7 @@ test('hover only where there is a pointer: every :hover rule sits in @media (hov
 });
 
 test('step 0 fixes: the phone\'s contacts line up with their heading; touch targets of 44 px in the menus; the configure bar shortens instead of cutting off', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const css = headerAndSiteCss();
   assert.doesNotMatch(css, /\.contacts-card \{ padding:/, 'no card padding left over on phones');
   assert.match(css, /\.mast-menu \.mast-group a, \.mast-menu-links a \{ display: inline-flex; align-items: center; min-height: 44px; \}/);
   assert.match(css, /\.js \.nav-group a \{ min-height: 44px;/);
@@ -1267,7 +1272,7 @@ test('liquid glass in site.css: the configure bar a floating capsule, the groups
   assert.match(calm.slice(0, calm.indexOf('\n}\n')), /backdrop-filter: none;/);
 });
 
-test('liquid glass in showroom.css: the caption, the zones, the hint, the card, the panel, «На улицу» and the ghost buttons over the scene; solid where less transparency is asked; showroom.html loads site.js for the refraction', () => {
+test('liquid glass in showroom.css: the caption, the zones, the hint, the card, the panel, «На улицу» and the ghost buttons over the scene; solid where less transparency is asked; showroom.html loads header.js for the refraction', () => {
   const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
   assert.match(sr, /--sr-glass: rgba\(30, 26, 22, 0\.\d+\);/);
   const glass = sr.slice(sr.indexOf('/* ---- liquid glass'));
@@ -1278,7 +1283,7 @@ test('liquid glass in showroom.css: the caption, the zones, the hint, the card, 
   assert.match(glass, /\.glass-bend [^{]*\{[^}]*backdrop-filter: var\(--sr-glass-bend\);/);
   assert.match(glass, /@media \(prefers-reduced-transparency: reduce\) \{[^]*?backdrop-filter: none;/);
   const html = fs.readFileSync(path.join(site, 'showroom.html'), 'utf8');
-  assert.ok(html.includes('<script src="/sayanmramor-site/js/site.js"></script>'));
+  assert.ok(html.includes('<script src="/sayanmramor-site/js/header.js"></script>'));
 });
 
 test('mountGlass: in Chromium the refraction filter goes into the page once and <html> gets .glass-bend; not in Safari / Firefox, not when less transparency is asked', () => {
@@ -1295,17 +1300,17 @@ test('mountGlass: in Chromium the refraction filter goes into the page once and 
   const chromium = { userAgentData: {} };
   const quiet = q => ({ matches: false });
   let doc = fakeDoc();
-  assert.equal(SiteCommon.mountGlass(doc, chromium, quiet), true);
-  assert.equal(SiteCommon.mountGlass(doc, chromium, quiet), true);
+  assert.equal(SiteHeader.mountGlass(doc, chromium, quiet), true);
+  assert.equal(SiteHeader.mountGlass(doc, chromium, quiet), true);
   assert.equal(doc.added.length, 1, 'the filter once');
   assert.equal(doc.added[0].id, 'lg-bend-defs');
   assert.match(doc.added[0].html, /<filter id="lg-bend"[^>]*>[\s\S]*<feDisplacementMap /);
   assert.ok(doc.classes.has('glass-bend'));
   doc = fakeDoc();
-  assert.equal(SiteCommon.mountGlass(doc, {}, quiet), false, 'Safari and Firefox: frost only');
+  assert.equal(SiteHeader.mountGlass(doc, {}, quiet), false, 'Safari and Firefox: frost only');
   assert.equal(doc.added.length, 0); assert.ok(!doc.classes.has('glass-bend'));
   doc = fakeDoc();
-  assert.equal(SiteCommon.mountGlass(doc, chromium, q => ({ matches: /reduced-transparency/.test(q) })), false);
+  assert.equal(SiteHeader.mountGlass(doc, chromium, q => ({ matches: /reduced-transparency/.test(q) })), false);
   assert.ok(!doc.classes.has('glass-bend'));
 });
 
@@ -1319,4 +1324,47 @@ test('reserveFixedUi: the floating configure bar keeps its height and its gap to
   };
   SiteCommon.reserveFixedUi(doc);
   assert.equal(props['--fixed-bottom'], '92px', '64 + 12 + the focus gap of 16');
+});
+
+// ---- The header shared with the configurator (2026-10-10, the owner's request) ----
+test('css/header.css: the header and its buttons in one file; its tokens are css/site.css :root values, at zero specificity so the site always wins', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.ok(h.includes('/* ---- Buttons') && h.includes('/* ---- Header: the capsule'));
+  assert.ok(!css.includes('/* ---- Buttons') && !css.includes('/* ---- Header: the capsule'), 'not twice');
+  assert.doesNotMatch(css, /\n\.site-header \{|\n\.btn \{|\n\.nav-panel \{/);
+  const block = h.slice(h.indexOf(':where(:root) {'), h.indexOf('\n}', h.indexOf(':where(:root) {')));
+  const tokens = [...block.matchAll(/\n\s*(--[a-z0-9-]+): ([^;]+);/g)];
+  assert.ok(tokens.length >= 20);
+  const siteValue = name => { const m = css.match(new RegExp('(?:^|\\s)' + name + ':\\s*([^;]+);')); return m && m[1].trim(); };
+  tokens.forEach(([, name, value]) => assert.equal(value.trim(), siteValue(name), name + ' as in site.css'));
+  assert.doesNotMatch(h, /\n:root \{/, 'no :root of its own: it would beat site.css on order');
+});
+
+test('every header page loads css/header.css right before css/site.css', () => {
+  headerPages.forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    assert.ok(html.includes('<link rel="stylesheet" href="/sayanmramor-site/css/header.css">\n<link rel="stylesheet" href="/sayanmramor-site/css/site.css">'), page);
+  });
+});
+
+// The configurator lives in its own repository; checked here when its checkout is on this machine.
+const calcRoot = process.env.SAYAN_CALCULATOR_ROOT || path.join('D:\\', 'calculator', '.worktrees', 'rate-catalog-subcategories');
+const calcPage = path.join(calcRoot, 'sayanmramor-calculator.html');
+test('the configurator wears the site\'s header: the same menu, no «Заказать» / «Создать изделие», nothing marked current; css/header.css and js/header.js from the site', { skip: !fs.existsSync(calcPage) && 'no configurator checkout' }, () => {
+  const calc = fs.readFileSync(calcPage, 'utf8');
+  const nav = html => { const i = html.indexOf('<nav class="site-nav"'); return html.slice(i, html.indexOf('</nav>', i) + 6); };
+  const plain = s => s.replace(/ class="active"| aria-current="page"/g, '').replace(/<summary class="active">/g, '<summary>').replace(/\r\n/g, '\n');
+  const siteNav = plain(nav(fs.readFileSync(path.join(site, 'katalog.html'), 'utf8')));
+  assert.ok(siteNav.length > 1000);
+  assert.equal(plain(nav(calc)), siteNav, 'the same menu as on the site');
+  assert.doesNotMatch(nav(calc), /class="active"|aria-current/, 'the configurator is not in the menu: nothing current');
+  const header = calc.slice(calc.indexOf('<header class="site-header">'), calc.indexOf('</header>') + 9);
+  assert.match(header, /<a class="site-logo" href="\/sayanmramor-site\/index\.html">Саянмрамор<\/a>/);
+  assert.doesNotMatch(header, /site-header-actions|Заказать|Создать изделие/);
+  assert.match(header, /<button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Меню">/);
+  assert.ok(calc.includes('<link rel="stylesheet" href="/sayanmramor-site/css/header.css">'));
+  assert.ok(calc.includes('<script src="/sayanmramor-site/js/header.js" defer></script>'));
+  const flag = calc.indexOf("document.documentElement.classList.add('js')");
+  assert.ok(flag > 0 && flag < calc.indexOf('/sayanmramor-site/css/header.css'), 'the «js» flag before the header stylesheet');
 });
