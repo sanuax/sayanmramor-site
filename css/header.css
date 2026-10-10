@@ -254,7 +254,7 @@ html.menu-lock { overflow: hidden; }
   }
   .js .site-header.menu-open .site-header-inner { height: auto; flex-wrap: wrap; padding: 6px 6px 6px 20px; }
   .js .site-header.menu-open .site-nav {
-    order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
     margin: 6px 14px 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line);
     /* Only the list scrolls: the name and the close button above it, the action under it, stay in view. */
     max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overscroll-behavior: contain;

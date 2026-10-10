@@ -1347,6 +1347,43 @@ test('reserveFixedUi: the floating configure bar keeps its height and its gap to
   assert.equal(props['--fixed-bottom'], '92px', '64 + 12 + the focus gap of 16');
 });
 
+test('reserveFixedUi: the open phone menu does not count as the sticky header -- «Заказать» in it lands on the form, not a screen short of it', () => {
+  const props = {};
+  let height = 58;
+  const classes = new Set();
+  const header = { getBoundingClientRect: () => ({ height }), classList: { contains: c => classes.has(c) } };
+  let observed;
+  global.ResizeObserver = class { constructor(cb) { observed = cb; } observe() {} };
+  try {
+    const doc = {
+      documentElement: { style: { setProperty: (k, v) => { props[k] = v; } } },
+      querySelector: s => s === '.site-header' ? header : null,
+      defaultView: { getComputedStyle: () => ({ bottom: 'auto' }) },
+    };
+    SiteCommon.reserveFixedUi(doc);
+    assert.equal(props['--sticky-top'], '74px');
+    classes.add('menu-open'); height = 796; observed();
+    assert.equal(props['--sticky-top'], '74px', 'the menu grown open keeps the capsule\'s own height');
+    classes.delete('menu-open'); height = 58; observed();
+    assert.equal(props['--sticky-top'], '74px');
+  } finally { delete global.ResizeObserver; }
+});
+
+test('the open phone menu: its list starts at the top, so the first places can be scrolled to', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  const rule = h.match(/\.js \.site-header\.menu-open \.site-nav \{[^}]*\}/)[0];
+  assert.match(rule, /overflow-y: auto/);
+  assert.match(rule, /justify-content: flex-start/, 'centred, a list taller than its box would lose its top past the scroll');
+});
+
+test('the showroom on a phone: all six rooms in the bar at once, no swipe needed (a mouse cannot swipe)', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
+  const phone = css.slice(css.indexOf('@media (max-width: 767px)'));
+  const zone = phone.match(/\n {2}\.sr-zone \{[^}]*\}/)[0];
+  assert.match(zone, /flex: 1 1 auto/, 'the rooms share the width');
+  assert.match(phone.match(/\n {2}\.sr-zones \{[^}]*\}/)[0], /overflow-x: auto/, 'still scrolls on the narrowest screens');
+});
+
 // ---- The header shared with the configurator (2026-10-10, the owner's request) ----
 test('css/header.css: the header and its buttons in one file; its tokens are css/site.css :root values, at zero specificity so the site always wins', () => {
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');

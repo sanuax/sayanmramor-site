@@ -484,6 +484,9 @@
     const view = doc.defaultView;
     const offset = el => (view && view.getComputedStyle ? parseFloat(view.getComputedStyle(el).bottom) : 0) || 0;
     const measure = () => parts.forEach(([name, el]) => {
+      // The phone menu grows the capsule down over the page: that is not the bar to keep clear of,
+      // and «Заказать» in it would scroll to its anchor a whole menu short.
+      if (el.classList && el.classList.contains('menu-open')) return;
       const extra = name === '--fixed-bottom' ? offset(el) : 0;
       root.style.setProperty(name, Math.ceil(el.getBoundingClientRect().height + extra) + FIXED_UI_GAP + 'px');
     });

@@ -342,10 +342,11 @@ body.is-interior .sr-caption { top: 128px; }
   .sr-chip { min-height: 36px; }
   .sr-zones {
     left: 0; right: 0; bottom: 0; transform: none; border-radius: 0; border-width: 1px 0 0;
-    padding: 8px 12px calc(8px + var(--sr-safe-bottom)); overflow-x: auto; scrollbar-width: none;
+    gap: 2px; padding: 8px 6px calc(8px + var(--sr-safe-bottom)); overflow-x: auto; scrollbar-width: none;
   }
   .sr-zones::-webkit-scrollbar { display: none; }
-  .sr-zone { min-height: 44px; padding: 0 16px; flex: none; }
+  /* All six rooms in view at once from 360 px (a mouse cannot swipe the bar); narrower, it scrolls. */
+  .sr-zone { min-height: 44px; padding: 0 4px; flex: 1 1 auto; font-size: 13px; }
   .sr-hint { bottom: auto; top: 118px; max-width: calc(100% - 32px); text-align: center; }
   body.has-sheet .sr-caption { display: none; }
   .sr-card, .sr-panel, .glass-bend .sr-card, .glass-bend .sr-panel {
