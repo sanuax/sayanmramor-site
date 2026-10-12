@@ -1044,6 +1044,33 @@ test('years on the market: full years since the founding day, the figure turning
   assert.deepEqual([el.figure.textContent, el.word.textContent], ['12', 'лет']);
 });
 
+test('about: one grid -- the Donatoni wide, the cutter upright beside it, the words over the cutter, four figures; no motion (the owner, 2026-10-12)', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const about = sectionOf(homeHtml(), '<section class="wrap home-about"');
+  assert.deepEqual([...about.matchAll(/<figure class="home-about-shot home-about-shot-(\w+)">/g)].map(m => m[1]), ['wide', 'tall'],
+    'one grid (2026-10-11): the Donatoni wide, the cutter upright beside it');
+  assert.match(css, /\.home-about-shot-wide \{ grid-column: 1 \/ 10; \}[\s\S]*\.home-about-shot-tall \{ grid-column: 10 \/ -1; \}/);
+  assert.match(css, /\.home-about-lead \{ grid-column: 10 \/ -1;/, 'the words over the cutter: one right-hand edge');
+  assert.match(css, /\.home-about-facts \{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.home-about-facts dd \{[^}]*line-height: 1\.05;/);
+  assert.doesNotMatch(css, /about-motion|about-count|about-word|@keyframes about-/, 'no animation left in «О компании»');
+  const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
+  assert.doesNotMatch(js, /mountAboutMotion|counterColumns/);
+});
+
+test('who trusts us as passes: the back of each tile says only what the link already holds -- the site without www', () => {
+  assert.deepEqual(['https://www.vtb.ru/', 'https://mcx.gov.ru/', 'https://resobank.com/', 'not a url'].map(SiteCommon.trustSite),
+    ['vtb.ru', 'mcx.gov.ru', 'resobank.com', '']);
+  const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
+  const mount = js.slice(js.indexOf('function mountTrustMotion'), js.indexOf('mountTrustMotion(document, window)'));
+  assert.match(mount, /prefers-reduced-motion: reduce\)'\)\.matches\) return;/, 'reduced motion: the tiles stay as they were');
+  assert.match(mount, /back\.setAttribute\('aria-hidden', 'true'\)/, 'the back repeats the link for the eye only');
+  assert.match(mount, /e\.pointerType !== 'mouse'/, 'the lean follows a mouse, not a finger');
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /@media \(hover: hover\) \{\n  \.trust-motion \.trust-pass:hover \.trust-flip \{ transform: rotateY\(180deg\);/, 'turned over by hover only where there is a pointer');
+  assert.match(css, /\.trust-motion \.trust-pass:focus-visible \.trust-flip \{ transform: rotateY\(180deg\); \}/, 'and by keyboard focus');
+});
+
 test('about, why us, who trusts us: the old site\'s three blocks -- its words and figures, the six companies each a link to its site, the logos on disk', () => {
   const html = homeHtml();
   const about = sectionOf(html, '<section class="wrap home-about"');
@@ -1259,11 +1286,13 @@ test('three questions in CSS: scoped to the home page\'s band, hover only where 
 test('the static home in CSS: colour on hover and focus only -- no sticky, no transforms, no animations, transitions of 150 ms; hover only where there is a pointer', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const whole = css.slice(css.indexOf('/* ---- Home (static)'), css.indexOf('/* ---- Home palette'));
-  // Two exceptions: «От камня к изделию», whose cards lift under a pointer (tested on its own below);
+  // Three exceptions: «От камня к изделию», whose cards lift under a pointer (tested on its own below);
+  // «Нам доверяют», whose tiles are passes that turn over (2026-10-11, after the 21st.dev boarding pass);
   // and «Что можно заказать», whose groups are tilt cards (2026-10-12, after the 21st.dev tilt card).
+  // «О компании» is static again (2026-10-12, the owner): its motion was taken out.
   // Each one's motion lives in its own block, only behind the class its script sets.
   let block = whole.slice(0, whole.indexOf('/* From stone to object')) + whole.slice(whole.indexOf('/* What can be ordered'));
-  [['/* What can be ordered in motion', '/* end of what can be ordered in motion */']].forEach(([from, to]) => {
+  [['/* What can be ordered in motion', '/* end of what can be ordered in motion */'], ['/* Who trusts us in motion', '/* end of who trusts us in motion */']].forEach(([from, to]) => {
     const cut = [block.indexOf(from), block.indexOf(to)];
     assert.ok(cut[0] > 0 && cut[1] > cut[0], from);
     block = block.slice(0, cut[0]) + block.slice(cut[1]);

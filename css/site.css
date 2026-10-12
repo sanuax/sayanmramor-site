@@ -422,41 +422,43 @@ h3 { font-size: var(--fs-h3); }
 .home-showroom-house img { display: block; width: 100%; height: auto; }
 .home-showroom :focus-visible { outline-color: var(--on-dark); }
 
-/* About the company (2026-10-10, the owner's brief: no video, a beautiful block, the work or a slab):
-   on the left the words -- a kicker, the heading, one line -- and at their foot the four figures
-   in a square of thin lines; on the right two photographs from the workshop laid like prints, as
-   «От камня к изделию» lays them: the cutter on a slab, upright, and over its lower left corner
-   the Italian bridge saw, in a ring of the page's own colour. Nothing moves. */
-.home-about {
-  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto 1fr;
-  grid-template-areas: "text media" "facts media"; column-gap: var(--s-8); row-gap: var(--s-7);
-  padding-top: var(--section);
+/* About the company (2026-10-10 the old site's words and figures; 2026-10-11 rebuilt on one
+   grid at the owner's word «структура хромает»). Three bands on the twelve columns of the page,
+   one under another, so nothing hangs: the heading over columns 1-8 with the line beside it in
+   10-12, standing on the heading's last line; the two workshop photographs at one height -- the
+   Donatoni bridge saw wide over 1-9, the cutter on the slab upright over 10-12; and the four
+   figures large, three columns each, thin lines in the gaps. The right-hand line (the words,
+   the cutter, the last figure) is one edge from top to bottom. */
+.home-about { --about-gap: var(--s-5); padding-top: var(--section); }
+.home-about-text {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--about-gap); align-items: end;
 }
-.home-about-text { grid-area: text; padding-top: var(--s-5); }
 .home-about-kicker, .home-trust-kicker {
   display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4);
   font-size: var(--fs-meta); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
 }
 .home-about-kicker::after, .home-trust-kicker::after { content: ''; width: 56px; height: 1px; background: currentColor; }
-.home-about h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); line-height: 1.12; text-wrap: balance; }
-.home-about-lead { max-width: 28em; margin-top: var(--s-5); font-size: 18px; line-height: 1.55; color: var(--ink-soft); }
+.home-about-kicker { grid-column: 1 / -1; }
+.home-about h2 { grid-column: 1 / 9; margin: 0; font-size: clamp(30px, 3.7vw, 54px); line-height: 1.08; text-wrap: balance; }
+.home-about-lead { grid-column: 10 / -1; padding-bottom: 0.3em; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
 
-.home-about-media { grid-area: media; position: relative; align-self: start; padding-bottom: 18%; }
+.home-about-media {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--about-gap);
+  height: clamp(320px, 36vw, 500px); margin-top: var(--s-7);
+}
 .home-about-shot {
-  position: relative; overflow: hidden; border-radius: 20px; background: var(--surface-sunk);
-  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.10), 0 10px 22px -12px rgba(28, 29, 27, 0.30), 0 36px 60px -34px rgba(28, 29, 27, 0.45);
+  position: relative; overflow: hidden; margin: 0; border-radius: 20px; background: var(--surface-sunk);
+  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.08), 0 24px 48px -30px rgba(28, 29, 27, 0.45);
 }
 .home-about-shot::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 .home-about-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.home-about-shot-main { width: 70%; margin-left: auto; aspect-ratio: 4 / 5; }
-.home-about-shot-main img { object-position: 40% 50%; }
-.home-about-shot-side {
-  position: absolute; left: 0; bottom: 0; z-index: 1; width: 62%; aspect-ratio: 3 / 2;
-  box-shadow: 0 0 0 6px var(--page), 0 10px 22px -10px rgba(28, 29, 27, 0.35), 0 40px 64px -34px rgba(28, 29, 27, 0.5);
-}
+.home-about-shot-wide { grid-column: 1 / 10; }
+.home-about-shot-wide img { object-position: 40% 50%; }   /* the cutter and its spray: centred on wide frames, kept in on narrow ones */
+.home-about-shot-tall { grid-column: 10 / -1; }
+.home-about-shot-tall img { object-position: 74% 50%; }
 .home-about-chip {
   position: absolute; left: 14px; top: 14px; z-index: 1;
   display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px;
@@ -466,20 +468,22 @@ h3 { font-size: var(--fs-h3); }
   font-size: 13px; line-height: 1; color: var(--ink); white-space: nowrap;
 }
 
-/* The figures: two by two, each over its word, thin lines between them. */
+/* The figures: a row of four under a strong line, each three columns wide, a thin upright line
+   in each gap; the figure large, its word under it. */
 .home-about-facts {
-  grid-area: facts; align-self: end;
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-strong);
+  position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--about-gap);
+  margin-top: var(--s-7); border-top: 1px solid var(--line-strong);
 }
-.home-about-facts > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s-1); padding: var(--s-5) var(--s-4) var(--s-5) 0; }
-.home-about-facts > div:nth-child(even) { padding-left: var(--s-5); border-left: 1px solid var(--line); }
-.home-about-facts > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.home-about-facts > div { position: relative; display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s-2); padding-top: var(--s-6); }
+.home-about-facts > div + div::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: calc(var(--about-gap) / -2); width: 1px; background: var(--line);
+}
 .home-about-facts dd {
   display: flex; align-items: baseline; gap: 0.3em;
-  font-family: var(--font-display); font-size: clamp(32px, 3.2vw, 44px); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em;
+  font-family: var(--font-display); font-size: clamp(36px, 4.6vw, 64px); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.home-about-facts dd small { font-family: var(--font); font-size: 0.42em; font-weight: 600; letter-spacing: 0; }
+.home-about-facts dd small { font-family: var(--font); font-size: 0.32em; font-weight: 600; letter-spacing: 0; }
 .home-about-facts dt { font-size: var(--fs-small); color: var(--muted); }
 
 /* Why us (2026-10-10, the owner's choice: concept A in the request card's colours): the four
@@ -525,10 +529,17 @@ h3 { font-size: var(--fs-h3); }
    a verde arrow in the corner. */
 .home-trust { padding-top: var(--section); }   /* the request below brings its own top space */
 .home-trust-panel {
-  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--s-7); align-items: center;
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--s-7); align-items: stretch;
 }
-.home-trust h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); }
-.home-trust-lead { max-width: 22em; margin-top: var(--s-4); color: var(--ink-soft); }
+/* The words hold the wall's height (2026-10-11, the owner: the text looked weak): the heading
+   large, in two lines, at the wall's top edge -- the scale of «О компании» -- and the line under
+   a rule at its foot, level with the lower course. */
+.home-trust-head { display: flex; flex-direction: column; }
+.home-trust h2 { margin: 0; font-size: clamp(34px, 4vw, 56px); line-height: 1.02; letter-spacing: -0.025em; text-wrap: balance; }
+.home-trust-lead {
+  max-width: 21em; margin-top: auto; padding-top: var(--s-4); border-top: 1px solid var(--line-strong);
+  font-size: 17px; line-height: 1.5; color: var(--ink-soft);
+}
 .home-trust-wall { list-style: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s-3); }
 .home-trust-wall li { display: flex; grid-column: span 2; }
 .home-trust-wall li:nth-child(4) { grid-column: 2 / span 2; }   /* the second course: half a tile over */
@@ -561,9 +572,76 @@ h3 { font-size: var(--fs-h3); }
   .home-trust-item:hover::after { opacity: 1; }
 }
 
+/* Who trusts us in motion (2026-10-11, the owner: the motion of the 21st.dev «Lunar Boarding
+   Pass», ported without React; js/site.js mountTrustMotion builds it). Each tile is a pass with
+   two faces in a 3D stage: the paper front with the logo, and a dark stub behind -- perforated
+   on its left edge, a fine grain -- with the company's name and its site. The wall comes in by
+   laying the paper and stamping each logo on it (the pass's stamp: from twice the size, with a
+   little overshoot); under a mouse the pass leans towards the pointer; on hover or keyboard
+   focus it turns over on the pass's springy curve, the name rises and the site is typed out,
+   and a band of foil light follows the pointer across the stub. */
+.trust-motion .trust-pass { padding: 0; background: none; box-shadow: none; perspective: 900px; }
+.trust-motion .trust-pass::after { content: none; }
+.trust-tilt, .trust-flip { position: absolute; inset: 0; transform-style: preserve-3d; }
+.trust-tilt { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.trust-flip { transition: transform 0.9s cubic-bezier(0.65, -0.2, 0.25, 1.2); }
+.trust-face {
+  position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); border-radius: 12px;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
+}
+.trust-front { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line), 0 1px 2px rgba(28, 29, 27, 0.06); }
+.trust-back {
+  transform: rotateY(180deg); overflow: hidden;
+  display: flex; flex-direction: column; align-items: flex-start; place-items: initial; padding: 16px 16px 14px 26px;
+  color: var(--on-dark); box-shadow: 0 18px 30px -18px rgba(28, 29, 27, 0.55);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.14'/%3E%3C/svg%3E"),
+    linear-gradient(162deg, #2c332f 0%, var(--graphite) 52%, #151917 100%);
+  -webkit-mask: radial-gradient(circle at 0 50%, #0000 3px, #000 3.5px) 0 0 / 100% 11px repeat-y;
+  mask: radial-gradient(circle at 0 50%, #0000 3px, #000 3.5px) 0 0 / 100% 11px repeat-y;
+}
+.trust-back::before { content: ''; position: absolute; left: 12px; top: 12px; bottom: 12px; border-left: 1px dashed var(--on-dark-line); }
+.trust-back-name { position: relative; font-family: var(--font-display); font-size: 14px; font-weight: 600; line-height: 1.25; text-wrap: balance; }
+.trust-back-name.is-long { font-size: 12px; }   /* the ministry's full name: four short lines, room left for the site */
+.trust-back-site { position: relative; margin-top: 6px; font-size: 13px; letter-spacing: 0.04em; color: var(--on-dark-muted); }
+.trust-back-go {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; margin-top: auto;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--on-dark);
+}
+.trust-back-go::after { content: ''; width: 14px; height: 9px; background: currentColor; -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; }
+.trust-glare {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  background:
+    radial-gradient(circle at var(--mx, 50%) var(--my, 40%), rgba(233, 231, 225, 0.14), transparent 45%),
+    linear-gradient(115deg, transparent calc(var(--mx, 50%) - 24%), rgba(255, 255, 255, 0.2) var(--mx, 50%), transparent calc(var(--mx, 50%) + 24%));
+}
+
+.trust-motion:not(.is-in) .trust-front { opacity: 0; }
+.trust-motion:not(.is-in) .trust-front > * { opacity: 0; }
+.trust-motion.is-in .trust-front { animation: trust-lay 0.5s var(--ease) calc(var(--n) * 90ms) both; }
+.trust-motion.is-in .trust-front > * { animation: trust-stamp 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) calc(0.25s + var(--n) * 110ms) both; }
+@keyframes trust-lay { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+@keyframes trust-stamp { from { opacity: 0; transform: rotate(-6deg) scale(1.9); } to { transform: none; } }
+
+.trust-motion .trust-pass:focus-visible .trust-flip { transform: rotateY(180deg); }
+.trust-motion .trust-pass:focus-visible .trust-back-name { animation: trust-rise 0.5s var(--ease) 0.3s both; }
+.trust-motion .trust-pass:focus-visible .trust-back-site { animation: trust-type 0.7s steps(16, end) 0.5s both; }
+.trust-motion .trust-pass:focus-visible .trust-back-go { animation: trust-rise 0.5s var(--ease) 0.75s both; }
+@media (hover: hover) {
+  .trust-motion .trust-pass:hover .trust-flip { transform: rotateY(180deg); transition-delay: 0.06s; }
+  .trust-motion .trust-pass:hover .trust-glare { opacity: 1; }
+  .trust-motion .trust-pass:hover .trust-back-name { animation: trust-rise 0.5s var(--ease) 0.3s both; }
+  .trust-motion .trust-pass:hover .trust-back-site { animation: trust-type 0.7s steps(16, end) 0.5s both; }
+  .trust-motion .trust-pass:hover .trust-back-go { animation: trust-rise 0.5s var(--ease) 0.75s both; }
+}
+@keyframes trust-rise { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+@keyframes trust-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+/* end of who trusts us in motion */
+
 @media (max-width: 1100px) {
   .home-why-panel { padding: 40px; }
   .home-trust-panel { grid-template-columns: minmax(0, 1fr); row-gap: var(--s-6); }
+  .home-trust-lead { margin-top: var(--s-5); }
   .home-why-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
@@ -576,15 +654,25 @@ h3 { font-size: var(--fs-h3); }
   .home-why-title { min-height: 0; margin-top: var(--s-2); }
 }
 @media (max-width: 960px) {
-  .home-about { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "text" "media" "facts"; row-gap: var(--s-6); }
-  .home-about-text { padding-top: 0; }
-  .home-about-media { width: 100%; max-width: 640px; }
+  .home-about h2, .home-about-lead { grid-column: 1 / -1; }
+  .home-about-lead { max-width: 34em; margin-top: var(--s-4); padding-bottom: 0; }
+  .home-about-media { height: clamp(240px, 54vw, 440px); margin-top: var(--s-6); }
+  .home-about-shot-wide { grid-column: 1 / 9; }
+  .home-about-shot-tall { grid-column: 9 / -1; }
+  .home-about-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--s-6); }
+  .home-about-facts > div { padding-bottom: var(--s-5); }
+  .home-about-facts > div:nth-child(3)::before { display: none; }
+  .home-about-facts > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
 }
 @media (max-width: 520px) {
+  .home-about { --about-gap: var(--s-3); }
   .home-about-shot { border-radius: 16px; }
-  .home-about-shot-main { width: 72%; }
-  .home-about-shot-side { width: 64%; box-shadow: 0 0 0 4px var(--page), 0 10px 22px -10px rgba(28, 29, 27, 0.35); }
+  .home-about-media { height: 60vw; }
+  .home-about-shot-wide { grid-column: 1 / 8; }
+  .home-about-shot-tall { grid-column: 8 / -1; }
+  .home-about-shot-tall .home-about-chip { display: none; }   /* too narrow for its words; the photograph keeps its alt */
   .home-about-chip { left: 10px; top: 10px; height: 26px; padding: 0 10px; font-size: 12px; }
+  .home-about-facts > div:nth-child(even) { padding-left: var(--s-3); }
   .home-why-panel { padding: 28px 20px 20px; border-radius: 16px; }
   .home-why-icon { width: 40px; height: 40px; border-radius: 10px; }
   .home-why-num { font-size: 32px; }

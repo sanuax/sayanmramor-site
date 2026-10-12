@@ -525,6 +525,57 @@
   }
   if (typeof document !== 'undefined') showYearsOnMarket(document);
 
+  // «Нам доверяют» as passes (2026-10-11, the owner: the motion of the 21st.dev «Lunar Boarding
+  // Pass», ported without React): each tile becomes a two-sided pass in a 3D stage. As the wall
+  // comes up the screen the logos are stamped onto their tiles one after another; under a mouse
+  // the pass leans towards the pointer and a band of foil light follows it; on hover or keyboard
+  // focus it turns over to its dark stub -- the company's name and its site typed out. Nothing
+  // on the back is new: the name is the logo's own alt (or the ministry's caption), the site the
+  // link's own address. Without the script, or with reduced motion, the tiles stay as they were.
+  function trustSite(href) {
+    try { return new URL(href).hostname.replace(/^www\./, ''); } catch (e) { return ''; }
+  }
+  function mountTrustMotion(doc, win) {
+    const wall = doc.querySelector('.home-trust-wall');
+    if (!wall || !win.IntersectionObserver) return;
+    if (win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const make = (tag, cls, text) => { const el = doc.createElement(tag); el.className = cls; if (text) el.textContent = text; return el; };
+    Array.from(wall.querySelectorAll('.home-trust-item')).forEach((a, n) => {
+      const caption = a.querySelector('.home-trust-mcx-name'), logo = a.querySelector('.home-trust-logo');
+      const name = (caption && caption.textContent) || (logo && logo.alt) || '';
+      const said = a.querySelector('.visually-hidden');
+      const front = make('span', 'trust-face trust-front');
+      Array.from(a.childNodes).filter(c => c !== said).forEach(c => front.appendChild(c));
+      const back = make('span', 'trust-face trust-back');
+      back.setAttribute('aria-hidden', 'true');
+      back.append(make('span', 'trust-glare'), make('span', 'trust-back-name' + (name.length > 30 ? ' is-long' : ''), name), make('span', 'trust-back-site', trustSite(a.href)), make('span', 'trust-back-go', 'Открыть сайт'));
+      const flip = make('span', 'trust-flip'), tilt = make('span', 'trust-tilt');
+      flip.append(front, back);
+      tilt.appendChild(flip);
+      a.insertBefore(tilt, said);
+      a.classList.add('trust-pass');
+      a.style.setProperty('--n', n);
+      a.addEventListener('pointermove', e => {
+        if (e.pointerType !== 'mouse') return;
+        const r = a.getBoundingClientRect();
+        const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+        a.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+        a.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        a.style.setProperty('--rx', (-(py - 0.5) * 2 * 9).toFixed(2) + 'deg');
+        a.style.setProperty('--ry', ((px - 0.5) * 2 * 9).toFixed(2) + 'deg');
+      });
+      a.addEventListener('pointerleave', () => { a.style.setProperty('--rx', '0deg'); a.style.setProperty('--ry', '0deg'); });
+    });
+    wall.classList.add('trust-motion');
+    const io = new win.IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      wall.classList.add('is-in');
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.25 });
+    io.observe(wall);
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') mountTrustMotion(document, window);
+
   // «Что можно заказать» as tilt cards (2026-10-12, the owner: the 21st.dev «Tilt Card», ported
   // without React): under a mouse each group leans away from the pointer (15deg at the edge),
   // grows by 5% and a soft spotlight follows the pointer; on leaving it settles back. The photos
@@ -557,5 +608,5 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') mountGroupTilt(document, window);
 
-  return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket };
+  return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite };
 });
