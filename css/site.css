@@ -362,6 +362,28 @@ h3 { font-size: var(--fs-h3); }
   .home-order-go:hover { opacity: 0.75; }
   .home-instock:hover .home-instock-title, .home-instock:hover::after { color: var(--accent); }
 }
+/* What can be ordered in motion (2026-10-12, the owner: the 21st.dev «Tilt Card»): the groups are
+   tilt cards (js/site.js mountGroupTilt) -- the whole group leans away from the mouse and grows a
+   little, a spotlight follows the pointer; the photographs stay still. Only behind .tilt-card.
+   The 3D transform only while a group is tilted or settling back (.is-tilting): at rest a group has
+   no transform and no layer of its own -- five glass panes kept on 3D layers at all times, and the
+   page split into more layers around them, drew thin light seams at the layers' edges on screens
+   scaled to 125 % and the like. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .home-group.tilt-card { position: relative; overflow: hidden; }
+  .home-group.tilt-card.is-tilting {
+    transform: perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale3d(var(--tilt-s, 1), var(--tilt-s, 1), var(--tilt-s, 1));
+    transition: transform 0.2s ease-out;
+  }
+  .home-group.tilt-card::after {
+    content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(circle var(--spot-r, 160px) at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.15), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .home-group.tilt-card:hover { z-index: 1; }
+  .home-group.tilt-card:hover::after { opacity: 1; }
+}
+/* end of what can be ordered in motion */
 @media (max-width: 1100px) {
   .home-groups { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: var(--s-6); }
   .home-group-title { white-space: normal; }
@@ -1665,11 +1687,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
     box-shadow: 0 0 0 1px rgba(28, 29, 27, 0.06), 0 2px 4px rgba(28, 29, 27, 0.12), 0 22px 40px -18px rgba(28, 29, 27, 0.40), 0 56px 80px -40px rgba(28, 29, 27, 0.50);
   }
   .portfolio-item:hover .portfolio-shot img { transform: scale(1.04); }
-  /* The stone panel's photographs: the same lift under a pointer anywhere on the group, a darker shadow on the dark stone. */
-  .home-group-frame { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
-  .home-group-frame img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
-  .home-group:hover .home-group-frame { transform: translateY(-6px); box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.55); }
-  .home-group:hover .home-group-frame img { transform: scale(1.04); }
   /* The showroom's house on the home page: the same lift under a pointer, a darker shadow on the dark band. */
   .home-showroom-house { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
   .home-showroom-house img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }

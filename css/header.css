@@ -208,6 +208,13 @@
   .site-nav > a, .nav-drop > summary { padding: 0 11px; }
   .site-header-order, .site-header-cta { padding: 0 16px; }
 }
+/* The smallest desktops (1001..1140 px): two equal sides no longer hold both actions, so
+   «Создать изделие» ran past the capsule's edge. Here each side takes what it needs, the places
+   stand in the middle of what is left, closer-set still. */
+@media (min-width: 1001px) and (max-width: 1140px) {
+  .site-header-inner { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: var(--s-3); }
+  .site-nav > a, .nav-drop > summary { padding: 0 8px; }
+}
 
 /* The menu button: only where there is a menu to open. */
 .nav-toggle {

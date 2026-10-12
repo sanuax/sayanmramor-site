@@ -525,5 +525,37 @@
   }
   if (typeof document !== 'undefined') showYearsOnMarket(document);
 
+  // «Что можно заказать» as tilt cards (2026-10-12, the owner: the 21st.dev «Tilt Card», ported
+  // without React): under a mouse each group leans away from the pointer (15deg at the edge),
+  // grows by 5% and a soft spotlight follows the pointer; on leaving it settles back. The photos
+  // inside no longer move on their own. Touch screens and reduced motion keep the groups still.
+  const TILT = { limit: 15, scale: 1.05, dir: -1 };   // dir -1: «evade», tilts away from the pointer
+  function mountGroupTilt(doc, win) {
+    if (!win.matchMedia || !win.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) return;
+    Array.from(doc.querySelectorAll('.home-group')).forEach(card => {
+      card.classList.add('tilt-card');
+      let settle = 0;   // after leaving: drop the transform once the card is back flat (0.2s in the CSS)
+      card.addEventListener('pointermove', e => {
+        if (e.pointerType !== 'mouse') return;
+        win.clearTimeout(settle);
+        card.classList.add('is-tilting');
+        const r = card.getBoundingClientRect();
+        const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+        card.style.setProperty('--rx', ((py - 0.5) * TILT.limit * 2 * TILT.dir).toFixed(2) + 'deg');
+        card.style.setProperty('--ry', (-(px - 0.5) * TILT.limit * 2 * TILT.dir).toFixed(2) + 'deg');
+        card.style.setProperty('--tilt-s', String(TILT.scale));
+        card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+        card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        card.style.setProperty('--spot-r', Math.round(0.4 * Math.hypot(r.width, r.height)) + 'px');
+      });
+      card.addEventListener('pointerleave', () => {
+        ['--rx', '--ry', '--tilt-s'].forEach(p => card.style.removeProperty(p));
+        win.clearTimeout(settle);
+        settle = win.setTimeout(() => card.classList.remove('is-tilting'), 260);
+      });
+    });
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') mountGroupTilt(document, window);
+
   return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket };
 });

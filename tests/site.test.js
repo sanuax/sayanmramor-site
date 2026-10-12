@@ -1259,13 +1259,33 @@ test('three questions in CSS: scoped to the home page\'s band, hover only where 
 test('the static home in CSS: colour on hover and focus only -- no sticky, no transforms, no animations, transitions of 150 ms; hover only where there is a pointer', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const whole = css.slice(css.indexOf('/* ---- Home (static)'), css.indexOf('/* ---- Home palette'));
-  // «От камня к изделию» is the one exception: its cards lift under a pointer (tested on its own below).
-  const block = whole.slice(0, whole.indexOf('/* From stone to object')) + whole.slice(whole.indexOf('/* What can be ordered'));
+  // Two exceptions: «От камня к изделию», whose cards lift under a pointer (tested on its own below);
+  // and «Что можно заказать», whose groups are tilt cards (2026-10-12, after the 21st.dev tilt card).
+  // Each one's motion lives in its own block, only behind the class its script sets.
+  let block = whole.slice(0, whole.indexOf('/* From stone to object')) + whole.slice(whole.indexOf('/* What can be ordered'));
+  [['/* What can be ordered in motion', '/* end of what can be ordered in motion */']].forEach(([from, to]) => {
+    const cut = [block.indexOf(from), block.indexOf(to)];
+    assert.ok(cut[0] > 0 && cut[1] > cut[0], from);
+    block = block.slice(0, cut[0]) + block.slice(cut[1]);
+  });
   assert.ok(block.length > 500);
   assert.doesNotMatch(block, /sticky|position: fixed|(?<!text-)transform|animation|@keyframes|will-change|perspective|clip-path/);
   [...block.matchAll(/transition: ([^;]+);/g)].forEach(m => assert.match(m[1], /^(color|opacity) 0\.15s$/, m[1]));
   assert.match(block, /\.home-hero \{\s*display: grid;/);
   assert.match(block, /\.home-groups \{ display: grid; grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
+});
+
+test('«Что можно заказать» tilt cards: the 3D transform only while tilted (.is-tilting) -- at rest no transform, no will-change, so the glass panes keep no layers (light seams on scaled screens)', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const motion = css.slice(css.indexOf('/* What can be ordered in motion'), css.indexOf('/* end of what can be ordered in motion */'));
+  assert.ok(motion.length > 200);
+  assert.doesNotMatch(motion, /will-change/);
+  const rules = [...motion.matchAll(/([^{}]+)\{([^}]*)\}/g)];
+  rules.filter(([, , body]) => /(^|[\s;])transform:/.test(body)).forEach(([, sel]) => assert.match(sel, /\.is-tilting/, sel.trim()));
+  assert.match(motion, /\.home-group\.tilt-card\.is-tilting \{\s*transform: perspective\(1200px\)/);
+  const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
+  assert.match(js, /classList\.add\('is-tilting'\)/);
+  assert.match(js, /classList\.remove\('is-tilting'\)/);
 });
 
 // ---- Liquid glass (2026-10-10, the owner's choice: all five places from .claude/concepts/liquid-glass.html) ----
