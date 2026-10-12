@@ -27,7 +27,7 @@ test('SiteCommon exports the expected functions', () => {
 
 // Path convention (see README, «Локальный запуск»): one server rooted at
 // D:\ serves this site as /sayanmramor-site/ and the calculator as
-// /calculator/. Every page loads only this site's own CSS/JS -- never a
+// /sayanmramor-calculator/. Every page loads only this site's own CSS/JS -- never a
 // calculator script or stylesheet, and never through <base>.
 test('every page loads only this site\'s own CSS/JS, and every file exists', () => {
   pages.forEach(page => {
@@ -43,15 +43,15 @@ test('every page loads only this site\'s own CSS/JS, and every file exists', () 
 });
 
 // The only two contracts with the calculator: links to the configurator
-// page, and the stone data in /calculator/data/ (stone-index.json and the images
-// it names). Any other /calculator/ reference would couple the site to the
+// page, and the stone data in /sayanmramor-calculator/data/ (stone-index.json and the images
+// it names). Any other /sayanmramor-calculator/ reference would couple the site to the
 // calculator's internals.
-test('site code references the calculator only through the configurator URL and /calculator/data/', () => {
+test('site code references the calculator only through the configurator URL and /sayanmramor-calculator/data/', () => {
   const sources = pages.concat(filesIn('js', '.js'), filesIn('css', '.css'));
   sources.forEach(file => {
     const text = fs.readFileSync(path.join(site, file), 'utf8');
-    [...text.matchAll(/\/calculator\/[^\s"'`)<>]*/g)].forEach(([ref]) => {
-      assert.ok(ref.startsWith('/calculator/sayanmramor-calculator.html') || ref.startsWith('/calculator/data/'),
+    [...text.matchAll(/\/sayanmramor-calculator\/[^\s"'`)<>]*/g)].forEach(([ref]) => {
+      assert.ok(ref.startsWith('/sayanmramor-calculator/sayanmramor-calculator.html') || ref.startsWith('/sayanmramor-calculator/data/'),
         file + ': ' + ref + ' is outside the site -> calculator contract');
     });
   });
@@ -361,7 +361,7 @@ test('the page\'s own direction is marked active (and aria-current) in the panel
 test('every page: the header button keeps its full name, with «изделие» as the tail hidden on very narrow screens; one menu button', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    assert.ok(html.includes('<a class="btn btn-primary site-header-cta" href="/calculator/sayanmramor-calculator.html" aria-label="Создать изделие"><span>Создать<span class="site-header-cta-tail"> изделие</span></span></a>'), page);
+    assert.ok(html.includes('<a class="btn btn-primary site-header-cta" href="/sayanmramor-calculator/sayanmramor-calculator.html" aria-label="Создать изделие"><span>Создать<span class="site-header-cta-tail"> изделие</span></span></a>'), page);
     assert.equal((html.match(/<button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Меню">/g) || []).length, 1, page);
     assert.ok(html.includes('id="siteNav"'), page);
   });
@@ -885,7 +885,7 @@ test('the fireplace page: the category template on the kaminy key', () => {
   assert.match(html, /<h1>Камины из камня<\/h1>/);
   assert.match(html, /SiteCommon\.loadPortfolio\('kaminy', document\.getElementById\('portfolioGrid'\)\);/);
   assert.match(html, /CategoryPage\.init\('kaminy'\);/);
-  assert.match(html, /href="\/calculator\/sayanmramor-calculator\.html\?product=kaminy"/);
+  assert.match(html, /href="\/sayanmramor-calculator\/sayanmramor-calculator\.html\?product=kaminy"/);
 });
 
 // ---- Спа зоны / Хаммамы / Бассейны, footer, privacy, коммерческое предложение ----
@@ -1109,7 +1109,7 @@ test('the home hero: the headline, one line and two plain actions on the wall of
   assert.match(hero, /<p class="lead">Лестницы, столешницы, полы, стены и фасады/);
   const actions = [...hero.matchAll(/<a class="btn (btn-\w+)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => m.slice(1));
   assert.deepEqual(actions, [
-    ['btn-primary', '/calculator/sayanmramor-calculator.html', 'Создать изделие'],
+    ['btn-primary', '/sayanmramor-calculator/sayanmramor-calculator.html', 'Создать изделие'],
     ['btn-secondary', '/sayanmramor-site/showroom.html', 'Открыть 3D-шоурум'],
   ]);
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
@@ -1198,7 +1198,7 @@ test('«Что можно заказать»: one stone panel with the menu\'s f
   const ground = [...sec.matchAll(/(?:srcset|src)="(\/sayanmramor-site\/assets\/home\/order\/bg-[^"]+)"/g)];
   assert.equal(ground.length, 2);
   ground.forEach(([, src]) => assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src));
-  assert.match(sec, /<a class="home-order-go" href="\/calculator\/sayanmramor-calculator\.html" aria-label="Создать изделие в конфигураторе"/);
+  assert.match(sec, /<a class="home-order-go" href="\/sayanmramor-calculator\/sayanmramor-calculator\.html" aria-label="Создать изделие в конфигураторе"/);
   assert.doesNotMatch(sec, /home-feature/, 'the four works are gone: the panel has the photographs');
   assert.match(sec, /<a class="home-instock" href="\/sayanmramor-site\/katalog\.html">[\s\S]*?<span class="home-instock-title">Готовые изделия из камня<\/span>/);
   // Its two promises, each an icon (hidden from screen readers) and two lines.

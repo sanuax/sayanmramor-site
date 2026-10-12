@@ -1,6 +1,6 @@
 /* css/header.css -- the site's header (the capsule, its menu, its panels) and the
    buttons it uses, in one file shared by every page of the site and by the
-   configurator (/calculator/sayanmramor-calculator.html), so the header is drawn by
+   configurator (/sayanmramor-calculator/sayanmramor-calculator.html), so the header is drawn by
    the same rules everywhere (2026-10-10, the owner's request: the site's header in the
    configurator, without «Заказать» and «Создать изделие»). The site loads it before
    css/site.css; js/header.js is shared the same way. */

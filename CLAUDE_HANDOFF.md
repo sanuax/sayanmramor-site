@@ -127,8 +127,8 @@ git и файлам; где факт установить не удалось, �
 ```
 veneziastone.com ──scripts/scrape_slabs.py (Playwright+BS4)──► data/slabs.json + data/images/*.webp   [calculator, не в git]
                                                                      │
-          ┌──────────────────────────────────────────────────────────┤ калькулятор: fetch /calculator/data/slabs.json
-          │                                                          │ сайт: fetch /calculator/data/stone-index.json
+          ┌──────────────────────────────────────────────────────────┤ калькулятор: fetch /sayanmramor-calculator/data/slabs.json
+          │                                                          │ сайт: fetch /sayanmramor-calculator/data/stone-index.json
           │                                                          │ (производный индекс: scripts/build_stone_index.py, вручную после парсера)
           ▼                                                          ▼
  sayanmramor-calculator.html  ◄── URL ?product=<key>&stone=<id> ── сайт: categories/*.html, showroom.html
@@ -138,16 +138,16 @@ veneziastone.com ──scripts/scrape_slabs.py (Playwright+BS4)──► data/sl
 **Технически сайт и калькулятор связаны только двумя контрактами** (README сайта,
 `tests/site.test.js` это проверяет):
 
-1. **URL** `/calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
+1. **URL** `/sayanmramor-calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
    - Строит единственная функция `ShowroomData.buildConfiguratorUrl()` в `js/showroom/showroom-data.js`, там же 9 публичных product keys.
    - Калькулятор проверяет параметры в `url-bootstrap.js` (`resolveInitialProductKey`, `resolveInitialStoneId`).
    - Обратная ссылка из результата калькулятора в шоурум — `buildShowroomUrl` там же.
-2. **Данные камня** `/calculator/data/stone-index.json` плюс картинки `/calculator/data/images/…`. `slabs.json` — источник истины калькулятора, его читает только калькулятор. `stone-index.json` — производный индекс для category pages: его строит `scripts/build_stone_index.py` калькулятора из `slabs.json` (только камни с `available` не `false`, поля `id`, `name`, `category_label_ru`, `image` и с 2026-10-10 `price_from` — самая низкая цена за м² среди слэбов камня, в целых рублях, `null` без цены, — и `countries` / `colors` (как в slabs.json, только `label_ru`); около 185 КБ вместо 8,9 МБ). Галерея камня на сайте с 2026-10-10 повторяет фильтры выбора камня калькулятора: «Страна», «Тип», «Цвет» (списки с флажками, можно несколько), «Цена» (поля «от»/«до» и ползунок с двумя ручками на логарифмической шкале, как на старом сайте), «Сбросить» и сортировка «A-Z» / «Цена ↑↓»; в карточке — «от … ₽/м²». Модуль `price-filter.js` лежит в двух одинаковых копиях — `js/price-filter.js` сайта и `price-filter.js` калькулятора (тест сайта сверяет их).
+2. **Данные камня** `/sayanmramor-calculator/data/stone-index.json` плюс картинки `/sayanmramor-calculator/data/images/…`. `slabs.json` — источник истины калькулятора, его читает только калькулятор. `stone-index.json` — производный индекс для category pages: его строит `scripts/build_stone_index.py` калькулятора из `slabs.json` (только камни с `available` не `false`, поля `id`, `name`, `category_label_ru`, `image` и с 2026-10-10 `price_from` — самая низкая цена за м² среди слэбов камня, в целых рублях, `null` без цены, — и `countries` / `colors` (как в slabs.json, только `label_ru`); около 185 КБ вместо 8,9 МБ). Галерея камня на сайте с 2026-10-10 повторяет фильтры выбора камня калькулятора: «Страна», «Тип», «Цвет» (списки с флажками, можно несколько), «Цена» (поля «от»/«до» и ползунок с двумя ручками на логарифмической шкале, как на старом сайте), «Сбросить» и сортировка «A-Z» / «Цена ↑↓»; в карточке — «от … ₽/м²». Модуль `price-filter.js` лежит в двух одинаковых копиях — `js/price-filter.js` сайта и `price-filter.js` калькулятора (тест сайта сверяет их).
 
 Нет: iframe, общего JS/CSS, API, symlink, копирования файлов, build/deploy-скриптов.
-Оба проекта предполагают **один origin**: пути `/sayanmramor-site/…` и `/calculator/…`.
+Оба проекта предполагают **один origin**: пути `/sayanmramor-site/…` и `/sayanmramor-calculator/…`.
 
-- Локально это обеспечивает `D:\sayanmramor-site\scripts\dev_server.py`, порт 8000. Он отдаёт `/sayanmramor-site/` из репозитория сайта, `/calculator/` из worktree `rate-catalog-subcategories`, ставит `Cache-Control: no-store`, а `/` перенаправляет на главную.
+- Локально это обеспечивает `D:\sayanmramor-site\scripts\dev_server.py`, порт 8000. Он отдаёт `/sayanmramor-site/` из репозитория сайта, `/sayanmramor-calculator/` из worktree `rate-catalog-subcategories`, ставит `Cache-Control: no-store`, а `/` перенаправляет на главную.
 - **Прод-топология не решена**: спека сайта называет это «сознательно отложенным вопросом».
 
 Запуск:
@@ -157,7 +157,7 @@ python D:\sayanmramor-site\scripts\dev_server.py
 ```
 
 Адреса: `http://localhost:8000/sayanmramor-site/index.html`, `…/showroom.html` и
-`http://localhost:8000/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown`.
+`http://localhost:8000/sayanmramor-calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown`.
 
 Замечание по замерам: на Windows `localhost` сначала пробует IPv6 и теряет около 300 мс на каждое соединение. Для замеров производительности используйте `127.0.0.1:8000`.
 
@@ -440,7 +440,7 @@ python D:\sayanmramor-site\scripts\dev_server.py
 
 Навигация во всех страницах одинаковая: 9 категорий + «Готовые изделия» + «Шоурум». CTA «Создать изделие» ведёт в калькулятор.
 
-**Шапка — общий файл с калькулятором (2026-10-10, просьба владельца: шапка сайта в калькуляторе, без «Заказать» и «Создать изделие»).** Стили шапки и кнопок (`.btn`) вынесены из `css/site.css` в `css/header.css`; все страницы с шапкой подключают его прямо перед `site.css`. Калькулятор (`/calculator/sayanmramor-calculator.html`) подключает тот же `css/header.css` и `js/header.js` и держит копию разметки `<header>` без кнопок и без подсветки текущего пункта. Токены, которые читает шапка, в `header.css` стоят в `:where(:root)` (нулевая специфичность): на сайте всегда побеждает `site.css`, тест следит, чтобы значения совпадали. Тест `tests/site.test.js` сверяет меню калькулятора с меню сайта (если checkout калькулятора есть на диске): поменяли меню — скопируйте `<header>` и в калькулятор. **Форм на сайте нет**, только ссылки и телефон.
+**Шапка — общий файл с калькулятором (2026-10-10, просьба владельца: шапка сайта в калькуляторе, без «Заказать» и «Создать изделие»).** Стили шапки и кнопок (`.btn`) вынесены из `css/site.css` в `css/header.css`; все страницы с шапкой подключают его прямо перед `site.css`. Калькулятор (`/sayanmramor-calculator/sayanmramor-calculator.html`) подключает тот же `css/header.css` и `js/header.js` и держит копию разметки `<header>` без кнопок и без подсветки текущего пункта. Токены, которые читает шапка, в `header.css` стоят в `:where(:root)` (нулевая специфичность): на сайте всегда побеждает `site.css`, тест следит, чтобы значения совпадали. Тест `tests/site.test.js` сверяет меню калькулятора с меню сайта (если checkout калькулятора есть на диске): поменяли меню — скопируйте `<header>` и в калькулятор. **Форм на сайте нет**, только ссылки и телефон.
 
 **3D-шоурум** (`js/showroom/*`, three r160, `vendor/three/`):
 
@@ -591,7 +591,7 @@ cd /d/photo_marble && python review_server.py
 
 - Сайт **не загружает код калькулятора** и не дублирует его логику (цена, размеры — только в конфигураторе). Связь — только 2 контракта.
 - Фильтрации камня по типу изделия на страницах категорий **нет:** показываются все камни.
-- Пути `/sayanmramor-site/` и `/calculator/` менять нельзя.
+- Пути `/sayanmramor-site/` и `/sayanmramor-calculator/` менять нельзя.
 - В шоуруме оптимизации **без потери качества**. MeshPhysical → MeshStandard, снижение DPR и подобное запрещено. Спорный визуальный результат считается FAIL и откатывается.
 
 **Фото:**
@@ -608,7 +608,7 @@ cd /d/photo_marble && python review_server.py
 
 1. Ветка калькулятора `rate-catalog-subcategories` — **12 коммитов не запушены**. Локальный `master` устарел, а на GitHub master'а нет — легко работать не в том checkout'е.
 2. `data/slabs.json` (8,9 МБ) и `data/images` (59 МБ) **не в git**: единственная копия на этом диске плюс копия в master-checkout. Как каталог попадёт на хостинг — не решено.
-3. **Прод-топология** (один хост для `/sayanmramor-site/` и `/calculator/`) не решена.
+3. **Прод-топология** (один хост для `/sayanmramor-site/` и `/sayanmramor-calculator/`) не решена.
 4. Ставки: 5 из 9 продуктов считаются по **оценкам-заглушкам**. Ставки rate-catalog и xlsx пустые, «прочее» не учитывается. **Цена ориентировочная.**
 
 **Средние:**

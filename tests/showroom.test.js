@@ -40,10 +40,10 @@ test('every product links to its existing category page', () => {
 });
 
 test('buildConfiguratorUrl produces the unchanged site -> configurator contract', () => {
-  assert.equal(Data.CONFIGURATOR_PATH, '/calculator/sayanmramor-calculator.html');
-  assert.equal(Data.buildConfiguratorUrl('stoleshnitsa_kuhnya'), '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya');
-  assert.equal(Data.buildConfiguratorUrl('stupeni', 'delicato-brown'), '/calculator/sayanmramor-calculator.html?product=stupeni&stone=delicato-brown');
-  assert.equal(Data.buildConfiguratorUrl('pol', 'a b&c'), '/calculator/sayanmramor-calculator.html?product=pol&stone=a%20b%26c');
+  assert.equal(Data.CONFIGURATOR_PATH, '/sayanmramor-calculator/sayanmramor-calculator.html');
+  assert.equal(Data.buildConfiguratorUrl('stoleshnitsa_kuhnya'), '/sayanmramor-calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya');
+  assert.equal(Data.buildConfiguratorUrl('stupeni', 'delicato-brown'), '/sayanmramor-calculator/sayanmramor-calculator.html?product=stupeni&stone=delicato-brown');
+  assert.equal(Data.buildConfiguratorUrl('pol', 'a b&c'), '/sayanmramor-calculator/sayanmramor-calculator.html?product=pol&stone=a%20b%26c');
   Data.PRODUCT_KEYS.forEach(k => assert.equal(new URL(Data.buildConfiguratorUrl(k), 'http://x').searchParams.get('product'), k));
 });
 
@@ -277,7 +277,7 @@ test('marker -> card: selecting an object opens its card, in its own zone, with 
   assert.equal(d.card.title, 'Кухонный остров');
   assert.equal(d.card.productLabel, 'Кухня');
   assert.equal(d.card.ctaLabel, 'Создать изделие');
-  assert.equal(d.card.ctaHref, '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya');
+  assert.equal(d.card.ctaHref, '/sayanmramor-calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya');
   assert.equal(d.card.categoryHref, '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html');
   assert.ok(d.markers.find(m => m.id === 'kitchen-island').selected);
   assert.deepEqual(d.cameraView, Data.objectView(Data.objectById('kitchen-island')));
@@ -416,10 +416,10 @@ test('entry: the product lands on the honest object for it', () => {
 test('entry: a valid stone is carried into every "Создать изделие" link, and survives moving around', () => {
   let state = State.initialStateFromLocation('?product=stoleshnitsa_kuhnya&stone=delicato-brown', '');
   assert.equal(state.stoneId, 'delicato-brown');
-  assert.equal(State.describe(state).card.ctaHref, '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown');
+  assert.equal(State.describe(state).card.ctaHref, '/sayanmramor-calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown');
   state = State.reduce(state, { type: 'goOutside' });
   state = State.reduce(state, { type: 'selectObject', id: 'staircase' });
-  assert.equal(State.describe(state).card.ctaHref, '/calculator/sayanmramor-calculator.html?product=lestnitsa&stone=delicato-brown');
+  assert.equal(State.describe(state).card.ctaHref, '/sayanmramor-calculator/sayanmramor-calculator.html?product=lestnitsa&stone=delicato-brown');
 });
 
 test('entry: no stone means none is invented; a malformed stone is dropped', () => {
@@ -427,7 +427,7 @@ test('entry: no stone means none is invented; a malformed stone is dropped', () 
   ['', 'Delicato Brown', '../x', '<script>', 'a'.repeat(200), 'UPPER'].forEach(stone => {
     const state = State.initialStateFromLocation('?product=pol&stone=' + encodeURIComponent(stone), '');
     assert.equal(state.stoneId, null, stone);
-    assert.equal(State.describe(state).card.ctaHref, '/calculator/sayanmramor-calculator.html?product=pol');
+    assert.equal(State.describe(state).card.ctaHref, '/sayanmramor-calculator/sayanmramor-calculator.html?product=pol');
   });
 });
 
@@ -789,7 +789,7 @@ test('the fireplace: a showroom object in the living room, «Камины», its
   assert.equal(d.zone.id, 'living');
   assert.equal(d.card.productLabel, 'Камины');
   assert.equal(d.card.title, 'Каминный портал');
-  assert.equal(d.card.ctaHref, '/calculator/sayanmramor-calculator.html?product=kaminy');
+  assert.equal(d.card.ctaHref, '/sayanmramor-calculator/sayanmramor-calculator.html?product=kaminy');
   assert.equal(d.card.categoryHref, '/sayanmramor-site/categories/kaminy.html');
   // The other living-room objects are all still there.
   assert.deepEqual(Data.objectsInZone('living').map(x => x.id), ['living-floor', 'living-panno', 'living-sill', 'living-fireplace']);

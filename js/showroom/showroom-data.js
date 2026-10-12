@@ -15,8 +15,8 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
 
   // The site -> configurator contract. Never change its shape here:
-  // /calculator/sayanmramor-calculator.html?product=<product-key>&stone=<stone-id>
-  const CONFIGURATOR_PATH = '/calculator/sayanmramor-calculator.html';
+  // /sayanmramor-calculator/sayanmramor-calculator.html?product=<product-key>&stone=<stone-id>
+  const CONFIGURATOR_PATH = '/sayanmramor-calculator/sayanmramor-calculator.html';
 
   // Product keys are the calculator's own public keys (product-types.js);
   // category pages are this site's existing pages.

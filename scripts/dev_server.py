@@ -3,16 +3,16 @@
     python scripts/dev_server.py            # http://localhost:8000/
 
   /sayanmramor-site/...  ->  this repository (the site)
-  /calculator/...        ->  the configurator checkout to test (by default
+  /sayanmramor-calculator/...  ->  the configurator checkout to test (by default
                              D:\\calculator\\.worktrees\\rate-catalog-subcategories,
                              override with --calculator or SAYAN_CALCULATOR_ROOT)
   /                      ->  redirect to /sayanmramor-site/index.html
 
 A plain `python -m http.server --directory D:\\` can only serve one folder,
-so /calculator/ there is whatever D:\\calculator happens to be (its master
+so /sayanmramor-calculator/ there is whatever D:\\calculator happens to be (its master
 checkout) -- not the configurator being worked on. This script maps each
 public prefix to its own repository instead, so the canonical URLs
-(/calculator/sayanmramor-calculator.html?product=..&stone=..,
+(/sayanmramor-calculator/sayanmramor-calculator.html?product=..&stone=..,
 /sayanmramor-site/showroom.html?product=..) work exactly as in production.
 
 Development only: standard library, nothing is copied, nothing is written.
@@ -84,18 +84,20 @@ def main():
     parser = argparse.ArgumentParser(description="Serve the site and the configurator on one local origin.")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--calculator", default=os.environ.get("SAYAN_CALCULATOR_ROOT", DEFAULT_CALCULATOR_ROOT),
-                        help="configurator checkout served at /calculator/")
+                        help="configurator checkout served at /sayanmramor-calculator/")
     args = parser.parse_args()
 
     calculator_root = os.path.abspath(args.calculator)
     if not os.path.isfile(os.path.join(calculator_root, "sayanmramor-calculator.html")):
         sys.exit("Not a configurator checkout (no sayanmramor-calculator.html): " + calculator_root)
-    mounts = [("/sayanmramor-site", SITE_ROOT), ("/calculator", calculator_root)]
+    # /sayanmramor-calculator/ as on GitHub Pages (the repository's name, 2026-10-12);
+    # /calculator/, the old prefix, kept as an alias for bookmarks and old notes.
+    mounts = [("/sayanmramor-site", SITE_ROOT), ("/sayanmramor-calculator", calculator_root), ("/calculator", calculator_root)]
 
     server = http.server.ThreadingHTTPServer(("", args.port), make_handler(mounts))
     print("Serving on http://localhost:%d/" % args.port)
     for prefix, root in mounts:
-        print("  %-19s -> %s" % (prefix + "/", root))
+        print("  %-25s -> %s" % (prefix + "/", root))
     try:
         server.serve_forever()
     except KeyboardInterrupt:

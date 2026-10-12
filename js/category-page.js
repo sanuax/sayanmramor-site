@@ -1,12 +1,12 @@
 // js/category-page.js
 //
 // A category page's stone section: the site's own gallery of the stones in
-// /calculator/data/stone-index.json -- the light index built from the
+// /sayanmramor-calculator/data/stone-index.json -- the light index built from the
 // calculator's slabs.json (its one source of truth) by
 // scripts/build_stone_index.py: the same stone fields, only the few this
 // page needs, only the stones that can still be ordered -- and the hand-off to
 // the configurator through the canonical URL
-// /calculator/sayanmramor-calculator.html?product=<product-key>&stone=<stone-id>
+// /sayanmramor-calculator/sayanmramor-calculator.html?product=<product-key>&stone=<stone-id>
 // (built by ShowroomData.buildConfiguratorUrl -- one owner of that contract
 // in this site). Each card shows the stone's price per m2 «от …». The gallery has
 // the configurator's own filters (2026-10-10): «Страна», «Тип», «Цвет» -- pills
@@ -22,9 +22,9 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function (ShowroomData, PriceFilter) {
 
-  const STONE_INDEX_URL = '/calculator/data/stone-index.json';
+  const STONE_INDEX_URL = '/sayanmramor-calculator/data/stone-index.json';
   // The index (like slabs.json) stores stone images relative to its own folder.
-  const STONE_IMAGE_BASE = '/calculator/data/';
+  const STONE_IMAGE_BASE = '/sayanmramor-calculator/data/';
   const PAGE_SIZE = 24;
 
   // The stone's lowest price per m2: the index's price_from or, for a slabs.json

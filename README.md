@@ -11,12 +11,12 @@
 конфигураторе. С калькулятором сайт связан ровно двумя контрактами:
 
 1. **Переход в конфигуратор по URL**
-   `/calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
+   `/sayanmramor-calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
    Ссылку строит `ShowroomData.buildConfiguratorUrl()`
    (`js/showroom/showroom-data.js`) — единственное место на сайте, где
    живут этот путь и 9 публичных product keys.
-2. **Данные о камне** — `/calculator/data/stone-index.json` (и картинки из
-   `/calculator/data/`, на которые он ссылается). `slabs.json` — источник
+2. **Данные о камне** — `/sayanmramor-calculator/data/stone-index.json` (и картинки из
+   `/sayanmramor-calculator/data/`, на которые он ссылается). `slabs.json` — источник
    истины калькулятора (его читает только калькулятор);
    `stone-index.json` — производный облегчённый индекс для страниц
    категорий, его строит `scripts/build_stone_index.py` калькулятора из
@@ -24,8 +24,8 @@
    `id`, `name`, `category_label_ru`, `image`.
 
 `tests/site.test.js` проверяет, что страницы не подключают ничего с
-`/calculator/`, что нигде нет `<base>` и что в коде сайта нет других
-ссылок на `/calculator/`, кроме этих двух.
+`/sayanmramor-calculator/`, что нигде нет `<base>` и что в коде сайта нет других
+ссылок на `/sayanmramor-calculator/`, кроме этих двух.
 
 ## Локальный запуск
 
@@ -42,14 +42,14 @@ python D:\sayanmramor-site\scripts\dev_server.py
 | URL                                | Откуда отдаётся                                        |
 |------------------------------------|--------------------------------------------------------|
 | `http://localhost:8000/sayanmramor-site/...` | этот репозиторий, `D:\sayanmramor-site`      |
-| `http://localhost:8000/calculator/...`       | актуальный калькулятор — worktree `D:\calculator\.worktrees\rate-catalog-subcategories` |
+| `http://localhost:8000/sayanmramor-calculator/...`       | актуальный калькулятор — worktree `D:\calculator\.worktrees\rate-catalog-subcategories` |
 | `http://localhost:8000/`                     | редирект на главную сайта                    |
 
 Canonical-адрес для QA — `http://localhost:8000/`:
 
 - `http://localhost:8000/sayanmramor-site/index.html` — главная;
 - `http://localhost:8000/sayanmramor-site/showroom.html` — 3D-шоурум;
-- `http://localhost:8000/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown` — конфигуратор.
+- `http://localhost:8000/sayanmramor-calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown` — конфигуратор.
 
 `D:\calculator` (основной checkout, ветка `master`) для QA НЕ используется:
 в нём нет актуального конфигуратора. Другой checkout калькулятора можно
@@ -65,9 +65,9 @@ Canonical-адрес для QA — `http://localhost:8000/`:
 (или Ctrl+Shift+R).
 
 Не используйте для этого `python -m http.server`: он умеет раздавать
-только одну папку, и `/calculator/` тогда оказывается либо 404, либо
+только одну папку, и `/sayanmramor-calculator/` тогда оказывается либо 404, либо
 `D:\calculator` (master). Пути `/sayanmramor-site/...` и
-`/calculator/...` сайт использует намеренно — это те же адреса, что на
+`/sayanmramor-calculator/...` сайт использует намеренно — это те же адреса, что на
 общем хосте; заменять `/sayanmramor-site/` на `/` нельзя.
 
 Открытие файлов напрямую (`file://`) тоже не работает: `fetch()` данных
@@ -86,7 +86,7 @@ Canonical-адрес для QA — `http://localhost:8000/`:
 (`/sayanmramor-site/assets/portfolio/...`); при замене плейсхолдеров
 на настоящие фото сохраняйте эту форму.
 
-Пути вида `/sayanmramor-site/...` и `/calculator/...` — это
+Пути вида `/sayanmramor-site/...` и `/sayanmramor-calculator/...` — это
 соглашение локального дев-сервера, которое предполагает, что оба
 проекта раздаются с одного хоста именно под такими именами. Топология
 продакшен-деплоя (реальный поддомен) — отдельный, сознательно
@@ -262,7 +262,7 @@ Canonical-адрес для QA — `http://localhost:8000/`:
 Интерактивный 3D-дом: фасад, холл, гостиная, кухня, лестница, ванная. На
 реальных каменных поверхностях дома — точки; карточка изделия ведёт в
 конфигуратор по неизменному контракту
-`/calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
+`/sayanmramor-calculator/sayanmramor-calculator.html?product=<product-key>[&stone=<stone-id>]`.
 Код калькулятора шоурум не использует — только эту ссылку.
 
 - `js/showroom/showroom-data.js` — направления (9 product keys), зоны дома,

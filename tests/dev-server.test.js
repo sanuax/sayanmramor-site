@@ -1,7 +1,8 @@
 // tests/dev-server.test.js
 //
 // The local topology contract (README, «Локальный запуск»): one origin,
-// /sayanmramor-site/ -> this repository, /calculator/ -> the configurator
+// /sayanmramor-site/ -> this repository, /sayanmramor-calculator/ (and the old
+// alias /calculator/) -> the configurator
 // checkout given to scripts/dev_server.py. Runs the real script against a
 // throwaway calculator folder; skipped when Python is not installed.
 const test = require('node:test');
@@ -46,13 +47,14 @@ test('dev_server.py serves the site and the given configurator checkout on one o
     assert.equal(home.status, 200);
     assert.match(home.body, /<html/i);
 
-    const calculator = await get(port, '/calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown');
+    const calculator = await get(port, '/sayanmramor-calculator/sayanmramor-calculator.html?product=stoleshnitsa_kuhnya&stone=delicato-brown');
     assert.equal(calculator.status, 200);
-    assert.equal(calculator.body, 'CALCULATOR-UNDER-TEST', '/calculator/ is the checkout passed in, nothing else');
+    assert.equal(calculator.body, 'CALCULATOR-UNDER-TEST', '/sayanmramor-calculator/ is the checkout passed in, nothing else');
     // The calculator's full catalog (the calculator reads it) and the light
     // index built from it (the site's category pages read it).
-    assert.equal((await get(port, '/calculator/data/slabs.json')).status, 200);
-    assert.equal((await get(port, '/calculator/data/stone-index.json')).status, 200);
+    assert.equal((await get(port, '/sayanmramor-calculator/data/slabs.json')).status, 200);
+    assert.equal((await get(port, '/sayanmramor-calculator/data/stone-index.json')).status, 200);
+    assert.equal((await get(port, '/calculator/sayanmramor-calculator.html')).body, 'CALCULATOR-UNDER-TEST', 'the old prefix still serves the same checkout');
     assert.equal((await get(port, '/sayanmramor-site/showroom.html')).status, 200);
 
     const root = await get(port, '/');
@@ -64,6 +66,7 @@ test('dev_server.py serves the site and the given configurator checkout on one o
 
     // Nothing outside the two mounts, and no way out of them.
     assert.equal((await get(port, '/README.md')).status, 404);
+    assert.equal((await get(port, '/sayanmramor-calculator/..%2F..%2F..%2FWindows%2Fwin.ini')).status, 404);
     assert.equal((await get(port, '/calculator/..%2F..%2F..%2FWindows%2Fwin.ini')).status, 404);
     assert.equal((await get(port, '/calculator/C:%5CWindows%5Cwin.ini')).status, 404);
   } finally {

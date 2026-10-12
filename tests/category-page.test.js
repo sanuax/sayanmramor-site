@@ -28,9 +28,9 @@ const SLABS = {
 test('normalizeStones keeps orderable stones with the gallery fields, sorted by name', () => {
   const stones = CategoryPage.normalizeStones(SLABS);
   assert.deepEqual(stones, [
-    { id: 'absolute-black', name: 'Absolute Black', type: 'Гранит', image: '/calculator/data/images/absolute-black.webp', price: 7000, countries: ['Индия'], colors: ['Черный'] },
+    { id: 'absolute-black', name: 'Absolute Black', type: 'Гранит', image: '/sayanmramor-calculator/data/images/absolute-black.webp', price: 7000, countries: ['Индия'], colors: ['Черный'] },
     { id: 'no-image', name: 'Calacatta Ёлка', type: 'Мрамор', image: null, price: null, countries: ['Италия'], colors: [] },
-    { id: 'nero-marquina', name: 'Nero Marquina', type: 'Мрамор', image: '/calculator/data/images/nero-marquina.webp', price: 11006, countries: ['Испания'], colors: ['Черный'] },
+    { id: 'nero-marquina', name: 'Nero Marquina', type: 'Мрамор', image: '/sayanmramor-calculator/data/images/nero-marquina.webp', price: 11006, countries: ['Испания'], colors: ['Черный'] },
   ]);
 });
 
@@ -104,8 +104,8 @@ test('every page with the stone gallery has the filter row, and loads js/price-f
 });
 
 test('the page reads stone data only from the light stone index, never the full slabs.json', () => {
-  assert.equal(CategoryPage.STONE_INDEX_URL, '/calculator/data/stone-index.json');
-  assert.equal(CategoryPage.STONE_IMAGE_BASE, '/calculator/data/');
+  assert.equal(CategoryPage.STONE_INDEX_URL, '/sayanmramor-calculator/data/stone-index.json');
+  assert.equal(CategoryPage.STONE_IMAGE_BASE, '/sayanmramor-calculator/data/');
   const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8').replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(src, /slabs\.json/, 'no code path fetches the 8.9 MB catalog');
 });
@@ -143,7 +143,7 @@ test('every category page hands off to the canonical configurator URL for its ow
     assert.equal(product.categoryHref, '/sayanmramor-site/categories/' + file);
     const cta = (html.match(/id="configureCta" href="([^"]+)"/) || [])[1];
     assert.equal(cta, ShowroomData.buildConfiguratorUrl(key));
-    assert.equal(cta, '/calculator/sayanmramor-calculator.html?product=' + key);
+    assert.equal(cta, '/sayanmramor-calculator/sayanmramor-calculator.html?product=' + key);
     // The configure bar's short forms for very narrow screens; the tails are
     // what site.css hides at <= 360 px.
     assert.ok(html.includes('id="configureStone">Не выбран<span class="configure-tail"> - подберёте в конфигураторе</span></span>'), file);
