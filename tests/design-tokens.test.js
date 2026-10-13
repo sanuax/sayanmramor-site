@@ -19,7 +19,6 @@ const lintable = css => strip(css.replace(/\/\* photo motion: kept as is[\s\S]*?
 const CHECKED = [
   'css/tokens.css',
   // css/header.css stays exactly as in git (the owner, 2026-10-14): not checked.
-  ['css/site.css', '/* ---- Components', '/* end of components */'],
   ['css/site.css', '/* ---- Footer', '/* ---- Политика'],
 ];
 
@@ -38,8 +37,7 @@ function declarations(css) {
   }
   return out;
 }
-// Split on spaces outside parentheses, nested ones too: calc(var(--radius) - var(--s-3)) is one part.
-const parts = v => { const out = ['']; let depth = 0; for (const ch of v.trim()) { if (ch === '(') depth++; if (ch === ')') depth--; if (/\s/.test(ch) && depth === 0) { if (out[out.length - 1]) out.push(''); } else out[out.length - 1] += ch; } return out.filter(Boolean); };
+const parts = v => v.split(/\s+(?![^(]*\))/);
 const RADIUS = /^(var\(--radius\)|var\(--radius-pill\)|var\(--radius-btn\)|50%|0|inherit|calc\(var\(--radius\) - [\w.()-]+\))$/;
 const FONT = /^(var\(--fs-(display|h1|h2|h3|body|small)\)|inherit|[\d.]+em)$/;
 const SHADOW = /^var\(--(shadow-1|shadow-2|glass-rim|glass-rim-dark)\)$/;

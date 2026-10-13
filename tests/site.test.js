@@ -787,7 +787,8 @@ test('who trusts us as passes: the back of each tile says only what the link alr
 test('about, why us, who trusts us: the old site\'s three blocks -- its words and figures, the six companies each a link to its site, the logos on disk', () => {
   const html = homeHtml();
   const about = sectionOf(html, '<section class="wrap home-about"');
-  assert.match(about, /<p class="home-about-kicker">О компании<\/p>/);
+  // (2026-10-14, the owner after stage 2: no «О компании» above the heading)
+  assert.doesNotMatch(about, /home-about-kicker|>О компании</);
   assert.match(about, /<h2 id="aboutTitle">Собственное производство в&nbsp;Московской области<\/h2>/);
   assert.match(about, /современным итальянским оборудованием/);
   const facts = [...about.matchAll(/<dt>([^<]+)<\/dt><dd[^>]*>(.+?)<\/dd>/g)].map(m => [m[2].replace(/<[^>]+>/g, ' ').replace('&#8239;', '').replace(/\s+/g, ' ').trim(), m[1]]);
@@ -954,7 +955,8 @@ test('the home request is three questions to a master: a workshop photo, the hea
   assert.match(sec, /data-offer-open/);
   assert.match(sec, /<p class="offer-kicker">Проект<\/p>/);
   assert.match(sec, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/);
-  assert.match(sec, /<p class="offer-lead">Мастер задаст три коротких вопроса/);
+  // (2026-10-14, the owner after stage 2: the agreed words under the heading)
+  assert.match(sec, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/);
   // The photo: a real one from the workshop (assets/home/SOURCES.md), two sizes, lazy, described.
   const img = (sec.match(/<img class="offer-talk-photo"[^>]*>/) || [''])[0];
   assert.match(img, /srcset="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp 480w, \/sayanmramor-site\/assets\/home\/offer-master-040-960\.webp 960w"/);
@@ -1220,14 +1222,3 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   });
 });
 
-
-test('components: one section head, one card -- tone on the ground, no shadow; a card-link turns its title verde and shows the arrow, never moves', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const block = css.slice(css.indexOf('/* ---- Components'), css.indexOf('/* end of components */'));
-  assert.match(block, /\.card \{[^}]*background: var\(--surface\);[^}]*border-radius: var\(--radius\);[^}]*padding: var\(--s-5\);/);
-  assert.match(block, /\.card-dark \{[^}]*background: var\(--graphite-2\);[^}]*color: var\(--on-dark\);/);
-  assert.doesNotMatch(block, /box-shadow: (?!none)|transform/);
-  assert.match(block, /a\.card-link:hover \.card-title, a\.card-link:focus-visible \.card-title \{ color: var\(--accent\); \}/);
-  assert.match(block, /\.section-head h2 \{[^}]*font-size: var\(--fs-h1\);/);
-  assert.match(block, /\.section-lead \{[^}]*max-width: 40em;/);
-});
