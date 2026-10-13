@@ -81,6 +81,24 @@ h3 { font-size: var(--fs-h3); }
 }
 .skip-link:focus { transform: none; }
 
+/* ---- Components: section head, card ----------------------------------------
+   The spec's one section head (a heading on the left, at most one sentence under it, no
+   label above) and one card (paper on limestone, no shadow). */
+.section-head { display: grid; gap: var(--s-3); margin-bottom: var(--s-6); }
+.section-head h2 { margin: 0; font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 600; line-height: 1.1; letter-spacing: -0.015em; }
+.section-lead { max-width: 40em; margin: 0; font-size: var(--fs-body); line-height: 1.55; color: var(--ink-soft); }
+.card { display: flex; flex-direction: column; gap: var(--s-3); background: var(--surface); border-radius: var(--radius); padding: var(--s-5); color: var(--ink); text-decoration: none; }
+.card-dark { background: var(--graphite-2); color: var(--on-dark); }
+.card-dark .card-text { color: var(--on-dark-muted); }
+.card-photo { display: block; overflow: hidden; border-radius: calc(var(--radius) - var(--s-3)); }
+.card-title { margin: 0; font-size: var(--fs-h3); font-weight: 600; line-height: 1.25; transition: color var(--dur-fast) var(--ease); }
+.card-text { margin: 0; font-size: var(--fs-small); line-height: 1.5; color: var(--muted); }
+a.card-link .card-title::after { content: ''; display: inline-block; width: 14px; height: 9px; margin-left: var(--s-2); background: currentColor; opacity: 0; transition: opacity var(--dur-fast) var(--ease); -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; }
+@media (hover: hover) { a.card-link:hover .card-title, a.card-link:focus-visible .card-title { color: var(--accent); } a.card-link:hover .card-title::after { opacity: 1; } }
+a.card-link:focus-visible .card-title { color: var(--accent); }
+a.card-link:focus-visible .card-title::after { opacity: 1; }
+/* end of components */
+
 /* ---- Home (static) -----------------------------------------------------------
    The home page in the site's own system -- the header, type, buttons and
    verde of every other page -- laid out as the first home page (4ad72f4):

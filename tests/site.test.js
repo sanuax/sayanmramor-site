@@ -1220,3 +1220,14 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   });
 });
 
+
+test('components: one section head, one card -- tone on the ground, no shadow; a card-link turns its title verde and shows the arrow, never moves', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* ---- Components'), css.indexOf('/* end of components */'));
+  assert.match(block, /\.card \{[^}]*background: var\(--surface\);[^}]*border-radius: var\(--radius\);[^}]*padding: var\(--s-5\);/);
+  assert.match(block, /\.card-dark \{[^}]*background: var\(--graphite-2\);[^}]*color: var\(--on-dark\);/);
+  assert.doesNotMatch(block, /box-shadow: (?!none)|transform/);
+  assert.match(block, /a\.card-link:hover \.card-title, a\.card-link:focus-visible \.card-title \{ color: var\(--accent\); \}/);
+  assert.match(block, /\.section-head h2 \{[^}]*font-size: var\(--fs-h1\);/);
+  assert.match(block, /\.section-lead \{[^}]*max-width: 40em;/);
+});
