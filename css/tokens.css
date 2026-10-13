@@ -1,0 +1,53 @@
+/* css/tokens.css -- the one design system of the site, the configurator and the showroom
+   (docs/superpowers/specs/2026-10-14-unified-product-design.md). Values live only here;
+   css/header.css, css/site.css, css/showroom.css and the configurator read them. */
+:root {
+  /* colours: unchanged from the site's palette */
+  --page: #efede8; --surface: #f8f7f4; --surface-sunk: #e4e1d9; --stone: #e6e1d8;
+  --ink: #1c1d1b; --ink-soft: #474944; --muted: #63645b;
+  --line: #dcd8cf; --line-strong: #b6b0a4; --line-control: #7e7d73;
+  --graphite: #1e2320; --graphite-2: #262c28;
+  --on-dark: #e9e7e1; --on-dark-muted: #a3a89f; --on-dark-line: rgba(233, 231, 225, 0.18);
+  --accent: #2a5446; --accent-hover: #1f4036; --accent-on-dark: #7fa698; --link: #2a5446;
+
+  --font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;
+  --font-brand: var(--font-display);
+  /* six sizes, far apart */
+  --fs-display: clamp(36px, 4.4vw, 56px);
+  --fs-h1: clamp(32px, 3.4vw, 46px);
+  --fs-h2: clamp(24px, 2.2vw, 30px);
+  --fs-h3: 19px;
+  --fs-body: 16px;
+  --fs-small: 14px;
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 72px;
+  --section: clamp(64px, 8vw, 96px);
+  --control-h-s: 44px; --control-h: 48px; --control-h-l: 56px;
+  --measure: 1280px; --gutter: 24px;
+
+  /* two radii: every surface, and everything you press */
+  --radius: 16px;
+  --radius-pill: 999px;
+
+  /* two shadows: lying over the content, and lifted or open over the page */
+  --shadow-1: 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 24px -14px rgba(28, 29, 27, 0.35);
+  --shadow-2: 0 2px 6px rgba(28, 29, 27, 0.10), 0 28px 56px -24px rgba(28, 29, 27, 0.45);
+
+  /* one curve, two times */
+  --ease: cubic-bezier(0.22, 0.68, 0.24, 1);
+  --dur-fast: 150ms;
+  --dur-move: 250ms;
+
+  --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
+
+  /* glass: light over photographs, dark over the dark and the 3D */
+  --glass-frost: blur(12px) saturate(1.7);
+  --glass-bend: url(#lg-bend) var(--glass-frost);
+  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  --glass-rim-dark: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 1px rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --glass-shine: linear-gradient(rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 50%);
+  --glass-shine-dark: linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 50%);
+}
+/* Phones: narrower margins and a smaller h3 (as css/site.css had them). */
+@media (max-width: 600px) { :root { --gutter: 16px; --fs-h3: 17px; } }
