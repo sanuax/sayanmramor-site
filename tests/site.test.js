@@ -584,9 +584,9 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
 
 test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- local files (no CDN, no preload), each with its licence; the showroom reads both, as the site', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  assert.match(css, /--font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
-  assert.match(css, /--font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;/);
-  assert.match(css, /--font-brand: var\(--font-display\);/);
+  assert.match(fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8'), /--font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/, 'the values live in css/tokens.css (2026-10-14)');
+  assert.match(fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8'), /--font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;/);
+  assert.match(fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8'), /--font-brand: var\(--font-display\);/);
   assert.match(css, /\nh1, h2 \{ font-family: var\(--font-display\); font-weight: 600;/);
   const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
   assert.match(sr, /font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/);
@@ -807,8 +807,10 @@ test('the home page\'s desktop grid (1024 px and wider): 12 columns between marg
   assert.match(block, /\.wall \{ max-width: var\(--wide\); padding: 0; \}/);
   // One material language for the opening scenes: the second stone. The arrow is the site's one arrow.
   assert.match(block, /\.night-hero, \.home-directions \{\s*--stone-2: #e3ded5;\s*\}/);
-  assert.match(css, /\n  --arrow: url\([^)]*stroke-width='2' stroke-linecap='square'/, 'one arrow for the whole site: 2 px, square ends');
-  assert.equal((css.match(/--arrow: url\(/g) || []).length, 1, 'declared once');
+  const tokensCss = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');   // the values live in css/tokens.css (2026-10-14)
+  assert.match(tokensCss, /\n  --arrow: url\([^)]*stroke-width='2' stroke-linecap='square'/, 'one arrow for the whole site: 2 px, square ends');
+  assert.equal((tokensCss.match(/--arrow: url\(/g) || []).length, 1, 'declared once');
+  assert.equal((css.match(/--arrow: url\(/g) || []).length, 0, 'not again in site.css');
   // The hero's caption band back in the content's field (its centring was reset by margin: 0).
   assert.match(css, /\[data-mode="scrub"\] \.hero-story \{\s*position: absolute; top: calc\(var\(--frame-top\) - var\(--band\) \+ 26px\); left: 0; right: 0; z-index: 3; margin: 0 auto;/);
   // Only the home page: the shared footer and container keep their measure; nothing below 1024 px changes.
@@ -848,7 +850,7 @@ test('the «Изделия» panel is a ledger about 640 px wide: numbered group
 test('palette «basalt and serpentine»: limestone, warm stone, basalt, deep green-graphite, one verde accent; the showroom\'s copper only on the doorway\'s action; css/showroom.css untouched', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   [['--page', '#efede8'], ['--stone', '#e6e1d8'], ['--surface', '#f8f7f4'], ['--ink', '#1c1d1b'], ['--graphite', '#1e2320'], ['--accent', '#2a5446'], ['--accent-hover', '#1f4036'], ['--link', '#2a5446'], ['--accent-on-dark', '#7fa698']]
-    .forEach(([name, value]) => assert.match(css, new RegExp(name + ': ' + value + ';'), name));
+    .forEach(([name, value]) => assert.match(fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8'), new RegExp(name + ': ' + value + ';'), name + ' (css/tokens.css, 2026-10-14)'));
   // The old copper lives on only as the showroom's own colour.
   const copper = [...css.matchAll(/#b4562b/gi)].map(m => css.slice(css.lastIndexOf('\n', m.index), m.index));
   copper.forEach(line => assert.match(line, /--sr-copper/));
@@ -1322,7 +1324,7 @@ const glassRule = (css, sel) => { const i = css.indexOf('\n' + sel + ' {'); retu
 
 test('liquid glass in site.css: the configure bar a floating capsule, the groups of «Что можно заказать», the chips and arrows on the photos, the viewer -- frosted, a rim of light; refraction only under .glass-bend; solid where less transparency is asked', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const root = css.slice(css.indexOf(':root {'), css.indexOf('\n}', css.indexOf(':root {')));
+  const root = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');   // the values live in css/tokens.css (2026-10-14)
   assert.match(root, /--glass-frost: blur\(\d+px\) saturate\(1\.\d\);/);
   assert.match(root, /--glass-bend: url\(#lg-bend\) var\(--glass-frost\);/);
   ['.configure-bar', '.home-group', '.home-s2o-chip', '.home-s2o-arrow', '.home-about-chip', '.viewer-btn'].forEach(sel => {
@@ -1443,7 +1445,8 @@ test('css/header.css: the header and its buttons in one file; its tokens are css
   const block = h.slice(h.indexOf(':where(:root) {'), h.indexOf('\n}', h.indexOf(':where(:root) {')));
   const tokens = [...block.matchAll(/\n\s*(--[a-z0-9-]+): ([^;]+);/g)];
   assert.ok(tokens.length >= 20);
-  const siteValue = name => { const m = css.match(new RegExp('(?:^|\\s)' + name + ':\\s*([^;]+);')); return m && m[1].trim(); };
+  const tokensCss = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');   // the values live in css/tokens.css (2026-10-14); the last old ones still in site.css
+  const siteValue = name => { const re = new RegExp('(?:^|\\s)' + name + ':\\s*([^;]+);'); const m = tokensCss.match(re) || css.match(re); return m && m[1].trim(); };
   tokens.forEach(([, name, value]) => assert.equal(value.trim(), siteValue(name), name + ' as in site.css'));
   assert.doesNotMatch(h, /\n:root \{/, 'no :root of its own: it would beat site.css on order');
 });
@@ -1484,4 +1487,13 @@ test('the tab icon: the old site\'s own favicon (2026-10-14, the owner: «воз
   assert.equal(pages.length, 17);
   pages.forEach(p => assert.match(fs.readFileSync(path.join(site, p), 'utf8'), /<\/title>\r?\n<link rel="icon" href="\/sayanmramor-site\/assets\/brand\/favicon\.ico">/, p));
   assert.match(fs.readFileSync(path.join(site, 'assets', 'brand', 'SOURCES.md'), 'utf8'), /https:\/\/sayanmramor\.ru\/favicon\.ico/);
+});
+
+test('one design system: every page loads css/tokens.css first, before any other stylesheet', () => {
+  const pages = ['index.html', 'katalog.html', 'privacy.html', 'showroom.html', ...fs.readdirSync(path.join(site, 'categories')).filter(f => f.endsWith('.html')).map(f => 'categories/' + f)];
+  pages.forEach(p => {
+    const sheets = [...fs.readFileSync(path.join(site, p), 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(m => m[1]);
+    assert.equal(sheets[0], '/sayanmramor-site/css/tokens.css', p);
+  });
+  assert.doesNotMatch(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /^\s*--accent: #2a5446;/m, 'the values live in tokens.css only');
 });

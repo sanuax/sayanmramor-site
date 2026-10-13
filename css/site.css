@@ -20,78 +20,21 @@
    request: its own tokens set to these values). The showroom keeps its own
    graphite and copper too (css/showroom.css); the doorway into it on the home
    page wears the showroom's colours (--sr-* below), and only there. */
+/* The values live in css/tokens.css (the one design system, 2026-10-14). Kept here only until
+   their last users are converted (docs/superpowers/plans/2026-10-14-unified-product.md);
+   tests/design-tokens.test.js rejects them in every file already converted. */
 :root {
-  --page: #efede8;          /* limestone */
-  --surface: #f8f7f4;       /* milk-white paper: panels, cards */
-  --surface-sunk: #e4e1d9;  /* stone ground: the offer band, photo placeholders */
-  --stone: #e6e1d8;         /* warm stone: the home page's halls (directions, ready-made pieces) */
-  --ink: #1c1d1b;           /* basalt */
-  --ink-soft: #474944;
-  --muted: #63645b;         /* >= 4.5:1 on page, paper and stone ground */
-  --line: #dcd8cf;
-  --line-strong: #b6b0a4;
-  --line-control: #7e7d73;  /* field / chip outline: >= 3:1 on page, paper and stone ground */
-  --graphite: #1e2320;      /* deep green-graphite: the collection, the configure bar, the footer */
-  --on-dark: #e9e7e1;
-  --on-dark-muted: #a3a89f;
-  --on-dark-line: rgba(233, 231, 225, 0.18);
-  --accent: #2a5446;        /* serpentine verde: action and response only (white on it 8.5:1) */
-  --accent-hover: #1f4036;
-  --accent-on-dark: #7fa698;  /* the same verde, lightened for the dark sections (5.9:1) */
-  --link: #2a5446;          /* legal text links: the accent, underlined (7.3:1 on the page) */
-
-  /* Type: Montserrat for text, Unbounded -- wide, the old site's character -- for the
-     page headings and the name. */
-  --font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;
-  --font-brand: var(--font-display);
-  /* Type scale: display / h1 / h2 / h3 / body / small / meta. The display
-     size is the home page's one headline; every other page -- and the
-     closing offer band -- tops out at h1. */
-  --fs-display: clamp(36px, 4.4vw, 56px);
-  --fs-h1: clamp(32px, 3.4vw, 46px);
-  --fs-h2: clamp(24px, 2.2vw, 30px);
-  --fs-h3: 19px;
-  --fs-body: 16px;
-  --fs-small: 14px;
+  --radius-s: 6px;
+  --radius-m: 12px;
   --fs-meta: 12px;
-
-  /* Spacing scale; --section is the one gap between the page's sections. */
-  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px;
-  --s-6: 32px; --s-7: 48px; --s-8: 72px;
-  --section: clamp(64px, 8vw, 96px);
-
-  /* Control heights: compact (header, product cards, the configure bar on a
-     phone), regular (every other button, the search field), large (the
-     offer form's fields and its action). */
-  --control-h-s: 44px;
-  --control-h: 48px;
-  --control-h-l: 56px;
-
-  --radius-s: 6px;          /* buttons, fields */
-  --radius-m: 12px;         /* cards, photos */
-  --measure: 1280px;
-  --gutter: 24px;
-  --ease: cubic-bezier(0.22, 0.68, 0.24, 1);
-  /* The showroom's own colours, for the doorway into it on the home page only. */
   --sr-graphite: #1e1a16;
   --sr-on-dark: #f1ece4;
   --sr-on-dark-muted: #b9ae9f;
   --sr-line: rgba(241, 236, 228, 0.18);
   --sr-copper: #b4562b;
   --sr-copper-hover: #9b4824;
-  /* Liquid glass (2026-10-10, the owner's choice; section «Liquid glass» below): the frost --
-     a light blur with raised saturation, so the stone's colour comes through; the bend -- the
-     backdrop refracted near the edges, Chromium only, under .glass-bend (js/header.js mountGlass);
-     the rim of light -- a bright hairline along the top, a dim one along the bottom; the shine --
-     a soft band of light in the upper half. Light glass on photographs, dark glass on the dark. */
-  --glass-frost: blur(12px) saturate(1.7);
-  --glass-bend: url(#lg-bend) var(--glass-frost);
-  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
-  --glass-rim-dark: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 1px rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  --glass-shine: linear-gradient(rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 50%);
-  --glass-shine-dark: linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 50%);
 }
+
 
 /* --sticky-top / --fixed-bottom: the sticky header and the fixed configure bar,
    measured by js/site.js (reserveFixedUi), so a focused or scrolled-to element
@@ -139,10 +82,6 @@ h3 { font-size: var(--fs-h3); }
 }
 .skip-link:focus { transform: none; }
 
-:root {
-  /* The site's one arrow, everywhere (a mask: it takes the text colour): 2 px, square ends. */
-  --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M1 5h12.5M10 1.5L13.5 5 10 8.5'/%3E%3C/svg%3E");
-}
 
 /* ---- Home (static) -----------------------------------------------------------
    The home page in the site's own system -- the header, type, buttons and
@@ -2564,7 +2503,6 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .home-s2o-arrow-right { display: none; }
   .home-s2o-arrow-down { display: block; }
   .offer-toggle-arrow { width: 20px; height: 13px; margin-bottom: 6px; }
-  :root { --gutter: 16px; --fs-h3: 17px; }
   .subtitle, .lead { font-size: var(--fs-body); }
   .contacts-head p { font-size: var(--fs-body); }
   .contacts-map-frame { min-height: 340px; }
