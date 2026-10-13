@@ -24,18 +24,20 @@
   --font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;
   --font-brand: var(--font-display);
   --fs-small: 14px;
-  --fs-meta: 12px;
   --s-2: 8px;
   --s-3: 12px;
   --s-4: 16px;
   --s-5: 24px;
   --s-6: 32px;
-  --radius-s: 6px;
   --radius: 16px;
   --radius-pill: 999px;
   --dur-fast: 150ms;
   --dur-move: 250ms;
   --shadow-1: 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 24px -14px rgba(28, 29, 27, 0.35);
+  --shadow-2: 0 2px 6px rgba(28, 29, 27, 0.10), 0 28px 56px -24px rgba(28, 29, 27, 0.45);
+  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  --fs-body: 16px;
+  --fs-h3: 19px;
   --control-h: 48px;
   --gutter: 24px;
   --ease: cubic-bezier(0.22, 0.68, 0.24, 1);
@@ -60,11 +62,11 @@
    places that use the compact or large one set only height, padding and size. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
-  min-height: var(--control-h); padding: 0 24px; border-radius: var(--radius-s);
-  font: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; letter-spacing: 0.01em;
+  min-height: var(--control-h); padding: 0 24px; border-radius: var(--radius-pill);
+  font: inherit; font-size: var(--fs-body); font-weight: 700; line-height: 1.2; letter-spacing: 0.01em;
   text-decoration: none;
   cursor: pointer; border: 1px solid transparent;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.12s var(--ease);
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .btn:active { transform: scale(0.98); }
 .btn-primary { background: var(--accent); color: #fff; }
@@ -91,10 +93,10 @@
   --capsule-bg: rgba(248, 247, 244, 0.8);
   position: sticky; top: 12px; z-index: 20;
   width: min(1120px, calc(100% - 2 * var(--gutter))); margin: 12px auto 0;
-  border-radius: 999px; background: var(--capsule-bg);
+  border-radius: var(--radius-pill); background: var(--capsule-bg);
   -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
   border: 1px solid rgba(28, 29, 27, 0.09);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(28, 29, 27, 0.06), 0 14px 34px -20px rgba(28, 29, 27, 0.38);
+  box-shadow: var(--glass-rim), var(--shadow-1);
 }
 /* Where the browser cannot blur behind it, the plate is simply solid. */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
@@ -107,7 +109,7 @@
 }
 /* The name: the brand's own letters once their font is settled (--font-brand), the site's until then. */
 .site-logo {
-  flex: none; font-size: 15px; font-weight: 800; letter-spacing: 0.12em;
+  flex: none; font-size: var(--fs-body); font-weight: 800; letter-spacing: 0.12em;
   text-transform: uppercase; text-decoration: none; color: var(--ink);
 }
 .site-header .site-logo { justify-self: start; margin-left: 20px; font-family: var(--font-brand, var(--font)); white-space: nowrap; }
@@ -116,9 +118,9 @@
    follows the same shape. Only colour changes, in 150 ms. */
 .site-nav { grid-column: 2; align-self: center; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
 .site-nav > a, .nav-drop > summary {
-  display: flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 999px;
+  display: flex; align-items: center; height: 36px; padding: 0 14px; border-radius: var(--radius-pill);
   font-size: var(--fs-small); color: var(--ink-soft); text-decoration: none; white-space: nowrap; cursor: pointer;
-  transition: color 0.15s, background-color 0.15s;
+  transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
 }
 .site-nav > a:focus-visible, .nav-drop > summary:focus-visible { outline-offset: 0; }
 .nav-drop[open] > summary { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
@@ -140,37 +142,35 @@
    page you are on. */
 .nav-panel {
   position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0; width: min(640px, calc(100vw - 2 * var(--gutter)));
-  background: rgba(248, 247, 244, 0.97); border: 1px solid rgba(28, 29, 27, 0.09); border-radius: 24px;
+  background: rgba(248, 247, 244, 0.97); border: 1px solid rgba(28, 29, 27, 0.09); border-radius: var(--radius);
   -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
-  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 24px 48px -24px rgba(28, 29, 27, 0.4);
+  box-shadow: var(--shadow-2);
 }
-.nav-panel-inner { counter-reset: nav-group; padding: var(--s-2) var(--s-6) var(--s-3); }
+.nav-panel-inner { padding: var(--s-2) var(--s-6) var(--s-3); }
 .nav-group {
-  counter-increment: nav-group;
   display: grid; grid-template-columns: 184px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
   padding: var(--s-4) 0; border-top: 1px solid var(--line);
 }
 .nav-group:first-child { border-top: 0; }
 .nav-group-title {
-  display: flex; gap: var(--s-3); font-size: 13px; line-height: 1.5; color: var(--muted);
-  transition: color 0.15s;
+  display: flex; gap: var(--s-3); font-size: var(--fs-small); line-height: 1.5; color: var(--muted);
+  transition: color var(--dur-fast) var(--ease);
 }
-.nav-group-title::before { content: counter(nav-group, decimal-leading-zero); min-width: 1.5em; font-variant-numeric: tabular-nums; }
 .nav-group:focus-within .nav-group-title { color: var(--ink); }
 @media (hover: hover) { .nav-group:hover .nav-group-title { color: var(--ink); } }
 .nav-group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); }
 .nav-group a {
   position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px 0;
-  font-size: 16px; line-height: 1.4; color: var(--ink); text-decoration: none;
+  font-size: var(--fs-body); line-height: 1.4; color: var(--ink); text-decoration: none;
 }
 .nav-group a::before {
   content: ''; position: absolute; left: 0; right: 22px; bottom: 0; height: 1px; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--dur-move) var(--ease);
 }
 .nav-group a::after {
   content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  opacity: 0; transform: translateX(-4px); transition: opacity 0.15s, transform 0.2s var(--ease);
+  opacity: 0; transform: translateX(-4px); transition: opacity var(--dur-fast) var(--ease), transform var(--dur-move) var(--ease);
 }
 .nav-group a:focus-visible::before, .nav-group a.active::before { transform: scaleX(1); }
 @media (hover: hover) { .nav-group a:hover::before { transform: scaleX(1); } }
@@ -179,13 +179,13 @@
 /* The showroom's panel: the house on the left, on the right its name, two lines,
    the way in and its rooms -- the same plate as «Изделия». */
 .nav-showroom-inner { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--s-5); align-items: center; padding: var(--s-4); }
-.nav-showroom-house { display: block; border-radius: 16px; overflow: hidden; background: var(--surface-sunk); }
+.nav-showroom-house { display: block; border-radius: calc(var(--radius) - 4px); overflow: hidden; background: var(--surface-sunk); }
 .nav-showroom-house img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
-.nav-showroom-title { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; color: var(--ink); }
-.nav-showroom-note { margin-top: var(--s-2); font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
-.nav-showroom-enter { margin-top: var(--s-4); min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); }
+.nav-showroom-title { font-size: var(--fs-h3); font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; color: var(--ink); }
+.nav-showroom-note { margin-top: var(--s-2); font-size: var(--fs-small); line-height: 1.45; color: var(--ink-soft); }
+.nav-showroom-enter { margin-top: var(--s-4); min-height: 44px; padding: 0 20px; border-radius: var(--radius-pill); font-size: var(--fs-small); }
 .nav-showroom-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); margin-top: var(--s-3); }
-.nav-showroom-rooms a { display: inline-flex; align-items: center; min-height: 28px; font-size: 13px; color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
+.nav-showroom-rooms a { display: inline-flex; align-items: center; min-height: 28px; font-size: var(--fs-small); color: var(--ink-soft); text-decoration: none; transition: color var(--dur-fast) var(--ease); }
 .nav-showroom-rooms a:focus-visible { color: var(--ink); }
 @media (hover: hover) { .nav-showroom-rooms a:hover { color: var(--ink); } }
 
@@ -195,9 +195,9 @@
 .site-header-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 6px; }
 .site-header-cta {
   grid-column: 3; justify-self: end; flex: none;
-  min-height: 44px; padding: 0 22px; border-radius: 999px; font-size: var(--fs-small);
+  min-height: 44px; padding: 0 22px; border-radius: var(--radius-pill); font-size: var(--fs-small);
 }
-.site-header-order { flex: none; min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); background: transparent; }
+.site-header-order { flex: none; min-height: 44px; padding: 0 20px; border-radius: var(--radius-pill); font-size: var(--fs-small); background: transparent; }
 
 /* Narrow phones: the two actions in the open menu one over the other, each its full name. */
 @media (max-width: 380px) {
@@ -227,8 +227,8 @@
   align-items: center; justify-content: center; background: none; border: 0; cursor: pointer; color: var(--ink);
 }
 .nav-toggle-icon, .nav-toggle-icon::before, .nav-toggle-icon::after {
-  display: block; width: 20px; height: 2px; background: currentColor; border-radius: 1px;
-  transition: transform 0.2s var(--ease), background-color 0.2s;
+  display: block; width: 20px; height: 2px; background: currentColor; border-radius: var(--radius-pill);
+  transition: transform var(--dur-move) var(--ease), background-color var(--dur-move) var(--ease);
 }
 .nav-toggle-icon { position: relative; }
 .nav-toggle-icon::before, .nav-toggle-icon::after { content: ''; position: absolute; left: 0; }
@@ -243,7 +243,7 @@ html.menu-lock { overflow: hidden; }
    the name and the menu button. Opened, the capsule itself grows downward into
    the menu: the directions, the places, and «Создать изделие» at its foot. */
 @media (max-width: 1000px) {
-  .site-header { --header-h: 56px; top: 8px; margin-top: 8px; border-radius: 28px; }
+  .site-header { --header-h: 56px; top: 8px; margin-top: 8px; border-radius: var(--radius); }
   .site-header-inner { display: flex; align-items: center; gap: var(--s-3); padding: 0 6px 0 20px; }
   .site-header .site-logo { margin-left: 0; }
   /* Without JavaScript: the capsule wraps -- the name and the action, the links under them. */
@@ -279,7 +279,7 @@ html.menu-lock { overflow: hidden; }
   .js .nav-drop { position: static; }
   .js .nav-drop > summary {
     height: auto; padding: 0 0 var(--s-3); border-radius: 0; background: none; pointer-events: none;
-    font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    font-size: var(--fs-small); font-weight: 700; color: var(--muted);
   }
   .js .nav-drop > summary::after { display: none; }
   .js .nav-panel {
@@ -289,17 +289,17 @@ html.menu-lock { overflow: hidden; }
   .js .nav-panel-inner { display: grid; padding: 0 0 var(--s-5); }
   .js .nav-group { grid-template-columns: 1fr; align-content: start; row-gap: var(--s-2); padding: var(--s-4) 0; }
   .js .nav-group ul { flex-direction: column; gap: 0; }
-  .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
+  .js .nav-group a { min-height: 44px; padding: 0; font-size: var(--fs-body); }   /* a finger's target */
   .js .site-nav > a {
     height: auto; min-height: 44px; padding: var(--s-3) 0; border-radius: 0; background: none; border-top: 1px solid var(--line);
-    font-size: 17px; font-weight: 600; color: var(--ink);
+    font-size: var(--fs-body); font-weight: 600; color: var(--ink);
   }
   .js .site-nav > a.active { color: var(--accent); }
   /* The showroom in the menu: its name as a heading, then the house small and the way in. */
   .js .nav-showroom { border-top: 1px solid var(--line); padding-top: var(--s-4); }
   .js .nav-showroom-inner { grid-template-columns: 120px minmax(0, 1fr); gap: var(--s-4); padding: 0 0 var(--s-4); }
   .js .nav-showroom-note, .js .nav-showroom-rooms { display: none; }
-  .js .nav-showroom-title { font-size: 16px; }
+  .js .nav-showroom-title { font-size: var(--fs-body); }
   .js .nav-showroom-enter { min-height: 40px; padding: 0 16px; margin-top: var(--s-2); }
 }
 /* The capsule marks places with its soft pills, not with a line: js/header.js still

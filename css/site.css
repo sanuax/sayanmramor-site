@@ -1577,14 +1577,14 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 }
 .site-footer .site-logo { color: var(--on-dark); line-height: 1.4; }
 .site-footer-title {
-  margin-bottom: var(--s-4); font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.12em;
-  line-height: 1.4; text-transform: uppercase; color: var(--on-dark);
+  margin-bottom: var(--s-4); font-size: var(--fs-small); font-weight: 700;
+  line-height: 1.4; color: var(--on-dark);
 }
 .site-footer-links { list-style: none; columns: 3; column-gap: var(--s-5); }
 .site-footer-links li { break-inside: avoid; }
 .site-footer-links a { display: inline-block; padding: 3px 0; }
 .site-footer p + p { margin-top: var(--s-2); }
-.site-footer-phone a { font-size: 17px; font-weight: 700; }
+.site-footer-phone a { font-size: var(--fs-h3); font-weight: 700; }
 .site-footer a { color: var(--on-dark); text-decoration: none; text-underline-offset: 3px; }
 @media (hover: hover) { .site-footer a:hover { text-decoration: underline; } }
 .site-footer :focus-visible { outline-color: var(--on-dark); }
@@ -1595,7 +1595,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .site-footer-bottom::before {
   content: ''; flex: 0 0 100%; margin-bottom: var(--s-4); border-top: 1px solid var(--on-dark-line);
 }
-.site-footer-legal { display: flex; flex-wrap: wrap; gap: 0 var(--s-5); font-size: var(--fs-meta); }
+.site-footer-legal { display: flex; flex-wrap: wrap; gap: 0 var(--s-5); font-size: var(--fs-small); }
 
 /* ---- Политика конфиденциальности -------------------------------------------- */
 .legal-page { max-width: calc(760px + 2 * var(--gutter)); padding-top: var(--s-7); padding-bottom: var(--section); }

@@ -16,6 +16,8 @@ const strip = css => css.replace(/\/\*[\s\S]*?\*\//g, '');
 // A file, or [file, fromMarker, toMarker] -- the part of the file between two comments.
 const CHECKED = [
   'css/tokens.css',
+  'css/header.css',
+  ['css/site.css', '/* ---- Footer', '/* ---- Политика'],
 ];
 
 function source(entry) {
@@ -67,4 +69,16 @@ test('css/tokens.css holds the system the spec names', () => {
     /--accent: #2a5446;/, /--graphite: #1e2320;/, /--graphite-2: #262c28;/,
   ].forEach(re => assert.match(css, re));
   assert.doesNotMatch(css, /--radius-s|--radius-m|--fs-meta|--sr-/);
+});
+
+// The configurator loads css/header.css with or without css/tokens.css (Review Focus, 2026-10-14):
+// every value the header reads has a fallback in its own :where(:root), equal to the token.
+test('css/header.css: every variable it reads has a fallback in its :where(:root)', () => {
+  const h = read('css/header.css');
+  const block = h.slice(h.indexOf(':where(:root) {'), h.indexOf('\n}', h.indexOf(':where(:root) {')));
+  const defined = new Set([...block.matchAll(/(--[\w-]+):/g)].map(m => m[1]));
+  const local = new Set([...strip(h).replace(block, '').matchAll(/(--[\w-]+):/g)].map(m => m[1]));
+  const used = new Set([...strip(h).matchAll(/var\((--[\w-]+)/g)].map(m => m[1]));
+  const missing = [...used].filter(v => !defined.has(v) && !local.has(v));
+  assert.deepEqual(missing, []);
 });
