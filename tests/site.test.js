@@ -1475,3 +1475,13 @@ test('the configurator wears the site\'s header: the same menu, no «Заказ�
   const flag = calc.indexOf("document.documentElement.classList.add('js')");
   assert.ok(flag > 0 && flag < calc.indexOf('/sayanmramor-site/css/header.css'), 'the «js» flag before the header stylesheet');
 });
+
+test('the tab icon: the old site\'s own favicon (2026-10-14, the owner: «возьми лого со старого сайта»), on every page right after the title', () => {
+  const icon = path.join(site, 'assets', 'brand', 'favicon.ico');
+  assert.ok(fs.existsSync(icon));
+  assert.deepEqual([...fs.readFileSync(icon).subarray(0, 6)], [0, 0, 1, 0, 3, 0], 'an .ico holding three sizes');
+  const pages = ['index.html', 'katalog.html', 'privacy.html', 'showroom.html', ...fs.readdirSync(path.join(site, 'categories')).filter(f => f.endsWith('.html')).map(f => 'categories/' + f)];
+  assert.equal(pages.length, 17);
+  pages.forEach(p => assert.match(fs.readFileSync(path.join(site, p), 'utf8'), /<\/title>\r?\n<link rel="icon" href="\/sayanmramor-site\/assets\/brand\/favicon\.ico">/, p));
+  assert.match(fs.readFileSync(path.join(site, 'assets', 'brand', 'SOURCES.md'), 'utf8'), /https:\/\/sayanmramor\.ru\/favicon\.ico/);
+});
