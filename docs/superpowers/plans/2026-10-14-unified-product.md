@@ -23,6 +23,7 @@
 - Тексты меняются только по таблице раздела 6 спецификации.
 - Ничего не пушится: коммиты локальные, публикация на GitHub Pages только по команде владельца.
 - После каждого этапа (конец задач 4, 6, 8, 9, 10) - остановка и показ владельцу.
+- **Решение владельца 2026-10-14 (после этапа 1):** анимации у фото не трогаем - подъём, увеличение и тени фото при наведении остаются как есть («От камня к изделию», галереи направлений, вход в шоурум, просмотр фото, каталог). В CSS они собраны в отмеченные блоки `/* photo motion: kept as is ... */ ... /* end of photo motion */`, которые проверка токенов не трогает.
 
 ## Review Focus
 
@@ -482,7 +483,6 @@ test('home, one product (2026-10-14): no label above a heading, no 01-04, no sta
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.doesNotMatch(css, /trust-stamp|trust-lay|\.trust-tilt/);
   assert.match(css, /\.trust-motion \.trust-pass:focus-visible \.trust-flip \{ transform: rotateY\(180deg\); \}/);
-  assert.doesNotMatch(css, /\.home-s2o-card:hover|\.home-showroom-house:hover \{ transform/);
 });
 ```
 
@@ -516,7 +516,7 @@ Expected: пусто. В конфигураторе - то же в задаче 
   - удалить правила `*-kicker` и `.home-why-num`; заголовки разделов: `font-size` → `var(--fs-h1)`, подводки - `.section-lead`-значения (`var(--fs-body)`);
   - скругления: панель «Что можно заказать» `20px` → `var(--radius)`; карточки и фото `10/12/14/16/17/20/22/23/24px`, `var(--radius-m)`, `var(--s2o-radius)` → `var(--radius)` (вложенное фото - `calc(var(--radius) - <отступ>)`); чипы и стрелки на фото, кнопки → `var(--radius-pill)`; `2px/3px` у тонких индикаторов → `var(--radius-pill)`;
   - тени: стекло на фото → `var(--glass-rim), var(--shadow-1)` (светлое) / `var(--glass-rim-dark), var(--shadow-1)` (тёмное); карточки, рамки фото, `inset 0 0 0 1px` рамки → `none`;
-  - удалить из раздела «Works in frames» подъём `.home-showroom-house:hover`; в «От камня к изделию» - `:hover` с `transform`;
+  - анимации фото (`.home-s2o-card:hover ...`, `.home-showroom-house:hover`, «Works in frames») не трогать: обернуть в `/* photo motion: kept as is (the owner, 2026-10-14) */ ... /* end of photo motion */`;
   - вход в шоурум: `--sr-*` → `--graphite`, `--on-dark`, `--accent`;
   - «Нам доверяют»: удалить `trust-lay`, `trust-stamp`, `.trust-tilt` и `.trust-motion:not(.is-in)`; блик и переворот оставить; `.home-trust-mcx-name` - без `uppercase`, `font-size: var(--fs-small)`;
   - наклон: в «What can be ordered in motion» `transition: transform 0.2s ease-out` → `transform var(--dur-move) var(--ease)`, `opacity 0.3s` → `opacity var(--dur-move)`;
@@ -565,7 +565,6 @@ test('direction pages, one product (2026-10-14): the agreed words, no label abov
     assert.doesNotMatch(html, /offer-kicker|Мастер задаст/, f);
   });
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  assert.doesNotMatch(css, /\.portfolio-item:hover \.portfolio-shot \{\s*transform/);
 });
 ```
 
@@ -576,7 +575,7 @@ Run: `node --test tests/site.test.js tests/category-page.test.js` - FAIL.
 - [ ] **Step 2: Разметка** - во всех `categories/*.html` удалить `<p class="offer-kicker">…</p>`, заменить подводку формы на утверждённую; в `js/category-page.js` карточке камня добавить `card card-link`, фото - `card-photo`, названию - `card-title`, типу/цене - `card-text`.
 
 - [ ] **Step 3: CSS на токены** - в перечисленных разделах по тем же таблицам, что в задачах 4 и 6:
-  - `.portfolio-shot`: 4-слойная тень → `none`, рамка `inset` → `none`, скругление `20px` → `var(--radius)`; удалить `:hover` с `transform` и `img { transform: scale }`;
+  - `.portfolio-shot` и его анимация при наведении - не трогать (блок `photo motion`);
   - нижняя панель `.configure-bar` - стекло: `var(--glass-rim-dark), var(--shadow-1)`, капсула `var(--radius-pill)`;
   - фильтры, чипы, «Показать ещё», переключатели цены - один вид кнопки (`.btn-secondary`) и один вид чипа: `height: var(--control-h-s); border-radius: var(--radius-pill); border: 1px solid var(--line-control); font-size: var(--fs-small)`; выбранный - `background: var(--accent); color: #fff; border-color: var(--accent)`;
   - просмотр фото: окно `var(--radius)`, кнопки `50%`, тень `var(--shadow-2)`;

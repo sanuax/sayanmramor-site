@@ -74,7 +74,12 @@ def make_handler(mounts):
             return super().send_head()
 
         def end_headers(self):
-            self.send_header("Cache-Control", "no-store")
+            # Fonts are never edited: cached as on GitHub Pages, so a page change does not
+            # refetch them and show the name in a stand-in face for a moment (2026-10-14).
+            # Everything else stays no-store, so an edit is always seen.
+            path = urllib.parse.urlsplit(self.path).path
+            fonts = path.startswith("/sayanmramor-site/assets/fonts/") and path.endswith(".woff2")
+            self.send_header("Cache-Control", "max-age=86400" if fonts else "no-store")
             super().end_headers()
 
     return Handler

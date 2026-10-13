@@ -12,6 +12,8 @@ const path = require('path');
 const site = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(site, p), 'utf8');
 const strip = css => css.replace(/\/\*[\s\S]*?\*\//g, '');
+// Photo motion is kept as it was (the owner, 2026-10-14): its marked blocks are not checked.
+const lintable = css => strip(css.replace(/\/\* photo motion: kept as is[\s\S]*?\/\* end of photo motion \*\//g, ''));
 
 // A file, or [file, fromMarker, toMarker] -- the part of the file between two comments.
 const CHECKED = [
@@ -21,11 +23,11 @@ const CHECKED = [
 ];
 
 function source(entry) {
-  if (typeof entry === 'string') return strip(read(entry));
+  if (typeof entry === 'string') return lintable(read(entry));
   const [file, from, to] = entry; const css = read(file);
   const a = css.indexOf(from), b = to ? css.indexOf(to, a) : css.length;
   assert.ok(a >= 0 && b > a, file + ': ' + from);
-  return strip(css.slice(a, b));
+  return lintable(css.slice(a, b));
 }
 function declarations(css) {
   const out = []; const re = /([^{}]+)\{([^{}]*)\}/g; let m;
@@ -81,4 +83,14 @@ test('css/header.css: every variable it reads has a fallback in its :where(:root
   const used = new Set([...strip(h).matchAll(/var\((--[\w-]+)/g)].map(m => m[1]));
   const missing = [...used].filter(v => !defined.has(v) && !local.has(v));
   assert.deepEqual(missing, []);
+});
+
+// Photo motion stays as it was (the owner, 2026-10-14): a marked block is left out of the check,
+// and only that block.
+test('photo motion blocks are left out of the check, nothing else', () => {
+  const css = '.a { transition: color 0.2s; }\n/* photo motion: kept as is (the owner, 2026-10-14) */\n.b:hover img { transform: scale(1.04); transition: transform 0.6s; }\n/* end of photo motion */\n.c { box-shadow: 0 1px 2px #000; }';
+  const out = lintable(css);
+  assert.match(out, /\.a \{ transition: color 0\.2s; \}/);
+  assert.match(out, /\.c \{ box-shadow/);
+  assert.doesNotMatch(out, /\.b:hover/);
 });

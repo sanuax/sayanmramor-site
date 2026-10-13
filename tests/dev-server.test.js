@@ -62,6 +62,12 @@ test('dev_server.py serves the site and the given configurator checkout on one o
     assert.equal(root.location, '/sayanmramor-site/index.html');
     assert.equal(root.clear, '"cache"', 'the entry point evicts pages cached from an older local server');
     assert.equal(calculator.cache, 'no-store');
+    // Fonts are never edited: they may be cached, as GitHub Pages caches them. Refetched on every
+    // page they showed the name in a stand-in face for a moment (the owner, 2026-10-14).
+    const font = await get(port, '/sayanmramor-site/assets/fonts/unbounded-cyrillic-wght-normal.woff2');
+    assert.equal(font.status, 200);
+    assert.match(font.cache, /^max-age=\d+$/, 'fonts cacheable');
+    assert.equal((await get(port, '/sayanmramor-site/css/site.css')).cache, 'no-store', 'everything edited stays fresh');
     assert.equal(calculator.clear, undefined, 'a page never clears the cache under its own downloads');
 
     // Nothing outside the two mounts, and no way out of them.
