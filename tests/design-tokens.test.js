@@ -18,7 +18,7 @@ const lintable = css => strip(css.replace(/\/\* photo motion: kept as is[\s\S]*?
 // A file, or [file, fromMarker, toMarker] -- the part of the file between two comments.
 const CHECKED = [
   'css/tokens.css',
-  'css/header.css',
+  // css/header.css stays exactly as in git (the owner, 2026-10-14): not checked.
   ['css/site.css', '/* ---- Footer', '/* ---- Политика'],
 ];
 

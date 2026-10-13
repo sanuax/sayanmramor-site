@@ -365,14 +365,14 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
   const rule = header.slice(start, header.indexOf('}', start));
   assert.match(rule, /position: sticky; top: 12px;/);
   assert.match(rule, /width: min\(1120px, calc\(100% - 2 \* var\(--gutter\)\)\); margin: 12px auto 0;/);
-  assert.match(rule, /border-radius: var\(--radius-pill\);/, 'fully rounded (the pill token, 2026-10-14)');
+  assert.match(rule, /border-radius: 999px;/);
   assert.match(rule, /--capsule-bg: rgba\(248, 247, 244, 0\.8\);/);
   assert.match(rule, /backdrop-filter: blur\(18px\) saturate\(1\.2\);/);
   assert.match(header, /@supports not \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\) \{\s*\.site-header \{ --capsule-bg: rgba\(248, 247, 244, 0\.97\); \}/);
   assert.doesNotMatch(header, /position: fixed/);
   // The places stand on the capsule's middle; the action is a pill set into its curve.
   assert.match(header, /grid-template-columns: minmax\(0, 1fr\) auto minmax\(0, 1fr\);/);
-  assert.match(header, /\.site-header-cta \{\s*grid-column: 3; justify-self: end;[^}]*border-radius: var\(--radius-pill\);/);
+  assert.match(header, /\.site-header-cta \{\s*grid-column: 3; justify-self: end;[^}]*border-radius: 999px;/);
   // Open on a phone: only the list scrolls; the name, the close button and the action stay in view.
   assert.match(header, /\.js \.site-header\.menu-open \.site-nav \{[^}]*overflow-y: auto;/);
   // The brand's own letters belong to the name in the header alone (a hook; no font is shipped yet).
@@ -409,15 +409,15 @@ test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- loc
 test('header: the places are soft pills in the capsule -- the current one and the pointed one a faint fill, the keyboard ring the same shape; no line, no springs; the «Изделия» panel unfolds downward', () => {
   const css = headerAndSiteCss();
   const header = headerSection();
-  assert.match(header, /\.site-nav > a, \.nav-drop > summary \{[^}]*height: 36px; padding: 0 14px; border-radius: var\(--radius-pill\);[^}]*transition: color var\(--dur-fast\) var\(--ease\), background-color var\(--dur-fast\) var\(--ease\);/, 'pills, colour in 150 ms (tokens, 2026-10-14)');
+  assert.match(header, /\.site-nav > a, \.nav-drop > summary \{[^}]*height: 36px; padding: 0 14px; border-radius: 999px;[^}]*transition: color 0\.15s, background-color 0\.15s;/);
   assert.match(header, /\.site-nav > a\.active, \.nav-drop > summary\.active \{ color: var\(--ink\); background: rgba\(28, 29, 27, 0\.06\); \}/);
   assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: rgba\(28, 29, 27, 0\.05\); \} \}/);
   assert.match(header, /\.nav-indicator \{ display: none; \}/, 'header.js may place its line; the capsule does not show it');
   const wide = css.slice(css.indexOf('@media (min-width: 1001px) {'), css.indexOf('@keyframes nav-panel-unfold'));
-  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'), 'as in master (the owner, 2026-10-14)');
+  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'));
   assert.ok(wide.includes('.nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }'), 'and folds back up when it closes');
-  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\); \}/);
-  assert.match(css, /@keyframes nav-panel-fold \{\s*from \{ clip-path: inset\(0 0 0 0 round var\(--radius\)\);[^}]*\}\s*to \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\);/);
+  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round 24px\); \}/);
+  assert.match(css, /@keyframes nav-panel-fold \{\s*from \{ clip-path: inset\(0 0 0 0 round 24px\);[^}]*\}\s*to \{ clip-path: inset\(0 0 100% 0 round 24px\);/);
   assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.nav-drop\[open\] > \.nav-panel, \.nav-drop\.is-closing > \.nav-panel \{ animation: none; \}/);
   assert.doesNotMatch(css, /nav-group:nth-child\(\d\) \{[^}]*animation-delay/);
 });
@@ -552,12 +552,12 @@ test('«Где мы находимся»: one limestone plane, no cards -- the a
   assert.doesNotMatch(block, /border-radius: (?!0)/, 'no rounded corners');
 });
 
-test('the «Изделия» panel is a ledger about 640 px wide: group rows without numbers, thin neutral rules, copper only for hover / the current page', () => {
+test('the «Изделия» panel is a ledger about 640 px wide: numbered group rows, thin neutral rules, copper only for hover / the current page', () => {
   const css = headerAndSiteCss();
   const rule = sel => { const i = css.indexOf('\n' + sel + ' {'); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
   assert.match(rule('.nav-panel'), /width: min\(640px,/);
-  // No 01-05 before the groups (2026-10-14, one product: numbering only where it tells something).
-  assert.doesNotMatch(css, /counter\(nav-group|counter-reset: nav-group|counter-increment: nav-group/);
+  assert.match(rule('.nav-panel-inner'), /counter-reset: nav-group/);
+  assert.match(rule('.nav-group-title::before'), /content: counter\(nav-group, decimal-leading-zero\)/);
   assert.match(rule('.nav-group'), /border-top: 1px solid var\(--line\)/);
   assert.match(rule('.nav-group a::before'), /background: var\(--accent\)[\s\S]*transform: scaleX\(0\)/);
   assert.match(css, /\.nav-group a:focus-visible::before, \.nav-group a\.active::before \{ transform: scaleX\(1\); \}/);
@@ -1209,14 +1209,14 @@ test('one design system: every page loads css/tokens.css first, before any other
   assert.doesNotMatch(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /^\s*--accent: #2a5446;/m, 'the values live in tokens.css only');
 });
 
-test('buttons in the page are rectangles with slightly rounded corners, as before (the owner, 2026-10-14); the header\'s two actions stay pills', () => {
+test('buttons in the page are rectangles with slightly rounded corners, as before; the header as in git (the owner, 2026-10-14): its two actions pills', () => {
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
-  const t = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');
-  assert.match(t, /--radius-btn: 6px;/);
+  assert.equal(h, require('child_process').execSync('git show master:css/header.css', { cwd: site, encoding: 'utf8' }).replace(/\r\n/g, '\n').replace(/\n?$/, h.endsWith('\n') ? '\n' : ''), 'css/header.css exactly as in master');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
-  assert.match(btn, /border-radius: var\(--radius-btn\);/);
+  assert.match(btn, /border-radius: var\(--radius-s\);/);
+  assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
   ['.site-header-cta', '.site-header-order'].forEach(sel => {
-    const i = h.indexOf('\n' + sel + ' {'); assert.match(h.slice(i, h.indexOf('}', i)), /border-radius: var\(--radius-pill\);/, sel);
+    const i = h.indexOf('\n' + sel + ' {'); assert.match(h.slice(i, h.indexOf('}', i)), /border-radius: 999px;/, sel);
   });
 });
 
