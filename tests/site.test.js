@@ -110,7 +110,7 @@ const DIRECTIONS = {
 };
 const GROUPS = [
   ['Лестницы и ступени', ['Лестницы', 'Ступени']],
-  ['Пространство', ['Полы', 'Стены', 'Панно', 'Подоконники', 'Камины']],
+  ['Интерьер', ['Полы', 'Стены', 'Панно', 'Подоконники', 'Камины']],   // (2026-10-14, the owner: «Пространство» -> «Интерьер»)
   ['Кухня и ванная', ['Кухня', 'Ванная']],
   ['Фасады', ['Фасады']],
   ['Спа и бассейны', ['Спа зоны', 'Хаммамы', 'Бассейны']],
@@ -825,7 +825,7 @@ test('the home hero: the headline, one line and two plain actions on the wall of
   const actions = [...hero.matchAll(/<a class="btn (btn-\w+)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => m.slice(1));
   assert.deepEqual(actions, [
     ['btn-primary', '/sayanmramor-calculator/sayanmramor-calculator.html', 'Создать изделие'],
-    ['btn-secondary', '/sayanmramor-site/showroom.html', 'Открыть 3D-шоурум'],
+    ['btn-secondary', '/sayanmramor-site/showroom.html', 'Открыть шоурум'],   // (2026-10-14, the owner: one name for the way in)
   ]);
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
   assert.equal(imgs.length, 1, 'one picture');
@@ -834,7 +834,7 @@ test('the home hero: the headline, one line and two plain actions on the wall of
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
   assert.match(hero, /<source media="\(max-aspect-ratio: 1\/1\), \(max-width: 900px\)" srcset="[^"]*ai-washbasin-4x5-720\.webp 720w, [^"]*ai-washbasin-4x5-1121\.webp 1121w"/, 'phones and upright windows get the upright version');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
-  assert.match(hero, /<p class="wrap home-hero-note">Раковина из кварцита — визуализация<\/p>/, 'a generated picture is said to be one');
+  assert.match(hero, /<p class="wrap home-hero-note">Раковина из кварцита - визуализация<\/p>/, 'a generated picture is said to be one (2026-10-14, the owner: a hyphen, no long dash)');
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /\.home-hero \{\s*display: grid;[^}]*margin-top: -74px;/, 'the picture runs under the floating header');
   assert.match(css, /\.js \.home-hero \{ margin-top: -66px; \}/);
@@ -898,6 +898,8 @@ test('«От камня к изделию» in CSS: equal 4:5 cards laid over ea
 test('«Что можно заказать»: one stone panel with the menu\'s five groups -- each a photograph, its name and its real links -- and the ready-made pieces on their own line, not a configurator direction', () => {
   const sec = sectionOf(homeHtml(), '<section class="wrap home-products"');
   assert.match(sec, /<h2 id="productsTitle">Что можно заказать<\/h2>/);
+  // (2026-10-14, the owner: the agreed words under the heading)
+  assert.match(sec, /<p class="home-order-lead">Выберите направление: покажем наши работы, подберём камень и посчитаем стоимость\.<\/p>/);
   // The page names the countertops in full; the menu keeps them short.
   const HOME_NAMES = { 'Кухня': 'Столешница на кухню', 'Ванная': 'Столешница в ванную' };
   const homeName = n => HOME_NAMES[n] || n;
