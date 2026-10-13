@@ -12,7 +12,7 @@
 - **Последний коммит кода сайта:** `4ad72f4 style: unify site design system across pages`. Перед ним — `95cb530 feat: expand site directions and add commercial offer`. После них — только коммит этой документации.
 - **Тесты:** `node --test tests/*.test.js` → 115/115. Ручные проверки в браузере на ширинах 320 / 390 / 768 / 1024 / 1440: горизонтального overflow нет, битых картинок и пустых `src` нет, ошибок в консоли нет.
 - **Dev-сервер:** `python scripts/dev_server.py`. В `.claude/launch.json` (вне репозитория) это конфигурация `site-dev`, порт 8010.
-- **GitHub Pages (с 2026-10-12):** сайт — https://sanuax.github.io/sayanmramor-site/ (ветка `master`), калькулятор — https://sanuax.github.io/sayanmramor-calculator/sayanmramor-calculator.html (ветка `rate-catalog-subcategories`). Поэтому префикс калькулятора на сайте теперь `/sayanmramor-calculator/` (было `/calculator/`; dev-сервер отдаёт оба). Каталог камня (`slabs.json`, `data/images/`) по решению владельца пока НЕ опубликован: на Pages выбор камня в калькуляторе пуст, в галереях направлений карточки без фото.
+- **GitHub Pages (с 2026-10-12):** сайт — https://sanuax.github.io/sayanmramor-site/ (ветка `master`), калькулятор — https://sanuax.github.io/sayanmramor-calculator/sayanmramor-calculator.html (ветка `rate-catalog-subcategories`). Поэтому префикс калькулятора на сайте теперь `/sayanmramor-calculator/` (было `/calculator/`; dev-сервер отдаёт оба). Каталог камня (`slabs.json`, `data/images/`) с 2026-10-14 в git калькулятора и опубликован (компания получила разрешение на фото Venezia Stone).
 
 **Направления сайта** — 13 страниц в `categories/` плюс «Готовые изделия» и «Шоурум» в меню. Меню и футер на всех страницах одинаковые.
 
