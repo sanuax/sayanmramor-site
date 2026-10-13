@@ -38,7 +38,7 @@ function declarations(css) {
   return out;
 }
 const parts = v => v.split(/\s+(?![^(]*\))/);
-const RADIUS = /^(var\(--radius\)|var\(--radius-pill\)|50%|0|inherit|calc\(var\(--radius\) - [\w.()-]+\))$/;
+const RADIUS = /^(var\(--radius\)|var\(--radius-pill\)|var\(--radius-btn\)|50%|0|inherit|calc\(var\(--radius\) - [\w.()-]+\))$/;
 const FONT = /^(var\(--fs-(display|h1|h2|h3|body|small)\)|inherit|[\d.]+em)$/;
 const SHADOW = /^var\(--(shadow-1|shadow-2|glass-rim|glass-rim-dark)\)$/;
 
@@ -64,7 +64,7 @@ CHECKED.forEach(entry => {
 test('css/tokens.css holds the system the spec names', () => {
   const css = read('css/tokens.css');
   [
-    /--radius: 16px;/, /--radius-pill: 999px;/,
+    /--radius: 16px;/, /--radius-pill: 999px;/, /--radius-btn: 6px;/,
     /--fs-display: clamp\(36px, 4\.4vw, 56px\);/, /--fs-h1: clamp\(32px, 3\.4vw, 46px\);/, /--fs-h2: clamp\(24px, 2\.2vw, 30px\);/,
     /--fs-h3: 19px;/, /--fs-body: 16px;/, /--fs-small: 14px;/,
     /--shadow-1: [^;]+;/, /--shadow-2: [^;]+;/, /--dur-fast: 150ms;/, /--dur-move: 250ms;/,

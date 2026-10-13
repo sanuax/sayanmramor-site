@@ -31,6 +31,7 @@
   --s-6: 32px;
   --radius: 16px;
   --radius-pill: 999px;
+  --radius-btn: 6px;
   --dur-fast: 150ms;
   --dur-move: 250ms;
   --shadow-1: 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 24px -14px rgba(28, 29, 27, 0.35);
@@ -62,7 +63,7 @@
    places that use the compact or large one set only height, padding and size. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
-  min-height: var(--control-h); padding: 0 24px; border-radius: var(--radius-pill);
+  min-height: var(--control-h); padding: 0 24px; border-radius: var(--radius-btn);
   font: inherit; font-size: var(--fs-body); font-weight: 700; line-height: 1.2; letter-spacing: 0.01em;
   text-decoration: none;
   cursor: pointer; border: 1px solid transparent;
@@ -306,22 +307,31 @@ html.menu-lock { overflow: hidden; }
    places its travelling line (.nav-indicator), and the capsule simply does not
    show it. On a wide screen a panel unfolds downward from the capsule and, when
    it closes, folds back up into it (js/header.js keeps the <details> open while
-   it folds -- .is-closing -- and closes it after). */
+   it folds -- .is-closing -- and closes it after). Opening comes in two beats, as the old
+   masthead's sheet did (the owner, 2026-10-14: «содержание раскрывалось плавно»): the panel
+   unfolds, and a moment later what stands on it rises into place, one group after another. */
 .nav-indicator { display: none; }
 @media (min-width: 1001px) {
-  .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }
+  .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.36s var(--ease); }
   .nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }
+  .nav-drop[open]:not(.is-closing) .nav-panel-inner > *, .nav-drop[open]:not(.is-closing) .nav-showroom-inner > * { animation: nav-panel-item 0.32s var(--ease) 0.12s both; }
+  .nav-drop[open]:not(.is-closing) .nav-panel-inner > :nth-child(2), .nav-drop[open]:not(.is-closing) .nav-showroom-inner > :nth-child(2) { animation-delay: 0.15s; }
+  .nav-drop[open]:not(.is-closing) .nav-panel-inner > :nth-child(3) { animation-delay: 0.18s; }
+  .nav-drop[open]:not(.is-closing) .nav-panel-inner > :nth-child(4) { animation-delay: 0.21s; }
+  .nav-drop[open]:not(.is-closing) .nav-panel-inner > :nth-child(5) { animation-delay: 0.24s; }
 }
 @keyframes nav-panel-unfold {
-  from { clip-path: inset(0 0 100% 0 round 24px); }
-  to { clip-path: inset(0 0 0 0 round 24px); }
+  from { clip-path: inset(0 0 100% 0 round var(--radius)); }
+  to { clip-path: inset(0 0 0 0 round var(--radius)); }
 }
 @keyframes nav-panel-fold {
-  from { clip-path: inset(0 0 0 0 round 24px); opacity: 1; }
-  to { clip-path: inset(0 0 100% 0 round 24px); opacity: 0.6; }
+  from { clip-path: inset(0 0 0 0 round var(--radius)); opacity: 1; }
+  to { clip-path: inset(0 0 100% 0 round var(--radius)); opacity: 0.6; }
 }
+@keyframes nav-panel-item { from { opacity: 0; transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) {
-  .nav-drop[open] > .nav-panel, .nav-drop.is-closing > .nav-panel { animation: none; }
+  .nav-drop[open] > .nav-panel, .nav-drop.is-closing > .nav-panel,
+  .nav-drop[open] .nav-panel-inner > *, .nav-drop[open] .nav-showroom-inner > * { animation: none; }
 }
 @media (min-width: 601px) and (max-width: 1000px) {
   .js .nav-panel-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-6); }

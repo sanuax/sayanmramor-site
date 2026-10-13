@@ -414,11 +414,11 @@ test('header: the places are soft pills in the capsule -- the current one and th
   assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: rgba\(28, 29, 27, 0\.05\); \} \}/);
   assert.match(header, /\.nav-indicator \{ display: none; \}/, 'header.js may place its line; the capsule does not show it');
   const wide = css.slice(css.indexOf('@media (min-width: 1001px) {'), css.indexOf('@keyframes nav-panel-unfold'));
-  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'));
+  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.36s var(--ease); }'), 'unfolds, then its contents rise (2026-10-14)');
   assert.ok(wide.includes('.nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }'), 'and folds back up when it closes');
-  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round 24px\); \}/);
-  assert.match(css, /@keyframes nav-panel-fold \{\s*from \{ clip-path: inset\(0 0 0 0 round 24px\);[^}]*\}\s*to \{ clip-path: inset\(0 0 100% 0 round 24px\);/);
-  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.nav-drop\[open\] > \.nav-panel, \.nav-drop\.is-closing > \.nav-panel \{ animation: none; \}/);
+  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\); \}/);
+  assert.match(css, /@keyframes nav-panel-fold \{\s*from \{ clip-path: inset\(0 0 0 0 round var\(--radius\)\);[^}]*\}\s*to \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\);/);
+  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.nav-drop\[open\] > \.nav-panel, \.nav-drop\.is-closing > \.nav-panel,[^{]*\{ animation: none; \}/);
   assert.doesNotMatch(css, /nav-group:nth-child\(\d\) \{[^}]*animation-delay/);
 });
 
@@ -1207,4 +1207,26 @@ test('one design system: every page loads css/tokens.css first, before any other
     assert.equal(sheets[0], '/sayanmramor-site/css/tokens.css', p);
   });
   assert.doesNotMatch(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /^\s*--accent: #2a5446;/m, 'the values live in tokens.css only');
+});
+
+test('buttons in the page are rectangles with slightly rounded corners, as before (the owner, 2026-10-14); the header\'s two actions stay pills', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  const t = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');
+  assert.match(t, /--radius-btn: 6px;/);
+  const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
+  assert.match(btn, /border-radius: var\(--radius-btn\);/);
+  ['.site-header-cta', '.site-header-order'].forEach(sel => {
+    const i = h.indexOf('\n' + sel + ' {'); assert.match(h.slice(i, h.indexOf('}', i)), /border-radius: var\(--radius-pill\);/, sel);
+  });
+});
+
+test('«Изделия» and «Шоурум» open in two beats on a desktop (the owner, 2026-10-14): the panel unfolds, then its groups rise one after another; not with «reduce motion»', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  const wide = h.slice(h.indexOf('@media (min-width: 1001px) {\n  .nav-drop[open] > .nav-panel'), h.indexOf('@keyframes nav-panel-unfold'));
+  assert.match(wide, /\.nav-drop\[open\] > \.nav-panel \{ animation: nav-panel-unfold [^;]+; \}/);
+  assert.match(wide, /\.nav-drop\[open\]:not\(\.is-closing\) \.nav-panel-inner > \*, \.nav-drop\[open\]:not\(\.is-closing\) \.nav-showroom-inner > \* \{ animation: nav-panel-item [^;]+ both; \}/);
+  assert.match(wide, /:nth-child\(2\) \{ animation-delay: /);
+  assert.match(h, /@keyframes nav-panel-item \{ from \{ opacity: 0; transform: translateY\(6px\); \} \}/);
+  const reduce = h.slice(h.indexOf('@media (prefers-reduced-motion: reduce) {', h.indexOf('@keyframes nav-panel-unfold')));
+  assert.match(reduce, /\.nav-panel-inner > \*[^{]*\{[^}]*animation: none;/);
 });

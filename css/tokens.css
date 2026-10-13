@@ -26,9 +26,11 @@
   --control-h-s: 44px; --control-h: 48px; --control-h-l: 56px;
   --measure: 1280px; --gutter: 24px;
 
-  /* two radii: every surface, and everything you press */
+  /* three radii: every surface; the header's pills, chips and fields; the buttons in the page --
+     rectangles with slightly rounded corners, as before (the owner, 2026-10-14) */
   --radius: 16px;
   --radius-pill: 999px;
+  --radius-btn: 6px;
 
   /* two shadows: lying over the content, and lifted or open over the page */
   --shadow-1: 0 1px 2px rgba(28, 29, 27, 0.08), 0 10px 24px -14px rgba(28, 29, 27, 0.35);
