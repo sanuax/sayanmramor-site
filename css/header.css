@@ -307,16 +307,15 @@ html.menu-lock { overflow: hidden; }
    places its travelling line (.nav-indicator), and the capsule simply does not
    show it. On a wide screen a panel unfolds downward from the capsule and, when
    it closes, folds back up into it (js/header.js keeps the <details> open while
-   it folds -- .is-closing -- and closes it after). The panel and its words appear together,
-   in one smooth movement: unfolding and fading in at once (the owner, 2026-10-14). */
+   it folds -- .is-closing -- and closes it after). */
 .nav-indicator { display: none; }
 @media (min-width: 1001px) {
-  .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.34s var(--ease); }
+  .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }
   .nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }
 }
 @keyframes nav-panel-unfold {
-  from { clip-path: inset(0 0 100% 0 round var(--radius)); opacity: 0; transform: translateY(-4px); }
-  to { clip-path: inset(0 0 0 0 round var(--radius)); opacity: 1; transform: none; }
+  from { clip-path: inset(0 0 100% 0 round var(--radius)); }
+  to { clip-path: inset(0 0 0 0 round var(--radius)); }
 }
 @keyframes nav-panel-fold {
   from { clip-path: inset(0 0 0 0 round var(--radius)); opacity: 1; }

@@ -414,9 +414,9 @@ test('header: the places are soft pills in the capsule -- the current one and th
   assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: rgba\(28, 29, 27, 0\.05\); \} \}/);
   assert.match(header, /\.nav-indicator \{ display: none; \}/, 'header.js may place its line; the capsule does not show it');
   const wide = css.slice(css.indexOf('@media (min-width: 1001px) {'), css.indexOf('@keyframes nav-panel-unfold'));
-  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.34s var(--ease); }'), 'unfolds and fades in at once (2026-10-14)');
+  assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'), 'as in master (the owner, 2026-10-14)');
   assert.ok(wide.includes('.nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }'), 'and folds back up when it closes');
-  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\);/);
+  assert.match(css, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\); \}/);
   assert.match(css, /@keyframes nav-panel-fold \{\s*from \{ clip-path: inset\(0 0 0 0 round var\(--radius\)\);[^}]*\}\s*to \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\);/);
   assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.nav-drop\[open\] > \.nav-panel, \.nav-drop\.is-closing > \.nav-panel \{ animation: none; \}/);
   assert.doesNotMatch(css, /nav-group:nth-child\(\d\) \{[^}]*animation-delay/);
@@ -1220,10 +1220,3 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   });
 });
 
-test('«Изделия» and «Шоурум» open in one smooth movement on a desktop (the owner, 2026-10-14): the panel and its words appear together -- unfolding and fading in at once; not with «reduce motion»', () => {
-  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
-  assert.match(h, /\.nav-drop\[open\] > \.nav-panel \{ animation: nav-panel-unfold 0\.34s var\(--ease\); \}/);
-  assert.match(h, /@keyframes nav-panel-unfold \{\s*from \{ clip-path: inset\(0 0 100% 0 round var\(--radius\)\); opacity: 0; transform: translateY\(-4px\); \}\s*to \{ clip-path: inset\(0 0 0 0 round var\(--radius\)\); opacity: 1; transform: none; \}/);
-  assert.doesNotMatch(h, /nav-panel-item|\.nav-panel-inner > \*|\.nav-showroom-inner > \*/, 'nothing on the panel moves on its own');
-  assert.match(h, /prefers-reduced-motion: reduce\) \{\s*\.nav-drop\[open\] > \.nav-panel, \.nav-drop\.is-closing > \.nav-panel \{ animation: none; \}/);
-});
