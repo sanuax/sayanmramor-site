@@ -474,7 +474,8 @@ test('the offer band on the 13 direction pages: the home page\'s «Получи�
     assert.match(band, /<img class="offer-talk-photo" src="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp"/, page);
     assert.match(band, /<p class="offer-kicker">Проект<\/p>/, page);
     assert.match(band, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/, page);
-    assert.match(band, /<p class="offer-lead">Мастер задаст пару коротких вопросов - этого хватит, чтобы подготовить расчёт\. Без длинных анкет\.<\/p>/, page + ': the direction is known, so two questions are left');
+    // (2026-10-14, the owner: the same words as on the home page in every «Получить расчёт»)
+    assert.match(band, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/, page);
     assert.match(band, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: <a href="tel:\+74952155145">\+7 \(495\) 215-51-45<\/a><\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor<\/a><\/p>\s*<\/div>/, page + ': Telegram under the phone');
     assert.match(band, /<div class="offer-talk-main">\s*<div data-offer-form data-offer-steps data-preselect="[a-z-]+"><\/div>\s*<noscript><p class="offer-noscript">/, page);
     assert.doesNotMatch(band, /offer-reveal|offer-needs|Получите коммерческое предложение/, page + ': no trace of the old form');
@@ -1222,3 +1223,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   });
 });
 
+
+test('no decorative lines (2026-10-14, the owner): no dash after a label above a heading, no rule above the «Нам доверяют» line', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.doesNotMatch(css, /kicker::after/, 'the 56 px dash after «Каталог», «Заказчики», «Проект», «В наличии»');
+  const lead = css.match(/\.home-trust-lead \{[^}]*\}/)[0];
+  assert.doesNotMatch(lead, /border/, 'no line above the words under «Нам доверяют»');
+});
