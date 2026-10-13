@@ -35,7 +35,6 @@
   --sr-copper-hover: #9b4824;
 }
 
-
 /* --sticky-top / --fixed-bottom: the sticky header and the fixed configure bar,
    measured by js/site.js (reserveFixedUi), so a focused or scrolled-to element
    never ends up under either. Pages without them keep 0. */
@@ -82,7 +81,6 @@ h3 { font-size: var(--fs-h3); }
 }
 .skip-link:focus { transform: none; }
 
-
 /* ---- Home (static) -----------------------------------------------------------
    The home page in the site's own system -- the header, type, buttons and
    verde of every other page -- laid out as the first home page (4ad72f4):
@@ -112,8 +110,7 @@ h3 { font-size: var(--fs-h3); }
 .home-hero-note { position: relative; z-index: 1; align-self: end; padding-bottom: var(--s-5); font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 1000px) {
   .js .home-hero { margin-top: -66px; }          /* the phone capsule: 8 + 56 + 2 px */
-  html:not(.js) .home-hero { margin-top: 0; }    /* without JavaScript the header stays in the flow: nothing to run under */
-}
+  html:not(.js) .home-hero { margin-top: 0; }    }
 /* Phones and any upright window: the upright picture, held to the bottom; above it the wall goes on
    in its own colour, so the words always stand on the wall and room is kept under them for the
    washbasin (62 % of the width), however long they run. */
@@ -180,8 +177,7 @@ h3 { font-size: var(--fs-h3); }
 .home-s2o-chip b { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--graphite); color: #fff; font-size: 11px; font-weight: 600; }
 /* The digit's box trimmed to the cap height, so the circle centres the figure itself, not the font's line. */
 .home-s2o-chip b span { display: block; line-height: 1; font-variant-numeric: tabular-nums; text-box: trim-both cap alphabetic; }
-.home-s2o-step:first-child .home-s2o-chip b span { margin-left: 1px; }   /* the «1» carries its ink left of its advance: half a pixel back */
-/* On the seam: centred on the card's left edge, half-way down the strip where both photographs show. */
+.home-s2o-step:first-child .home-s2o-chip b span { margin-left: 1px; }   /* On the seam: centred on the card's left edge, half-way down the strip where both photographs show. */
 .home-s2o-arrow {
   position: absolute; z-index: 2; left: calc(var(--s2o-arrow) / -2);
   display: grid; place-items: center; width: var(--s2o-arrow); height: var(--s2o-arrow); border-radius: 50%;
@@ -259,8 +255,7 @@ h3 { font-size: var(--fs-h3); }
 .home-group-title {
   margin: var(--s-4) 0 var(--s-1); padding-bottom: var(--s-3); border-bottom: 1px solid var(--order-rule);
   font-size: clamp(16px, 1.3vw, 18px); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--order-ink);
-  white-space: nowrap;   /* five abreast: one line each, so the rules under the names meet */
-}
+  white-space: nowrap;   }
 .home-group ul { list-style: none; }
 .home-group li + li { border-top: 1px solid rgba(246, 242, 236, 0.12); }
 .home-group a {
@@ -342,8 +337,7 @@ h3 { font-size: var(--fs-h3); }
   .home-instock { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }
   .home-instock-title { font-size: 18px; }
   .home-groups { grid-template-columns: minmax(0, 1fr); }
-  .home-group a { min-height: 44px; }   /* a finger's target */
-}
+  .home-group a { min-height: 44px; }   }
 
 /* The request: the card of «Коммерческое предложение» below; here only the home page's
    difference -- the contacts follow it with their own top space. */
@@ -625,453 +619,14 @@ h3 { font-size: var(--fs-h3); }
   .home-trust-mcx-name { font-size: 9px; }
 }
 
-/* ---- Home palette: limestone, with one dark opening -----------------------------
-   The home page is light: limestone ground, paper, thin lines, basalt type and
-   one verde for the action. Only the showroom's doorway (class «night») is a
-   dark opening, and the footer below the page is dark. These colours belong
-   to the home page alone (its masthead and its main); no other page reads them.
-   The sections speak in roles -- ground, figure (the type), its quiet and dim
-   tones, rule, placeholder -- light by default, dark inside «.night».
-   Travertine on graphite is the type of the dark opening and the masthead's
-   dark tone. */
-.mast, .home-main {
-  --page: #f0eee9;                        /* limestone */
-  --surface: #f7f5f1;                     /* paper */
-  --line: #d5d1c8;
-  --ink: #1c1d1b;                         /* basalt */
-  --accent: #2f5d50;                      /* verde */
-  --night: #1e2320;                       /* the dark: the showroom's opening, as the footer */
-  --travertine: #ece5d8;                  /* the type on the dark: 13:1 */
-  --travertine-soft: #a8a194;             /* the quiet type on the dark: 6.5:1 */
-  --verde: #2f5d50;                       /* the action (its type 7.2:1) */
-  --verde-lit: #376b5c;
-  /* A soft spring with a 1 % overshoot, no bounce (a damped oscillator, sampled). */
-  --spring: linear(0, 0.0275, 0.0958, 0.1876, 0.2902, 0.3947, 0.4951, 0.5876, 0.67, 0.7416, 0.8024, 0.8527, 0.8937, 0.9263, 0.9517, 0.971, 0.9852, 0.9954, 1.0024, 1.0069, 1.0096, 1.0108, 1.0111, 1.0107, 1.0099, 1.0088, 1.0077, 1.0065, 1);
-  --ground: var(--page); --figure: var(--ink); --figure-soft: var(--muted); --figure-dim: var(--ink-soft);
-  --rule: var(--line); --placeholder: var(--surface-sunk);
-}
-.night {
-  --ground: var(--night); --figure: var(--travertine); --figure-soft: var(--travertine-soft); --figure-dim: #cfc8ba;
-  --rule: rgba(236, 229, 216, 0.16); --placeholder: #262824;
-}
-
-/* ---- Masthead (home page) ----------------------------------------------------------
-   The name in the middle, the action on the left, the places on the right as
-   small ovals. An oval with «+» opens: it turns into a plane of polished
-   stone -- travertine over the dark page (basalt over a light one) -- that
-   grows out of the oval itself: the plane is drawn from the oval's own
-   outline (clip-path from its rectangle) to its full size, on a soft spring.
-   The ovals are native <details>: without JavaScript they open at once.
-   Over a light section the masthead turns light (js/masthead.js). */
-.mast {
-  --mast-h: 64px; --pill-h: 36px;
-  --mast-bg: var(--night); --mast-ink: var(--travertine); --mast-soft: var(--travertine-soft);
-  --pill-line: rgba(236, 229, 216, 0.26); --pill-line-strong: rgba(236, 229, 216, 0.62); --pill-fill: rgba(236, 229, 216, 0.06);
-  --sheet: var(--travertine); --sheet-ink: #1c1d1b; --sheet-soft: #5f5a51; --sheet-line: rgba(28, 29, 27, 0.14);
-  position: sticky; top: 0; z-index: 20;
-  background: var(--mast-bg); color: var(--mast-ink);
-  transition: background-color 0.35s ease, color 0.35s ease;
-}
-.mast.has-open { z-index: 30; }
-/* The page keeps its scrollbar's place while «Меню» holds it still: nothing shifts sideways. */
-html:has(.mast) { scrollbar-gutter: stable; }
-.mast.is-light {
-  --mast-bg: var(--page); --mast-ink: var(--ink); --mast-soft: var(--ink-soft);
-  --pill-line: rgba(28, 29, 27, 0.24); --pill-line-strong: rgba(28, 29, 27, 0.6); --pill-fill: rgba(28, 29, 27, 0.04);
-  --sheet: var(--night); --sheet-ink: var(--travertine); --sheet-soft: var(--travertine-soft); --sheet-line: rgba(236, 229, 216, 0.16);
-}
-.mast-inner {
-  max-width: var(--measure); height: var(--mast-h); margin: 0 auto; padding: 0 var(--gutter);
-  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--s-4);
-}
-.mast-start { grid-column: 1; justify-self: start; display: flex; }
-/* The wordmark: wide, light, the same letters as the hero's great mark -- the
-   tracking is in em and balanced by the same padding on the left, so the two
-   are one sign at two sizes. */
-.mast-logo {
-  grid-column: 2; padding-left: 0.34em;
-  font-size: 14px; font-weight: 500; line-height: 1; letter-spacing: 0.34em; text-transform: uppercase; white-space: nowrap;
-  color: var(--mast-ink); text-decoration: none;
-  transition: opacity 0.3s ease;
-}
-/* On the home page the hero's mark is the logo until it has come up into the masthead
-   (a keyboard focus shows it at once). */
-.js .mast[data-dock] .mast-logo { opacity: var(--logo, 0); }
-.mast-logo:focus-visible, .js .mast[data-dock] .mast-logo:focus-visible { opacity: 1; outline: 2px solid var(--mast-ink); outline-offset: 6px; }
-.mast-nav { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 6px; }
-.mast-menu { grid-column: 3; justify-self: end; display: none; }
-
-/* An oval: a small object with a thin edge -- no fill, no shadow. */
-.mast-pill {
-  position: relative; display: inline-flex; align-items: center; gap: 10px;
-  height: var(--pill-h); padding: 0 16px; border: 1px solid var(--pill-line); border-radius: calc(var(--pill-h) / 2);
-  background: transparent; color: var(--mast-ink);
-  font: inherit; font-size: 13.5px; font-weight: 500; line-height: 1; letter-spacing: 0.01em; white-space: nowrap; text-decoration: none;
-  cursor: pointer; list-style: none; user-select: none;
-  transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.15s var(--ease);
-}
-.mast-pill::-webkit-details-marker { display: none; }
-@media (hover: hover) { .mast-pill:hover { border-color: var(--pill-line-strong); background: var(--pill-fill); } }
-.mast-pill:active { transform: scale(0.97); }
-.mast-pill:focus-visible { outline: 2px solid var(--mast-ink); outline-offset: 3px; }
-.mast-cta { border-color: transparent; }
-@media (hover: hover) { .mast-cta:hover { border-color: transparent; } }
-.mast-cta { background: var(--verde); color: #f3eee5; }
-@media (hover: hover) { .mast-cta:hover { background: var(--verde-lit); } }
-/* «+», which turns into «×» while the plane is open. */
-.mast-plus { position: relative; flex: none; width: 9px; height: 9px; }
-.mast-plus::before, .mast-plus::after {
-  content: ''; position: absolute; left: 0; top: 4px; width: 9px; height: 1px; background: currentColor;
-  transition: transform 0.35s var(--ease);
-}
-.mast-plus::after { transform: rotate(90deg); }
-.mast-drop.is-open .mast-plus::before, .mast-drop:not(.is-ready)[open] .mast-plus::before { transform: rotate(45deg); }
-.mast-drop.is-open .mast-plus::after, .mast-drop:not(.is-ready)[open] .mast-plus::after { transform: rotate(135deg); }
-
-/* The plane. Its top right corner is the oval's: the oval stays where it is,
-   above the plane, and its words now stand on the stone. */
-.mast-drop { position: relative; }
-.mast-drop > summary { z-index: 2; }
-.mast-drop[open] > summary { border-color: transparent; background: transparent; color: var(--sheet-ink); }
-@media (hover: hover) { .mast-drop[open] > summary:hover { border-color: transparent; background: transparent; color: var(--sheet-ink); } }
-.mast-sheet {
-  position: absolute; top: 0; right: 0; z-index: 1; width: var(--sheet-w, 600px);
-  padding: calc(var(--pill-h) + 26px) 32px 30px;
-  border-radius: 22px; background: var(--sheet); color: var(--sheet-ink);
-}
-.js .mast-drop.is-ready > .mast-sheet {
-  clip-path: inset(0 0 calc(100% - var(--pill-h)) calc(100% - var(--pill-w, 120px)) round calc(var(--pill-h) / 2));
-  transition: clip-path 0.26s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.js .mast-drop.is-ready.is-open > .mast-sheet {
-  clip-path: inset(0 0 0 0 round 22px);
-  transition: clip-path 0.56s cubic-bezier(0.22, 0.68, 0.24, 1);
-  transition: clip-path 0.56s var(--spring);
-}
-/* What stands on the plane comes up a moment after it opens. */
-.js .mast-drop.is-ready .mast-sheet > *, .js .mast-drop.is-ready .mast-group {
-  opacity: 0; transform: translateY(6px); transition: opacity 0.12s ease, transform 0.12s ease;
-}
-.js .mast-drop.is-ready.is-open .mast-sheet > *, .js .mast-drop.is-ready.is-open .mast-group {
-  opacity: 1; transform: none; transition: opacity 0.3s ease 0.16s, transform 0.42s var(--ease) 0.16s;
-}
-.js .mast-drop.is-ready .mast-groups { opacity: 1; transform: none; }
-.js .mast-drop.is-ready.is-open .mast-group:nth-child(2) { transition-delay: 0.19s; }
-.js .mast-drop.is-ready.is-open .mast-group:nth-child(3) { transition-delay: 0.22s; }
-.js .mast-drop.is-ready.is-open .mast-group:nth-child(4) { transition-delay: 0.25s; }
-.js .mast-drop.is-ready.is-open .mast-group:nth-child(5) { transition-delay: 0.28s; }
-.mast-sheet a:focus-visible { outline: 2px solid var(--sheet-ink); outline-offset: 3px; }
-
-/* «Изделия»: the 13 directions in their five groups, set as type. */
-.mast-drop-products { --sheet-w: 600px; }
-.mast-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-5) var(--s-6); }
-.mast-group-title { margin-bottom: 6px; font-size: 12.5px; line-height: 1.4; color: var(--sheet-soft); }
-.mast-group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 2px 14px; }
-.mast-group a, .mast-menu-links a {
-  font-size: 17px; line-height: 1.5; color: var(--sheet-ink); text-decoration: none;
-  text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; text-decoration-color: transparent;
-  transition: text-decoration-color 0.2s;
-}
-.mast-group a:focus-visible, .mast-menu-links a:focus-visible { text-decoration-color: currentColor; }
-@media (hover: hover) { .mast-group a:hover, .mast-menu-links a:hover { text-decoration-color: currentColor; } }
-
-/* «Шоурум»: the house, and the way into it; the rooms a quiet second way. */
-.mast-drop-showroom { --sheet-w: 400px; }
-.mast-house { display: block; margin-bottom: var(--s-4); border-radius: 14px; overflow: hidden; background: #1e1a16; }
-.mast-house img { width: 100%; height: auto; transition: transform 0.6s var(--ease); }
-@media (hover: hover) { .mast-house:hover img { transform: scale(1.02); } }
-.mast-house-title { font-size: 19px; font-weight: 500; line-height: 1.25; }
-.mast-house-note { margin-top: 4px; font-size: 14px; line-height: 1.5; color: var(--sheet-soft); }
-.mast-enter {
-  display: inline-flex; align-items: center; gap: 10px; margin-top: var(--s-4);
-  font-size: 15px; font-weight: 600; color: var(--sheet-ink); text-decoration: none;
-}
-.mast-enter::after, .night-cta::after {
-  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transition: transform 0.2s var(--ease);
-}
-.mast-enter:focus-visible::after { transform: translateX(4px); }
-@media (hover: hover) { .mast-enter:hover::after { transform: translateX(4px); } }
-.mast-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 2px 14px; margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--sheet-line); }
-.mast-rooms a { font-size: 14px; line-height: 1.6; color: var(--sheet-soft); text-decoration: none; transition: color 0.2s; }
-.mast-rooms a:focus-visible { color: var(--sheet-ink); }
-@media (hover: hover) { .mast-rooms a:hover { color: var(--sheet-ink); } }
-
-/* «Меню» (narrower screens): everything on one plane. */
-.mast-menu { --sheet-w: min(440px, calc(100vw - 2 * var(--gutter))); }
-.mast-menu .mast-sheet { max-height: calc(100svh - 28px); overflow-y: auto; overscroll-behavior: contain; }
-.mast-menu-title { margin-bottom: var(--s-3); font-size: 12.5px; color: var(--sheet-soft); }
-.mast-menu .mast-groups { grid-template-columns: 1fr; gap: var(--s-1); }   /* its 44 px rows bring their own air */
-.mast-menu-links { list-style: none; display: grid; gap: 2px; margin-top: var(--s-5); padding-top: var(--s-4); border-top: 1px solid var(--sheet-line); }
-.mast-menu-links a { font-size: 20px; font-weight: 500; }
-/* «Меню» is the touch screens' menu: every link in it a finger's target, 44 px tall. */
-.mast-menu .mast-group ul { row-gap: 0; }
-.mast-menu .mast-group a, .mast-menu-links a { display: inline-flex; align-items: center; min-height: 44px; }
-.mast-menu-cta { margin-top: var(--s-4); height: 46px; padding: 0 22px; border-radius: 23px; font-size: 15px; }
-.mast-menu-phone { display: flex; align-items: center; min-height: 44px; margin-top: var(--s-2); font-size: 15px; font-weight: 600; color: var(--sheet-ink); text-decoration: none; }
-
-@media (max-width: 1179px) {
-  .mast-nav { display: none; }
-  .mast-menu { display: block; }
-}
-/* Phones: the name in the middle, «Меню» on the right; the plane takes the screen. */
-@media (max-width: 767px) {
-  .mast-start { visibility: hidden; }
-  .mast-logo { font-size: 13px; }
-  .mast-menu .mast-sheet {
-    position: fixed; top: calc((var(--mast-h) - var(--pill-h)) / 2); right: var(--gutter); bottom: var(--gutter); left: var(--gutter);
-    width: auto; max-height: none; padding: calc(var(--pill-h) + 28px) 24px 28px;
-  }
-}
-/* Narrow phones: the name a little smaller and closer-set, so it keeps clear of «Меню». */
-@media (max-width: 400px) {
-  .mast-inner { column-gap: 8px; }
-  .mast-logo { font-size: 12px; letter-spacing: 0.26em; padding-left: 0.26em; }
-  .mast-menu > summary { padding: 0 13px; gap: 8px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .js .mast-drop.is-ready > .mast-sheet, .js .mast-drop.is-ready.is-open > .mast-sheet { transition: none; }
-  .js .mast-drop.is-ready .mast-sheet > *, .js .mast-drop.is-ready .mast-group { transform: none; }
-}
-
 /* ---- Home ------------------------------------------------------------------- */
-/* The home page on limestone (the palette above): every scene light, the
-   showroom's doorway the one dark opening. */
-.home-main { display: flex; flex-direction: column; min-height: calc(100vh - 65px); background: var(--page); }
-.section-title { font-size: var(--fs-h2); margin-bottom: var(--s-6); }
-
-/* 1. The hero: from the slab to the object. A real slab of marble (photographed
-   in the stone yard; shown through its own clean outline, so its dark
-   studio ground is not seen) lies in front of you under the great name. Scrolling
-   lifts it: it rises, its dimensions are drawn on it, and as it stands up
-   the raw slab becomes a finished staircase -- the configurator's own story,
-   stone -> dimensions -> 3D and price -> «Создать изделие». The name rises
-   into the masthead on the way. One scene, held while you scroll (sticky),
-   driven by one number (js/home-hero.js); only transform and opacity move.
-   Without that (phones, «reduce motion», no JavaScript) the same story stands
-   still: the name, the words, the slab with its dimensions, the staircase,
-   the three steps. */
-.night-hero {
-  --band: 112px;                                         /* the caption band above the object */
-  --mark-fs: calc((min(100vw, var(--measure)) - 2 * var(--gutter)) * 0.0905);
-  --slab-ratio: 1.6808;                                  /* the slab photograph, 4096 x 2437 */
-  position: relative; background: var(--ground); color: var(--figure);
-}
-.hero-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-.night-hero :focus-visible { outline: 2px solid var(--figure); outline-offset: 3px; }
-.hero-stage { position: relative; padding: 0 0 var(--section); }
-
-.hero-mark { margin: 0; padding: 28px 0 var(--s-6); text-align: center; line-height: 1; }
-.hero-mark-word {
-  display: inline-block; padding-left: 0.34em; transform-origin: 50% 0;
-  font-size: var(--mark-fs); font-weight: 500; line-height: 1; letter-spacing: 0.34em; text-transform: uppercase; white-space: nowrap;
-  color: var(--figure);
-}
-
-.hero-copy { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-6); align-items: end; }
-.hero-title {
-  margin: 0; max-width: 13em;
-  font-size: clamp(24px, 2.4vw, 34px); font-weight: 500; line-height: 1.15; letter-spacing: -0.015em; text-wrap: balance;
-  color: var(--figure);
-}
-.hero-side { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-6); }
-.hero-lead { max-width: 31em; font-size: 15px; line-height: 1.55; color: var(--figure-soft); }
-/* The action on the dark: a verde oval, like the masthead's. */
-.night-cta {
-  flex: none; display: inline-flex; align-items: center; gap: 12px; height: 48px; padding: 0 22px; border-radius: 24px;
-  background: var(--verde); color: #f3eee5; font-size: 15px; font-weight: 600; white-space: nowrap; text-decoration: none;
-  transition: background-color 0.2s, transform 0.15s var(--ease);
-}
-@media (hover: hover) { .night-cta:hover { background: var(--verde-lit); } }
-.night-cta:active { transform: scale(0.98); }
-.night-cta:focus-visible::after { transform: translateX(4px); }
-@media (hover: hover) { .night-cta:hover::after { transform: translateX(4px); } }
-
-/* The object. */
-.hero-scene { max-width: var(--measure); margin: var(--s-8) auto 0; padding: 0 var(--gutter); }
-.hero-slab { position: relative; margin: 0; }
-.hero-raw { position: relative; isolation: isolate; aspect-ratio: 4096 / 2437; }
-/* The slab's own outline: the sawn top and the slanted left side as measured on
-   the photograph, the right side just inside the corner that is missing on the
-   real slab, a straight bottom edge above the chips. Inside it all is stone. */
-.hero-stone-frame { position: absolute; inset: 0; overflow: hidden; clip-path: polygon(2.4% 2.7%, 94.5% 2.7%, 94.5% 96.5%, 4.6% 96.5%); }
-.hero-stone { width: 100%; height: 100%; filter: url(#slabBalance); }
-/* The slab as a real object while it lies (the scrolled scene only): through
-   its outline it stands free in 3D. Its thickness is a real face: hung from the
-   bottom edge and turned a right angle about it, it runs along the
-   slab's own normal, 3 cm deep at the slab's scale (1.72 % of the frame's
-   height); the perspective alone thins it to nothing as the slab stands. Its
-   shadow lies on the floor, 3 cm under the top surface. */
-.hero-floor-shadow, .hero-edge { display: none; }
-[data-mode="scrub"] .hero-slab { --thick: calc(var(--fw) / var(--slab-ratio) * 0.0172); transform-style: preserve-3d; }
-[data-mode="scrub"] .hero-raw { isolation: auto; }
-[data-mode="scrub"] .hero-edge {
-  display: block; position: absolute; top: 96.5%; left: 4.6%; width: 89.9%; height: var(--thick); pointer-events: none;
-  background: linear-gradient(to bottom, #a39d92, #6e6a62);
-  transform: rotateX(-90deg); transform-origin: 50% 0; backface-visibility: hidden;
-}
-[data-mode="scrub"] .hero-floor-shadow {
-  display: block; position: absolute; top: 7%; left: 6.5%; width: 91%; height: 92%; pointer-events: none;
-  background: rgba(28, 29, 27, 0.45); filter: blur(22px);
-  transform: translateZ(calc(var(--thick) * -1)); opacity: var(--shade, 0);
-}
-.js [data-hero]:not(.is-lit) .hero-floor-shadow, .js [data-hero]:not(.is-lit) .hero-edge { visibility: hidden; }
-/* A very slight fall of light towards the far end of the stone. */
-[data-mode="scrub"] .hero-stone {
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), #000 60%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), #000 60%);
-}
 /* The slab comes up in the light once its photograph is ready (js/home-hero.js). */
-.js [data-hero]:not(.is-lit) .hero-stone-frame { opacity: 0; }
-.hero-stone-frame { transition: opacity 0.8s ease; }
-.hero-stone-frame::after {   /* one slow pass of light across the stone -- on the stone only (masked by its own brightness) -- once */
-  content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; pointer-events: none;
-  background: linear-gradient(100deg, transparent, rgba(255, 249, 238, 0.42) 50%, transparent);
-  mix-blend-mode: soft-light; opacity: 0;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .js .is-lit .hero-stone-frame::after { animation: hero-light 2.6s cubic-bezier(0.45, 0.05, 0.25, 1) 0.4s 1 both; }
-}
 @keyframes hero-light {
   0% { transform: translateX(-110%); opacity: 0; }
   12% { opacity: 1; }
   88% { opacity: 1; }
   100% { transform: translateX(260%); opacity: 0; }
 }
-/* The slab's real dimensions (2.84 x 1.66 m), drawn along its edges: a line and its two end marks. */
-.hero-dim { position: absolute; pointer-events: none; color: var(--figure); }
-.hero-dim-line { position: absolute; background: currentColor; opacity: 0.55; }
-.hero-dim::before, .hero-dim::after { content: ''; position: absolute; background: currentColor; opacity: calc(0.55 * var(--d, 1)); }
-.hero-dim-w { left: 2.4%; right: 5.5%; top: -6.5%; height: 9px; }
-.hero-dim-w .hero-dim-line { left: 0; right: 0; top: 4px; height: 1px; transform: scaleX(var(--d, 1)); transform-origin: 0 50%; }
-.hero-dim-w::before, .hero-dim-w::after { top: 0; width: 1px; height: 9px; }
-.hero-dim-w::before { left: 0; }
-.hero-dim-w::after { right: 0; }
-.hero-dim-h { top: 2.7%; bottom: 3.5%; left: calc(94.5% + 14px); width: 9px; }
-.hero-dim-h .hero-dim-line { top: 0; bottom: 0; left: 4px; width: 1px; transform: scaleY(var(--d, 1)); transform-origin: 50% 0; }
-.hero-dim-h::before, .hero-dim-h::after { left: 0; width: 9px; height: 1px; }
-.hero-dim-h::before { top: 0; }
-.hero-dim-h::after { bottom: 0; }
-.hero-dim-label {
-  position: absolute; font-size: 12px; line-height: 1; letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
-  color: var(--figure-soft); opacity: var(--d, 1);
-}
-.hero-dim-w .hero-dim-label { left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); }
-.hero-dim-h .hero-dim-label { left: 16px; top: 50%; transform: translate(-50%, -50%) rotate(-90deg) translateY(-6px); }
-
-.hero-made { position: relative; margin-top: var(--s-6); aspect-ratio: 4096 / 2437; overflow: hidden; background: var(--placeholder); }
-.hero-photo { width: 100%; height: 100%; object-fit: cover; object-position: 50% 46%; }
-.hero-tag {
-  position: absolute; left: var(--s-4); bottom: var(--s-4); display: inline-flex; align-items: center; gap: 10px;
-  height: 34px; padding: 0 14px; border-radius: 17px; background: var(--night); color: var(--travertine);
-  font-size: 13px; font-weight: 500; text-decoration: none;
-}
-.hero-tag::after {
-  content: ''; flex: none; width: 14px; height: 9px; background: currentColor; opacity: 0.6;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transition: opacity 0.2s, transform 0.2s var(--ease);
-}
-.hero-tag:focus-visible::after { opacity: 1; transform: translateX(3px); }
-@media (hover: hover) { .hero-tag:hover::after { opacity: 1; transform: translateX(3px); } }
-
-/* The three steps, standing still: a quiet list under the object. */
-.hero-story { margin-top: var(--s-6); }
-.hero-steps { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5); }
-.hero-step { display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: var(--s-2); align-content: start; }
-.hero-step-number { grid-row: span 2; padding-top: 4px; font-size: 13px; color: var(--figure-soft); font-variant-numeric: tabular-nums; }
-.hero-step-name { font-size: 19px; font-weight: 500; line-height: 1.3; color: var(--figure); }
-.hero-step-note { font-size: 14px; line-height: 1.5; color: var(--figure-soft); }
-.hero-final-cta { display: none; }
-
-/* The scene, held while you scroll. js/home-hero.js sets data-mode and the numbers:
-   --t tilt, --r the slab's turn on the floor, --y rise, --s scale,
-   --shade its shadow, --d dimensions drawn, --dd dimensions shown,
-   --cut the cut through which the object is seen (--edge its fresh edge),
-   --copy the words, --cap the caption band,
-   --fin the closing action, --mk-* the great name on its way into the masthead. */
-.night-hero[data-mode="scrub"] { height: 250svh; }
-[data-mode="scrub"] .hero-stage {
-  /* The object at its final size: as wide as the content allows, as tall as the
-     screen allows; on a tall screen it stands in the middle of the free height. */
-  --fw: min(calc(min(100vw, var(--measure)) - 2 * var(--gutter)), calc((100svh - var(--mast-h, 64px) - var(--band) - 28px) * var(--slab-ratio)));
-  --frame-top: calc(var(--band) + max(0px, (100svh - var(--mast-h, 64px) - var(--band) - 28px - var(--fw) / var(--slab-ratio)) / 2));
-  position: sticky; top: var(--mast-h, 64px); height: calc(100svh - var(--mast-h, 64px)); padding: 0; overflow: hidden;
-}
-/* The great name lies over the masthead while it rises into it (the open plane of a menu lies over the name). */
-[data-mode="scrub"] .hero-mark { position: fixed; top: calc(var(--mast-h, 64px) + 28px); left: 0; right: 0; z-index: 25; padding: 0; pointer-events: none; }
-[data-mode="scrub"] .hero-mark-word {
-  transform: translate3d(0, var(--mk-y, 0px), 0) scale(var(--mk-s, 1)); opacity: var(--mk-o, 1); will-change: transform, opacity;
-}
-[data-mode="scrub"] .hero-copy {
-  position: absolute; top: calc(28px + var(--mark-fs) + 44px); left: 0; right: 0; z-index: 3;
-  opacity: var(--copy, 1); transform: translate3d(0, calc((1 - var(--copy, 1)) * -28px), 0);
-}
-[data-mode="scrub"].copy-gone .hero-copy { visibility: hidden; }
-[data-mode="scrub"] .hero-scene { position: absolute; inset: 0; z-index: 1; max-width: none; margin: 0; padding: 0; perspective: 1800px; perspective-origin: 44% 0; }
-[data-mode="scrub"] .hero-slab {
-  position: absolute; top: var(--frame-top); left: 50%; width: var(--fw); margin-left: calc(var(--fw) / -2);
-  transform: translate3d(0, var(--y, 0px), 0) rotateX(var(--t, 0deg)) rotateZ(var(--r, 0deg)) scale(var(--s, 1)); transform-origin: 50% 50%;
-  will-change: transform;
-}
-/* The slab opens: a cut in its middle widens to its edges, and the finished
-   object is seen through it -- stone or object at every point, never both.
-   The object comes up a little from below the surface as the cut opens. */
-[data-mode="scrub"] .hero-made {
-  position: absolute; inset: 0; margin: 0;
-  clip-path: inset(calc((1 - var(--cut, 1)) * 50%) calc((1 - var(--cut, 1)) * 50%) round 2px);
-}
-[data-mode="scrub"] .hero-photo { transform: scale(calc(1.06 - 0.06 * var(--cut, 1))); }
-.hero-cut { display: none; }
-[data-mode="scrub"] .hero-cut {   /* the cut's fresh edge, and the shade inside it */
-  display: block; position: absolute; pointer-events: none;
-  top: calc((1 - var(--cut, 1)) * 50%); bottom: calc((1 - var(--cut, 1)) * 50%);
-  left: calc((1 - var(--cut, 1)) * 50%); right: calc((1 - var(--cut, 1)) * 50%);
-  border: 1px solid rgba(255, 249, 238, 0.45); border-bottom-color: rgba(255, 249, 238, 0.85); border-radius: 2px;
-  /* the upper lip of the cut throws its shade down into it: the object lies below the stone's face */
-  box-shadow: inset 0 22px 30px -14px rgba(10, 11, 10, 0.62), inset 0 0 24px rgba(10, 11, 10, 0.28);
-  opacity: var(--edge, 0);
-}
-[data-mode="scrub"]:not(.is-made) .hero-tag { visibility: hidden; }
-[data-mode="scrub"] .hero-dim { opacity: var(--dd, 1); }
-[data-mode="scrub"] .hero-story {
-  position: absolute; top: calc(var(--frame-top) - var(--band) + 26px); left: 0; right: 0; z-index: 3; margin: 0 auto;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-6);
-  opacity: var(--cap, 0);
-}
-[data-mode="scrub"]:not(.is-told) .hero-story { visibility: hidden; }
-[data-mode="scrub"] .hero-steps { position: relative; display: block; flex: 1 1 auto; min-height: 64px; }
-[data-mode="scrub"] .hero-step {
-  position: absolute; top: 0; left: 0; right: 0;
-  grid-template-columns: 34px auto minmax(0, 1fr); column-gap: var(--s-4); align-items: baseline;
-  opacity: 0; transform: translate3d(0, 10px, 0); transition: opacity 0.5s ease, transform 0.6s var(--ease);
-}
-[data-mode="scrub"] .hero-step-number { grid-row: auto; padding-top: 0; }
-[data-mode="scrub"] .hero-step-name { font-size: clamp(22px, 2vw, 28px); }
-[data-mode="scrub"][data-step="1"] .hero-step[data-step="1"],
-[data-mode="scrub"][data-step="2"] .hero-step[data-step="2"],
-[data-mode="scrub"][data-step="3"] .hero-step[data-step="3"] { opacity: 1; transform: none; }
-[data-mode="scrub"] .hero-final-cta { display: inline-flex; opacity: var(--fin, 0); transform: translate3d(0, calc((1 - var(--fin, 0)) * 8px), 0); }
-[data-mode="scrub"]:not(.is-final) .hero-final-cta { visibility: hidden; }
-
-/* Standing still on a wide screen («reduce motion»): the slab and the object side by side. */
-@media (min-width: 768px) {
-  .night-hero:not([data-mode="scrub"]) .hero-slab { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: calc(var(--s-7) + 30px); align-items: center; }
-  .night-hero:not([data-mode="scrub"]) .hero-made { margin-top: 0; }
-}
-@media (max-width: 1000px) {
-  .hero-copy { grid-template-columns: 1fr; gap: var(--s-4); }
-  [data-mode="scrub"] .hero-step { grid-template-columns: 30px minmax(0, 1fr); }
-  [data-mode="scrub"] .hero-step-note { grid-column: 2; }
-}
-@media (max-width: 767px) {
-  .hero-mark { padding: var(--s-5) 0; }
-  .hero-side { flex-direction: column; align-items: flex-start; gap: var(--s-5); }
-  .hero-scene { margin-top: var(--s-7); padding: 0 calc(var(--gutter) + 30px) 0 var(--gutter); }
-  .hero-made { margin-right: -30px; }
-  .hero-steps { grid-template-columns: 1fr; gap: var(--s-4); }
-}
-
 /* 2. What can be ordered: a wall of stone slabs. Not a catalogue of cards but
    the thing the company itself builds -- a wall clad in slabs, each slab a
    real work of one direction, set in the five groups of «Изделия +»: a wider
@@ -1087,13 +642,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
    stays open). Phones, tablets and touch screens: the same wall in two
    courses, split where the groups split (7 and 6); a tap opens the page.
    Without JavaScript the first slab stands open and every link works. */
-.home-directions { background: var(--ground); color: var(--figure); padding: var(--section) 0; }
-.wall-head { margin-bottom: var(--s-7); }
-.wall-title {
-  margin: 0;
-  font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; color: var(--figure);
-}
-.wall-lead { max-width: 34em; margin-top: var(--s-4); font-size: 15px; line-height: 1.55; color: var(--figure-soft); }
 
 .wall {
   --joint: 4px;                                          /* between two slabs of a group */
@@ -1102,58 +650,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
   list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-6) var(--reveal);
   max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter);
 }
-/* Two courses: the first two groups (7 slabs), then the last three (6). Every
-   slab of a course the same width: --s, from the course's slabs, joints and reveals. */
-.wall-bay {
-  --row: 7; --joints: 5; --reveals: 1;
-  --s: calc((100% - var(--reveals) * var(--reveal) - var(--joints) * var(--joint)) / var(--row) - 0.2px);
-  display: flex; flex-direction: column; min-width: 0;
-  flex: 0 0 calc(var(--n) * var(--s) + (var(--n) - 1) * var(--joint));
-}
-.wall-bay:nth-child(n + 3) { --row: 6; --joints: 3; --reveals: 2; }
-.wall-bay-name {   /* on the floor under its group */
-  order: 1; margin: var(--s-3) 0 0;
-  font-size: 13px; font-weight: 400; line-height: 1.35; letter-spacing: 0; color: var(--figure-soft);
-}
-.wall-slabs {
-  list-style: none; display: flex; gap: var(--joint); height: var(--wall-h);
-  /* the wall behind the slabs, seen only in the joints, deep in their shadow */
-  background: linear-gradient(to bottom, #6b665d, #46433d);
-  box-shadow: 0 30px 34px -28px rgba(29, 30, 28, 0.6);   /* the wall's shadow at its foot */
-}
-.wall-slabs > li { position: relative; display: flex; flex: 1 1 0; min-width: 0; }
-.wall-slab {
-  position: relative; flex: 1; min-width: 0; display: block;
-  color: #f3eee5; text-decoration: none;
-  box-shadow: 1px 2px 3px rgba(20, 21, 19, 0.55);       /* into the joint below and to the right */
-  transition: transform 0.6s var(--spring), box-shadow 0.6s var(--spring);
-}
-.wall-face { position: absolute; inset: 0; overflow: hidden; background: var(--placeholder); }
-.wall-face img {
-  display: block; width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%);
-  transition: filter 0.4s ease;
-}
-/* The light from above: a faint sheen at the top, falling off towards the floor, where the name is. */
-.wall-face::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(255, 250, 240, 0.1), rgba(255, 250, 240, 0) 24%, rgba(20, 21, 19, 0) 46%, rgba(20, 21, 19, 0.68));
-}
-/* The sawn edges: a light arris above and on the left, a darker one below and on the right. */
-.wall-slab::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  box-shadow: inset 1px 1px 0 rgba(255, 252, 245, 0.32), inset -1px -1px 0 rgba(0, 0, 0, 0.32);
-}
-@media (hover: hover) { .wall-slab:hover .wall-face img { filter: brightness(1.08); } }
-.wall-slab:focus-visible { z-index: 3; outline: 2px solid var(--figure); outline-offset: 3px; }
-/* The name, turned up the slab's edge (read from the floor up, as on a book's spine). */
-.wall-label { position: absolute; z-index: 1; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; }
-.wall-name {
-  writing-mode: vertical-rl; transform: rotate(180deg);
-  font-size: 15px; font-weight: 500; line-height: 1; letter-spacing: 0.01em; white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-.wall-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
 /* A desktop with a real pointer: one course, one slab open. The open slab is
    exactly as wide as its photograph at the wall's height (2:3); the others
    share the rest. It comes out of the wall by its thickness -- the sawn edge,
@@ -1161,250 +657,19 @@ html:has(.mast) { scrollbar-gutter: stable; }
    its neighbours, and its shadow falls on them. */
 @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
   .wall { --wall-h: clamp(440px, 66vh, 620px); --open: calc(var(--wall-h) * 2 / 3); flex-wrap: nowrap; }
-  .wall-bay {
-    flex: var(--n) 1 calc((var(--n) - 1) * var(--joint));
-    transition: flex-grow 0.6s var(--spring), flex-basis 0.6s var(--spring);
   }
-  .wall-bay:has(.wall-slab.is-open) { flex-grow: calc(var(--n) - 1); flex-basis: calc(var(--open) + (var(--n) - 1) * var(--joint)); }
-  .wall-slabs > li { transition: flex-grow 0.6s var(--spring), flex-basis 0.6s var(--spring); }
-  .wall-slabs > li:has(> .wall-slab.is-open) { z-index: 2; flex: 0 0 var(--open); }
-  .wall-slab:not(.is-open) .wall-face img { filter: brightness(0.84) saturate(0.92); }
-  .wall-slab:not(.is-open):hover .wall-face img { filter: brightness(0.96); }
-  .wall-slab.is-open {
-    transform: translate(-5px, -6px);
-    box-shadow:
-      1px 1px 0 #ddd7cc, 2px 2px 0 #c2bbae, 3px 3px 0 #aea79b, 4px 4px 0 #9a9387, 5px 5px 0 #857f74, 6px 6px 0 #6d6961,
-      20px 28px 36px -12px rgba(20, 21, 19, 0.55);
-  }
-  /* Its words lie lower in the light than a narrow slab's name: the fall-off goes deeper. */
-  .wall-slab.is-open .wall-face::after {
-    background: linear-gradient(to bottom, rgba(255, 250, 240, 0.1), rgba(255, 250, 240, 0) 24%, rgba(20, 21, 19, 0) 44%, rgba(20, 21, 19, 0.55) 74%, rgba(20, 21, 19, 0.82));
-  }
-  .wall-slab.is-open .wall-label { left: 28px; right: 28px; bottom: 26px; display: block; animation: wall-open-label 0.35s ease 0.3s both; }
-  .wall-slab.was-open .wall-label { animation: wall-close-label 0.3s ease 0.32s both; }
-  .wall-slab.is-open .wall-name {
-    display: inline-flex; align-items: center; gap: 14px;
-    writing-mode: horizontal-tb; transform: none;
-    font-size: clamp(26px, 2vw, 32px); line-height: 1.1; letter-spacing: -0.015em;
-  }
-  .wall-slab.is-open .wall-name::after {
-    content: ''; flex: none; width: 20px; height: 13px; background: currentColor;
-    -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-    transition: transform 0.25s var(--ease);
-  }
-  .wall-slab.is-open:hover .wall-name::after, .wall-slab.is-open:focus-visible .wall-name::after { transform: translateX(4px); }
-  .wall-slab.is-open .wall-text {
-    position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal;
-    display: block; max-width: 24em; margin-top: 10px;
-    font-size: 14px; line-height: 1.45; color: #e2dbcf; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-  }
-}
 @keyframes wall-open-label { from { opacity: 0; } }
 @keyframes wall-close-label { from { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  .wall-slab .wall-label { animation: none; }
-}
 
 /* 4. The showroom: the one dark opening in the light page, the house as the
    object. One action (the house itself, or «Открыть шоурум»)
    in the showroom's own copper -- the colour of the 3D scene it leads into,
    and the only copper on the page; the rooms are a quiet second way in. */
-.home-portal {
-  background: var(--ground); color: var(--figure);
-  padding: var(--section) 0;
-}
 .portal { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--s-7); align-items: center; }
-.portal-title {
-  margin-bottom: var(--s-3); font-size: clamp(28px, 2.6vw, 40px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em;
-  color: var(--figure);
-}
-.portal-note { max-width: 30em; margin-bottom: var(--s-6); color: var(--figure-soft); }
-.portal-enter {
-  display: inline-flex; align-items: center; gap: var(--s-3); min-height: var(--control-h); padding: 0 20px;
-  border-radius: var(--radius-s); background: var(--sr-copper); color: #fff; font-weight: 600; text-decoration: none;
-  transition: background-color 0.2s;
-}
-.portal-enter::after {
-  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transition: transform 0.2s var(--ease);
-}
-.portal-enter:focus-visible { background: var(--sr-copper-hover); }
-@media (hover: hover) { .portal-enter:hover { background: var(--sr-copper-hover); } }
-.portal-enter:focus-visible::after { transform: translateX(4px); }
-@media (hover: hover) { .portal-enter:hover::after, .home-portal:has(.portal-house:hover) .portal-enter::after { transform: translateX(4px); } }
-.portal-rooms { list-style: none; display: flex; flex-wrap: wrap; gap: 4px var(--s-4); margin-top: var(--s-5); font-size: var(--fs-small); }
-.portal-rooms a { color: var(--figure-soft); text-decoration: none; text-underline-offset: 4px; transition: color 0.2s; }
-.portal-rooms a:focus-visible { color: var(--figure); text-decoration: underline; text-decoration-thickness: 1px; }
-@media (hover: hover) { .portal-rooms a:hover { color: var(--figure); text-decoration: underline; text-decoration-thickness: 1px; } }
-.portal-house { display: block; }
-.portal-house img {   /* the scene's own frame, its edges given back to the dark */
-  display: block; width: 100%; height: auto;
-  -webkit-mask-image: radial-gradient(ellipse 70% 68% at 50% 52%, #000 56%, transparent 100%);
-  mask-image: radial-gradient(ellipse 70% 68% at 50% 52%, #000 56%, transparent 100%);
-  transition: filter 0.3s var(--ease);
-}
-.portal-house:focus-visible img { filter: brightness(1.06); }
-@media (hover: hover) { .portal-house:hover img { filter: brightness(1.06); } }
-.home-portal :focus-visible { outline-color: var(--figure); }
-.portal-veil {   /* the quiet step into the showroom: the page fades into its graphite */
-  position: fixed; inset: 0; z-index: 100; background: var(--sr-graphite);
-  opacity: 0; pointer-events: none; transition: opacity 0.26s ease;
-}
-.portal-veil.is-on { opacity: 1; pointer-events: auto; }
-
-/* 6. Ready-made pieces: not a room of their own -- a passage on the way into
-   the catalogue. One horizontal line between two thin
-   rules: the name, one line about the pieces, «Смотреть коллекцию» with the
-   arrow of the works. No pictures, no prices. Pointing at it draws the upper
-   rule in the type's colour from the left and moves the arrow a little. */
-.home-ready { background: var(--ground); color: var(--figure); padding: var(--section) 0; }
-.ready-line {
-  position: relative; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) auto; align-items: baseline; column-gap: var(--s-6);
-  padding: var(--s-6) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
-  color: inherit; text-decoration: none;
-}
-.ready-line::before {
-  content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--figure);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.5s var(--ease);
-}
-.ready-title { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.4; letter-spacing: 0.14em; text-transform: uppercase; color: var(--figure); }
-.ready-text { margin: 0; color: var(--figure-soft); }
-.ready-more { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--figure-soft); white-space: nowrap; transition: color 0.3s ease; }
-.ready-more::after {
-  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
-  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transition: transform 0.3s var(--ease);
-}
-.ready-line:focus-visible::before { transform: scaleX(1); }
-@media (hover: hover) { .ready-line:hover::before { transform: scaleX(1); } }
-.ready-line:focus-visible .ready-more { color: var(--figure); }
-@media (hover: hover) { .ready-line:hover .ready-more { color: var(--figure); } }
-.ready-line:focus-visible .ready-more::after { transform: translateX(4px); }
-@media (hover: hover) { .ready-line:hover .ready-more::after { transform: translateX(4px); } }
-.ready-line:focus-visible { outline: 2px solid var(--figure); outline-offset: 8px; }
-
-/* The request, the home page's last word: «мне понравилось -> я хочу своё». A sheet of a project drawing
-   lying on the limestone -- where every piece the company makes begins. A
-   paper sheet, a little lifted, with its frame (the wider margin on the left,
-   for binding) and the small corner cell «Проект». In the drawing field: the
-   hero's slab in lines, at its real size (2840 x 1660), and inside it, dashed
-   in verde, the piece to be cut from it -- «Ваше изделие»; choosing a
-   direction names the piece and draws it solid (js/home-request.js). The form
-   itself (js/offer-form.js, the same form as on the direction pages, the band
-   marked data-offer-open so it stands open) is the sheet's title block:
-   standing on the frame's corner, every field a cell -- its caption small at
-   the top, the entry under it -- the cells ruled by thin lines, the outer edge
-   by the frame's line, and «Получить» one solid verde cell. Only on the home
-   page: the direction pages keep their band as it is. */
-.home-main .offer-band {
-  --sheet-line: #8d877b;                                 /* the frame and the block's outer edge */
-  --cell-line: #cdc7bb;                                  /* the rules between the cells */
-  background: var(--page); padding: var(--section) 0 calc(var(--section) * 1.25);
-}
-.home-main .offer-band > .offer-band-inner {
-  position: relative; display: block; width: calc(100% - 2 * var(--gutter)); max-width: calc(var(--measure) - 2 * var(--gutter));
-  margin: 0 auto; padding: 8px 8px 8px 20px;
-  background: var(--surface);
-  /* A sheet lying on the stone, not a panel floating over it: its paper edge, and only a
-     breath of shadow where it touches -- no lift, no glow around it. */
-  box-shadow: 0 0 0 1px rgba(29, 30, 28, 0.05), 0 1px 1px rgba(29, 30, 28, 0.08), 0 10px 14px -12px rgba(29, 30, 28, 0.22);
-}
-.home-main .offer-kicker {   /* the sheet's corner cell */
-  position: absolute; z-index: 1; top: 8px; right: 8px; padding: 6px 14px;
-  border-left: 1px solid var(--sheet-line); border-bottom: 1px solid var(--sheet-line);
-  font-size: 12px; line-height: 1.4; color: var(--muted);
-}
-.home-main .offer-needs { display: none; }
-.home-main .offer-main {   /* the frame: a drawing's main line, heavier than the rules inside it */
-  display: grid; grid-template-columns: minmax(0, 1fr); align-items: start;
-  padding-top: 56px; border: 2px solid var(--sheet-line);
-}
-.home-main .offer-title, .home-main .offer-meta, .home-main .offer-drawing, .home-main .offer-notes { margin-left: 20px; margin-right: 20px; }
-.home-main .offer-title {
-  padding: 0; border: 0;
-  font-size: clamp(34px, 4.4vw, 64px); font-weight: 500; line-height: 1.02; letter-spacing: -0.03em;
-}
-.home-main .offer-title-soft { margin-top: var(--s-3); font-size: var(--fs-h3); font-weight: 400; letter-spacing: 0; line-height: 1.4; }
-.home-main .offer-meta { padding-top: var(--s-4); }
-
-/* The drawing: thin lines that keep their weight at any size. */
-.home-main .offer-drawing { margin-top: var(--s-6); margin-bottom: var(--s-5); }
-.offer-drawing svg { display: block; width: 100%; height: auto; overflow: visible; }
-.offer-drawing svg * { vector-effect: non-scaling-stroke; }
-.drawing-slab { fill: none; stroke: var(--ink); stroke-width: 1.5; }
-.drawing-dim path { fill: none; stroke: var(--muted); stroke-width: 1; }
-.drawing-axis path { fill: none; stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 16 4 2 4; }
-.drawing-piece { fill: rgba(47, 93, 80, 0.04); stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 7 5; transition: fill 0.4s ease; }
-.is-named .drawing-piece { fill: rgba(47, 93, 80, 0.09); stroke-dasharray: none; }
-.drawing-leader { fill: none; stroke: var(--ink-soft); stroke-width: 1; }
-.drawing-dot { fill: var(--ink-soft); }
-.offer-drawing text { font-family: inherit; font-size: 13px; fill: var(--muted); font-variant-numeric: tabular-nums; }
-.offer-drawing .drawing-note { font-size: 15px; font-weight: 500; fill: var(--ink); }
-
-/* The sheet's notes, numbered as on a drawing: what the form needs, the drawing's units. */
-.home-main .offer-notes {
-  margin-bottom: var(--s-5); padding-left: 1.4em; max-width: 30em;
-  font-size: 13px; line-height: 1.5; color: var(--ink-soft);
-}
-.home-main .offer-notes li { padding-left: 0.2em; }
-.home-main .offer-notes li + li { margin-top: 4px; }
-.home-main .offer-notes li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
-
-/* The title block: the form, each field a cell; its outer edge the frame's main line. */
-.home-main .offer-form {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0;
-  background: var(--cell-line); border-top: 2px solid var(--sheet-line);
-}
-.home-main .offer-form > * { background: var(--surface); }
-.home-main .offer-field { align-content: start; gap: 2px; min-height: 82px; padding: 10px 16px 12px; transition: background-color 0.2s ease; }
-.home-main .offer-form > .offer-field:first-child, .home-main .offer-field-file { grid-column: 1 / -1; }
-@media (hover: hover) { .home-main .offer-field:hover { background: #fbfaf8; } }
-.home-main .offer-field:focus-within, .home-main .offer-consent:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
-.home-main .offer-label { font-size: 12px; font-weight: 400; line-height: 1.4; color: var(--muted); }
-/* Each entry is written on a line, as on a printed title block: the caption small above,
-   the writing line at the cell's foot (the site's control line, >= 3:1), a short hint
-   where nothing is written yet (js/home-request.js); the line turns verde in hand. */
-.home-main .offer-input { min-height: 42px; border-bottom: 1px solid var(--line-control); font-size: 17px; }
-.home-main .offer-input::placeholder { color: var(--muted); opacity: 1; }
-.home-main .offer-input:autofill { box-shadow: inset 0 0 0 100px var(--surface); }
-.home-main .offer-file { min-height: 42px; padding: 0; border-bottom: 1px solid var(--line-control); }
-.home-main .offer-file-icon { width: 30px; height: 30px; }
-.home-main .offer-file-icon svg { width: 15px; height: 15px; }
-.home-main .offer-file-title { font-weight: 500; }
-.home-main .offer-consent { grid-column: 1 / -1; padding: 14px 16px; }
-.home-main .offer-submit {
-  grid-column: 1 / -1; justify-self: stretch; justify-content: space-between; align-items: center;
-  min-height: 64px; padding: 0 18px; border: 0; border-radius: 0;
-  font-size: 17px; font-weight: 600; letter-spacing: 0;
-}
-.home-main .offer-form > .offer-submit { background: var(--accent); color: #fff; }
-@media (hover: hover) { .home-main .offer-form > .offer-submit:hover { background: var(--accent-hover); } }
-.home-main .offer-submit:active { transform: none; }
-.home-main .offer-submit:focus-visible { outline: 2px solid var(--surface); outline-offset: -6px; }
-.home-main .offer-status { grid-column: 1 / -1; padding: 14px 16px; line-height: 1.5; }
-.home-main .offer-noscript { margin: 0 20px 24px; }
-@media (max-width: 480px) {
-  .offer-drawing text { font-size: 24px; }
-  .offer-drawing .drawing-note { font-size: 27px; }
-}
-@media (min-width: 481px) and (max-width: 767px) {
-  .offer-drawing text { font-size: 19px; }
-  .offer-drawing .drawing-note { font-size: 21px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .portal-house img, .ready-line::before, .ready-more::after { transition: none; }
-}
 
 /* Narrower screens: the same scenes, stacked. */
 @media (max-width: 1000px) {
   .portal { grid-template-columns: 1fr; gap: var(--s-6); }
-}
-@media (max-width: 700px) {
-  /* The passage to the catalogue: the same line, its three parts one under another. */
-  .ready-line { grid-template-columns: minmax(0, 1fr); row-gap: var(--s-3); padding: var(--s-5) 0; }
-  .ready-more { justify-self: start; }
 }
 
 /* ---- Home: where we are ------------------------------------------------------
@@ -1498,99 +763,18 @@ html:has(.mast) { scrollbar-gutter: stable; }
    where we are); the showroom keeps its 4 / 8. Narrower screens keep the
    tablet and phone layouts as they are. */
 @media (min-width: 1024px) {
-  .mast, .home-main, .home-main ~ .site-footer {
-    --margin: clamp(24px, 5vw, 120px);
-    --content: min(calc(100vw - 2 * var(--margin)), 1440px);
-    --wide: min(calc(100vw - var(--margin)), 1760px);
-    --bleed: calc((var(--wide) - var(--content)) / 2);   /* how far the wide field reaches past the content, each side */
-    --gap: 24px;
-  }
-  /* The opening scenes -- the hero and the directions -- in one material language:
-     depth from layers, overlap and a real shadow, not from lines; a second
-     stone, the plane things are lifted over. (Their heavier arrow is now the
-     site's one arrow, in :root.) */
-  .night-hero, .home-directions {
-    --stone-2: #e3ded5;
-  }
-  .mast-inner, .home-main .wrap, .home-main .offer-band-inner,
-  .home-main ~ .site-footer .site-footer-inner, .home-main ~ .site-footer .site-footer-bottom {
-    max-width: calc(1440px + 2 * var(--margin)); padding-left: var(--margin); padding-right: var(--margin);
-  }
-
-  /* Hero: the great name across the content, the headline a true headline beside it
-     (0.37 of the name: two lines in its five columns at every width), its words on the 5 / 7 vertical;
-     the slab in the wide field, at most 1320 px, so it has air around it. */
-  .night-hero { --mark-fs: calc(var(--content) * 0.0905); }
-  .hero-copy { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
-  .hero-title { grid-column: 1 / 6; max-width: none; font-size: max(28px, calc(var(--mark-fs) * 0.37)); }
-  .hero-side { grid-column: 6 / 13; }
-  .hero-scene { max-width: calc(1440px + 2 * var(--margin)); padding: 0 var(--margin); }
-  [data-mode="scrub"] .hero-stage { --fw: min(var(--wide), 1320px, calc((100svh - var(--mast-h, 64px) - var(--band) - 28px) * var(--slab-ratio))); }
-  /* A larger slab than 1440 x 900's (1170 px) keeps the point of view in proportion (1800 px for it),
-     so it is the same scene, larger -- the lying slab stays on the screen; never closer than 1800 px. */
-  [data-mode="scrub"] .hero-scene { perspective: max(1800px, calc(var(--fw) * 1.5385)); }
-  /* The sawn edge: a light arris where it meets the face, the stone darkening into the cut. */
-  [data-mode="scrub"] .hero-edge { background: linear-gradient(to bottom, #ddd7cc 0 1px, #aea79b 1px, #918b80 55%, #6d6961 100%); }
-  /* The shadow on the floor in two parts: close and firm under the slab's edges, then a soft spread. */
-  [data-mode="scrub"] .hero-floor-shadow { top: 2.7%; left: 3.5%; width: 91%; height: 93.8%; background: none; filter: none; }
-  [data-mode="scrub"] .hero-floor-shadow::before, [data-mode="scrub"] .hero-floor-shadow::after { content: ''; position: absolute; }
-  [data-mode="scrub"] .hero-floor-shadow::before { inset: 5% -3% -7% 2%; background: rgba(29, 30, 28, 0.3); filter: blur(28px); }
-  [data-mode="scrub"] .hero-floor-shadow::after { inset: 1% -0.6% -1.6% 0.6%; background: rgba(29, 30, 28, 0.42); filter: blur(5px); }
-
-  /* What can be ordered: the title in the first five columns, its line on the 5 / 7
+            /* What can be ordered: the title in the first five columns, its line on the 5 / 7
      vertical; the wall in the wide field. */
-  .wall-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); align-items: end; }
-  .wall-title { grid-column: 1 / 6; }
-  .wall-lead { grid-column: 6 / 12; margin-top: 0; }
   .wall { max-width: var(--wide); padding: 0; }
 
   /* The showroom: 4 / 8, the house reaching out into the wide field on the right. */
   .portal { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
-  .portal-text { grid-column: 1 / 5; }
-  .portal-house { grid-column: 5 / 13; margin-right: calc(var(--bleed) * -1); }
 
-  /* The passage: the name, its line on the vertical, the way to the catalogue at the right edge. */
-  .ready-line { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
-  .ready-title { grid-column: 1 / 6; }
-  .ready-text { grid-column: 6 / 11; }
-  .ready-more { grid-column: 11 / 13; justify-self: end; }
-
-  /* The request: the sheet as wide as the content; inside its frame the heading and
-     the phone at the top of the first five columns, the sheet's notes at their foot,
-     level with the title block -- as a drawing keeps its notes beside its stamp --
-     the drawing and the title block on the 5 / 7 vertical, the block standing on the
-     frame's corner, three cells abreast, «Получить» the tall cell at the corner. */
-  .home-main .offer-band > .offer-band-inner { width: var(--content); max-width: none; padding: 12px 12px 12px 32px; }
-  .home-main .offer-kicker { top: 12px; right: 12px; }
-  .home-main .offer-main { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto auto 1fr auto; column-gap: var(--gap); padding-top: 56px; }
-  .home-main .offer-title { grid-column: 1 / 6; grid-row: 1; margin: 0 0 0 48px; }
-  .home-main .offer-meta { grid-column: 1 / 6; grid-row: 2; margin: 0 0 0 48px; padding-top: var(--s-5); }
-  .home-main .offer-notes { grid-column: 1 / 6; grid-row: 4; align-self: end; margin: 0 var(--s-5) 22px 48px; }
-  .home-main .offer-drawing { grid-column: 6 / 13; grid-row: 1 / 4; justify-self: center; width: min(100%, 600px); margin: 0 48px 28px 0; }
-  .home-main .offer-reveal, .home-main .offer-noscript { grid-column: 6 / 13; grid-row: 4; }
-  .home-main .offer-form { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); border-left: 2px solid var(--sheet-line); }
-  .home-main .offer-form > .offer-field:first-child { grid-column: auto; }
-  .home-main .offer-field-file, .home-main .offer-consent { grid-column: 1 / 3; }
-  .home-main .offer-submit { grid-column: 3; grid-row: 2 / 4; align-items: flex-end; padding: 18px 20px; font-size: 19px; }
-  .home-main .offer-submit svg { flex: none; margin-bottom: 0.28em; }   /* the arrow on the word's middle, not its foot */
-
-  /* Where we are: the address in five columns, the map in seven, its height from its width. */
+      /* Where we are: the address in five columns, the map in seven, its height from its width. */
   .home-contacts { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
   .contacts-head, .contacts-card { grid-column: 1 / 6; }
   .contacts-map-frame { grid-column: 6 / 13; width: 100%; min-height: 360px; aspect-ratio: 16 / 10; }
 }
-/* 1024..1279: the hero's words keep their width beside the action (so they stay clear of the lying
-   slab); the passage's line a column shorter, so the way to the catalogue has room. */
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .hero-side { gap: var(--s-3); }
-  .ready-text { grid-column: 6 / 10; }
-  .ready-more { grid-column: 10 / 13; }
-  /* The project sheet: its title block a column wider, so every cell keeps its entry whole. */
-  .home-main .offer-title, .home-main .offer-meta, .home-main .offer-notes { grid-column: 1 / 5; }
-  .home-main .offer-drawing, .home-main .offer-reveal, .home-main .offer-noscript { grid-column: 5 / 13; }
-  .home-main .offer-input { font-size: 16px; }
-}
-
 /* ---- Category page: examples ------------------------------------------------ */
 .page-head { padding-top: var(--s-7); }
 .portfolio-section { max-width: var(--measure); margin: 0 auto var(--section); padding: 0 var(--gutter); }
@@ -1647,8 +831,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .viewer[hidden] { display: none; }
 .viewer-veil {
   position: absolute; inset: 0; background: rgba(18, 20, 18, 0.72); opacity: 0; transition: opacity 0.28s ease;
-  -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3);   /* the page shows, blurred, behind the photo */
-}
+  -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3);   }
 .viewer.is-open .viewer-veil { opacity: 1; }
 .viewer-top, .viewer-strip, .viewer-prev, .viewer-next { opacity: 0; transition: opacity 0.2s ease; }
 .viewer.is-open .viewer-top, .viewer.is-open .viewer-strip, .viewer.is-open .viewer-prev, .viewer.is-open .viewer-next { opacity: 1; transition-delay: 0.12s; }
@@ -2071,9 +1254,7 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .configure-label { font-size: var(--fs-meta); color: rgba(233, 231, 225, 0.8); }   /* brighter than --on-dark-muted: the glass lets light through */
 .configure-stone { font-size: var(--fs-body); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .configure-stone.is-empty { font-size: var(--fs-small); font-weight: 400; color: rgba(233, 231, 225, 0.8); }
-.configure-cta { flex: none; border-radius: 999px; }   /* a pill inside the capsule, as the header's action */
-
-/* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
+.configure-cta { flex: none; border-radius: 999px; }   /* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
    The closing band of the home page and every direction page, built from the
    same parts as the header's panel and the list of directions: a quiet label
    in the left column, one row with an arrow at its end, thin rules, copper
@@ -2089,7 +1270,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
 }
 .offer-kicker { padding-top: var(--s-5); }
 .offer-kicker { font-size: 13px; line-height: 1.5; color: var(--muted); }
-.offer-main { min-width: 0; }
 .offer-title {
   margin: 0; padding: var(--s-5) 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
   font-size: var(--fs-h2); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--ink);
@@ -2116,10 +1296,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
 .offer-toggle:focus-visible .offer-toggle-arrow { transform: translateX(4px); }
 @media (hover: hover) { .offer-toggle:hover .offer-toggle-arrow { transform: translateX(4px); } }
 .is-open .offer-toggle .offer-toggle-arrow { transform: rotate(90deg); }
-.offer-meta {
-  display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-2) var(--s-6);
-  padding-top: var(--s-4); font-size: var(--fs-small); line-height: 1.5; color: var(--ink-soft);
-}
 .offer-phone a { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; }
 @media (hover: hover) { .offer-phone a:hover { color: var(--accent-hover); } }
 
@@ -2134,7 +1310,6 @@ html:has(.mast) { scrollbar-gutter: stable; }
   grid-template-rows: 1fr; visibility: visible;
   transition: grid-template-rows 0.3s var(--ease), visibility 0s;
 }
-.offer-reveal-inner { min-height: 0; overflow: hidden; margin: 0 -4px; padding: 0 4px; }
 @media (prefers-reduced-motion: reduce) {
   .offer-band.is-collapsible .offer-reveal, .offer-band.is-open .offer-reveal { transition: none; }
 }
@@ -2207,7 +1382,6 @@ main .offer-band-inner {
   display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: auto auto auto 1fr; column-gap: var(--s-5); align-items: start;
   border-radius: 20px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
 }
-main .offer-main, main .offer-meta { display: contents; }
 main .offer-kicker {
   grid-column: 1 / 3; grid-row: 1; display: flex; align-items: center; gap: var(--s-3); padding: 0;
   font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
@@ -2233,11 +1407,6 @@ main .offer-tg::before {
 /* The phone and Telegram stand together where the phone stood alone. */
 main .offer-contact { grid-column: 1 / 3; grid-row: 4; align-self: end; display: flex; flex-direction: column; gap: var(--s-4); margin-top: var(--s-6); }
 main .offer-contact > .offer-phone { margin-top: 0; align-self: stretch; }
-main .offer-needs {
-  grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; gap: var(--s-4);
-  font-size: 13px; color: var(--muted);
-}
-main .offer-needs::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 main .offer-phone a { font-size: var(--fs-body); }
 main .offer-reveal, main .offer-noscript { grid-column: 3 / 6; grid-row: 2 / 5; }
 main .offer-form { margin-top: var(--s-4); column-gap: var(--s-6); }
@@ -2246,13 +1415,10 @@ main .offer-input::placeholder { color: var(--muted); opacity: 1; }
 /* Narrower than the panel's five columns: the words over the form, each the card's width. */
 @media (max-width: 1100px) {
   main .offer-band-inner { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
-  main .offer-kicker, main .offer-title, main .offer-lead, main .offer-phone, main .offer-needs,
-  main .offer-reveal, main .offer-noscript { grid-column: 1; grid-row: auto; }
+  main .offer-kicker, main .offer-title, main .offer-lead, main .offer-phone, main .offer-reveal, main .offer-noscript { grid-column: 1; grid-row: auto; }
   main .offer-phone, main .offer-contact { margin-top: var(--s-5); }
   main .offer-contact { grid-column: 1; grid-row: auto; }
-  main .offer-needs { margin-top: var(--s-7); }
-  main .offer-needs, main .offer-reveal, main .offer-noscript { order: 1; }   /* the phone stays with the words, the line of fields goes to the form */
-}
+  main .offer-reveal, main .offer-noscript { order: 1; }   }
 @media (max-width: 520px) {
   main .offer-band { padding-left: var(--gutter); padding-right: var(--gutter); }
   main .offer-band-inner { border-radius: 16px; }
@@ -2484,8 +1650,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   /* Offer: heading, phone, then the form, in one column. */
   .offer-band-inner { grid-template-columns: 1fr; row-gap: var(--s-3); }
   .offer-kicker { padding-top: 0; }
-  /* Home: the house under its words. */
-  /* From stone to object: the words above the three photographs. */
+    /* From stone to object: the words above the three photographs. */
   .home-s2o { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
   .home-showroom-inner { grid-template-columns: 1fr; gap: var(--s-6); }
 
@@ -2516,7 +1681,6 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .site-footer-inner { grid-template-columns: 1fr; }
   .site-footer-bottom { margin-top: var(--s-7); }
 
-
 }
 /* Phones: the configure bar keeps its height, so its words get shorter
    instead of cut off. «Не выбран - подберёте в конфигураторе» beside the
@@ -2528,12 +1692,6 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 }
 @media (max-width: 420px) {
   .configure-cta .configure-tail { display: none; }
-}
-@media (max-width: 360px) {
-  /* The home page's project sheet: its title block one cell to a row. */
-  .home-main .offer-form { grid-template-columns: minmax(0, 1fr); }
-  /* The home page's masthead: its name a size smaller still beside «Меню». */
-  .mast-logo { font-size: 11px; letter-spacing: 0.22em; padding-left: 0.22em; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }

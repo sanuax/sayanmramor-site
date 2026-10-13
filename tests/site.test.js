@@ -86,63 +86,6 @@ function webpSize(file) {
   return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
 }
 
-test('«Что можно заказать» in CSS: a wall, not cards -- joints that are recesses, sawn edges, the light falling off, its shadow at the foot; the names turned up the slabs; two courses (7 and 6) on phones, tablets and touch screens; on a desktop with a real pointer one course and one slab open, 2:3, drawn out of the wall by its thickness', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const block = css.slice(css.indexOf('/* 2. What can be ordered'), css.indexOf('/* 4. The showroom'));
-  assert.match(block, /\.home-directions \{ background: var\(--ground\);/, 'on the limestone');
-  assert.match(block, /\.wall-bay \{\s*--row: 7; --joints: 5; --reveals: 1;/, 'the first course: two groups, seven slabs');
-  assert.match(block, /\.wall-bay:nth-child\(n \+ 3\) \{ --row: 6; --joints: 3; --reveals: 2; \}/, 'the second: three groups, six slabs');
-  assert.match(block, /\.wall-bay-name \{[^}]*order: 1;/, 'the group\'s name on the floor under it');
-  assert.match(block, /\.wall-slabs \{[^}]*gap: var\(--joint\);[^}]*background: linear-gradient\(to bottom, #6b665d, #46433d\);[^}]*box-shadow: 0 30px 34px -28px/, 'the wall behind, seen in the joints; its shadow at the foot');
-  assert.match(block, /\.wall-slab \{[^}]*box-shadow: 1px 2px 3px rgba\(20, 21, 19, 0\.55\);/, 'each slab casts into its joint');
-  assert.match(block, /\.wall-slab::after \{[^}]*inset 1px 1px 0 rgba\(255, 252, 245, 0\.32\), inset -1px -1px 0 rgba\(0, 0, 0, 0\.32\);/, 'the sawn edges');
-  assert.match(block, /\.wall-face img \{[^}]*object-fit: cover;/);
-  assert.match(block, /\.wall-name \{\s*writing-mode: vertical-rl; transform: rotate\(180deg\);/, 'the name read from the floor up');
-  assert.match(block, /\.wall-text \{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset\(50%\);/, 'a closed slab\'s words: heard, not seen');
-  assert.match(block, /\.wall-slab:focus-visible \{[^}]*outline: 2px solid var\(--figure\);/);
-  assert.doesNotMatch(block, /border-radius|border: 1px|border-top|border-bottom/, 'no cards, no drawn lines');
-  const desk = block.slice(block.indexOf('@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {'));
-  assert.ok(desk.length > 0, 'the open slab only where there is a real pointer');
-  assert.match(desk, /\.wall \{ --wall-h: clamp\(440px, 66vh, 620px\); --open: calc\(var\(--wall-h\) \* 2 \/ 3\); flex-wrap: nowrap; \}/, 'the open slab as wide as its photograph at the wall\'s height: 2:3');
-  assert.match(desk, /\.wall-slabs > li:has\(> \.wall-slab\.is-open\) \{ z-index: 2; flex: 0 0 var\(--open\); \}/);
-  assert.match(desk, /\.wall-bay:has\(\.wall-slab\.is-open\) \{ flex-grow: calc\(var\(--n\) - 1\); flex-basis: calc\(var\(--open\) \+ \(var\(--n\) - 1\) \* var\(--joint\)\); \}/);
-  assert.match(desk, /\.wall-slab\.is-open \{\s*transform: translate\(-5px, -6px\);\s*box-shadow:\s*1px 1px 0 #ddd7cc,[^;]*6px 6px 0 #6d6961,\s*20px 28px 36px -12px rgba\(20, 21, 19, 0\.55\);/, 'drawn out by its thickness (the hero\'s sawn edge), its shadow on its neighbours');
-  assert.match(desk, /transition: flex-grow 0\.6s var\(--spring\), flex-basis 0\.6s var\(--spring\);/, 'the site\'s soft spring');
-  assert.match(desk, /\.wall-slab\.is-open \.wall-name \{[^}]*writing-mode: horizontal-tb; transform: none;/);
-  assert.match(block, /@media \(prefers-reduced-motion: reduce\) \{\s*\.wall-slab \.wall-label \{ animation: none; \}/, 'reduce motion: the words simply there');
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\*, \*::before, \*::after \{ transition: none !important; \}/, 'reduce motion: no transitions');
-  assert.doesNotMatch(css, /\.stack-|\.direction-|\.directions-|\.project|\.home-works|\.works-title/, 'nothing left of the earlier blocks');
-});
-
-test('home-wall.js: one slab open at a time -- the one the pointer moves over or the focus is on; it stays open when the pointer leaves; the one closed is marked; a touch is only a tap', () => {
-  const HomeWall = require('../js/home-wall.js');
-  const a = {}, b = {}, other = {};
-  assert.equal(HomeWall.choose([a, b], a, b), b);
-  assert.equal(HomeWall.choose([a, b], a, other), a, 'something that is not a slab changes nothing');
-  const mk = on => {
-    const cls = new Set(on ? ['is-open'] : []); const handlers = {};
-    return {
-      classList: { contains: c => cls.has(c), add: c => cls.add(c), remove: c => cls.delete(c), replace: (x, y) => { cls.delete(x); cls.add(y); } },
-      addEventListener: (t, f) => { handlers[t] = f; }, handlers, cls,
-    };
-  };
-  const slabs = [mk(true), mk(false), mk(false)];
-  const wall = { querySelectorAll: s => (s === '.wall-slab' ? slabs : []) };
-  const api = HomeWall.init({ querySelector: s => (s === '[data-wall]' ? wall : null) });
-  const state = () => slabs.map(s => (s.cls.has('is-open') ? 'open' : s.cls.has('was-open') ? 'was' : '-'));
-  assert.ok(!slabs[0].handlers.pointerenter, 'a wall scrolled under a resting pointer stays as it is');
-  slabs[2].handlers.pointermove({ pointerType: 'mouse' });
-  assert.deepEqual(state(), ['was', '-', 'open']);
-  slabs[1].handlers.pointermove({ pointerType: 'touch' });
-  assert.deepEqual(state(), ['was', '-', 'open'], 'a touch opens the page, not the slab');
-  slabs[1].handlers.focus();
-  assert.deepEqual(state(), ['-', 'open', 'was'], 'only the one just closed is marked');
-  slabs[1].handlers.pointermove({ pointerType: 'pen' });
-  assert.deepEqual(state(), ['-', 'open', 'was'], 'the open one stays open');
-  assert.equal(api.open, slabs[1]);
-  assert.equal(HomeWall.init({ querySelector: () => null }), null);
-});
-
 test('all 16 pages share one header: <header class="site-header"> and header.js, no masthead anywhere', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
@@ -152,149 +95,6 @@ test('all 16 pages share one header: <header class="site-header"> and header.js,
   });
 });
 
-test('the masthead in CSS: ovals with a thin edge (no fill, no shadow), a plane of stone drawn from the oval\'s own outline on a soft spring, light over a light section; the home palette belongs to the home page only', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const rule = sel => { const i = css.indexOf('\n' + sel + ' {'); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
-  assert.match(rule('.mast, .home-main'), /--night: #1e2320;[\s\S]*--travertine: #ece5d8;[\s\S]*--verde: #2f5d50;/);
-  assert.match(rule('.mast, .home-main'), /--spring: linear\(0, /);
-  const root = css.slice(css.indexOf(':root {'), css.indexOf('\n}', css.indexOf(':root {')));
-  assert.doesNotMatch(root, /--night|--travertine|--spring/, 'not a shared variable: other pages never see it');
-  assert.match(rule('.mast-inner'), /grid-template-columns: minmax\(0, 1fr\) auto minmax\(0, 1fr\);/, 'the name exactly in the middle');
-  assert.match(rule('.mast-pill'), /border: 1px solid var\(--pill-line\); border-radius: calc\(var\(--pill-h\) \/ 2\);/);
-  assert.match(rule('.mast-pill'), /background: transparent;/);
-  assert.doesNotMatch(rule('.mast-pill'), /box-shadow|backdrop-filter|gradient/);
-  assert.match(css, /\.js \.mast-drop\.is-ready > \.mast-sheet \{\s*clip-path: inset\(0 0 calc\(100% - var\(--pill-h\)\) calc\(100% - var\(--pill-w, 120px\)\) round calc\(var\(--pill-h\) \/ 2\)\);/);
-  assert.match(css, /\.js \.mast-drop\.is-ready\.is-open > \.mast-sheet \{\s*clip-path: inset\(0 0 0 0 round 22px\);[\s\S]*?transition: clip-path 0\.56s var\(--spring\);/);
-  assert.match(rule('.mast-sheet'), /background: var\(--sheet\);/);
-  assert.match(rule('.mast'), /--sheet: var\(--travertine\);/, 'travertine over the dark page');
-  assert.match(rule('.mast.is-light'), /--sheet: var\(--night\);/, 'basalt over a light one');
-  const block = css.slice(css.indexOf('/* ---- Masthead'), css.indexOf('/* ---- Home ----'));
-  assert.doesNotMatch(block, /backdrop-filter|blur\(|glow|var\(--sr-/);
-  assert.match(block, /@media \(prefers-reduced-motion: reduce\) \{\s*\.js \.mast-drop\.is-ready > \.mast-sheet, \.js \.mast-drop\.is-ready\.is-open > \.mast-sheet \{ transition: none; \}/);
-});
-
-test('masthead.js: one plane at a time, opened from the oval\'s width and closed after its animation; the tone follows the ground under the masthead', () => {
-  const Masthead = require('../js/masthead.js');
-  assert.equal(Masthead.toneOf('rgb(239, 237, 232)'), 'light');
-  assert.equal(Masthead.toneOf('rgb(26, 28, 25)'), 'dark');
-  assert.equal(Masthead.toneOf('rgb(30, 26, 22)'), 'dark', 'the showroom\'s graphite');
-  assert.equal(Masthead.toneOf('rgba(0, 0, 0, 0)', 'rgb(239, 237, 232)'), 'light', 'a transparent section shows the page');
-  assert.ok(Masthead.CLOSE_MS >= 180 && Masthead.CLOSE_MS <= 300);
-  const src = fs.readFileSync(path.join(site, 'js', 'masthead.js'), 'utf8');
-  ["e.preventDefault()", "'--pill-w'", "classList.add('is-open')", "e.key === 'Escape'", "'focusout'", "'menu-lock'", "IntersectionObserver", "prefers-reduced-motion"]
-    .forEach(t => assert.ok(src.includes(t), t));
-});
-
-test('the hero in CSS: held while you scroll (sticky), moved only by transform and opacity from a few numbers; standing still by default (no JavaScript, phones, «reduce motion»)', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const block = css.slice(css.indexOf('/* 1. The hero'), css.indexOf('/* 2. What can be ordered'));
-  assert.match(block, /\.night-hero\[data-mode="scrub"\] \{ height: 250svh; \}/);
-  assert.match(block, /\[data-mode="scrub"\] \.hero-stage \{[\s\S]*?position: sticky;/);
-  assert.match(block, /\[data-mode="scrub"\] \.hero-slab \{[\s\S]*?transform: translate3d\(0, var\(--y, 0px\), 0\) rotateX\(var\(--t, 0deg\)\) rotateZ\(var\(--r, 0deg\)\) scale\(var\(--s, 1\)\);/);
-  // The lying slab as a real object (the scrolled scene only): turned a little on the floor, seen from a little off centre,
-  // its sawn edge and its shadow on the floor, a slight fall of light.
-  assert.match(block, /perspective-origin: 44% 0;/);
-  assert.match(block, /\.hero-floor-shadow, \.hero-edge \{ display: none; \}/, 'not on a phone, not without the scene');
-  // The thickness is a real face of the slab in 3D: hung from the bottom edge and turned 90° about it, along the slab's own normal,
-  // 3 cm at the slab's scale; the perspective alone thins it as the slab stands. The shadow lies on the floor, 3 cm under the top.
-  assert.match(block, /\[data-mode="scrub"\] \.hero-slab \{ --thick: calc\(var\(--fw\) \/ var\(--slab-ratio\) \* 0\.0172\); transform-style: preserve-3d; \}/);
-  assert.match(block, /\[data-mode="scrub"\] \.hero-edge \{[^}]*top: 96\.5%; left: 4\.6%; width: 89\.9%; height: var\(--thick\);[^}]*transform: rotateX\(-90deg\); transform-origin: 50% 0;/);
-  assert.match(block, /\[data-mode="scrub"\] \.hero-floor-shadow \{[^}]*transform: translateZ\(calc\(var\(--thick\) \* -1\)\); opacity: var\(--shade, 0\);/);
-  const edgeRule = block.slice(block.indexOf('[data-mode="scrub"] .hero-edge {'), block.indexOf('}', block.indexOf('[data-mode="scrub"] .hero-edge {')));
-  assert.doesNotMatch(edgeRule, /scale|var\(--e/, 'no faked edge: no scaling by a number');
-  assert.match(block, /\[data-mode="scrub"\] \.hero-stone \{[^}]*mask-image: linear-gradient\(to bottom, rgba\(0, 0, 0, 0\.88\), #000 60%\);/, 'a fall of light of only 12 %');
-  // The slab whole, four corners: the sawn top and the slanted left side, the right side inside the missing corner, a straight bottom --
-  // in every mode: its studio's dark ground is never shown on the limestone.
-  assert.match(block, /\n\.hero-stone-frame \{ position: absolute; inset: 0; overflow: hidden; clip-path: polygon\(2\.4% 2\.7%, 94\.5% 2\.7%, 94\.5% 96\.5%, 4\.6% 96\.5%\); \}/);
-  assert.match(block, /\.hero-raw \{ position: relative; isolation: isolate; aspect-ratio: 4096 \/ 2437; \}/, 'no ground behind the slab');
-  assert.match(block, /\[data-mode="scrub"\] \.hero-mark-word \{\s*transform: translate3d\(0, var\(--mk-y, 0px\), 0\) scale\(var\(--mk-s, 1\)\); opacity: var\(--mk-o, 1\);/);
-  assert.match(block, /\.hero-stone \{ width: 100%; height: 100%; filter: url\(#slabBalance\); \}/);
-  assert.doesNotMatch(block, /mix-blend-mode: lighten/, 'nothing blended into a dark ground');
-  // Nothing but the scrub mode sticks or moves: without it the scene is a plain column.
-  const free = block.replace(/\[data-mode="scrub"\][^{]*\{[^}]*\}/g, '');
-  assert.doesNotMatch(free, /position: sticky|rotateX|250svh|clip-path: inset/);
-  // The slab opens: the object is seen through a cut widening from its middle -- never laid over the stone.
-  assert.match(block, /\[data-mode="scrub"\] \.hero-made \{[^}]*clip-path: inset\(calc\(\(1 - var\(--cut, 1\)\) \* 50%\) calc\(\(1 - var\(--cut, 1\)\) \* 50%\) round 2px\);/);
-  assert.doesNotMatch(block.slice(block.indexOf('[data-mode="scrub"] .hero-made {')), /^[^}]*opacity/, 'no cross-fade of the two images');
-  assert.match(block, /\[data-mode="scrub"\] \.hero-cut \{[^}]*opacity: var\(--edge, 0\);/);
-  assert.match(block, /@media \(prefers-reduced-motion: no-preference\) \{\s*\.js \.is-lit \.hero-stone-frame::after \{ animation: hero-light/, 'the one pass of light, only when motion is welcome');
-  // No decorative shadow or blur: the one shade is inside the cut (inset), where the object lies below the stone's face.
-  const cutRule = block.slice(block.indexOf('[data-mode="scrub"] .hero-cut {'), block.indexOf('}', block.indexOf('[data-mode="scrub"] .hero-cut {')));
-  assert.match(cutRule, /box-shadow: inset /);
-  assert.doesNotMatch(cutRule.replace(/box-shadow:[^;]*;/, ''), /box-shadow/);
-  const shadowRule = block.slice(block.indexOf('[data-mode="scrub"] .hero-floor-shadow {'), block.indexOf('}', block.indexOf('[data-mode="scrub"] .hero-floor-shadow {')));
-  assert.match(shadowRule, /filter: blur\(22px\);/, 'the one blur: the slab\'s own shadow on the floor');
-  assert.doesNotMatch(block.replace(cutRule, '').replace(shadowRule, ''), /box-shadow|backdrop-filter|blur\(/);
-  // The masthead's name stays visible without JavaScript.
-  assert.match(css, /\.js \.mast\[data-dock\] \.mast-logo \{ opacity: var\(--logo, 0\); \}/);
-});
-
-test('home-hero.js: one number from 0 to 1 -- the slab lies at 0 and stands as the object at 1, the dimensions come between, the name has risen into the masthead early; the still scene below 768 px or with «reduce motion»', () => {
-  const HomeHero = require('../js/home-hero.js');
-  const mark = { dy: -67, s: 0.125 };
-  const a = HomeHero.stage(0, 300, mark), z = HomeHero.stage(1, 300, mark);
-  assert.equal(a.t, HomeHero.TILT); assert.equal(a.y, 300); assert.equal(a.cut, 0); assert.equal(a.edge, 0); assert.equal(a.d, 0); assert.equal(a.copy, 1); assert.equal(a.step, 1);
-  assert.equal(Math.abs(a.mkY), 0); assert.equal(a.mkS, 1); assert.equal(a.logo, 0);
-  assert.equal(a.r, HomeHero.TURN); assert.equal(a.shade, 1);
-  assert.equal(Math.abs(z.r), 0); assert.equal(z.shade, 0, 'standing: no turn, no shadow (the edge is edge-on)');
-  assert.equal(a.e, undefined, 'the edge is geometry, not a number');
-  assert.equal(z.t, 0); assert.equal(z.y, 0); assert.ok(Math.abs(z.s - 1) < 1e-9); assert.equal(z.cut, 1); assert.equal(z.edge, 0); assert.equal(z.dd, 0); assert.equal(z.fin, 1); assert.equal(z.step, 3);
-  assert.equal(z.mkY, -67); assert.equal(z.mkS, 0.125); assert.equal(z.mkO, 0); assert.equal(z.logo, 1);
-  const mid = HomeHero.stage(0.45, 300, mark);
-  assert.equal(mid.step, 2); assert.ok(mid.d > 0.5 && mid.cut === 0, 'the dimensions are drawn before the slab opens');
-  const opening = HomeHero.stage(0.7, 300, mark);
-  assert.ok(opening.t > 0 && opening.cut > 0 && opening.cut < 1 && opening.dd === 0, 'the slab is still moving as it opens; its dimensions are put away');
-  assert.ok(opening.edge > 0.9, 'the cut has its edge while it opens');
-  assert.equal(HomeHero.stage(0.2, 300, mark).logo, 1, 'the name is in the masthead before the story begins');
-  let prev = HomeHero.stage(0, 300, mark);
-  for (let p = 0.02; p <= 1.0001; p += 0.02) {
-    const v = HomeHero.stage(Math.min(1, p), 300, mark);
-    assert.ok(v.t <= prev.t && v.cut >= prev.cut && v.mkS <= prev.mkS + 1e-9, 'one calm movement, never back: ' + p.toFixed(2));
-    assert.ok(Math.abs(v.r) <= Math.abs(prev.r) + 1e-9 && v.shade <= prev.shade + 1e-9, 'the turn and the shadow only fade: ' + p.toFixed(2));
-    prev = v;
-  }
-  assert.equal(HomeHero.MIN_WIDTH, 768);
-  const src = fs.readFileSync(path.join(site, 'js', 'home-hero.js'), 'utf8');
-  ["prefers-reduced-motion: reduce", "{ passive: true }", "requestAnimationFrame", "dataset.mode"].forEach(t => assert.ok(src.includes(t), t));
-  assert.doesNotMatch(src, /\.style\.(transform|top|left|width|height)\b/, 'only custom properties are written');
-});
-
-
-test('home-portal.js: a plain click fades the page into the showroom\'s graphite, then opens the link; modifier clicks and «reduce motion» keep the plain link', () => {
-  const HomePortal = require('../js/home-portal.js');
-  assert.ok(HomePortal.FADE_MS >= 180 && HomePortal.FADE_MS <= 300);
-  assert.equal(HomePortal.isPlainClick({ button: 0 }), true);
-  [{ button: 1 }, { button: 0, ctrlKey: true }, { button: 0, metaKey: true }, { button: 0, shiftKey: true }, { button: 0, altKey: true }]
-    .forEach(e => assert.equal(HomePortal.isPlainClick(e), false, JSON.stringify(e)));
-  const handlers = [];
-  const link = { href: '/sayanmramor-site/showroom.html', addEventListener: (t, f) => handlers.push([t, f]) };
-  const reduced = HomePortal.init({ querySelectorAll: () => [link] }, { matchMedia: () => ({ matches: true }) });
-  assert.equal(reduced.reduce, true);
-  assert.equal(handlers.length, 0, 'reduce motion: nothing is taken over');
-  const timers = [];
-  const appended = [];
-  const veilClasses = new Set();
-  const win = {
-    matchMedia: () => ({ matches: false }), location: { href: '' },
-    setTimeout: (f, ms) => timers.push([f, ms]), addEventListener: () => {},
-  };
-  const doc = {
-    querySelectorAll: () => [link], body: { appendChild: n => appended.push(n) },
-    createElement: () => ({ setAttribute() {}, classList: { add: c => veilClasses.add(c), remove: c => veilClasses.delete(c) } }),
-  };
-  HomePortal.init(doc, win);
-  let prevented = false;
-  handlers.find(([t]) => t === 'click')[1]({ button: 0, preventDefault: () => { prevented = true; } });
-  assert.ok(prevented);
-  assert.equal(appended.length, 1);
-  assert.ok(veilClasses.has('is-on'));
-  assert.equal(timers[0][1], HomePortal.FADE_MS);
-  timers[0][0]();
-  assert.equal(win.location.href, '/sayanmramor-site/showroom.html');
-  // The module stays (until the clean-up step), but the static home page no longer loads it.
-  assert.ok(!homeHtml().includes('home-portal.js'));
-  assert.ok(!fs.existsSync(path.join(site, 'js', 'home-directions.js')));
-});
 
 // ---- Header: one row, «Изделия» panel with the 13 directions in five groups ----------
 
@@ -736,87 +536,6 @@ test('the request stands open (data-offer-open) on the home page and on every di
   const folded = fakeBand(false);
   assert.ok(OfferForm.enhanceBand(folded.container, {}, 2), 'a band without data-offer-open still gets its toggle');
   assert.ok(folded.classes.has('is-collapsible'));
-  // Only the home page's band is laid out anew (a project sheet, below); every rule of it is scoped to the home page.
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const sheet = css.slice(css.indexOf('/* The request, the home page'), css.indexOf('/* Narrower screens: the same scenes'));
-  assert.ok(sheet.length > 0);
-  [...sheet.matchAll(/^(\.[^{]+)\{/gm)].map(m => m[1]).forEach(sel => {
-    sel.split(',').forEach(s => assert.match(s.trim(), /^\.home-main |^\.offer-drawing|^\.drawing-|^\.is-named /, s.trim() + ': the home page only'));
-  });
-});
-
-test('home-request.js: the chosen direction names the piece on the drawing and draws it solid; «Без направления» gives back «Ваше изделие» and the dashes', () => {
-  const HomeRequest = require('../js/home-request.js');
-  const select = (value, text) => ({ selectedIndex: 0, options: [{ value, textContent: text }] });
-  assert.equal(HomeRequest.label(select('', 'Без направления')), 'Ваше изделие');
-  assert.equal(HomeRequest.label(select('kuhnya', 'Кухня')), 'Кухня');
-  assert.equal(HomeRequest.label(null), 'Ваше изделие');
-  const classes = new Set(); let onChange = null;
-  const note = { textContent: '' };
-  const drawing = { classList: { toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) } };
-  const band = {
-    querySelector: s => (s === '[data-piece-name]' ? note : s === '.offer-drawing' ? drawing : null),
-    addEventListener: (t, f) => { if (t === 'change') onChange = f; },
-  };
-  const api = HomeRequest.init({ querySelector: s => (s === '.home-main .offer-band' ? band : null) });
-  assert.ok(api);
-  assert.equal(note.textContent, 'Ваше изделие', 'no form yet: the piece unnamed');
-  onChange({ target: Object.assign(select('hammamy', 'Хаммамы'), { name: 'direction' }) });
-  assert.equal(note.textContent, 'Хаммамы'); assert.ok(classes.has('is-named'));
-  onChange({ target: Object.assign(select('x', 'Иван'), { name: 'name' }) });
-  assert.equal(note.textContent, 'Хаммамы', 'other fields leave the drawing as it is');
-  onChange({ target: Object.assign(select('', 'Без направления'), { name: 'direction' }) });
-  assert.equal(note.textContent, 'Ваше изделие'); assert.ok(!classes.has('is-named'));
-  assert.equal(HomeRequest.init({ querySelector: () => null }), null);
-  // The hints in the two empty entry cells: short, neutral, only a placeholder, never over one already there.
-  assert.deepEqual(HomeRequest.HINTS, { name: 'Ваше имя', phone: '+7' });
-  const inputs = { name: { attrs: {} }, phone: { attrs: { placeholder: 'свой' } } };
-  Object.values(inputs).forEach(i => { i.getAttribute = a => i.attrs[a] || null; i.setAttribute = (a, v) => { i.attrs[a] = v; }; });
-  HomeRequest.hint({ querySelector: s => inputs[(s.match(/name="([^"]+)"/) || [])[1]] || null });
-  assert.equal(inputs.name.attrs.placeholder, 'Ваше имя');
-  assert.equal(inputs.phone.attrs.placeholder, 'свой');
-  assert.ok(!('value' in inputs.name.attrs) && !('required' in inputs.name.attrs), 'nothing but the hint');
-  HomeRequest.hint(null);
-  const src = fs.readFileSync(path.join(site, 'js', 'home-request.js'), 'utf8');
-  assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon|submit/, 'it never sends nor submits anything');
-});
-
-test('the home page\'s desktop grid (1024 px and wider): 12 columns between margins of 5 %, content at most 1440 px, a wide field for the objects; one 5 / 7 vertical; narrower screens untouched', () => {
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const start = css.indexOf('@media (min-width: 1024px) {\n  .mast, .home-main');
-  assert.ok(start > 0, 'one desktop block for the home page');
-  const block = css.slice(start, css.indexOf('\n}\n', start));
-  // The three fields.
-  assert.match(block, /\.mast, \.home-main, \.home-main ~ \.site-footer \{\s*--margin: clamp\(24px, 5vw, 120px\);\s*--content: min\(calc\(100vw - 2 \* var\(--margin\)\), 1440px\);\s*--wide: min\(calc\(100vw - var\(--margin\)\), 1760px\);/);
-  assert.match(block, /\.mast-inner, \.home-main \.wrap, \.home-main \.offer-band-inner,\s*\.home-main ~ \.site-footer \.site-footer-inner, \.home-main ~ \.site-footer \.site-footer-bottom \{\s*max-width: calc\(1440px \+ 2 \* var\(--margin\)\); padding-left: var\(--margin\); padding-right: var\(--margin\);/);
-  // One vertical: the second column starts at the sixth -- the hero's words, the passage, the request, where we are.
-  assert.match(block, /\.hero-title \{ grid-column: 1 \/ 6;[^}]*font-size: max\(28px, calc\(var\(--mark-fs\) \* 0\.37\)\); \}/);
-  assert.match(block, /\.hero-side \{ grid-column: 6 \/ 13; \}/);
-  assert.match(block, /\.ready-text \{ grid-column: 6 \/ 11; \}/);
-  // The request's sheet keeps the vertical: its heading and phone in the first five columns, its drawing and title block from the sixth.
-  assert.match(block, /\.home-main \.offer-title \{ grid-column: 1 \/ 6;/);
-  assert.match(block, /\.home-main \.offer-meta \{ grid-column: 1 \/ 6;/);
-  assert.match(block, /\.home-main \.offer-reveal, \.home-main \.offer-noscript \{ grid-column: 6 \/ 13;/);
-  assert.match(block, /\.contacts-head, \.contacts-card \{ grid-column: 1 \/ 6; \}\s*\.contacts-map-frame \{ grid-column: 6 \/ 13; width: 100%; min-height: 360px; aspect-ratio: 16 \/ 10; \}/, 'the map\'s height from its width');
-  // The objects in the wide field: the slab (as tall as the screen allows), the house to the right.
-  assert.match(block, /\[data-mode="scrub"\] \.hero-stage \{ --fw: min\(var\(--wide\), 1320px, calc\(\(100svh - var\(--mast-h, 64px\) - var\(--band\) - 28px\) \* var\(--slab-ratio\)\)\); \}/);
-  assert.match(block, /\[data-mode="scrub"\] \.hero-scene \{ perspective: max\(1800px, calc\(var\(--fw\) \* 1\.5385\)\); \}/, 'a larger slab: the same scene, larger');
-  assert.match(block, /\.portal-text \{ grid-column: 1 \/ 5; \}\s*\.portal-house \{ grid-column: 5 \/ 13; margin-right: calc\(var\(--bleed\) \* -1\); \}/, 'the showroom keeps its 4 / 8');
-  // What can be ordered: the title in five columns, its line on the vertical; the wall in the wide field.
-  assert.match(block, /\.wall-title \{ grid-column: 1 \/ 6; \}\s*\.wall-lead \{ grid-column: 6 \/ 12; margin-top: 0; \}/);
-  assert.match(block, /\.wall \{ max-width: var\(--wide\); padding: 0; \}/);
-  // One material language for the opening scenes: the second stone. The arrow is the site's one arrow.
-  assert.match(block, /\.night-hero, \.home-directions \{\s*--stone-2: #e3ded5;\s*\}/);
-  const tokensCss = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');   // the values live in css/tokens.css (2026-10-14)
-  assert.match(tokensCss, /\n  --arrow: url\([^)]*stroke-width='2' stroke-linecap='square'/, 'one arrow for the whole site: 2 px, square ends');
-  assert.equal((tokensCss.match(/--arrow: url\(/g) || []).length, 1, 'declared once');
-  assert.equal((css.match(/--arrow: url\(/g) || []).length, 0, 'not again in site.css');
-  // The hero's caption band back in the content's field (its centring was reset by margin: 0).
-  assert.match(css, /\[data-mode="scrub"\] \.hero-story \{\s*position: absolute; top: calc\(var\(--frame-top\) - var\(--band\) \+ 26px\); left: 0; right: 0; z-index: 3; margin: 0 auto;/);
-  // Only the home page: the shared footer and container keep their measure; nothing below 1024 px changes.
-  assert.match(css, /\n\.site-footer-inner, \.site-footer-bottom \{ max-width: var\(--measure\);/);
-  assert.match(css, /\n\.wrap \{ width: 100%; max-width: var\(--measure\);/);
-  assert.doesNotMatch(block, /@media \(max-width/);
 });
 
 test('«Где мы находимся»: one limestone plane, no cards -- the address column on the left, the map on the right in a plain 1 px frame, the verde pin kept', () => {
@@ -854,15 +573,8 @@ test('palette «basalt and serpentine»: limestone, warm stone, basalt, deep gre
   // The old copper lives on only as the showroom's own colour.
   const copper = [...css.matchAll(/#b4562b/gi)].map(m => css.slice(css.lastIndexOf('\n', m.index), m.index));
   copper.forEach(line => assert.match(line, /--sr-copper/));
-  assert.match(css, /\.home-portal \{\s*background: var\(--ground\);/);
-  // The home page: limestone, paper, thin lines, basalt type, verde; the dark only inside «.night» (the showroom) and the footer.
-  const home = css.slice(css.indexOf('\n.mast, .home-main {'), css.indexOf('}', css.indexOf('\n.mast, .home-main {')));
-  [['--page', '#f0eee9'], ['--surface', '#f7f5f1'], ['--line', '#d5d1c8'], ['--ink', '#1c1d1b'], ['--accent', '#2f5d50'], ['--night', '#1e2320']]
-    .forEach(([name, value]) => assert.match(home, new RegExp(name + ': ' + value + ';'), 'home ' + name));
-  assert.match(home, /--ground: var\(--page\); --figure: var\(--ink\);/, 'light by default');
-  assert.match(css, /\n\.night \{\s*--ground: var\(--night\); --figure: var\(--travertine\);/, 'dark only inside .night');
+  // The home page's own palette and the showroom doorway of the redesign went with the dead code (2026-10-14).
   assert.match(css, /\.site-footer \{[^}]*background: var\(--graphite\);/, 'the footer stays dark');
-  assert.match(css, /\.portal-enter \{[^}]*background: var\(--sr-copper\);/);
   assert.doesNotMatch(css, /#0068d6|#007bff/, 'no blue');
   const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
   assert.match(sr, /--sr-accent: #b4562b;/);
@@ -995,7 +707,6 @@ test('hover only where there is a pointer: every :hover rule sits in @media (hov
 test('step 0 fixes: the phone\'s contacts line up with their heading; touch targets of 44 px in the menus; the configure bar shortens instead of cutting off', () => {
   const css = headerAndSiteCss();
   assert.doesNotMatch(css, /\.contacts-card \{ padding:/, 'no card padding left over on phones');
-  assert.match(css, /\.mast-menu \.mast-group a, \.mast-menu-links a \{ display: inline-flex; align-items: center; min-height: 44px; \}/);
   assert.match(css, /\.js \.nav-group a \{ min-height: 44px;/);
   assert.match(css, /@media \(max-width: 540px\) \{\s*\.configure-stone \.configure-tail \{ display: none; \}\s*\}/);
   assert.match(css, /@media \(max-width: 420px\) \{\s*\.configure-cta \.configure-tail \{ display: none; \}\s*\}/);
@@ -1022,9 +733,9 @@ test('the home page is static: header, hero, from stone to object, what can be o
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', ''));
   assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
-  // The redesign's modules are kept until the clean-up step.
+  // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
-    assert.ok(fs.existsSync(path.join(site, 'js', f)), f + ' is kept for now'));
+    assert.ok(!fs.existsSync(path.join(site, 'js', f)), f + ' is gone'));
 });
 
 test('years on the market: full years since the founding day, the figure turning over each 6 February, the word agreeing', () => {
@@ -1287,7 +998,7 @@ test('three questions in CSS: scoped to the home page\'s band, hover only where 
 
 test('the static home in CSS: colour on hover and focus only -- no sticky, no transforms, no animations, transitions of 150 ms; hover only where there is a pointer', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const whole = css.slice(css.indexOf('/* ---- Home (static)'), css.indexOf('/* ---- Home palette'));
+  const whole = css.slice(css.indexOf('/* ---- Home (static)'), css.indexOf('/* ---- Home ---'));
   // Three exceptions: «От камня к изделию», whose cards lift under a pointer (tested on its own below);
   // «Нам доверяют», whose tiles are passes that turn over (2026-10-11, after the 21st.dev boarding pass);
   // and «Что можно заказать», whose groups are tilt cards (2026-10-12, after the 21st.dev tilt card).
