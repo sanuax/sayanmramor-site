@@ -128,8 +128,8 @@ test('products.json: the 8 finished goods with the owner prices, real photo file
   assert.deepEqual(products.map(p => [p.id, p.name, p.price_rub]), [
     ['rakushka-01', 'Ракушка', 37000],
     ['vaza-01', 'Ваза настольная', 177000],
-    ['art-stol-belyy-01', 'Арт-стол — белый', 2377000],
-    ['art-stol-chernyy-01', 'Арт-стол — чёрный', 3077000],
+    ['art-stol-belyy-01', 'Арт-стол (белый)', 2377000],   // (2026-10-15, the owner: the colour in brackets, no long dash)
+    ['art-stol-chernyy-01', 'Арт-стол (чёрный)', 3077000],
     ['statuya-01', 'Статуя', 3377000],
     ['stol-01', 'Стол', 3177000],
     ['vanna-oniks-01', 'Ванная из оникса', 3977000],

@@ -21,7 +21,7 @@
     },
     {
       "id": "art-stol-belyy-01",
-      "name": "Арт-стол — белый",
+      "name": "Арт-стол (белый)",
       "category": "stoly",
       "price_rub": 2377000,
       "description": null,
@@ -30,7 +30,7 @@
     },
     {
       "id": "art-stol-chernyy-01",
-      "name": "Арт-стол — чёрный",
+      "name": "Арт-стол (чёрный)",
       "category": "stoly",
       "price_rub": 3077000,
       "description": null,
