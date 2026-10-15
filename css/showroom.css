@@ -19,9 +19,6 @@
   --sr-glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.24), inset 0 -1px 1px rgba(255, 255, 255, 0.06);
   --sr-line: rgba(241, 236, 228, 0.12);
   --sr-line-strong: rgba(241, 236, 228, 0.22);
-  /* The same restrained copper as the site and the configurator. */
-  --sr-accent: #b4562b;
-  --sr-accent-hover: #9b4824;
   --sr-stage: #2a2621;
   --sr-radius: 14px;
   --sr-ease: cubic-bezier(0.22, 0.68, 0.24, 1);
@@ -185,7 +182,7 @@ body.is-interior .sr-caption { top: 128px; }
 @keyframes sr-pulse { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
 .sr-marker:focus-visible .sr-marker-dot { transform: scale(1.15); }
 @media (hover: hover) { .sr-marker:hover .sr-marker-dot { transform: scale(1.15); } }
-.sr-marker.is-selected .sr-marker-dot { background: var(--sr-accent); box-shadow: 0 0 0 5px rgba(180, 86, 43, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35); }
+.sr-marker.is-selected .sr-marker-dot { background: var(--accent); box-shadow: 0 0 0 5px rgba(42, 84, 70, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35); }   /* the site's green (2026-10-15) */
 .sr-marker.is-selected .sr-marker-dot::after { animation: none; opacity: 0; }
 .sr-marker.is-occluded { opacity: 0.4; }
 .sr-marker.is-offscreen { opacity: 0; pointer-events: none; }
@@ -237,11 +234,11 @@ body.is-interior .sr-caption { top: 128px; }
 .sr-card-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .sr-cta {
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px;
-  border-radius: 6px; background: var(--sr-accent); color: #fff; text-decoration: none;
+  border-radius: 6px; background: var(--accent); color: #fff; text-decoration: none;
   font-size: var(--sr-fs-body); font-weight: 700; letter-spacing: 0.2px;
   transition: background-color 0.2s;
 }
-@media (hover: hover) { .sr-cta:hover { background: var(--sr-accent-hover); } }
+@media (hover: hover) { .sr-cta:hover { background: var(--accent-hover); } }
 .sr-link { font-size: var(--sr-fs-ui); color: var(--sr-muted); text-decoration: none; border-bottom: 1px solid var(--sr-line-strong); padding-bottom: 1px; }
 @media (hover: hover) { .sr-link:hover { color: var(--sr-ink); border-color: var(--sr-ink); } }
 /* «Поделиться»: as quiet as «Примеры работ», with a link mark. */

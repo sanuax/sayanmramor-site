@@ -472,7 +472,7 @@ test('the offer band on the 13 direction pages: the home page\'s «Получи�
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     const band = html.slice(html.indexOf('<section class="offer-band'), html.indexOf('</section>', html.indexOf('<section class="offer-band')));
     assert.match(band, /<img class="offer-talk-photo" src="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp"/, page);
-    assert.match(band, /<p class="offer-kicker">Проект<\/p>/, page);
+    assert.doesNotMatch(band, /offer-kicker/, page + ': no «Проект» above the heading (2026-10-15, the owner)');
     assert.match(band, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/, page);
     // (2026-10-14, the owner: the same words as on the home page in every «Получить расчёт»)
     assert.match(band, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/, page);
@@ -578,7 +578,11 @@ test('palette «basalt and serpentine»: limestone, warm stone, basalt, deep gre
   assert.match(css, /\.site-footer \{[^}]*background: var\(--graphite\);/, 'the footer stays dark');
   assert.doesNotMatch(css, /#0068d6|#007bff/, 'no blue');
   const sr = fs.readFileSync(path.join(site, 'css', 'showroom.css'), 'utf8');
-  assert.match(sr, /--sr-accent: #b4562b;/);
+  // (2026-10-15, the owner: the showroom's copper -> the site's green; the 3D scene untouched)
+  assert.doesNotMatch(sr, /#b4562b|#9b4824|180, 86, 43|--sr-accent/i, 'no copper in the showroom');
+  assert.match(sr, /\.sr-cta \{[^}]*background: var\(--accent\);/);
+  assert.match(sr, /\.sr-cta:hover \{ background: var\(--accent-hover\); \}/);
+  assert.match(sr, /\.sr-marker\.is-selected \.sr-marker-dot \{ background: var\(--accent\); box-shadow: 0 0 0 5px rgba\(42, 84, 70, 0\.45\)/);
   assert.match(sr, /--sr-panel-solid: #1e1a16;/);
 });
 test('every page: a skip link to <main id="main">; the active menu item is aria-current', () => {

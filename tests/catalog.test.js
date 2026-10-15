@@ -178,7 +178,7 @@ test('the gallery: one piece at a time -- its words, its photograph; the arrows,
   // The first piece: its name as a heading, its price, «Запросить».
   assert.equal(piece.children[0].tagName, 'H2');
   assert.deepEqual(words(), ['Ракушка', '37 000 ₽', 'Запросить']);
-  assert.equal(count(), '01 / 03');
+  assert.equal(count(), '1 из 3');
   assert.deepEqual(current(), ['true', 'false', 'false']);
   assert.equal(thumbs.children.length, 0, 'one photo: no thumbnails');
   assert.equal(list.tagName, 'OL');
@@ -186,7 +186,7 @@ test('the gallery: one piece at a time -- its words, its photograph; the arrows,
   // The arrow: the next piece; its photographs as thumbnails; one photograph at a time.
   c.next.listeners.click();
   assert.deepEqual(words(), ['Светильник', '20 000 ₽', 'Запросить']);
-  assert.equal(count(), '02 / 03');
+  assert.equal(count(), '2 из 3');
   assert.equal(thumbs.children.length, 3);
   thumbs.children[2].listeners.click();
   assert.deepEqual(thumbs.children.map(t => t.attrs['aria-current']), ['false', 'false', 'true']);
@@ -197,24 +197,24 @@ test('the gallery: one piece at a time -- its words, its photograph; the arrows,
   assert.equal(shown()[0].children[0].textContent, Catalog.NO_PHOTO_TEXT);
   // Past the last piece: the first again; back from the first: the last. ← → do the same.
   c.next.listeners.click();
-  assert.equal(count(), '01 / 03');
+  assert.equal(count(), '1 из 3');
   c.prev.listeners.click();
-  assert.equal(count(), '03 / 03');
+  assert.equal(count(), '3 из 3');
   let prevented = 0;
   c.root.listeners.keydown({ key: 'ArrowRight', preventDefault: () => prevented++ });
-  assert.equal(count(), '01 / 03');
+  assert.equal(count(), '1 из 3');
   assert.equal(prevented, 1);
   // A touch passing over the index does not preview.
   c.rows[1].listeners.pointerenter({ pointerType: 'touch' });
-  assert.equal(count(), '01 / 03');
+  assert.equal(count(), '1 из 3');
   // The narrow screen's column: every piece, as a card.
   assert.equal(cards.children.length, 3);
   assert.ok(cards.children.every(x => x.className === 'product-tile'));
 }));
 
-test('the place in the collection: two figures each', () => {
-  assert.equal(Catalog.position(0, 8), '01 / 08');
-  assert.equal(Catalog.position(11, 12), '12 / 12');
+test('the place in the collection: «1 из 8» (2026-10-15, the owner: no «01 / 08»)', () => {
+  assert.equal(Catalog.position(0, 8), '1 из 8');
+  assert.equal(Catalog.position(11, 12), '12 из 12');
 });
 
 test('the count: «1 изделие», «3 изделия», «8 изделий», «11 изделий», «21 изделие»', () => {

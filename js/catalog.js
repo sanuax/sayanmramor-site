@@ -4,7 +4,7 @@
 // screen one piece at a time: its name set large, its price, «Запросить» and,
 // for a piece with several photos, their thumbnails; beside it, its photograph,
 // tall. At the foot of the words, level with the photograph's, a quiet index
-// of all the pieces and the count («03 / 08») between the arrows. The arrows, ← → (while the focus is in the
+// of all the pieces and the count («3 из 8») between the arrows. The arrows, ← → (while the focus is in the
 // collection), the index (a click, the keyboard, or a mouse passing over it)
 // change the piece; the photograph cross-fades and settles. On a narrow screen
 // the pieces stand one under another, each its photo, name, price and
@@ -31,10 +31,9 @@
     return n + ' ' + word;
   }
 
-  // «03 / 08»: the place in the collection, two figures each.
+  // «3 из 8»: the place in the collection (2026-10-15, the owner: no «03 / 08»).
   function position(i, n) {
-    const two = x => (x < 10 ? '0' : '') + x;
-    return two(i + 1) + ' / ' + two(n);
+    return (i + 1) + ' из ' + n;
   }
 
   // A request goes to the request form on the home page, where «Готовые
