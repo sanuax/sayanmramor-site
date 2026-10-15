@@ -1218,9 +1218,13 @@ test('one design system: every page loads css/tokens.css first, before any other
   assert.doesNotMatch(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /^\s*--accent: #2a5446;/m, 'the values live in tokens.css only');
 });
 
-test('buttons in the page are rectangles with slightly rounded corners, as before; the header as in git (the owner, 2026-10-14): its two actions pills', () => {
+test('buttons in the page are rectangles with slightly rounded corners, as before; the header only as the owner approved it: its two actions pills', () => {
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
-  assert.equal(h, require('child_process').execSync('git show master:css/header.css', { cwd: site, encoding: 'utf8' }).replace(/\r\n/g, '\n').replace(/\n?$/, h.endsWith('\n') ? '\n' : ''), 'css/header.css exactly as in master');
+  // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
+  // of «Изделия» as large as their links). Any other edit fails here -- update the fingerprint only
+  // together with such a word.
+  const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
+  assert.equal(print, 'b4f2ebd73f0493ab7e6dcb0ccb1196e6e5d502f6b5b6fcabf9a678efbee9598f', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1242,4 +1246,14 @@ test('home: no labels above the headings (2026-10-15, the owner: «Катало�
   assert.doesNotMatch(html, /class="[^"]*-kicker"/);
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.doesNotMatch(css, /\.home-(order|why|trust)-kicker/, 'their rules go with them');
+});
+
+test('the «Изделия» panel: a group title is never smaller than its links -- 16 px beside them, 17 px on the phone (2026-10-15, the owner)', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  const rule = sel => { const i = h.indexOf('\n' + sel + ' {'); assert.ok(i >= 0, sel); return h.slice(i, h.indexOf('}', i)); };
+  assert.match(rule('.nav-group-title'), /font-size: 16px;/);
+  assert.match(rule('.nav-group a'), /font-size: 16px;/);
+  assert.match(h, /\.js \.nav-group-title \{ font-size: 17px; \}/);
+  assert.match(h, /\.js \.nav-group a \{[^}]*font-size: 17px;/);
+  assert.match(rule('.nav-group'), /grid-template-columns: 208px minmax\(0, 1fr\);/, 'room for «01 Лестницы и ступени» on one line at 16 px');
 });

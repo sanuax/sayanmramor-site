@@ -142,12 +142,12 @@
 .nav-panel-inner { counter-reset: nav-group; padding: var(--s-2) var(--s-6) var(--s-3); }
 .nav-group {
   counter-increment: nav-group;
-  display: grid; grid-template-columns: 184px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
+  display: grid; grid-template-columns: 208px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
   padding: var(--s-4) 0; border-top: 1px solid var(--line);
 }
 .nav-group:first-child { border-top: 0; }
 .nav-group-title {
-  display: flex; gap: var(--s-3); font-size: 13px; line-height: 1.5; color: var(--muted);
+  display: flex; gap: var(--s-3); font-size: 16px; line-height: 1.5; color: var(--muted);   /* the links' size (the owner, 2026-10-15) */
   transition: color 0.15s;
 }
 .nav-group-title::before { content: counter(nav-group, decimal-leading-zero); min-width: 1.5em; font-variant-numeric: tabular-nums; }
@@ -285,6 +285,7 @@ html.menu-lock { overflow: hidden; }
   .js .nav-group { grid-template-columns: 1fr; align-content: start; row-gap: var(--s-2); padding: var(--s-4) 0; }
   .js .nav-group ul { flex-direction: column; gap: 0; }
   .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
+  .js .nav-group-title { font-size: 17px; }   /* as its links */
   .js .site-nav > a {
     height: auto; min-height: 44px; padding: var(--s-3) 0; border-radius: 0; background: none; border-top: 1px solid var(--line);
     font-size: 17px; font-weight: 600; color: var(--ink);
