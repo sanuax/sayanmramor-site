@@ -126,13 +126,13 @@ test('products.json: the 8 finished goods with the owner prices, real photo file
   const site = path.join(__dirname, '..');
   const { products } = JSON.parse(fs.readFileSync(path.join(site, 'data', 'products.json'), 'utf8'));
   assert.deepEqual(products.map(p => [p.id, p.name, p.price_rub]), [
+    ['vanna-oniks-01', 'Ванная из оникса', 3977000],   // the first one shown (2026-10-15, the owner)
     ['rakushka-01', 'Ракушка', 37000],
     ['vaza-01', 'Ваза настольная', 177000],
     ['art-stol-belyy-01', 'Арт-стол (белый)', 2377000],   // (2026-10-15, the owner: the colour in brackets, no long dash)
     ['art-stol-chernyy-01', 'Арт-стол (чёрный)', 3077000],
     ['statuya-01', 'Статуя', 3377000],
     ['stol-01', 'Стол', 3177000],
-    ['vanna-oniks-01', 'Ванная из оникса', 3977000],
     ['svetilnik-01', 'Светильник', 20000],
   ]);
   products.forEach(p => {

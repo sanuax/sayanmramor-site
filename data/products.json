@@ -2,6 +2,15 @@
   "updated_at": "2026-09-30T00:00:00+03:00",
   "products": [
     {
+      "id": "vanna-oniks-01",
+      "name": "Ванная из оникса",
+      "category": "vanny",
+      "price_rub": 3977000,
+      "description": null,
+      "photos": ["/sayanmramor-site/assets/products/vanna-oniks-01/1.webp"],
+      "available": true
+    },
+    {
       "id": "rakushka-01",
       "name": "Ракушка",
       "category": "rakushki",
@@ -53,15 +62,6 @@
       "price_rub": 3177000,
       "description": null,
       "photos": ["/sayanmramor-site/assets/products/stol-01/1.jpg"],
-      "available": true
-    },
-    {
-      "id": "vanna-oniks-01",
-      "name": "Ванная из оникса",
-      "category": "vanny",
-      "price_rub": 3977000,
-      "description": null,
-      "photos": ["/sayanmramor-site/assets/products/vanna-oniks-01/1.webp"],
       "available": true
     },
     {
