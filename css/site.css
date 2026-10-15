@@ -236,7 +236,6 @@ h3 { font-size: var(--fs-h3); }
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 17em) auto; align-items: end; gap: var(--s-5);
   padding-bottom: var(--s-6); border-bottom: 1px solid var(--order-rule);
 }
-.home-order-kicker { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--order-dim); }
 .home-products h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 3.4vw, 46px); letter-spacing: -0.01em; line-height: 1.1; color: var(--order-ink); }
 .home-order-lead { font-size: var(--fs-small); line-height: 1.5; color: var(--order-dim); }
 .home-order-go { display: grid; place-items: center; width: var(--control-h); height: var(--control-h); color: var(--order-ink); transition: opacity 0.15s; }
@@ -365,10 +364,6 @@ h3 { font-size: var(--fs-h3); }
 .home-about-text {
   display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--about-gap); align-items: end;
 }
-.home-trust-kicker {
-  display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4);
-  font-size: var(--fs-meta); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
-}
 .home-about h2 { grid-column: 1 / 9; margin: 0; font-size: clamp(30px, 3.7vw, 54px); line-height: 1.08; text-wrap: balance; }
 .home-about-lead { grid-column: 10 / -1; padding-bottom: 0.3em; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
 
@@ -427,7 +422,6 @@ h3 { font-size: var(--fs-h3); }
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 24em); gap: var(--s-6); align-items: end;
   padding-bottom: var(--s-6); border-bottom: 1px dashed rgba(233, 231, 225, 0.25);
 }
-.home-why-kicker { margin-bottom: var(--s-3); font-size: var(--fs-meta); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-dark-muted); }
 .home-why h2 { margin: 0; font-size: clamp(28px, 2.9vw, 40px); line-height: 1.12; color: var(--on-dark); }
 .home-why h2 em { font-style: normal; color: var(--accent-on-dark); }
 .home-why-lead { font-size: 15px; line-height: 1.55; color: var(--on-dark-muted); }
@@ -1439,6 +1433,7 @@ main .offer-talk .offer-band-inner {
 .offer-talk-words { position: relative; z-index: 1; }
 main .offer-talk .offer-kicker { color: var(--on-dark-muted); }
 main .offer-talk .offer-title { margin-top: var(--s-4); font-size: clamp(24px, 2vw, 28px); color: var(--on-dark); }
+main .offer-talk .offer-title:first-child { margin-top: 0; }   /* the home page: no «Проект» above it (2026-10-15) */
 main .offer-talk .offer-title-soft { color: #c4c8c0; }
 main .offer-talk .offer-lead { margin-top: var(--s-4); font-size: 15px; color: #d7d6cf; }
 main .offer-talk .offer-contact { margin-top: var(--s-5); gap: var(--s-3); }

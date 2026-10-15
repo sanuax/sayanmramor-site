@@ -956,7 +956,7 @@ test('the home showroom band: words, a plain link into the showroom and its hous
 test('the home request is three questions to a master: a workshop photo, the heading and contacts on the left, the talk on the right; the noscript line stays', () => {
   const sec = sectionOf(homeHtml(), '<section class="offer-band offer-talk"');
   assert.match(sec, /data-offer-open/);
-  assert.match(sec, /<p class="offer-kicker">Проект<\/p>/);
+  assert.doesNotMatch(sec, /offer-kicker/, 'no «Проект» above the heading (2026-10-15, the owner)');
   assert.match(sec, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/);
   // (2026-10-14, the owner after stage 2: the agreed words under the heading)
   assert.match(sec, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/);
@@ -1231,4 +1231,11 @@ test('no decorative lines (2026-10-14, the owner): no dash after a label above a
   assert.doesNotMatch(css, /kicker::after/, 'the 56 px dash after «Каталог», «Заказчики», «Проект», «В наличии»');
   const lead = css.match(/\.home-trust-lead \{[^}]*\}/)[0];
   assert.doesNotMatch(lead, /border/, 'no line above the words under «Нам доверяют»');
+});
+
+test('home: no labels above the headings (2026-10-15, the owner: «Каталог», «Почему мы», «Заказчики», «Проект» go)', () => {
+  const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
+  assert.doesNotMatch(html, /class="[^"]*-kicker"/);
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.doesNotMatch(css, /\.home-(order|why|trust)-kicker/, 'their rules go with them');
 });
