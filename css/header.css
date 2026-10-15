@@ -287,8 +287,14 @@ html.menu-lock { overflow: hidden; }
   .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
   .js .nav-group-title { font-size: 17px; }   /* as its links */
   .js .site-nav > a {
+    display: flex; justify-content: space-between; gap: var(--s-3);
     height: auto; min-height: 44px; padding: var(--s-3) 0; border-radius: 0; background: none; border-top: 1px solid var(--line);
     font-size: 17px; font-weight: 600; color: var(--ink);
+  }
+  /* The site's arrow at the row's end: a page to go to, not a heading (the owner, 2026-10-15). */
+  .js .site-nav > a::after {
+    content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
+    -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   }
   .js .site-nav > a.active { color: var(--accent); }
   /* The showroom in the menu: its name as a heading, then the house small and the way in. */

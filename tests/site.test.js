@@ -1221,10 +1221,11 @@ test('one design system: every page loads css/tokens.css first, before any other
 test('buttons in the page are rectangles with slightly rounded corners, as before; the header only as the owner approved it: its two actions pills', () => {
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
-  // of «Изделия» as large as their links). Any other edit fails here -- update the fingerprint only
+  // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
+  // arrow). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, 'b4f2ebd73f0493ab7e6dcb0ccb1196e6e5d502f6b5b6fcabf9a678efbee9598f', 'css/header.css as the owner approved it');
+  assert.equal(print, 'f8027e8162f7112945f32a6b018068f6fb4189742705402333983ce9632ba888', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1256,4 +1257,11 @@ test('the «Изделия» panel: a group title is never smaller than its link
   assert.match(h, /\.js \.nav-group-title \{ font-size: 17px; \}/);
   assert.match(h, /\.js \.nav-group a \{[^}]*font-size: 17px;/);
   assert.match(rule('.nav-group'), /grid-template-columns: 208px minmax\(0, 1fr\);/, 'room for «01 Лестницы и ступени» on one line at 16 px');
+});
+
+test('the phone menu: «Готовые изделия» and «Контакты» look like what they are -- a row with the site\'s arrow at its end (2026-10-15, the owner)', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  const phone = h.slice(h.indexOf('@media (max-width: 1000px)'));
+  assert.match(phone, /\.js \.site-nav > a \{[^}]*display: flex;[^}]*justify-content: space-between;/);
+  assert.match(phone, /\.js \.site-nav > a::after \{[^}]*content: '';[^}]*background: currentColor;[^}]*mask: var\(--arrow\) center \/ contain no-repeat;/);
 });
