@@ -191,8 +191,8 @@
     let current = -1;
     let wanted = null;   // the photograph asked for last: the one to show once it is ready
 
-    // The photograph asked for fades in over the one shown (css: .collection-shot), and only once it
-    // has loaded -- never an empty frame, never a picture popping in (2026-10-15, the owner).
+    // The photograph asked for replaces the one shown only once it has loaded -- never an empty
+    // frame (2026-10-15, the owner).
     function show(on) {
       if (wanted !== on) return;   // another one was asked for meanwhile
       Object.keys(shots).forEach(key => toggle(shots[key], 'is-on', shots[key] === on));
@@ -208,13 +208,12 @@
         const holder = el('div', 'collection-shot');
         const loaded = () => {
           loading.delete(holder);
-          show(holder);   // laid out hidden since it was made, so this is a transition
+          show(holder);
         };
         const img = photos[k] ? photo(photos[k], k ? (p.name || '') + ', фото ' + (k + 1) : (p.name || ''), true, loaded) : null;   // asked for: fetched at once
         if (img && img.complete === false) loading.add(holder);
         holder.appendChild(img || photoPlaceholder());
         frame.appendChild(holder);
-        void holder.offsetWidth;   // its hidden state is laid out first, so showing it is a transition
         shots[key] = holder;
       }
       return shots[key];

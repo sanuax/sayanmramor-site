@@ -997,18 +997,15 @@ h3 { font-size: var(--fs-h3); }
 .collection-row.is-on .collection-item::after { transform: scaleX(1); }
 @media (hover: hover) and (pointer: fine) { .collection-item:hover { color: var(--cat-ink); } }
 
-/* The photograph: the whole column, the screen's height; a new one fades in over the old one and
-   settles. The old one stays whole under it and goes only once covered, so the picture never dips
-   to the dark ground in between (2026-10-15, the owner: smoother). */
+/* The photograph: the whole column, the screen's height; one at a time, switched at once -- no fade,
+   no zoom (2026-10-15, the owner: the animation felt jerky). */
 .collection-stage { min-width: 0; }
 .collection-photo { position: relative; height: var(--stage-h); overflow: hidden; border-radius: 6px; background: var(--cat-sunk); }
-.collection-shot { position: absolute; inset: 0; opacity: 0; transform: scale(1.04); transition: opacity 0s linear 0.9s, transform 0s linear 0.9s; }
-.collection-shot.is-on { z-index: 1; opacity: 1; transform: none; transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 1.6s cubic-bezier(0.23, 1, 0.32, 1); }
+.collection-shot { position: absolute; inset: 0; opacity: 0; }
+.collection-shot.is-on { opacity: 1; }
 .collection-shot img { width: 100%; height: 100%; object-fit: cover; }
 .collection-shot .product-tile-placeholder { color: var(--cat-dim); }
 @media (prefers-reduced-motion: reduce) {
-  .collection-shot { transform: none; transition: opacity 0s linear 0.3s; }
-  .collection-shot.is-on { transform: none; transition: opacity 0.3s ease; }
   .collection-item::after { transition: none; }
 }
 

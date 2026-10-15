@@ -253,9 +253,11 @@ test('the gallery waits for a photograph: the current one stays until the new on
   assert.deepEqual(shown(), ['/v1.webp'], 'loaded: it takes over');
 }));
 
-test('the gallery crossfades without a dip: the new photograph fades in above, the old one stays whole under it until then', () => {
+test('the gallery switches photographs without any animation: no fade, no zoom (2026-10-15, the owner: «убери анимацию»)', () => {
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
-  const rule = sel => (css.match(new RegExp('\n' + sel.replace(/\./g, '\.') + ' \{[^}]*\}')) || [''])[0];
-  assert.match(rule('.collection-shot'), /transition: opacity 0s linear 0\.9s, transform 0s linear 0\.9s;/, 'the old one leaves only once covered');
-  assert.match(rule('.collection-shot.is-on'), /z-index: 1;[^}]*transition: opacity 0\.9s cubic-bezier\(0\.4, 0, 0\.2, 1\), transform 1\.6s cubic-bezier\(0\.23, 1, 0\.32, 1\);/);
+  const block = css.slice(css.indexOf('.collection-stage {'), css.indexOf('/* Narrow: no stage'));
+  assert.ok(block.length > 100);
+  assert.doesNotMatch(block, /\.collection-shot[^{]*\{[^}]*(transition|transform|animation)/, 'nothing moves');
+  assert.match(block, /\.collection-shot \{[^}]*opacity: 0;/);
+  assert.match(block, /\.collection-shot\.is-on \{[^}]*opacity: 1;/);
 });
