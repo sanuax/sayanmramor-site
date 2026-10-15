@@ -2,6 +2,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const Catalog = require('../js/catalog.js');
+const fs = require('fs');
+const path = require('path');
 
 test('formatProductPrice formats a known ruble price', () => {
   const formatted = Catalog.formatProductPrice(45000);
@@ -224,4 +226,36 @@ test('the count: «1 изделие», «3 изделия», «8 изделий�
 
 test('the ruble sign never wraps away from its number', () => {
   assert.ok(Catalog.formatProductPrice(3977000).endsWith(' ₽'));
+});
+
+// Smoother photographs (2026-10-15, the owner: «более плавные анимации переходов фоток»). A photograph
+// still loading never shows an empty frame: the current one stays until the new one is ready, then
+// the new one fades in over it; the pieces either side are fetched ahead.
+test('the gallery waits for a photograph: the current one stays until the new one has loaded, then it takes over', () => withDocument(() => {
+  const make = document.createElement;
+  document.createElement = tag => { const node = make(tag); if (tag === 'img') node.complete = false; return node; };
+  const products = [
+    { name: 'Ракушка', price_rub: 37000, photos: ['/r.jpg'] },
+    { name: 'Светильник', price_rub: 20000, photos: ['/s1.webp'] },
+    { name: 'Ваза', price_rub: 9000, photos: ['/v1.webp'] },
+    { name: 'Стол', price_rub: 3177000, photos: ['/t1.webp'] },
+  ];
+  const c = Catalog.buildCollection(products);
+  const frame = c.root.children[1].children[0];
+  const srcs = () => frame.children.map(s => s.children[0].src);
+  const shown = () => frame.children.filter(s => s.classList.contains('is-on')).map(s => s.children[0].src);
+  assert.deepEqual(srcs().sort(), ['/r.jpg', '/s1.webp', '/t1.webp'], 'the piece, the next and the previous are fetched at once');
+  frame.children.find(s => s.children[0].src === '/r.jpg').children[0].listeners.load();
+  assert.deepEqual(shown(), ['/r.jpg']);
+  c.rows[2].listeners.click();
+  assert.deepEqual(shown(), ['/r.jpg'], 'still loading: the current photograph stays');
+  frame.children.find(s => s.children[0].src === '/v1.webp').children[0].listeners.load();
+  assert.deepEqual(shown(), ['/v1.webp'], 'loaded: it takes over');
+}));
+
+test('the gallery crossfades without a dip: the new photograph fades in above, the old one stays whole under it until then', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
+  const rule = sel => (css.match(new RegExp('\n' + sel.replace(/\./g, '\.') + ' \{[^}]*\}')) || [''])[0];
+  assert.match(rule('.collection-shot'), /transition: opacity 0s linear 0\.9s, transform 0s linear 0\.9s;/, 'the old one leaves only once covered');
+  assert.match(rule('.collection-shot.is-on'), /z-index: 1;[^}]*transition: opacity 0\.9s cubic-bezier\(0\.4, 0, 0\.2, 1\), transform 1\.6s cubic-bezier\(0\.23, 1, 0\.32, 1\);/);
 });

@@ -58,13 +58,15 @@
     return note;
   }
 
-  function photo(src, alt, eager) {
+  // done (optional): called once the photograph has loaded, or has been replaced by the quiet line.
+  function photo(src, alt, eager, done) {
     const img = document.createElement('img');
     img.loading = eager ? 'eager' : 'lazy';
     img.decoding = 'async';
     img.alt = alt;
     img.src = src;
-    img.addEventListener('error', () => img.replaceWith(photoPlaceholder()));
+    img.addEventListener('error', () => { img.replaceWith(photoPlaceholder()); if (done) done(); });
+    if (done) img.addEventListener('load', done);
     return img;
   }
 
@@ -187,6 +189,16 @@
     const rows = [], lines = [];
     const shots = {};   // 'i-k' -> the holder of that photo (or its placeholder) in the frame
     let current = -1;
+    let wanted = null;   // the photograph asked for last: the one to show once it is ready
+
+    // The photograph asked for fades in over the one shown (css: .collection-shot), and only once it
+    // has loaded -- never an empty frame, never a picture popping in (2026-10-15, the owner).
+    function show(on) {
+      if (wanted !== on) return;   // another one was asked for meanwhile
+      Object.keys(shots).forEach(key => toggle(shots[key], 'is-on', shots[key] === on));
+    }
+    const loading = new Set();   // the holders whose photograph is still on its way
+    const ready = holder => !loading.has(holder);
 
     function shot(i, k) {
       const key = i + '-' + k;
@@ -194,8 +206,15 @@
         const p = products[i];
         const photos = Array.isArray(p.photos) ? p.photos : [];
         const holder = el('div', 'collection-shot');
-        holder.appendChild(photos[k] ? photo(photos[k], k ? (p.name || '') + ', фото ' + (k + 1) : (p.name || ''), true) : photoPlaceholder());   // asked for: fetched at once
+        const loaded = () => {
+          loading.delete(holder);
+          show(holder);   // laid out hidden since it was made, so this is a transition
+        };
+        const img = photos[k] ? photo(photos[k], k ? (p.name || '') + ', фото ' + (k + 1) : (p.name || ''), true, loaded) : null;   // asked for: fetched at once
+        if (img && img.complete === false) loading.add(holder);
+        holder.appendChild(img || photoPlaceholder());
         frame.appendChild(holder);
+        void holder.offsetWidth;   // its hidden state is laid out first, so showing it is a transition
         shots[key] = holder;
       }
       return shots[key];
@@ -205,7 +224,8 @@
       i = (i + n) % n;
       k = k || 0;
       const on = shot(i, k);
-      Object.keys(shots).forEach(key => toggle(shots[key], 'is-on', shots[key] === on));
+      wanted = on;
+      if (ready(on)) show(on);
       rows.forEach((b, m) => b.setAttribute('aria-current', String(m === i)));
       lines.forEach((li, m) => toggle(li, 'is-on', m === i));
       if (i === current) {   // another photo of the same piece: only the thumbnails' mark moves
@@ -233,8 +253,9 @@
           thumbs.appendChild(b);
         });
       }
-      // The next piece's photograph is fetched ahead, so the arrow never waits.
+      // The pieces either side are fetched ahead, so neither arrow waits.
       shot((i + 1) % n, 0);
+      shot((i - 1 + n) % n, 0);
     }
 
     products.forEach((p, i) => {
