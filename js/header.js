@@ -63,11 +63,28 @@
         toggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Меню');
       }
     }
+    // The open capsule lies over the page instead of pushing it (the owner, 2026-10-19):
+    // as much as it grows, its bottom margin takes back, so its place in the page stays
+    // the closed capsule's and nothing under it moves.
+    // Where the next block is pulled up under the capsule by a negative margin of its own
+    // (the home page's hero), the two margins collapse into the larger, not the sum: what
+    // the page then still moves is measured once (pull) and taken back too.
+    let closedH = 0, pull = 0;
+    const heightOf = () => (header.getBoundingClientRect ? header.getBoundingClientRect().height : 0);
+    const pageTop = el => el.getBoundingClientRect().top + (win.pageYOffset || 0);
+    const marginFor = h => Math.min(0, closedH - h - pull);
+    const overlay = h => { if (header.style) header.style.marginBottom = h > closedH ? marginFor(h) + 'px' : ''; };
     function applyMenu(open) {
+      const opening = open && !header.classList.contains('menu-open');
+      const next = opening && header.nextElementSibling && header.nextElementSibling.getBoundingClientRect ? header.nextElementSibling : null;
+      const before = next ? pageTop(next) : 0;
+      if (opening) { closedH = heightOf(); pull = 0; }
       header.classList.toggle('menu-open', open);
       setLock(open);
       // In the open menu every panel is shown (no second tap); closed, they rest.
       drops.forEach(d => { stopFold(d); d.open = open; });
+      overlay(open ? heightOf() : 0);
+      if (next) { pull = pageTop(next) - before; overlay(heightOf()); }
     }
 
     // On a phone the capsule grows down into the menu and shrinks back (the owner,
@@ -91,12 +108,14 @@
         menuClosing = true;
         header.classList.toggle('menu-closing', true);
         header.classList.toggle('menu-open', false);   // measured closed, drawn open
-        to = header.getBoundingClientRect().height;
+        to = closedH = header.getBoundingClientRect().height;
         header.classList.toggle('menu-open', true);
         setLock(false);
       }
       // Held at its last height until the menu has settled, so no frame shows it open again.
-      const anim = header.animate([{ height: from + 'px' }, { height: to + 'px' }], { duration: open ? MENU_OPEN_MS : MENU_CLOSE_MS, easing: MENU_EASE, fill: 'forwards' });
+      // The margin goes with the height, so the page under it never moves.
+      const frame = h => ({ height: h + 'px', marginBottom: marginFor(h) + 'px' });
+      const anim = header.animate([frame(from), frame(to)], { duration: open ? MENU_OPEN_MS : MENU_CLOSE_MS, easing: MENU_EASE, fill: 'forwards' });
       anim.onfinish = () => { menuAnim = null; settle(); if (!open) applyMenu(false); anim.cancel(); };
       menuAnim = anim;
     }
@@ -150,6 +169,8 @@
       if (mq.matches) return;
       drops.forEach(d => { if (d.open && !d.contains(e.target)) closePanel(d, false); });
     });
+    // A turned phone: the open menu takes a new height, its margin follows.
+    if (win.addEventListener) win.addEventListener('resize', () => { if (menuOpen() && !menuAnim) overlay(heightOf()); });
     const indicator = initIndicator(doc, win, header, mq);
     const onModeChange = () => { syncMode(); if (indicator) indicator.rest(); };
     if (mq.addEventListener) mq.addEventListener('change', onModeChange); else if (mq.addListener) mq.addListener(onModeChange);
