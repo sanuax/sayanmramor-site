@@ -831,7 +831,7 @@ test('the home hero: the headline, one line and two plain actions on the wall of
   const actions = [...hero.matchAll(/<a class="btn (btn-\w+)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => m.slice(1));
   assert.deepEqual(actions, [
     ['btn-primary', '/sayanmramor-calculator/sayanmramor-calculator.html', 'Создать изделие'],
-    ['btn-secondary', '/sayanmramor-site/showroom.html', 'Открыть шоурум'],   // (2026-10-14, the owner: one name for the way in)
+    ['btn-secondary', '#offer', 'Заказать'],   // to the request, as the header's (2026-10-19, the owner: in place of «Открыть шоурум»)
   ]);
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
   assert.equal(imgs.length, 1, 'one picture');
