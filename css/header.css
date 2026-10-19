@@ -185,14 +185,14 @@
 @media (hover: hover) { .nav-showroom-rooms a:hover { color: var(--ink); } }
 
 /* The actions, on the right: «Заказать» -- to the request form (on the page itself where it
-   has one, else the home page's), a quiet outlined pill -- and the verde pill «Создать
-   изделие» set into the capsule's curve, 8 px from its edge (2026-10-10, the owner's request). */
+   has one, else the home page's), the verde pill, the main action (2026-10-19, the owner) -- and
+   «Создать изделие», outlined, set into the capsule's curve, 8 px from its edge (2026-10-10). */
 .site-header-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 6px; }
 .site-header-cta {
   grid-column: 3; justify-self: end; flex: none;
   min-height: 44px; padding: 0 22px; border-radius: 999px; font-size: var(--fs-small);
 }
-.site-header-order { flex: none; min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); background: transparent; }
+.site-header-order { flex: none; min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: var(--fs-small); }
 
 /* Narrow phones: the two actions in the open menu one over the other, each its full name. */
 @media (max-width: 380px) {

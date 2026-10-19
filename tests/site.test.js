@@ -163,7 +163,7 @@ test('the page\'s own direction is marked active (and aria-current) in the panel
 test('every page: the header button keeps its full name, with «изделие» as the tail hidden on very narrow screens; one menu button', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    assert.ok(html.includes('<a class="btn btn-primary site-header-cta" href="/sayanmramor-calculator/sayanmramor-calculator.html" aria-label="Создать изделие"><span>Создать<span class="site-header-cta-tail"> изделие</span></span></a>'), page);
+    assert.ok(html.includes('<a class="btn btn-secondary site-header-cta" href="/sayanmramor-calculator/sayanmramor-calculator.html" aria-label="Создать изделие"><span>Создать<span class="site-header-cta-tail"> изделие</span></span></a>'), page);
     assert.equal((html.match(/<button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Меню">/g) || []).length, 1, page);
     assert.ok(html.includes('id="siteNav"'), page);
   });
@@ -177,7 +177,7 @@ test('every page: «Заказать» beside «Создать изделие» 
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     const href = html.includes('id="offer"') ? '#offer' : '/sayanmramor-site/index.html#offer';
-    assert.ok(html.includes('<div class="site-header-actions"><a class="btn btn-secondary site-header-order" href="' + href + '">Заказать</a><a class="btn btn-primary site-header-cta"'), page);
+    assert.ok(html.includes('<div class="site-header-actions"><a class="btn btn-primary site-header-order" href="' + href + '">Заказать</a><a class="btn btn-secondary site-header-cta"'), page);
   });
   const css = headerAndSiteCss();
   assert.match(css, /\.js \.site-header-actions \{ display: none; \}/);
@@ -830,8 +830,8 @@ test('the home hero: the headline, one line and two plain actions on the wall of
   assert.match(hero, /<p class="lead">Лестницы, столешницы, полы, стены и фасады/);
   const actions = [...hero.matchAll(/<a class="btn (btn-\w+)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => m.slice(1));
   assert.deepEqual(actions, [
-    ['btn-primary', '/sayanmramor-calculator/sayanmramor-calculator.html', 'Создать изделие'],
-    ['btn-secondary', '#offer', 'Заказать'],   // to the request, as the header's (2026-10-19, the owner: in place of «Открыть шоурум»)
+    ['btn-primary', '#offer', 'Заказать'],   // to the request, as the header's, the main action (2026-10-19, the owner: in place of «Открыть шоурум», then first and green)
+    ['btn-secondary', '/sayanmramor-calculator/sayanmramor-calculator.html', 'Создать изделие'],
   ]);
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
   assert.equal(imgs.length, 1, 'one picture');
@@ -1237,10 +1237,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, 'a5e53c73db5e5d807e330f6d9f70d1a77d85c7f9cf2de7a3c6c8615293f15763', 'css/header.css as the owner approved it');
+  assert.equal(print, '05571b67c7195b16e1ea38b8d595e96afbf0972b3bc16d39839c85ba41c79325', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
