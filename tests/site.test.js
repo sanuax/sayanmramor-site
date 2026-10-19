@@ -1205,7 +1205,7 @@ test('the configurator wears the site\'s header: the same menu, no «Заказ�
   assert.equal(plain(nav(calc)), siteNav, 'the same menu as on the site');
   assert.doesNotMatch(nav(calc), /class="active"|aria-current/, 'the configurator is not in the menu: nothing current');
   const header = calc.slice(calc.indexOf('<header class="site-header">'), calc.indexOf('</header>') + 9);
-  assert.match(header, /<a class="site-logo" href="\/sayanmramor-site\/index\.html">Саянмрамор<\/a>/);
+  assert.match(header, /<a class="site-logo" href="\/sayanmramor-site\/index\.html">Саянмрамор studio<\/a>/);   // the configurator is «Саянмрамор studio» (the owner, 2026-10-20)
   assert.doesNotMatch(header, /site-header-actions|Заказать|Создать изделие/);
   assert.match(header, /<button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Меню">/);
   assert.ok(calc.includes('<link rel="stylesheet" href="/sayanmramor-site/css/header.css">'));
