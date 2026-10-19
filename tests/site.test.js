@@ -1222,10 +1222,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, 'f8027e8162f7112945f32a6b018068f6fb4189742705402333983ce9632ba888', 'css/header.css as the owner approved it');
+  assert.equal(print, 'a5e53c73db5e5d807e330f6d9f70d1a77d85c7f9cf2de7a3c6c8615293f15763', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);

@@ -233,6 +233,9 @@
 .menu-open .nav-toggle-icon::before { transform: translateY(6px) rotate(45deg); }
 .menu-open .nav-toggle-icon::after { transform: translateY(-6px) rotate(-45deg); }
 html.menu-lock { overflow: hidden; }
+/* A double tap on the menu button (or anywhere in the capsule) is two taps, never the
+   browser zooming the page in; pinching still zooms (the owner, 2026-10-19). */
+.site-header, .site-header * { touch-action: manipulation; }
 
 /* Phones and tablets: the same capsule, a little lower and closer to the edges --
    the name and the menu button. Opened, the capsule itself grows downward into
@@ -255,10 +258,17 @@ html.menu-lock { overflow: hidden; }
   .js .site-header-cta { display: none; }
   .js .site-header-actions { display: none; }
   .js .site-nav { display: none; }
+  .js .site-header { transition: background-color 0.3s var(--ease); }
   .js .site-header.menu-open {
     --capsule-bg: rgba(248, 247, 244, 0.97);
     max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);
   }
+  /* The capsule opens smoothly (the owner, 2026-10-19): js/header.js animates its height
+     down into the menu and back up, the capsule's own curve cutting off what is not yet
+     in; the menu's contents come in a little after and fade out as it folds. */
+  .js .site-header.menu-anim { overflow: hidden; }
+  .js .site-header.menu-open .site-nav, .js .site-header.menu-open .site-header-actions { animation: menu-content-in 0.34s var(--ease) both; }
+  .js .site-header.menu-closing .site-nav, .js .site-header.menu-closing .site-header-actions { animation: menu-content-out 0.2s var(--ease) both; }
   .js .site-header.menu-open .site-header-inner { height: auto; flex-wrap: wrap; padding: 6px 6px 6px 20px; }
   .js .site-header.menu-open .site-nav {
     order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
@@ -322,8 +332,18 @@ html.menu-lock { overflow: hidden; }
   from { clip-path: inset(0 0 0 0 round 24px); opacity: 1; }
   to { clip-path: inset(0 0 100% 0 round 24px); opacity: 0.6; }
 }
+@keyframes menu-content-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes menu-content-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .nav-drop[open] > .nav-panel, .nav-drop.is-closing > .nav-panel { animation: none; }
+  .js .site-header.menu-open .site-nav, .js .site-header.menu-open .site-header-actions,
+  .js .site-header.menu-closing .site-nav, .js .site-header.menu-closing .site-header-actions { animation: none; }
 }
 @media (min-width: 601px) and (max-width: 1000px) {
   .js .nav-panel-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-6); }

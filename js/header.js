@@ -17,6 +17,9 @@
   const MOBILE_QUERY = '(max-width: 1000px)';
   const REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
   const FOLD_MS = 260;   // a little longer than the fold (0.18 s): the fallback when no animationend comes
+  const MENU_OPEN_MS = 340;   // the phone capsule growing into the menu
+  const MENU_CLOSE_MS = 260;  // and folding back
+  const MENU_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';   // css --ease
 
   function init(doc, win) {
     const header = doc.querySelector('.site-header');
@@ -29,7 +32,9 @@
     const summaryOf = drop => drop.querySelector('summary');
     const folding = new Map();   // drop -> its pending fold's timer
 
-    function menuOpen() { return header.classList.contains('menu-open'); }
+    let menuAnim = null;       // the capsule's running open / close
+    let menuClosing = false;   // folding back up: still drawn open, already closed
+    function menuOpen() { return header.classList.contains('menu-open') && !menuClosing; }
 
     function stopFold(drop) {
       if (!folding.has(drop)) return;
@@ -51,15 +56,49 @@
     }
     const closeOthers = keep => drops.forEach(d => { if (d !== keep) closePanel(d, false); });
 
-    function setMenu(open) {
-      header.classList.toggle('menu-open', open);
+    function setLock(open) {
       root.classList.toggle('menu-lock', open);
       if (toggle) {
         toggle.setAttribute('aria-expanded', String(open));
         toggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Меню');
       }
+    }
+    function applyMenu(open) {
+      header.classList.toggle('menu-open', open);
+      setLock(open);
       // In the open menu every panel is shown (no second tap); closed, they rest.
       drops.forEach(d => { stopFold(d); d.open = open; });
+    }
+
+    // On a phone the capsule grows down into the menu and shrinks back (the owner,
+    // 2026-10-19): its height goes from what it is now to what it will be. Closing, the
+    // menu stays drawn until the capsule has folded up; the page is unlocked at once, so
+    // an anchor in the menu scrolls. A tap mid-way turns it round from where it is.
+    function setMenu(open) {
+      const animate = open !== menuOpen() && mq.matches && !reduced() && !!header.animate && !!header.getBoundingClientRect;
+      const from = animate ? header.getBoundingClientRect().height : 0;
+      if (menuAnim) { menuAnim.onfinish = null; menuAnim.cancel(); menuAnim = null; }
+      const settle = () => { menuClosing = false; header.classList.toggle('menu-closing', false); header.classList.toggle('menu-anim', false); };
+      if (!animate) { settle(); applyMenu(open); return; }
+      header.classList.toggle('menu-anim', true);
+      let to;
+      if (open) {
+        menuClosing = false;
+        header.classList.toggle('menu-closing', false);
+        applyMenu(true);
+        to = header.getBoundingClientRect().height;
+      } else {
+        menuClosing = true;
+        header.classList.toggle('menu-closing', true);
+        header.classList.toggle('menu-open', false);   // measured closed, drawn open
+        to = header.getBoundingClientRect().height;
+        header.classList.toggle('menu-open', true);
+        setLock(false);
+      }
+      // Held at its last height until the menu has settled, so no frame shows it open again.
+      const anim = header.animate([{ height: from + 'px' }, { height: to + 'px' }], { duration: open ? MENU_OPEN_MS : MENU_CLOSE_MS, easing: MENU_EASE, fill: 'forwards' });
+      anim.onfinish = () => { menuAnim = null; settle(); if (!open) applyMenu(false); anim.cancel(); };
+      menuAnim = anim;
     }
 
     // The panels' names are buttons only on a wide screen: in the mobile menu they are headings.
@@ -104,6 +143,7 @@
     doc.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
       if (menuOpen()) { setMenu(false); if (toggle) toggle.focus(); return; }
+      if (menuClosing) return;   // the menu's panels go with it
       drops.forEach(d => { if (d.open) closePanel(d, true); });
     });
     doc.addEventListener('click', e => {
