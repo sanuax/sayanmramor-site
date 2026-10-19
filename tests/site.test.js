@@ -13,6 +13,8 @@ const pages = ['index.html', 'katalog.html', 'showroom.html']
 // The header and the buttons it uses live in css/header.css, shared with the
 // configurator; the site loads it before css/site.css.
 const headerAndSiteCss = () => fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8') + '\n' + fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+// The pages' own CSS / JS carry ?v=<hash> (scripts/stamp_assets.js); the tests below read the links without it.
+const unstamp = html => html.replace(/\?v=[0-9a-f]{8}"/g, '"');
 const headerSection = () => { const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8'); return h.slice(h.indexOf('/* ---- Header: the capsule')); };
 
 function filesIn(dir, ext) {
@@ -33,7 +35,7 @@ test('every page loads only this site\'s own CSS/JS, and every file exists', () 
   pages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.ok(!/<base\b/i.test(html), page + ': <base> is not allowed');
-    const refs = [...html.matchAll(/<(?:script[^>]*\ssrc|link[^>]*rel="stylesheet"[^>]*\shref)="([^"]+)"/g)].map(m => m[1]);
+    const refs = [...html.matchAll(/<(?:script[^>]*\ssrc|link[^>]*rel="stylesheet"[^>]*\shref)="([^"]+)"/g)].map(m => m[1].replace(/\?v=[0-9a-f]{8}$/, ''));
     assert.ok(refs.length > 0, page);
     refs.forEach(ref => {
       assert.ok(ref.startsWith('/sayanmramor-site/'), page + ': ' + ref + ' is not a /sayanmramor-site/ file');
@@ -187,7 +189,7 @@ test('every page: «Заказать» beside «Создать изделие» 
 test('header.js is loaded deferred on every header page; the «js» flag is set before the stylesheet', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    assert.equal((html.match(/<script src="\/sayanmramor-site\/js\/header\.js" defer><\/script>/g) || []).length, 1, page);
+    assert.equal((html.match(/<script src="\/sayanmramor-site\/js\/header\.js(?:\?v=[0-9a-f]{8})?" defer><\/script>/g) || []).length, 1, page);
     const flag = html.indexOf("document.documentElement.classList.add('js')");
     assert.ok(flag > 0 && flag < html.indexOf('<link rel="stylesheet"'), page);
   });
@@ -671,7 +673,7 @@ test('the offer band: on the home page and all 13 direction pages, each preselec
     const key = (html.match(/<div data-offer-form data-offer-steps data-preselect="([^"]+)"><\/div>/) || [])[1];
     const active = (html.match(/<a class="active"[^>]*>([^<]+)<\/a>/) || [])[1];
     assert.equal(labelOf[key], active, page + ': the form picks the page\'s own direction');
-    assert.ok(html.includes('<script src="/sayanmramor-site/js/offer-form.js"></script>'), page);
+    assert.ok(unstamp(html).includes('<script src="/sayanmramor-site/js/offer-form.js"></script>'), page);
     assert.ok(html.indexOf('class="offer-band offer-talk"') > 0 && html.indexOf('class="offer-band offer-talk"') < html.indexOf('</main>'), page + ': inside main, before the footer');
   });
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
@@ -735,7 +737,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   const order = [...main.matchAll(/<section class="([^"]+)"/g)].map(m => m[1]);
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-why', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
-  const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', ''));
+  const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
   assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
@@ -1075,7 +1077,7 @@ test('liquid glass in showroom.css: the caption, the zones, the hint, the card, 
   assert.match(glass, /\.glass-bend [^{]*\{[^}]*backdrop-filter: var\(--sr-glass-bend\);/);
   assert.match(glass, /@media \(prefers-reduced-transparency: reduce\) \{[^]*?backdrop-filter: none;/);
   const html = fs.readFileSync(path.join(site, 'showroom.html'), 'utf8');
-  assert.ok(html.includes('<script src="/sayanmramor-site/js/header.js"></script>'));
+  assert.ok(unstamp(html).includes('<script src="/sayanmramor-site/js/header.js"></script>'));
 });
 
 test('mountGlass: in Chromium the refraction filter goes into the page once and <html> gets .glass-bend; not in Safari / Firefox, not when less transparency is asked', () => {
@@ -1171,10 +1173,23 @@ test('css/header.css: the header and its buttons in one file; its tokens are css
   assert.doesNotMatch(h, /\n:root \{/, 'no :root of its own: it would beat site.css on order');
 });
 
+test('every page asks for its own CSS / JS by content: ?v= the file\'s hash, so a browser holding an old copy (Telegram\'s, 2026-10-19) fetches the new one; run scripts/stamp_assets.js after editing css/ or js/', () => {
+  const Stamp = require('../scripts/stamp_assets.js');
+  assert.equal(Stamp.pages().length, 17);
+  Stamp.pages().forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    const links = [...html.matchAll(Stamp.ASSET)];
+    assert.ok(links.length > 0, page);
+    links.forEach(m => assert.match(m[0], /\?v=[0-9a-f]{8}"$/, page + ': ' + m[2] + ' has no stamp'));
+    assert.equal(Stamp.stamped(html), html, page + ': a stamp is stale -- node scripts/stamp_assets.js');
+  });
+  assert.doesNotMatch(fs.readFileSync(path.join(site, 'showroom.html'), 'utf8'), /showroom\/[\w-]+\.js\?v=/, 'the showroom modules as their imports name them');
+});
+
 test('every header page loads css/header.css right before css/site.css', () => {
   headerPages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    assert.ok(html.includes('<link rel="stylesheet" href="/sayanmramor-site/css/header.css">\n<link rel="stylesheet" href="/sayanmramor-site/css/site.css">'), page);
+    assert.ok(unstamp(html).includes('<link rel="stylesheet" href="/sayanmramor-site/css/header.css">\n<link rel="stylesheet" href="/sayanmramor-site/css/site.css">'), page);
   });
 });
 
@@ -1213,7 +1228,7 @@ test('one design system: every page loads css/tokens.css first, before any other
   const pages = ['index.html', 'katalog.html', 'privacy.html', 'showroom.html', ...fs.readdirSync(path.join(site, 'categories')).filter(f => f.endsWith('.html')).map(f => 'categories/' + f)];
   pages.forEach(p => {
     const sheets = [...fs.readFileSync(path.join(site, p), 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(m => m[1]);
-    assert.equal(sheets[0], '/sayanmramor-site/css/tokens.css', p);
+    assert.equal(sheets[0].replace(/\?v=[0-9a-f]{8}$/, ''), '/sayanmramor-site/css/tokens.css', p);
   });
   assert.doesNotMatch(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /^\s*--accent: #2a5446;/m, 'the values live in tokens.css only');
 });
