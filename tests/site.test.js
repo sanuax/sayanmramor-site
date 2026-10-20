@@ -1252,10 +1252,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '8dfda067c47297a7a045f7296b3294de48d7c57ea806c8bee3d8369e0a4d9bb3', 'css/header.css as the owner approved it');
+  assert.equal(print, '43c67d237280351da70f482c1594c0e800d23bd05dfaaa1fadfc3d995074794e', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);

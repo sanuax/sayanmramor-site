@@ -1684,23 +1684,31 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   *, *::before, *::after { transition: none !important; }
 }
 
-/* Firefox draws a moving photograph on whole pixels in every frame: it stands still, then
-   jumps by a pixel, and after the long slow end of the curve makes one last jump -- the
-   tremble (measured 2026-10-20 in Firefox 158 at 100 % and 125 %: the motion in steps of a
-   whole pixel; Chrome draws it smoothly). A turn of a hundredth of a degree -- 0.06 px across
-   a card, unseen -- frees it from the pixel grid: the motion is smooth, and kept at rest too,
-   the motion has no last step. Firefox only (-moz-appearance); the finest detail of a
-   photograph there is a touch softer at rest, the price of no tremble (the owner, 2026-10-20). */
+/* Firefox and a moving photograph (the owner, 2026-10-20: «в firefox колебания остались»; filmed
+   in a real Firefox 158 window at 60 frames a second, the line of a test photograph measured in
+   every frame). Two things made it tremble there, and Chrome does neither:
+   - a photograph that grows is drawn on whole pixels: it stands, then jumps by a pixel. A 3D
+     transform that changes nothing -- perspective(2000px) on a flat photograph -- frees it from
+     the pixel grid, at rest too, so the growing is smooth to its last frame;
+   - a lift by transform: Firefox draws it on its own while it moves and the page draws the end,
+     and the two disagree by half a pixel -- the card drops back as it stops. Lifted by top
+     instead, the page draws every frame and the end is where the motion left it.
+   Firefox only (-moz-appearance); in the films the photographs at rest are as sharp as before. */
 @supports (-moz-appearance: none) {
   .home-s2o-shot, .home-s2o-shot img, .home-s2o-card::before, .portfolio-shot, .portfolio-shot img,
-  .home-showroom-house, .home-showroom-house img, .stone-card-media img { transform: rotate(0.01deg); }
+  .home-showroom-house, .home-showroom-house img, .stone-card-media img { transform: perspective(2000px); }
+  .home-showroom-house { position: relative; }
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .home-s2o-card:hover .home-s2o-shot, .home-s2o-card:hover::before { transform: translateY(-6px) rotate(0.01deg); }
-    .home-s2o-card:hover .home-s2o-shot img { transform: scale(1.04) rotate(0.01deg); }
-    .portfolio-item:hover .portfolio-shot { transform: translateY(-6px) rotate(0.01deg); }
-    .portfolio-item:hover .portfolio-shot img { transform: scale(1.04) rotate(0.01deg); }
-    .home-showroom-house:hover { transform: translateY(-6px) rotate(0.01deg); }
-    .home-showroom-house:hover img { transform: scale(1.04) rotate(0.01deg); }
+    .home-s2o-shot { top: 0; transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+    .home-s2o-card::before { top: 0; bottom: 0; transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), top 0.35s cubic-bezier(0.22, 1, 0.36, 1), bottom 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+    .portfolio-shot, .home-showroom-house { top: 0; transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+    .home-s2o-card:hover .home-s2o-shot { transform: perspective(2000px); top: -6px; }
+    .home-s2o-card:hover::before { transform: perspective(2000px); top: -6px; bottom: 6px; }
+    .home-s2o-card:hover .home-s2o-shot img { transform: scale(1.04) perspective(2000px); }
+    .portfolio-item:hover .portfolio-shot { transform: perspective(2000px); top: -6px; }
+    .portfolio-item:hover .portfolio-shot img { transform: scale(1.04) perspective(2000px); }
+    .home-showroom-house:hover { transform: perspective(2000px); top: -6px; }
+    .home-showroom-house:hover img { transform: scale(1.04) perspective(2000px); }
   }
-  @media (hover: hover) { .stone-card:hover .stone-card-media img { transform: scale(1.03) rotate(0.01deg); } }
+  @media (hover: hover) { .stone-card:hover .stone-card-media img { transform: scale(1.03) perspective(2000px); } }
 }

@@ -209,9 +209,9 @@
   // is open and returns to the photo it came from.
   const VIEWER_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';   // quick to answer, soft to land
   const SLIDE_EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
-  // Firefox steps a moving photograph from pixel to pixel (css/site.css, «Firefox draws a moving
-  // photograph»): there every transform of the viewer's photograph carries a hundredth of a degree.
-  const TURN = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('-moz-appearance', 'none') ? ' rotate(0.01deg)' : '';
+  // Firefox draws a moving photograph on whole pixels (css/site.css, «Firefox and a moving
+  // photograph»): there every transform of the viewer's photograph ends in a 3D one that changes nothing.
+  const TURN = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('-moz-appearance', 'none') ? ' perspective(2000px)' : '';
   const SVG = {
     close: '<path d="M6 6l12 12M18 6 6 18"/>', prev: '<path d="m15 5-7 7 7 7"/>', next: '<path d="m9 5 7 7-7 7"/>',
   };
