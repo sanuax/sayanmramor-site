@@ -503,15 +503,16 @@ h3 { font-size: var(--fs-h3); }
    Pass», ported without React; js/site.js mountTrustMotion builds it). Each tile is a pass with
    two faces in a 3D stage: the paper front with the logo, and a dark stub behind -- perforated
    on its left edge, a fine grain -- with the company's name and its site. The wall comes in by
-   laying the paper and stamping each logo on it (the pass's stamp: from twice the size, with a
-   little overshoot); under a mouse the pass leans towards the pointer; on hover or keyboard
-   focus it turns over on the pass's springy curve, the name rises and the site is typed out,
+   laying the paper and stamping each logo on it (the pass's stamp: from twice the size, settling
+   without an overshoot); under a mouse the pass leans towards the pointer; on hover or keyboard
+   focus it turns over smoothly, never past and back (2026-10-20, the owner: no tremble in any
+   motion), the name rises and the site is typed out,
    and a band of foil light follows the pointer across the stub. */
 .trust-motion .trust-pass { padding: 0; background: none; box-shadow: none; perspective: 900px; }
 .trust-motion .trust-pass::after { content: none; }
 .trust-tilt, .trust-flip { position: absolute; inset: 0; transform-style: preserve-3d; }
 .trust-tilt { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.trust-flip { transition: transform 0.9s cubic-bezier(0.65, -0.2, 0.25, 1.2); }
+.trust-flip { transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1); }
 .trust-face {
   position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); border-radius: 12px;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
@@ -546,7 +547,7 @@ h3 { font-size: var(--fs-h3); }
 .trust-motion:not(.is-in) .trust-front { opacity: 0; }
 .trust-motion:not(.is-in) .trust-front > * { opacity: 0; }
 .trust-motion.is-in .trust-front { animation: trust-lay 0.5s var(--ease) calc(var(--n) * 90ms) both; }
-.trust-motion.is-in .trust-front > * { animation: trust-stamp 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) calc(0.25s + var(--n) * 110ms) both; }
+.trust-motion.is-in .trust-front > * { animation: trust-stamp 0.55s cubic-bezier(0.23, 1, 0.32, 1) calc(0.25s + var(--n) * 110ms) both; }
 @keyframes trust-lay { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
 @keyframes trust-stamp { from { opacity: 0; transform: rotate(-6deg) scale(1.9); } to { transform: none; } }
 
