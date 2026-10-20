@@ -906,7 +906,9 @@ test('«От камня к изделию» in CSS: equal 4:5 cards laid over ea
   const motion = block.slice(motionAt, block.indexOf('\n}\n', motionAt));
   const outside = block.slice(0, motionAt) + block.slice(motionAt + motion.length);
   assert.doesNotMatch(outside, /:hover|transition|transform:/, 'nothing reacts or moves outside that block');
-  assert.doesNotMatch(block, /animation|@keyframes|will-change/);
+  assert.doesNotMatch(block, /animation|@keyframes/);
+  // A layer of its own only for the moving photograph and its frame, so its motion never ends in a jump (2026-10-20, the owner).
+  assert.doesNotMatch(block.replace(/\n {2}\.home-s2o-shot(?: img)? \{[^}]*will-change: transform; \}/g, ''), /will-change/);
   [...motion.matchAll(/transition: ([^;]+);/g)].forEach(m => m[1].split(/,\s*(?=[a-z-]+ \d)/).forEach(t => assert.match(t, /^(transform|opacity) 0\.\d+s cubic-bezier\(/, t)));
   assert.match(motion, /\.home-s2o-card:hover \.home-s2o-shot, \.home-s2o-card:hover::before \{ transform: translateY\(-6px\); \}/);
   assert.match(motion, /\.home-s2o-card:hover \.home-s2o-shot img \{ transform: scale\(1\.04\); \}/);
@@ -1250,10 +1252,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '6436d0a47a864e74baee1b58220587ce52eca59dca42f72180570e4af40834fb', 'css/header.css as the owner approved it');
+  assert.equal(print, '161248ccaeadc1ae3bb1628a58b28870c950370580f1c76f1481c3bf6cc9e82b', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);

@@ -296,7 +296,8 @@
       enableSwipe();
     }
 
-    const target = i => fitRect(stage.getBoundingClientRect(), photoRatio(items[i]), innerWidth < 700 ? 12 : 88);
+    // On whole pixels: a photograph at rest between two pixels is drawn soft and shifts when redrawn.
+    const target = i => { const r = fitRect(stage.getBoundingClientRect(), photoRatio(items[i]), innerWidth < 700 ? 12 : 88); return { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) }; };
     const shotOf = i => figures[i].querySelector('.portfolio-shot');
     function place(el, r) {
       el._rect = r;
