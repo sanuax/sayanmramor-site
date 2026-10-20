@@ -38,12 +38,18 @@
 /* --sticky-top / --fixed-bottom: the sticky header and the fixed configure bar,
    measured by js/site.js (reserveFixedUi), so a focused or scrolled-to element
    never ends up under either. Pages without them keep 0. */
+/* On a phone the page holds still (2026-10-20, the owner: «чтобы нельзя было приближать
+   отдалять, вправо влево»): it only scrolls up and down -- no pinch or double-tap zoom, no
+   sideways pan. The viewport meta says the same (user-scalable=no), but iOS ignores that;
+   this is what holds there. Strips that scroll sideways and the 3D canvases keep their own. */
 html {
+  touch-action: pan-y;
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: var(--sticky-top, 0px);
   scroll-padding-bottom: var(--fixed-bottom, 0px);
 }
 body {
+  overflow-x: clip;   /* nothing wider than the screen drags the page sideways; clip keeps sticky working */
   font-family: var(--font);
   font-size: var(--fs-body);
   line-height: 1.55;

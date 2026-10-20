@@ -1295,3 +1295,21 @@ test('the phone menu: «Готовые изделия» and «Контакты»
   assert.match(phone, /\.js \.site-nav > a \{[^}]*display: flex;[^}]*justify-content: space-between;/);
   assert.match(phone, /\.js \.site-nav > a::after \{[^}]*content: '';[^}]*background: currentColor;[^}]*mask: var\(--arrow\) center \/ contain no-repeat;/);
 });
+
+// ---- The page holds still on a phone (2026-10-20, the owner: «чтобы нельзя было приближать
+// отдалять, вправо влево»): no pinch or double-tap zoom, no sideways drift of the page.
+test('every page: the viewport is fixed at the phone\'s width -- no zoom', () => {
+  pages.concat(['privacy.html']).forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    const meta = html.match(/<meta name="viewport" content="([^"]*)">/);
+    assert.ok(meta, page);
+    assert.match(meta[1], /^width=device-width, initial-scale=1\.0, maximum-scale=1\.0, user-scalable=no(, viewport-fit=cover)?$/, page);
+  });
+});
+
+test('the page itself only scrolls up and down: no pinch, no double-tap zoom, no sideways pan (iOS ignores user-scalable)', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const rule = css.match(/\nhtml \{[^}]*\}/)[0];
+  assert.match(rule, /touch-action: pan-y;/);
+  assert.match(css, /\nbody \{[^}]*overflow-x: clip;/, 'nothing wider than the screen can drag the page sideways');
+});
