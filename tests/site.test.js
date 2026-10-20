@@ -555,18 +555,31 @@ test('«Где мы находимся»: one limestone plane, no cards -- the a
   assert.doesNotMatch(block, /border-radius: (?!0)/, 'no rounded corners');
 });
 
-test('the «Изделия» panel is a ledger about 640 px wide: numbered group rows, thin neutral rules, copper only for hover / the current page', () => {
+test('the «Изделия» panel (2026-10-20, the owner: «переноси на сайт»): every direction at once, the row under the pointer a faint fill, the group\'s photograph beside it; verde only for hover / the current page', () => {
   const css = headerAndSiteCss();
   const rule = sel => { const i = css.indexOf('\n' + sel + ' {'); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
-  assert.match(rule('.nav-panel'), /width: min\(640px,/);
-  assert.match(rule('.nav-panel-inner'), /counter-reset: nav-group/);
-  assert.match(rule('.nav-group-title::before'), /content: counter\(nav-group, decimal-leading-zero\)/);
-  assert.match(rule('.nav-group'), /border-top: 1px solid var\(--line\)/);
+  assert.match(rule('.nav-products.is-rich > .nav-panel'), /width: min\(980px,[\s\S]*grid-template-columns: minmax\(0, 1fr\) 300px;/);
+  assert.match(rule('.nav-products > .nav-panel'), /width: min\(720px,/, 'without JavaScript: the rows alone');
+  assert.doesNotMatch(css, /counter\(nav-group/, 'no numbers before the groups');
+  assert.match(rule('.nav-group.is-on'), /background: rgba\(28, 29, 27, 0\.05\)/, 'the capsule\'s own faint fill');
   assert.match(rule('.nav-group a::before'), /background: var\(--accent\)[\s\S]*transform: scaleX\(0\)/);
   assert.match(css, /\.nav-group a:focus-visible::before, \.nav-group a\.active::before \{ transform: scaleX\(1\); \}/);
   assert.match(css, /@media \(hover: hover\) \{ \.nav-group a:hover::before \{ transform: scaleX\(1\); \} \}/);
-  const panel = css.slice(css.indexOf('/* The panel: a ledger'), css.indexOf('.site-header-cta {'));
-  assert.doesNotMatch(panel, /<img|url\((?!\s*var)|font-family|uppercase/);
+  assert.match(rule('.nav-shot img.is-on'), /opacity: 1; transform: none;/);
+  assert.match(css, /\.nav-group \.nav-group-row, \.nav-group \.nav-group-head \{ display: none; \}/, 'the phone\'s rows only in the phone menu');
+});
+
+test('the «Изделия» photographs: header.js builds them on the panel\'s own markup (so the configurator\'s copy gets them too), one crop of each kind per group in assets/nav/', () => {
+  const js = fs.readFileSync(path.join(site, 'js', 'header.js'), 'utf8');
+  const photos = JSON.parse('{' + js.match(/const NAV_PHOTOS = \{([^}]+)\}/)[1].replace(/'/g, '"') + '}');
+  assert.deepEqual(Object.keys(photos), GROUPS.map(([title]) => title), 'a photograph for every group, by its title');
+  Object.values(photos).forEach(slug => [['t', 168, 168], ['p', 640, 800], ['w', 800, 500]].forEach(([kind, w, h]) => {
+    const file = path.join(site, 'assets', 'nav', kind + '-' + slug + '.webp');
+    assert.ok(fs.existsSync(file), file);
+    assert.deepEqual(webpSize(file), [w, h], file);
+  }));
+  assert.ok(fs.existsSync(path.join(site, 'assets', 'nav', 'SOURCES.md')));
+  assert.equal(typeof SiteHeader.initProducts, 'function');
 });
 
 test('palette «basalt and serpentine»: limestone, warm stone, basalt, deep green-graphite, one verde accent; the showroom\'s copper only on the doorway\'s action; css/showroom.css untouched', () => {
@@ -1237,10 +1250,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '05571b67c7195b16e1ea38b8d595e96afbf0972b3bc16d39839c85ba41c79325', 'css/header.css as the owner approved it');
+  assert.equal(print, '6436d0a47a864e74baee1b58220587ce52eca59dca42f72180570e4af40834fb', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1271,7 +1284,7 @@ test('the «Изделия» panel: a group title is never smaller than its link
   assert.match(rule('.nav-group a'), /font-size: 16px;/);
   assert.match(h, /\.js \.nav-group-title \{ font-size: 17px; \}/);
   assert.match(h, /\.js \.nav-group a \{[^}]*font-size: 17px;/);
-  assert.match(rule('.nav-group'), /grid-template-columns: 208px minmax\(0, 1fr\);/, 'room for «01 Лестницы и ступени» on one line at 16 px');
+  assert.match(rule('.nav-group'), /grid-template-columns: 216px minmax\(0, 1fr\);/, 'room for «Лестницы и ступени 2» on one line at 16 px');
 });
 
 test('the phone menu: «Готовые изделия» and «Контакты» look like what they are -- a row with the site\'s arrow at its end (2026-10-15, the owner)', () => {

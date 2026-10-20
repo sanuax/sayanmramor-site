@@ -128,35 +128,42 @@
 }
 .nav-drop[open]:not(.is-closing) > summary::after { margin-top: 3px; transform: rotate(-135deg); }
 
-/* The panel: a ledger on a plate of the same stone, hanging under the capsule's
-   middle. One row per group -- its number and name on the left, small and
-   quiet, its directions on the right -- with thin neutral rules between the
-   rows; verde only as a line under the direction you point at and under the
-   page you are on. */
+/* The panel: a plate of the same stone, hanging under the capsule's middle.
+   «Изделия» (2026-10-20, the owner: «переноси на сайт» -- the menu with the
+   groups' photographs): on the left every direction at once, one row per group
+   -- its name and how many directions it has, then the directions; the row
+   you point at takes the capsule's faint fill, and on the right its photograph
+   follows it (js/header.js adds the photograph, the counts and, on a phone, the
+   group screens). Under the rows a line for those who need their own size, with
+   the ways to the ready-made pieces and the configurator. Verde only as a line
+   under the direction you point at and under the page you are on. Without
+   JavaScript it is the rows alone. */
 .nav-panel {
   position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0; width: min(640px, calc(100vw - 2 * var(--gutter)));
   background: rgba(248, 247, 244, 0.97); border: 1px solid rgba(28, 29, 27, 0.09); border-radius: 24px;
   -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
   box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 24px 48px -24px rgba(28, 29, 27, 0.4);
 }
-.nav-panel-inner { counter-reset: nav-group; padding: var(--s-2) var(--s-6) var(--s-3); }
+.nav-products > .nav-panel { width: min(720px, calc(100vw - 2 * var(--gutter))); overflow: hidden;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 14' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.5 1.5 6.5 7l-5 5.5'/%3E%3C/svg%3E"); }
+.nav-products.is-rich > .nav-panel { width: min(980px, calc(100vw - 2 * var(--gutter))); display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: 1fr auto; }
+.nav-panel-inner { display: flex; flex-direction: column; gap: 2px; padding: 14px 10px 6px 14px; }
 .nav-group {
-  counter-increment: nav-group;
-  display: grid; grid-template-columns: 208px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
-  padding: var(--s-4) 0; border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: 216px minmax(0, 1fr); column-gap: var(--s-5); align-items: baseline;
+  padding: 12px 18px; border-radius: 16px; transition: background-color 0.18s;
 }
-.nav-group:first-child { border-top: 0; }
+.nav-group.is-on { background: rgba(28, 29, 27, 0.05); }
 .nav-group-title {
-  display: flex; gap: var(--s-3); font-size: 16px; line-height: 1.5; color: var(--muted);   /* the links' size (the owner, 2026-10-15) */
-  transition: color 0.15s;
+  font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--muted); white-space: nowrap;   /* the links' size (the owner, 2026-10-15) */
+  transition: color 0.18s;
 }
-.nav-group-title::before { content: counter(nav-group, decimal-leading-zero); min-width: 1.5em; font-variant-numeric: tabular-nums; }
-.nav-group:focus-within .nav-group-title { color: var(--ink); }
+.nav-group-count { margin-left: 6px; font-size: 12px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.nav-group.is-on .nav-group-title, .nav-group:focus-within .nav-group-title { color: var(--ink); }
 @media (hover: hover) { .nav-group:hover .nav-group-title { color: var(--ink); } }
-.nav-group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 2px var(--s-3); }
+.nav-group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 2px 22px; }
 .nav-group a {
   position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px 0;
-  font-size: 16px; line-height: 1.4; color: var(--ink); text-decoration: none;
+  font-size: 16px; font-weight: 500; line-height: 1.4; color: var(--ink); text-decoration: none; white-space: nowrap;
 }
 .nav-group a::before {
   content: ''; position: absolute; left: 0; right: 22px; bottom: 0; height: 1px; background: var(--accent);
@@ -171,6 +178,29 @@
 @media (hover: hover) { .nav-group a:hover::before { transform: scaleX(1); } }
 .nav-group a:focus-visible::after { opacity: 1; transform: translateX(0); }
 @media (hover: hover) { .nav-group a:hover::after { opacity: 1; transform: translateX(0); } }
+/* The photograph of the group under the pointer: the five lie one over another and the
+   right one comes forward -- a crossfade, the incoming one settling from a little larger. */
+.nav-shot { grid-column: 2; grid-row: 1 / 3; position: relative; min-height: 360px; margin: 10px; border-radius: 18px; overflow: hidden; background: var(--surface-sunk); }
+.nav-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 0.32s ease, transform 0.9s cubic-bezier(0.23, 1, 0.32, 1); }
+.nav-shot img.is-on { opacity: 1; transform: none; }
+.nav-shot figcaption { position: absolute; inset: auto 0 0 0; padding: 64px 20px 18px; background: linear-gradient(to top, rgba(18, 19, 17, 0.62), transparent); color: #fff; }
+.nav-shot-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; }
+.nav-shot-note { margin: 6px 0 0; font-size: 13px; line-height: 1.4; opacity: 0.85; }
+.nav-panel-inner { grid-column: 1; grid-row: 1; }
+.nav-panel-foot {
+  grid-column: 1; grid-row: 2; display: flex; align-items: center; gap: 24px; margin: 0 10px 10px 14px; padding: 14px 18px; border-top: 1px solid var(--line);
+  font-size: 14px; color: var(--muted);
+}
+.nav-panel-foot p { margin: 0 auto 0 0; }
+.nav-panel-foot a { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink); text-decoration: none; white-space: nowrap; transition: color 0.15s; }
+.nav-panel-foot a::after {
+  content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+}
+.nav-panel-foot a:focus-visible { color: var(--accent); }
+@media (hover: hover) { .nav-panel-foot a:hover { color: var(--accent); } }
+/* The phone's rows and group screens (js/header.js) -- only in the phone menu. */
+.nav-group .nav-group-row, .nav-group .nav-group-head { display: none; }
 /* The showroom's panel: the house on the left, on the right its name, two lines,
    the way in and its rooms -- the same plate as «Изделия». */
 .nav-showroom-inner { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--s-5); align-items: center; padding: var(--s-4); }
@@ -296,6 +326,65 @@ html.menu-lock { overflow: hidden; }
   .js .nav-group ul { flex-direction: column; gap: 0; }
   .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
   .js .nav-group-title { font-size: 17px; }   /* as its links */
+  .js .nav-group { border-radius: 0; background: none; }
+  .js .nav-shot, .js .nav-panel-foot { display: none; }
+  .js .nav-products.is-rich > .nav-panel { display: block; width: auto; overflow: visible; }
+  /* «Изделия» on a phone (2026-10-20, the owner): two levels. First the five groups, each a
+     row -- its photograph, its name, its directions in a line, a chevron; «Фасады», one page,
+     goes straight there with the arrow. A tap on a group slides its own screen in: «Все
+     изделия» back, the group's photograph with its name, its directions as large rows. */
+  .js .nav-products.is-rich .nav-panel-inner { gap: 0; padding: 0 0 var(--s-4); }
+  .js .nav-products.is-rich .nav-group { display: block; padding: 0; }
+  .js .nav-products.is-rich .nav-group-title, .js .nav-products.is-rich .nav-group ul { display: none; }
+  .js .nav-products.is-rich .nav-group-row {
+    display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; align-items: center; column-gap: 14px;
+    width: calc(100% + 8px); min-height: 76px; margin: 0 0 0 -8px; padding: 8px 4px 8px 8px; border: 0; border-radius: 18px; background: none;
+    font: inherit; color: var(--ink); text-align: left; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.15s, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .js .nav-group-row:active { background: rgba(28, 29, 27, 0.05); transform: scale(0.985); }
+  .js .nav-group-row img { width: 60px; height: 60px; border-radius: 14px; object-fit: cover; background: var(--surface-sunk); }
+  .js .nav-group-row-name { display: block; font-size: 17px; font-weight: 600; line-height: 1.25; }
+  .js .nav-group-row-note { display: block; margin-top: 3px; font-size: 13px; line-height: 1.35; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .js .nav-group-row::after {
+    content: ''; flex: none; width: 8px; height: 14px; margin-right: 4px; background: var(--muted);
+    -webkit-mask: var(--chevron) center / contain no-repeat; mask: var(--chevron) center / contain no-repeat;
+  }
+  .js a.nav-group-row::after { width: 16px; height: 10px; opacity: 1; transform: none; -webkit-mask-image: var(--arrow); mask-image: var(--arrow); }
+  .js a.nav-group-row.active .nav-group-row-name { color: var(--accent); }
+  .js a.nav-group-row::before { display: none; }
+  /* One group's screen: the rest of the menu steps aside, only the actions stay at its foot. */
+  .js .site-header.menu-detail .site-nav > :not(.nav-products),
+  .js .site-header.menu-detail .nav-products > summary,
+  .js .site-header.menu-detail .nav-group:not(.is-detail),
+  .js .site-header.menu-detail .nav-group.is-detail .nav-group-row { display: none; }
+  .js .site-header.menu-detail .nav-products.is-rich .nav-panel-inner { display: block; padding-top: 0; }
+  .js .site-header.menu-detail .nav-group.is-detail { animation: nav-screen-in 0.34s cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .js .nav-products.is-back .nav-group-row { animation: nav-screen-back 0.34s cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .js .nav-group.is-detail .nav-group-head { display: block; }
+  .js .nav-group-back {
+    display: inline-flex; align-items: center; gap: 10px; height: 44px; margin: -6px 0 8px -8px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; background: none;
+    font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-soft); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .js .nav-group-back::before {
+    content: ''; width: 8px; height: 14px; background: currentColor; transform: scaleX(-1);
+    -webkit-mask: var(--chevron) center / contain no-repeat; mask: var(--chevron) center / contain no-repeat;
+  }
+  .js .nav-group-back:active { background: rgba(28, 29, 27, 0.05); }
+  .js .nav-group-hero { position: relative; margin: 0; aspect-ratio: 16 / 10; max-width: 100%; border-radius: 20px; overflow: hidden; background: var(--surface-sunk); }
+  .js .nav-group-hero img { width: 100%; height: 100%; object-fit: cover; }
+  .js .nav-group-hero figcaption { position: absolute; inset: auto 0 0 0; padding: 48px 18px 16px; background: linear-gradient(to top, rgba(18, 19, 17, 0.62), transparent); color: #fff; }
+  .js .nav-group-hero-title { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
+  .js .nav-group-hero-note { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
+  .js .nav-products.is-rich .nav-group.is-detail ul { display: flex; margin-top: var(--s-2); }
+  .js .nav-group.is-detail li a {
+    display: flex; justify-content: space-between; width: 100%; min-height: 60px; padding: 0 2px;
+    border-bottom: 1px solid var(--line); font-size: 19px; letter-spacing: -0.005em; -webkit-tap-highlight-color: transparent;
+  }
+  .js .nav-group.is-detail li:last-child a { border-bottom: 0; }
+  .js .nav-group.is-detail li a::before { display: none; }
+  .js .nav-group.is-detail li a::after { opacity: 1; transform: none; color: var(--muted); }
+  .js .nav-group.is-detail li a:active, .js .nav-group.is-detail li a.active { color: var(--accent); }
   .js .site-nav > a {
     display: flex; justify-content: space-between; gap: var(--s-3);
     height: auto; min-height: 44px; padding: var(--s-3) 0; border-radius: 0; background: none; border-top: 1px solid var(--line);
@@ -340,14 +429,24 @@ html.menu-lock { overflow: hidden; }
   from { opacity: 1; }
   to { opacity: 0; }
 }
+/* A group's screen comes in from the right; back, the rows come in from the left. */
+@keyframes nav-screen-in {
+  from { opacity: 0; transform: translateX(32px); }
+}
+@keyframes nav-screen-back {
+  from { opacity: 0; transform: translateX(-32px); }
+}
 @media (prefers-reduced-motion: reduce) {
   .nav-drop[open] > .nav-panel, .nav-drop.is-closing > .nav-panel { animation: none; }
+  .js .site-header.menu-detail .nav-group.is-detail, .js .nav-products.is-back .nav-group-row { animation: none; }
+  .nav-shot img { transition: opacity 0.2s ease; transform: none; }
   .js .site-header.menu-open .site-nav, .js .site-header.menu-open .site-header-actions,
   .js .site-header.menu-closing .site-nav, .js .site-header.menu-closing .site-header-actions { animation: none; }
 }
 @media (min-width: 601px) and (max-width: 1000px) {
   .js .nav-panel-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-6); }
   .js .nav-group:nth-child(2) { border-top: 0; }
+  .js .site-header.menu-detail .nav-panel-inner { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
 }
 
 /* Phones (600 px): the menu's groups in one column, the action a little narrower. */

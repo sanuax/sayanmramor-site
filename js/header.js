@@ -21,6 +21,153 @@
   const MENU_CLOSE_MS = 260;  // and folding back
   const MENU_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';   // css --ease
 
+  // «Изделия» with the groups' photographs (2026-10-20, the owner: «переноси на сайт»). Built on
+  // the panel's own markup -- the groups, their titles, their links -- so the configurator's copy
+  // of the header gets it too. On a wide screen: how many directions each group has, and on the
+  // right the photograph of the group under the pointer (or the keyboard), resting on the group of
+  // the page you are on. On a phone: a row per group (its photograph, its name, its directions in
+  // a line) that opens the group's own screen -- «Все изделия» back, its photograph, its
+  // directions; a group of one page («Фасады») goes straight there.
+  const NAV_PHOTOS = { 'Лестницы и ступени': 'stairs', 'Интерьер': 'interior', 'Кухня и ванная': 'kitchen', 'Фасады': 'facade', 'Спа и бассейны': 'spa' };
+  const NAV_NOTES = { 'Фасады': 'Облицовка фасада камнем' };
+  const NAV_ASSETS = '/sayanmramor-site/assets/nav/';
+  const BACK_MS = 400;   // the rows' way back in (0.34 s), then the class goes
+  function directions(n) {
+    const d = n % 10, h = n % 100;
+    return n + ' ' + (d === 1 && h !== 11 ? 'направление' : d >= 2 && d <= 4 && (h < 10 || h >= 20) ? 'направления' : 'направлений');
+  }
+
+  function initProducts(doc, win, header, mq) {
+    const drop = header.querySelector('.nav-products');
+    const panel = drop && drop.querySelector ? drop.querySelector('.nav-panel') : null;
+    if (!panel || !doc.createElement) return null;
+    const groups = [...drop.querySelectorAll('.nav-group')].map(el => {
+      const titleEl = el.querySelector('.nav-group-title');
+      const name = titleEl ? titleEl.textContent.trim() : '';
+      return { el, titleEl, name, slug: NAV_PHOTOS[name], links: [...el.querySelectorAll('a')] };
+    }).filter(g => g.slug && g.links.length);
+    if (!groups.length) return null;
+    const make = (tag, cls, text) => { const n = doc.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+    const photo = (file, w, h) => {
+      const i = make('img');
+      i.src = NAV_ASSETS + file; i.alt = ''; i.width = w; i.height = h; i.loading = 'lazy'; i.decoding = 'async';
+      return i;
+    };
+    const single = g => g.links.length === 1;
+    const noteOf = g => NAV_NOTES[g.name] || g.links.map(a => a.textContent.trim()).join(' · ');
+
+    // Wide screen: the counts and the photograph.
+    const shot = make('figure', 'nav-shot');
+    shot.setAttribute('aria-hidden', 'true');
+    const shots = groups.map(g => shot.appendChild(photo('p-' + g.slug + '.webp', 640, 800)));
+    const caption = make('figcaption'), capTitle = make('p', 'nav-shot-title'), capNote = make('p', 'nav-shot-note');
+    caption.append(capTitle, capNote);
+    shot.appendChild(caption);
+    panel.appendChild(shot);
+    // Under the rows, for those who need their own size: the ready-made pieces and the
+    // configurator (not the configurator's own link on the configurator).
+    const foot = make('div', 'nav-panel-foot');
+    foot.appendChild(make('p', null, 'Нужен свой размер или форма?'));
+    const where = win.location && win.location.pathname ? win.location.pathname : '';
+    [['Готовые изделия', '/sayanmramor-site/katalog.html'], ['Создать изделие', '/sayanmramor-calculator/sayanmramor-calculator.html']].forEach(([text, href]) => {
+      if (where === href) return;
+      const a = make('a', null, text);
+      a.href = href;
+      foot.appendChild(a);
+    });
+    panel.appendChild(foot);
+    let shown = -1;
+    function show(k) {
+      if (k === shown) return;
+      shown = k;
+      groups.forEach((g, i) => { g.el.classList.toggle('is-on', i === k); shots[i].classList.toggle('is-on', i === k); });
+      capTitle.textContent = groups[k].name;
+      capNote.textContent = noteOf(groups[k]);
+    }
+    const here = groups.findIndex(g => g.links.some(a => a.classList.contains('active')));
+    const rest = () => show(here >= 0 ? here : 0);
+
+    // Phone: the rows and the groups' screens.
+    const nav = header.querySelector('.site-nav');
+    let open = -1, backTimer = null;
+    function openGroup(k) {
+      open = k;
+      if (backTimer) { win.clearTimeout(backTimer); backTimer = null; }
+      drop.classList.remove('is-back');
+      groups.forEach((g, i) => g.el.classList.toggle('is-detail', i === k));
+      header.classList.add('menu-detail');
+      groups[k].row.setAttribute('aria-expanded', 'true');
+      if (nav) nav.scrollTop = 0;
+      const back = groups[k].el.querySelector('.nav-group-back');
+      if (back) back.focus({ preventScroll: true });
+    }
+    function closeGroup(returnFocus) {
+      if (open < 0) return;
+      const g = groups[open];
+      open = -1;
+      header.classList.remove('menu-detail');
+      groups.forEach(x => x.el.classList.remove('is-detail'));
+      g.row.setAttribute('aria-expanded', 'false');
+      if (!returnFocus) return;
+      drop.classList.add('is-back');
+      backTimer = win.setTimeout(() => { drop.classList.remove('is-back'); backTimer = null; }, BACK_MS);
+      g.row.focus({ preventScroll: true });
+    }
+
+    groups.forEach((g, k) => {
+      if (!single(g)) {
+        const count = make('span', 'nav-group-count', String(g.links.length));
+        count.setAttribute('aria-hidden', 'true');
+        g.titleEl.appendChild(count);
+      }
+      g.el.addEventListener('mouseenter', () => { if (!mq.matches) show(k); });
+      g.el.addEventListener('focusin', () => { if (!mq.matches) show(k); });
+
+      const link = g.links[0];
+      // A group of one page: its title already names it, so its link says where it goes.
+      if (single(g) && link.textContent.trim() === g.name) link.textContent = 'Смотреть работы';
+      const row = make(single(g) ? 'a' : 'button', 'nav-group-row');
+      if (single(g)) {
+        row.href = link.getAttribute('href');
+        if (link.classList.contains('active')) { row.classList.add('active'); row.setAttribute('aria-current', 'page'); }
+      } else {
+        row.type = 'button';
+        row.setAttribute('aria-expanded', 'false');
+        row.addEventListener('click', () => openGroup(k));
+      }
+      const text = make('span');
+      text.append(make('span', 'nav-group-row-name', g.name), make('span', 'nav-group-row-note', noteOf(g)));
+      row.append(photo('t-' + g.slug + '.webp', 60, 60), text);
+      g.row = row;
+      g.el.insertBefore(row, g.el.firstChild);
+      if (single(g)) return;
+      const head = make('div', 'nav-group-head');
+      const back = make('button', 'nav-group-back', 'Все изделия');
+      back.type = 'button';
+      back.addEventListener('click', () => closeGroup(true));
+      const hero = make('figure', 'nav-group-hero'), heroCaption = make('figcaption');
+      heroCaption.append(make('p', 'nav-group-hero-title', g.name), make('p', 'nav-group-hero-note', directions(g.links.length)));
+      hero.append(photo('w-' + g.slug + '.webp', 800, 500), heroCaption);
+      head.append(back, hero);
+      g.el.insertBefore(head, g.titleEl);
+    });
+    drop.addEventListener('toggle', () => { if (drop.open && !mq.matches) rest(); });
+    // A swipe to the right on a group's screen goes back, as on a phone's own screens.
+    if (nav) {
+      let sx = null, sy = 0;
+      nav.addEventListener('touchstart', e => { const t = e.touches[0]; sx = open >= 0 && e.touches.length === 1 ? t.clientX : null; sy = t.clientY; }, { passive: true });
+      nav.addEventListener('touchend', e => {
+        if (sx === null) return;
+        const t = e.changedTouches[0];
+        if (t.clientX - sx > 70 && Math.abs(t.clientY - sy) < 40) closeGroup(true);
+        sx = null;
+      }, { passive: true });
+    }
+    rest();
+    drop.classList.add('is-rich');
+    return { show, openGroup, closeGroup, inGroup: () => open >= 0 };
+  }
+
   function init(doc, win) {
     const header = doc.querySelector('.site-header');
     if (!header) return null;
@@ -30,6 +177,7 @@
     const reduced = () => !!(win.matchMedia && win.matchMedia(REDUCED_QUERY).matches);
     const root = doc.documentElement;
     const summaryOf = drop => drop.querySelector('summary');
+    const products = initProducts(doc, win, header, mq);
     const folding = new Map();   // drop -> its pending fold's timer
 
     let menuAnim = null;       // the capsule's running open / close
@@ -81,6 +229,7 @@
       if (opening) { closedH = heightOf(); pull = 0; }
       header.classList.toggle('menu-open', open);
       setLock(open);
+      if (!open && products) products.closeGroup(false);
       // In the open menu every panel is shown (no second tap); closed, they rest.
       drops.forEach(d => { stopFold(d); d.open = open; });
       overlay(open ? heightOf() : 0);
@@ -128,6 +277,7 @@
         if (mq.matches) s.setAttribute('tabindex', '-1'); else s.removeAttribute('tabindex');
       });
       if (!mq.matches && menuOpen()) setMenu(false);
+      if (!mq.matches && products) products.closeGroup(false);
     }
 
     drops.forEach(drop => {
@@ -149,7 +299,7 @@
         const open = !menuOpen();
         setMenu(open);
         if (open) {
-          const first = header.querySelector('.nav-group a');
+          const first = header.querySelector('.nav-group-row') || header.querySelector('.nav-group a');
           if (first) first.focus({ preventScroll: true });
         }
       });
@@ -161,6 +311,7 @@
     });
     doc.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
+      if (menuOpen() && products && products.inGroup()) { products.closeGroup(true); return; }
       if (menuOpen()) { setMenu(false); if (toggle) toggle.focus(); return; }
       if (menuClosing) return;   // the menu's panels go with it
       drops.forEach(d => { if (d.open) closePanel(d, true); });
@@ -250,5 +401,5 @@
 
   if (typeof document !== 'undefined' && typeof window !== 'undefined') init(document, window);
 
-  return { init, initIndicator, mountGlass, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
+  return { init, initIndicator, initProducts, mountGlass, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
 });
