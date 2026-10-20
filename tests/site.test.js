@@ -1252,10 +1252,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, 'a94affa61bcdcb503bb6b66909ed48ff5031081880f1a4e9fd8e81bcaeac9d81', 'css/header.css as the owner approved it');
+  assert.equal(print, '833033fc7c384432bb9175eb740373bf72143e20ba74e34b2a10b90d4bc2446b', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1312,4 +1312,12 @@ test('the page itself only scrolls up and down: no pinch, no double-tap zoom, no
   const rule = css.match(/\nhtml \{[^}]*\}/)[0];
   assert.match(rule, /touch-action: pan-y;/);
   assert.match(css, /\nbody \{[^}]*overflow-x: clip;/, 'nothing wider than the screen can drag the page sideways');
+});
+
+test('the header holds still on a phone too: its menu is a scroll box of its own, so it says pan-y itself, and nothing in it sticks out sideways', () => {
+  const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
+  assert.match(h, /\.site-header, \.site-header \* \{ touch-action: pan-y; \}/, 'no pinch, no double-tap zoom, no sideways pan in the capsule or the open menu');
+  const phone = h.slice(h.indexOf('@media (max-width: 1000px)'));
+  assert.match(phone.match(/\.js \.site-header\.menu-open \.site-nav \{[^}]*\}/)[0], /overflow-x: hidden;/);
+  assert.match(phone, /\.js \.nav-group a::after \{ position: static; margin-left: 6px; \}/, 'the arrow in the row, not past the menu\'s edge');
 });

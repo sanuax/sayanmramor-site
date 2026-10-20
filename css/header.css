@@ -282,8 +282,10 @@
 .menu-open .nav-toggle-icon::after { transform: translateY(-6px) rotate(-45deg); }
 html.menu-lock { overflow: hidden; }
 /* A double tap on the menu button (or anywhere in the capsule) is two taps, never the
-   browser zooming the page in; pinching still zooms (the owner, 2026-10-19). */
-.site-header, .site-header * { touch-action: manipulation; }
+   browser zooming the page in (the owner, 2026-10-19); and since 2026-10-20 (the owner: the
+   page holds still on a phone) no pinch and no sideways pan either -- the open menu scrolls
+   on its own, so the page's own pan-y (css/site.css) does not reach into it. */
+.site-header, .site-header * { touch-action: pan-y; }
 
 /* Phones and tablets: the same capsule, a little lower and closer to the edges --
    the name and the menu button. Opened, the capsule itself grows downward into
@@ -322,7 +324,7 @@ html.menu-lock { overflow: hidden; }
     order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
     margin: 6px 14px 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line);
     /* Only the list scrolls: the name and the close button above it, the action under it, stay in view. */
-    max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overscroll-behavior: contain;
+    max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
   }
   .js .site-header.menu-open .site-header-cta { order: 4; display: inline-flex; flex: 1 0 auto; margin: var(--s-5) 14px var(--s-3) 0; }
   /* Both actions at the menu's foot, side by side, as wide as the menu. */
@@ -343,6 +345,9 @@ html.menu-lock { overflow: hidden; }
   .js .nav-group { grid-template-columns: 1fr; align-content: start; row-gap: var(--s-2); padding: var(--s-4) 0; }
   .js .nav-group ul { flex-direction: column; gap: 0; }
   .js .nav-group a { min-height: 44px; padding: 0; font-size: 17px; }   /* a finger's target */
+  /* The wide menu's arrow hangs in the gap after the word; a row on the phone has no gap
+     after it -- the arrow stays in the row, never past the menu's edge. */
+  .js .nav-group a::after { position: static; margin-left: 6px; }
   .js .nav-group-title { font-size: 17px; }   /* as its links */
   .js .nav-group { border-radius: 0; background: none; }
   .js .nav-shot, .js .nav-panel-foot { display: none; }
