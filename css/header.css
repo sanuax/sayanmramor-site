@@ -351,7 +351,7 @@ html.menu-lock { overflow: hidden; }
     content: ''; flex: none; width: 8px; height: 14px; margin-right: 4px; background: var(--muted);
     -webkit-mask: var(--chevron) center / contain no-repeat; mask: var(--chevron) center / contain no-repeat;
   }
-  .js a.nav-group-row::after { width: 16px; height: 10px; opacity: 1; transform: none; -webkit-mask-image: var(--arrow); mask-image: var(--arrow); }
+  .js a.nav-group-row::after { opacity: 1; transform: none; }   /* «Фасады» too: the same chevron as the other rows (the owner, 2026-10-20) */
   .js a.nav-group-row.active .nav-group-row-name { color: var(--accent); }
   .js a.nav-group-row::before { display: none; }
   /* One group's screen: the rest of the menu steps aside, only the actions stay at its foot. */
