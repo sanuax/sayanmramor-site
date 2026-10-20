@@ -1683,3 +1683,24 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
+
+/* Firefox draws a moving photograph on whole pixels in every frame: it stands still, then
+   jumps by a pixel, and after the long slow end of the curve makes one last jump -- the
+   tremble (measured 2026-10-20 in Firefox 158 at 100 % and 125 %: the motion in steps of a
+   whole pixel; Chrome draws it smoothly). A turn of a hundredth of a degree -- 0.06 px across
+   a card, unseen -- frees it from the pixel grid: the motion is smooth, and kept at rest too,
+   the motion has no last step. Firefox only (-moz-appearance); the finest detail of a
+   photograph there is a touch softer at rest, the price of no tremble (the owner, 2026-10-20). */
+@supports (-moz-appearance: none) {
+  .home-s2o-shot, .home-s2o-shot img, .home-s2o-card::before, .portfolio-shot, .portfolio-shot img,
+  .home-showroom-house, .home-showroom-house img, .stone-card-media img { transform: rotate(0.01deg); }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .home-s2o-card:hover .home-s2o-shot, .home-s2o-card:hover::before { transform: translateY(-6px) rotate(0.01deg); }
+    .home-s2o-card:hover .home-s2o-shot img { transform: scale(1.04) rotate(0.01deg); }
+    .portfolio-item:hover .portfolio-shot { transform: translateY(-6px) rotate(0.01deg); }
+    .portfolio-item:hover .portfolio-shot img { transform: scale(1.04) rotate(0.01deg); }
+    .home-showroom-house:hover { transform: translateY(-6px) rotate(0.01deg); }
+    .home-showroom-house:hover img { transform: scale(1.04) rotate(0.01deg); }
+  }
+  @media (hover: hover) { .stone-card:hover .stone-card-media img { transform: scale(1.03) rotate(0.01deg); } }
+}

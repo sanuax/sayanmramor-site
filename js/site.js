@@ -209,6 +209,9 @@
   // is open and returns to the photo it came from.
   const VIEWER_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';   // quick to answer, soft to land
   const SLIDE_EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  // Firefox steps a moving photograph from pixel to pixel (css/site.css, «Firefox draws a moving
+  // photograph»): there every transform of the viewer's photograph carries a hundredth of a degree.
+  const TURN = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('-moz-appearance', 'none') ? ' rotate(0.01deg)' : '';
   const SVG = {
     close: '<path d="M6 6l12 12M18 6 6 18"/>', prev: '<path d="m15 5-7 7 7 7"/>', next: '<path d="m9 5 7 7-7 7"/>',
   };
@@ -303,7 +306,7 @@
       el._rect = r;
       el.style.width = r.width + 'px';
       el.style.height = r.height + 'px';
-      el.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px)';
+      el.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px)' + TURN;
     }
     function photo(i) {
       const el = doc.createElement('img');
@@ -349,8 +352,8 @@
     function flip(el, a, b, ms) {
       const sx = a.width / b.width, sy = a.height / b.height;
       return el.animate([
-        { transform: 'translate(' + a.left + 'px,' + a.top + 'px) scale(' + sx + ',' + sy + ')', borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
-        { transform: 'translate(' + b.left + 'px,' + b.top + 'px) scale(1,1)', borderRadius: '12px' },
+        { transform: 'translate(' + a.left + 'px,' + a.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
+        { transform: 'translate(' + b.left + 'px,' + b.top + 'px) scale(1,1)' + TURN, borderRadius: '12px' },
       ], { duration: reduce ? 0 : ms, easing: VIEWER_EASE });
     }
 
@@ -363,8 +366,8 @@
       lb.classList.remove('is-open');
       const sx = to.width / from.width, sy = to.height / from.height;
       img.animate([
-        { transform: 'translate(' + from.left + 'px,' + from.top + 'px) scale(1,1)', borderRadius: '12px' },
-        { transform: 'translate(' + to.left + 'px,' + to.top + 'px) scale(' + sx + ',' + sy + ')', borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
+        { transform: 'translate(' + from.left + 'px,' + from.top + 'px) scale(1,1)' + TURN, borderRadius: '12px' },
+        { transform: 'translate(' + to.left + 'px,' + to.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
       ], { duration: reduce ? 0 : 340, easing: VIEWER_EASE, fill: 'forwards' }).finished.then(() => {
         shot.style.visibility = '';
         img.remove();
@@ -392,12 +395,12 @@
       busy = true;
       const shift = Math.min(innerWidth * 0.18, 160) * dir, o = old._rect;
       old.animate([
-        { transform: 'translate(' + o.left + 'px,' + o.top + 'px)', opacity: 1 },
-        { transform: 'translate(' + (o.left - shift) + 'px,' + o.top + 'px) scale(0.96)', opacity: 0 },
+        { transform: 'translate(' + o.left + 'px,' + o.top + 'px)' + TURN, opacity: 1 },
+        { transform: 'translate(' + (o.left - shift) + 'px,' + o.top + 'px) scale(0.96)' + TURN, opacity: 0 },
       ], { duration: 260, easing: SLIDE_EASE, fill: 'forwards' }).finished.then(() => old.remove());
       next.animate([
-        { transform: 'translate(' + (r.left + shift) + 'px,' + r.top + 'px) scale(0.96)', opacity: 0, filter: 'blur(4px)' },
-        { transform: 'translate(' + r.left + 'px,' + r.top + 'px) scale(1)', opacity: 1, filter: 'blur(0)' },
+        { transform: 'translate(' + (r.left + shift) + 'px,' + r.top + 'px) scale(0.96)' + TURN, opacity: 0, filter: 'blur(4px)' },
+        { transform: 'translate(' + r.left + 'px,' + r.top + 'px) scale(1)' + TURN, opacity: 1, filter: 'blur(0)' },
       ], { duration: 320, easing: SLIDE_EASE }).finished.then(() => { busy = false; });
     }
 
@@ -428,11 +431,11 @@
         const dx = e.clientX - start.x, dy = e.clientY - start.y, b = start.base;
         if (dy > 0 && Math.abs(dy) > Math.abs(dx)) {
           const s = Math.max(0.75, 1 - dy / 1600);
-          img.style.transform = 'translate(' + (b.left + dx * 0.4 + b.width * (1 - s) / 2) + 'px,' + (b.top + dy) + 'px) scale(' + s + ')';
+          img.style.transform = 'translate(' + (b.left + dx * 0.4 + b.width * (1 - s) / 2) + 'px,' + (b.top + dy) + 'px) scale(' + s + ')' + TURN;
           veil.style.opacity = String(Math.max(0.3, 1 - dy / 500));
         } else {
           const edge = (dx > 0 && index === 0) || (dx < 0 && index === items.length - 1);
-          img.style.transform = 'translate(' + (b.left + (edge ? dx * 0.25 : dx)) + 'px,' + b.top + 'px)';
+          img.style.transform = 'translate(' + (b.left + (edge ? dx * 0.25 : dx)) + 'px,' + b.top + 'px)' + TURN;
         }
       });
       const end = e => {
