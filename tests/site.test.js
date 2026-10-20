@@ -558,7 +558,7 @@ test('«Где мы находимся»: one limestone plane, no cards -- the a
 test('the «Изделия» panel (2026-10-20, the owner: «переноси на сайт»): every direction at once, the row under the pointer a faint fill, the group\'s photograph beside it; verde only for hover / the current page', () => {
   const css = headerAndSiteCss();
   const rule = sel => { const i = css.indexOf('\n' + sel + ' {'); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
-  assert.match(rule('.nav-products.is-rich > .nav-panel'), /width: min\(980px,[\s\S]*grid-template-columns: minmax\(0, 1fr\) 300px;/);
+  assert.match(rule('.nav-products.is-rich > .nav-panel'), /width: min\(980px,[\s\S]*grid-template-columns: minmax\(0, 1fr\) 270px;/);
   assert.match(rule('.nav-products > .nav-panel'), /width: min\(720px,/, 'without JavaScript: the rows alone');
   assert.doesNotMatch(css, /counter\(nav-group/, 'no numbers before the groups');
   assert.match(rule('.nav-group.is-on'), /background: rgba\(28, 29, 27, 0\.05\)/, 'the capsule\'s own faint fill');
@@ -1252,10 +1252,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '43c67d237280351da70f482c1594c0e800d23bd05dfaaa1fadfc3d995074794e', 'css/header.css as the owner approved it');
+  assert.equal(print, 'a94affa61bcdcb503bb6b66909ed48ff5031081880f1a4e9fd8e81bcaeac9d81', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1286,7 +1286,7 @@ test('the «Изделия» panel: a group title is never smaller than its link
   assert.match(rule('.nav-group a'), /font-size: 16px;/);
   assert.match(h, /\.js \.nav-group-title \{ font-size: 17px; \}/);
   assert.match(h, /\.js \.nav-group a \{[^}]*font-size: 17px;/);
-  assert.match(rule('.nav-group'), /grid-template-columns: 216px minmax\(0, 1fr\);/, 'room for «Лестницы и ступени 2» on one line at 16 px');
+  assert.match(rule('.nav-group'), /grid-template-columns: 196px minmax\(0, 1fr\);/, 'room for «Лестницы и ступени 2» (192 px) on one line at 16 px');
 });
 
 test('the phone menu: «Готовые изделия» and «Контакты» look like what they are -- a row with the site\'s arrow at its end (2026-10-15, the owner)', () => {
