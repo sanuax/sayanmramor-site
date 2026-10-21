@@ -121,7 +121,10 @@ h3 { font-size: var(--fs-h3); }
    in its own colour, so the words always stand on the wall and room is kept under them for the
    washbasin (62 % of the width), however long they run. */
 @media (max-aspect-ratio: 1/1), (max-width: 900px) {
-  .home-hero { display: block; min-height: 0; container-type: inline-size; background: #93877a; }
+  /* The whole screen (2026-10-21, the owner): lvh -- the height with the browser's bars hidden,
+     so the wall and the washbasin go on under the phone's bottom bar too; the words keep to
+     the top and the washbasin to the bottom, the wall's colour fills between. */
+  .home-hero { display: block; min-height: 100vh; min-height: 100lvh; container-type: inline-size; background: #93877a; }
   /* The picture at 162 % of the width, so the washbasin spans about 0.25-0.85 of it; the room's
      sides and part of the floor fall outside. Its top meets the wall colour through a soft band. */
   .home-hero-picture { position: absolute; inset: 0; overflow: hidden; }
@@ -132,7 +135,8 @@ h3 { font-size: var(--fs-h3); }
   }
   .home-hero-content { padding-top: calc(66px + var(--s-6)); padding-bottom: calc(62cqw + var(--s-6)); }
   .home-hero h1 { font-size: 32px; }
-  .home-hero-note { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: var(--s-4); }
+  /* The caption above the bottom bar: lifted by its height (large minus small viewport). */
+  .home-hero-note { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: var(--s-4); padding-bottom: calc(var(--s-4) + 100lvh - 100svh); }
 }
 
 /* From stone to object: three real photographs of one way -- the stone, its

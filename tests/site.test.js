@@ -1321,3 +1321,13 @@ test('the header holds still on a phone too: its menu is a scroll box of its own
   assert.match(phone.match(/\.js \.site-header\.menu-open \.site-nav \{[^}]*\}/)[0], /overflow-x: hidden;/);
   assert.match(phone, /\.js \.nav-group a::after \{ position: static; margin-left: 6px; \}/, 'the arrow in the row, not past the menu\'s edge');
 });
+
+// ---- The home hero on a phone (2026-10-21, the owner: «визуализация раковины не на весь экран») ----
+test('home hero on a phone: the wall and the washbasin fill the whole screen, the caption stays above the browser\'s bottom bar', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
+  const hero = phone.match(/\n {2}\.home-hero \{[^}]*\}/)[0];
+  assert.match(hero, /min-height: 100vh; min-height: 100lvh;/, 'the full screen, the bars hidden or not');
+  const note = phone.match(/\n {2}\.home-hero-note \{[^}]*\}/)[0];
+  assert.match(note, /padding-bottom: calc\(var\(--s-4\) \+ 100lvh - 100svh\);/, 'lifted by the bottom bar\'s height');
+});
