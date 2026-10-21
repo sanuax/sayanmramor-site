@@ -125,6 +125,8 @@ h3 { font-size: var(--fs-h3); }
      so the wall and the washbasin go on under the phone's bottom bar too; the words keep to
      the top and the washbasin to the bottom, the wall's colour fills between. */
   .home-hero { display: block; min-height: 100vh; min-height: 100lvh; container-type: inline-size; background: #93877a; }
+  /* Where the bars resize the page (Chrome on an iPhone) js/site.js holds the first height in --hero-h. */
+  @supports (height: 100lvh) { .home-hero { min-height: var(--hero-h, 100lvh); } }
   /* The picture at 162 % of the width, so the washbasin spans about 0.25-0.85 of it; the room's
      sides and part of the floor fall outside. Its top meets the wall colour through a soft band. */
   .home-hero-picture { position: absolute; inset: 0; overflow: hidden; }

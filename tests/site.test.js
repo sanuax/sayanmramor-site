@@ -1331,3 +1331,47 @@ test('home hero on a phone: the wall and the washbasin fill the whole screen, th
   const note = phone.match(/\n {2}\.home-hero-note \{[^}]*\}/)[0];
   assert.match(note, /padding-bottom: calc\(var\(--s-4\) \+ 100lvh - 100svh\);/, 'lifted by the bottom bar\'s height');
 });
+
+// ---- The home hero holds still while a phone's bars come and go (2026-10-21, the owner:
+// Chrome on an iPhone «слишком резко подстраивается»): there the page itself is resized with
+// the bars, so 100lvh jumped with them; the height is taken once instead.
+function heroWorld({ coarse = true, width = 390, height = 700 } = {}) {
+  const props = {};
+  const listeners = {};
+  const hero = { style: { setProperty: (k, v) => { props[k] = v; } } };
+  const doc = { querySelector: sel => (sel === '.home-hero' ? hero : null) };
+  const win = {
+    innerWidth: width, innerHeight: height,
+    matchMedia: q => ({ matches: q === '(pointer: coarse)' ? coarse : false }),
+    addEventListener: (type, fn) => { listeners[type] = fn; },
+  };
+  return { props, listeners, doc, win };
+}
+
+test('home hero: where 100lvh stays put (Safari, Android Chrome) the CSS alone holds it', () => {
+  const w = heroWorld();
+  SiteCommon.holdHeroHeight(w.doc, w.win, () => true);
+  assert.deepEqual(w.props, {});
+});
+
+test('home hero: where the bars resize the page (Chrome on an iPhone) its height is taken once and kept while the bars come and go', () => {
+  const w = heroWorld();
+  SiteCommon.holdHeroHeight(w.doc, w.win, () => false);
+  assert.equal(w.props['--hero-h'], '700px');
+  w.win.innerHeight = 760; w.listeners.resize();          // the bars hide: same width
+  assert.equal(w.props['--hero-h'], '700px');
+  w.win.innerWidth = 700; w.win.innerHeight = 360; w.listeners.resize();   // the phone turned
+  assert.equal(w.props['--hero-h'], '360px');
+});
+
+test('home hero: a mouse and a desktop window are left to the CSS', () => {
+  const w = heroWorld({ coarse: false });
+  SiteCommon.holdHeroHeight(w.doc, w.win, () => false);
+  assert.deepEqual(w.props, {});
+});
+
+test('home hero CSS: the held height first, the large viewport where nothing holds it', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
+  assert.match(phone, /@supports \(height: 100lvh\) \{ \.home-hero \{ min-height: var\(--hero-h, 100lvh\); \} \}/);
+});

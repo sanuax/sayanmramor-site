@@ -612,5 +612,34 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') mountGroupTilt(document, window);
 
-  return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite };
+  // The home hero fills a phone's screen (css/site.css, 100lvh) and must hold still while the
+  // browser's bars come and go (2026-10-21, the owner). Safari and Android Chrome keep 100lvh put;
+  // Chrome on an iPhone resizes the page itself with its bars, so there 100lvh jumped with them --
+  // there the height is taken once, and again only when the phone turns (the width changes).
+  function viewportUnitsSteady(doc) {
+    const probe = doc.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;width:0;height:100lvh';
+    doc.body.appendChild(probe);
+    const large = probe.offsetHeight;
+    probe.style.height = '100svh';
+    const small = probe.offsetHeight;
+    probe.remove();
+    return large > small;
+  }
+  function holdHeroHeight(doc, win, steady) {
+    const hero = doc.querySelector('.home-hero');
+    if (!hero || !win.matchMedia || !win.matchMedia('(pointer: coarse)').matches) return;
+    if ((steady || viewportUnitsSteady)(doc)) return;
+    let width = -1;
+    const hold = () => {
+      if (win.innerWidth === width) return;
+      width = win.innerWidth;
+      hero.style.setProperty('--hero-h', win.innerHeight + 'px');
+    };
+    hold();
+    win.addEventListener('resize', hold);
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') holdHeroHeight(document, window);
+
+  return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight };
 });
