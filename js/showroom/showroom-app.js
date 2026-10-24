@@ -96,7 +96,7 @@ function start() {
       const hide = described.zone.hide;
       rig.goTo(fit(described.cameraView), described.zone.orbit, {
         onMidpoint: zoneChanged ? () => view3d.setHiddenGroups(hide) : null,
-        duration: zoneChanged ? 1300 : 900,
+        duration: zoneChanged ? 1300 : 700,
       });
     }
     // The address bar follows the zone and the open card, so «Поделиться»
@@ -126,6 +126,11 @@ function start() {
   }
 
   // Wiring.
+  // A press or the wheel on the house mid-flight takes it over (showroom-camera.js interrupt).
+  // Caught on the stage on its way down, before the controls see it, so they take this very drag.
+  const takeOver = e => { if (e.target === canvas && rig.isMoving()) { rig.interrupt(); ui.hideHint(); requestRender(); } };
+  stage.addEventListener('pointerdown', takeOver, true);
+  stage.addEventListener('wheel', takeOver, { capture: true, passive: true });
   rig.controls.addEventListener('change', requestRender);
   rig.controls.addEventListener('start', () => { ui.hideHint(); requestRender(); });
   window.addEventListener('resize', resize);

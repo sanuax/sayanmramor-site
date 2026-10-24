@@ -52,9 +52,11 @@ export function createUI(doc, { Data, dispatch }) {
 
   el.back.addEventListener('click', () => dispatch({ type: 'goOutside' }));
   el.cardClose.addEventListener('click', () => dispatch({ type: 'closeCard' }));
-  el.panelBtn.addEventListener('click', () => dispatch({ type: el.panel.hidden ? 'openPanel' : 'closePanel' }));
+  // By the state the button says, not by the panel: a panel still leaving is already closed.
+  const isOpen = b => b.getAttribute('aria-expanded') === 'true';
+  el.panelBtn.addEventListener('click', () => dispatch({ type: isOpen(el.panelBtn) ? 'closePanel' : 'openPanel' }));
   el.panelClose.addEventListener('click', () => dispatch({ type: 'closePanel' }));
-  el.contactBtn.addEventListener('click', () => dispatch({ type: el.contact.hidden ? 'openContact' : 'closeContact' }));
+  el.contactBtn.addEventListener('click', () => dispatch({ type: isOpen(el.contactBtn) ? 'closeContact' : 'openContact' }));
   el.contactClose.addEventListener('click', () => dispatch({ type: 'closeContact' }));
 
   // «Поделиться»: the address bar already names the zone and the open card
@@ -94,6 +96,19 @@ export function createUI(doc, { Data, dispatch }) {
     }
     copyLink(url).then(() => shareDone('Ссылка скопирована'), () => shareDone('Ссылка - в адресной строке'));
   });
+
+  // A card or a sheet leaves as it came, only quicker (css/showroom.css .is-leaving): it is
+  // hidden once its leaving is over -- or at once where nothing would play it.
+  function setShown(node, on) {
+    if (on) { node.classList.remove('is-leaving'); node.hidden = false; return; }
+    if (node.hidden || node.classList.contains('is-leaving')) return;
+    if (!window.getComputedStyle || !node.getAnimations) { node.hidden = true; return; }
+    node.classList.add('is-leaving');
+    if (!node.getAnimations().length) { node.classList.remove('is-leaving'); node.hidden = true; return; }
+    const done = () => { if (!node.classList.contains('is-leaving')) return; node.classList.remove('is-leaving'); node.hidden = true; };
+    node.addEventListener('animationend', done, { once: true });
+    setTimeout(done, 400);   // a page not being drawn sends no animationend
+  }
 
   let lastCardId = null;
   let lastZoneId = null;
@@ -156,7 +171,7 @@ export function createUI(doc, { Data, dispatch }) {
     const focusWasInCard = !card && lastCardId !== null && view.zone.id === lastZoneId &&
       (!active || active === doc.body || el.card.contains(active));
     if (card && card.objectId !== lastCardId) cardOpener = openerOf(active);
-    el.card.hidden = !card;
+    setShown(el.card, !!card);
     if (card) {
       el.cardProduct.textContent = card.productLabel;
       el.cardTitle.textContent = card.title;
@@ -176,8 +191,8 @@ export function createUI(doc, { Data, dispatch }) {
     lastCardId = card ? card.objectId : null;
     lastZoneId = view.zone.id;
 
-    el.panel.hidden = !view.panelOpen;
-    el.contact.hidden = !view.contactOpen;
+    setShown(el.panel, view.panelOpen);
+    setShown(el.contact, view.contactOpen);
     doc.body.classList.toggle('has-sheet', !!card || view.panelOpen || view.contactOpen);
     el.panelBtn.setAttribute('aria-expanded', view.panelOpen ? 'true' : 'false');
     if (view.panelOpen && !lastPanelOpen) el.panelList.querySelector('button').focus({ preventScroll: true });

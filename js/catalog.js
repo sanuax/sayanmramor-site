@@ -130,10 +130,11 @@
     if (on) node.classList.add(cls); else node.classList.remove(cls);
   }
   // A short settling movement for the piece's words, when the browser can (WAAPI); nothing otherwise.
+  // Quick, as the photograph beside it changes at once (2026-10-24, the owner).
   function settle(node, reduce) {
     if (reduce || typeof node.animate !== 'function') return;
-    node.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
-      { duration: 450, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
+    node.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 220, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
   }
 
   // The wide screen's gallery, built once; select(i, k) shows piece i (its k-th photo).
@@ -219,7 +220,8 @@
       return shots[key];
     }
 
-    function select(i, k) {
+    // `still`: chosen from the keyboard -- a key is pressed often, so the words are simply there.
+    function select(i, k, still) {
       i = (i + n) % n;
       k = k || 0;
       const on = shot(i, k);
@@ -238,7 +240,7 @@
       ask.innerHTML = '';
       ask.appendChild(askLink(p));
       count.textContent = position(i, n);
-      settle(piece, reduce);
+      settle(piece, reduce || still);
       thumbs.innerHTML = '';
       const photos = Array.isArray(p.photos) ? p.photos : [];
       if (photos.length > 1) {
@@ -265,18 +267,18 @@
       b.setAttribute('aria-current', 'false');
       // A mouse passing over the index previews; a click or the keyboard choose.
       b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') select(i); });
-      b.addEventListener('focus', () => select(i));
+      b.addEventListener('focus', () => select(i, 0, b.matches && b.matches(':focus-visible')));
       b.addEventListener('click', () => select(i));
       li.appendChild(b);
       list.appendChild(li);
       rows.push(b);
       lines.push(li);
     });
-    prev.addEventListener('click', () => select(current - 1));
-    next.addEventListener('click', () => select(current + 1));
+    prev.addEventListener('click', e => select(current - 1, 0, !!e && e.detail === 0));   // detail 0: Enter or Space
+    next.addEventListener('click', e => select(current + 1, 0, !!e && e.detail === 0));
     root.addEventListener('keydown', e => {
-      if (e.key === 'ArrowRight') { e.preventDefault(); select(current + 1); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); select(current - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); select(current + 1, 0, true); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); select(current - 1, 0, true); }
     });
 
     const cards = el('div', 'collection-cards');

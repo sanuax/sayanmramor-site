@@ -209,6 +209,7 @@
   // is open and returns to the photo it came from.
   const VIEWER_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';   // quick to answer, soft to land
   const SLIDE_EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  const FADE_MS = 200;   // reduced motion: the photo fades in and out where it stands, it never grows or travels
   // Firefox draws a moving photograph on whole pixels (css/site.css, «Firefox and a moving
   // photograph»): there every transform of the viewer's photograph ends in a 3D one that changes nothing.
   const TURN = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('-moz-appearance', 'none') ? ' perspective(2000px)' : '';
@@ -236,7 +237,27 @@
     const doc = document;
     const figures = Array.from(container.children);
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let lb = null, stage, count, strip, veil, index = -1, img = null, opener = null, busy = false;
+    let lb = null, stage, count, strip, veil, index = -1, img = null, opener = null, opening = false;
+    // The move under way: its animations and what is left to do when they end. A press never waits
+    // for it (2026-10-24, the owner: quick clicks and Esc were lost): it is brought to its end at
+    // once -- what it was leaving goes, what it was bringing stands -- and then the press acts.
+    let move = null;
+    function begin(anims, then) {
+      const m = { anims, then };
+      move = m;
+      Promise.all(anims.map(a => a.finished)).then(() => end(m), () => {});
+    }
+    function end(m) {
+      if (move !== m) return;
+      move = null;
+      m.then();
+    }
+    function hurry() {
+      const m = move;
+      if (!m) return;
+      m.anims.forEach(a => a.finish());
+      end(m);
+    }
 
     figures.forEach((f, i) => {
       const alt = f.querySelector('img') ? f.querySelector('img').alt : '';
@@ -294,8 +315,9 @@
       stage.addEventListener('click', e => { if (e.target === stage) closeViewer(); });
       prev.addEventListener('click', () => go(index - 1, -1));
       next.addEventListener('click', () => go(index + 1, 1));
-      lb.addEventListener('keydown', onKey);
-      addEventListener('resize', () => { if (img && !busy) place(img, target(index)); });
+      // On the document, not the viewer: while a photo is still growing the focus is on the page yet, and Esc must close it.
+      doc.addEventListener('keydown', e => { if (!lb.hidden) onKey(e); });
+      addEventListener('resize', () => { if (img && !move) place(img, target(index)); });
       enableSwipe();
     }
 
@@ -326,9 +348,11 @@
     }
 
     function open(i) {
-      if (busy) return;
+      if (opening) return;
+      hurry();   // still folding back into its frame: done at once
+      if (img) return;
       if (!lb) build();
-      busy = true;
+      opening = true;
       opener = figures[i];
       const gutter = innerWidth - doc.documentElement.clientWidth;   // the page must not jump when its scrollbar goes
       doc.documentElement.classList.add('viewer-open');
@@ -341,15 +365,14 @@
         const from = shotOf(i).getBoundingClientRect(), to = target(i);
         place(img, to);
         shotOf(i).style.visibility = 'hidden';
-        flip(img, from, to, 520).finished.then(() => {
-          busy = false;
-          lb.querySelector('.viewer-close').focus({ preventScroll: true });
-        });
+        opening = false;
+        begin([flip(img, from, to, 440)], () => lb.querySelector('.viewer-close').focus({ preventScroll: true }));
       });
     }
 
     // FLIP: an element already standing at b animates from rect a.
     function flip(el, a, b, ms) {
+      if (reduce) return el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease' });
       const sx = a.width / b.width, sy = a.height / b.height;
       return el.animate([
         { transform: 'translate(' + a.left + 'px,' + a.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
@@ -358,22 +381,21 @@
     }
 
     function closeViewer() {
-      if (busy || !img) return;
-      busy = true;
+      hurry();
+      if (!img) return;
       const i = index, shot = shotOf(i), from = img._rect;
       shot.scrollIntoView({ block: 'nearest' });
       const to = shot.getBoundingClientRect();
       lb.classList.remove('is-open');
       const sx = to.width / from.width, sy = to.height / from.height;
-      img.animate([
+      begin([img.animate(reduce ? [{ opacity: 1 }, { opacity: 0 }] : [
         { transform: 'translate(' + from.left + 'px,' + from.top + 'px) scale(1,1)' + TURN, borderRadius: '12px' },
         { transform: 'translate(' + to.left + 'px,' + to.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
-      ], { duration: reduce ? 0 : 340, easing: VIEWER_EASE, fill: 'forwards' }).finished.then(() => {
+      ], { duration: reduce ? FADE_MS : 340, easing: reduce ? 'ease' : VIEWER_EASE, fill: 'forwards' })], () => {
         shot.style.visibility = '';
         img.remove();
         img = null;
         lb.hidden = true;
-        busy = false;
         doc.documentElement.classList.remove('viewer-open');
         doc.body.style.paddingRight = '';
         opener.focus({ preventScroll: true });
@@ -383,7 +405,9 @@
     // Another photo: from the arrows and a swipe it slides in from its side;
     // from the keys and the strip it is simply there (a key is pressed often).
     function go(i, dir, instant) {
-      if (busy || !img || i === index || i < 0 || i >= items.length) return;
+      if (!img || i === index || i < 0 || i >= items.length) return;
+      hurry();
+      if (!img) return;   // it was closing: closed now
       dir = dir || (i > index ? 1 : -1);
       const old = img, next = photo(i), r = target(i);
       place(next, r);
@@ -392,16 +416,14 @@
       setCurrent(i);
       img = next;
       if (instant || reduce) { old.remove(); return; }
-      busy = true;
       const shift = Math.min(innerWidth * 0.18, 160) * dir, o = old._rect;
-      old.animate([
+      begin([old.animate([
         { transform: 'translate(' + o.left + 'px,' + o.top + 'px)' + TURN, opacity: 1 },
         { transform: 'translate(' + (o.left - shift) + 'px,' + o.top + 'px) scale(0.96)' + TURN, opacity: 0 },
-      ], { duration: 260, easing: SLIDE_EASE, fill: 'forwards' }).finished.then(() => old.remove());
-      next.animate([
+      ], { duration: 260, easing: SLIDE_EASE, fill: 'forwards' }), next.animate([
         { transform: 'translate(' + (r.left + shift) + 'px,' + r.top + 'px) scale(0.96)' + TURN, opacity: 0, filter: 'blur(4px)' },
         { transform: 'translate(' + r.left + 'px,' + r.top + 'px) scale(1)' + TURN, opacity: 1, filter: 'blur(0)' },
-      ], { duration: 320, easing: SLIDE_EASE }).finished.then(() => { busy = false; });
+      ], { duration: 320, easing: SLIDE_EASE })], () => old.remove());
     }
 
     function onKey(e) {
@@ -422,7 +444,9 @@
     function enableSwipe() {
       let start = null;
       stage.addEventListener('pointerdown', e => {
-        if (busy || !img || e.target !== img || start) return;
+        if (!img || e.target !== img || start) return;
+        hurry();
+        if (!img) return;
         start = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId, base: img._rect };
         img.setPointerCapture(e.pointerId);
       });

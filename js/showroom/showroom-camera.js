@@ -19,6 +19,7 @@ export function createCameraRig(canvas, { reducedMotion }) {
   controls.zoomSpeed = 0.8;
 
   let transition = null;
+  let release = null;   // a flight the client took over: its limits closing in on the arrival's
   let insets = { left: 0, right: 0, bottom: 0 };
   let size = { width: 1, height: 1 };
 
@@ -44,6 +45,7 @@ export function createCameraRig(canvas, { reducedMotion }) {
 
   function jumpTo(view, orbit) {
     transition = null;
+    release = null;
     // Limits first: OrbitControls clamps the camera into them on update().
     controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity;
     camera.position.set(...view.position);
@@ -60,6 +62,7 @@ export function createCameraRig(canvas, { reducedMotion }) {
       jumpTo(view, orbit);
       return;
     }
+    release = null;
     controls.enabled = false;
     controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity;
     controls.minDistance = 0; controls.maxDistance = Infinity;
@@ -74,8 +77,60 @@ export function createCameraRig(canvas, { reducedMotion }) {
     };
   }
 
+  // The client takes the house in hand mid-flight (2026-10-24, the owner): the flight stops
+  // where the camera is and the controls are theirs at once. The cut-away walls switch now if
+  // they had not yet. The arrival's limits do not snap the camera into them: they start wide
+  // enough to hold it where it stands and close in over about a second, and the point it turns
+  // round glides on to the arrival's -- so the view settles into the zone, never jumps.
+  function interrupt() {
+    if (!transition) return;
+    const { view, orbit, to } = transition;
+    if (!transition.midpointDone) { transition.midpointDone = true; transition.onMidpoint(); }
+    transition = null;
+    controls.enabled = true;
+    applyLimits(view, orbit);
+    const goal = {
+      minDistance: controls.minDistance, maxDistance: controls.maxDistance,
+      minPolarAngle: controls.minPolarAngle, maxPolarAngle: controls.maxPolarAngle,
+      minAzimuthAngle: controls.minAzimuthAngle, maxAzimuthAngle: controls.maxAzimuthAngle,
+    };
+    const offset = camera.position.clone().sub(controls.target);
+    const dist = offset.length();
+    const polar = Math.acos(Math.min(1, Math.max(-1, offset.y / dist)));
+    controls.minDistance = Math.min(goal.minDistance, dist); controls.maxDistance = Math.max(goal.maxDistance, dist);
+    controls.minPolarAngle = Math.min(goal.minPolarAngle, polar); controls.maxPolarAngle = Math.max(goal.maxPolarAngle, polar);
+    if (Number.isFinite(goal.minAzimuthAngle)) {
+      // The camera's azimuth on the same turn as the range's middle, so the range widens the short way.
+      const mid = (goal.minAzimuthAngle + goal.maxAzimuthAngle) / 2;
+      const az = mid + Math.atan2(Math.sin(Math.atan2(offset.x, offset.z) - mid), Math.cos(Math.atan2(offset.x, offset.z) - mid));
+      controls.minAzimuthAngle = Math.min(goal.minAzimuthAngle, az); controls.maxAzimuthAngle = Math.max(goal.maxAzimuthAngle, az);
+    }
+    release = { goal, target: to.target.clone(), last: performance.now() };
+  }
+
+  // One step of a released flight closing in; false once it is done.
+  function settleRelease(now) {
+    const k = 1 - Math.exp(-Math.max(0, now - release.last) / 250);   // about a second to settle
+    release.last = now;
+    let done = true;
+    Object.keys(release.goal).forEach(key => {
+      const want = release.goal[key], have = controls[key];
+      if (!Number.isFinite(want) || !Number.isFinite(have)) { controls[key] = want; return; }
+      const next = have + (want - have) * k;
+      if (Math.abs(want - next) > 1e-3) { controls[key] = next; done = false; } else controls[key] = want;
+    });
+    controls.target.lerp(release.target, k);
+    if (controls.target.distanceTo(release.target) > 1e-3) done = false; else controls.target.copy(release.target);
+    if (done) release = null;
+    return !done;
+  }
+
   // Advances a transition; returns true while the camera is still moving.
   function update(now) {
+    if (release) {
+      const settling = settleRelease(now);
+      return controls.update() || settling;
+    }
     if (transition) {
       const t = Math.min(1, (now - transition.start) / transition.duration);
       const k = ease(t);
@@ -128,5 +183,5 @@ export function createCameraRig(canvas, { reducedMotion }) {
     applyViewOffset();
   }
 
-  return { camera, controls, goTo, jumpTo, update, setInsets, resize, isMoving: () => !!transition, dispose: () => controls.dispose() };
+  return { camera, controls, goTo, jumpTo, interrupt, update, setInsets, resize, isMoving: () => !!transition, dispose: () => controls.dispose() };
 }

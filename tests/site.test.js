@@ -424,6 +424,13 @@ test('header: the places are soft pills in the capsule -- the current one and th
   assert.doesNotMatch(css, /nav-group:nth-child\(\d\) \{[^}]*animation-delay/);
 });
 
+test('header.js: a phone menu turned round mid-way starts from where its clip stands -- the bottom inset of the computed inset()', () => {
+  assert.equal(SiteHeader.clipCut('inset(0px 0px 312.5px round 28px)'), 312.5);
+  assert.equal(SiteHeader.clipCut('inset(0px round 28px)'), 0);
+  assert.equal(SiteHeader.clipCut('inset(1px 2px 3px 4px)'), 3);
+  assert.equal(SiteHeader.clipCut('none'), null);
+});
+
 test('header.js: the line rests under the current section, follows the pointer and the focus, and comes back', () => {
   const listeners = {};
   const on = owner => (type, fn) => { (listeners[owner + ':' + type] = listeners[owner + ':' + type] || []).push(fn); };
@@ -712,16 +719,13 @@ test('the privacy policy: e-mails, site addresses and phones are links, as on th
   links.forEach(([, text]) => assert.match(text, /@sayanmramor\.ru$|^https:\/\/sayanmramor\.ru\/?$|^\+ ?7\(495\)215-51-45$/));
 });
 
-test('hover only where there is a pointer: every :hover rule sits in @media (hover: hover) (or the desktop wall\'s fine-pointer block); focus keeps its own rules', () => {
+test('hover only where there is a pointer: every :hover rule sits in @media (hover: hover); focus keeps its own rules', () => {
   ['site.css', 'showroom.css'].forEach(name => {
     const css = fs.readFileSync(path.join(site, 'css', name), 'utf8');
     const loose = css.split('\n').filter(line => line.includes(':hover')
       && !line.startsWith('@media (hover: hover)') && !/^\s+\S/.test(line) && !line.trim().startsWith('/*'));
     assert.deepEqual(loose, [], name);
   });
-  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  const wall = css.slice(css.indexOf('@media (min-width: 1200px) and (hover: hover) and (pointer: fine)'));
-  assert.ok(wall.indexOf('.wall-slab:not(.is-open):hover') < wall.indexOf('\n}\n'), 'the wall\'s indented hovers are inside its fine-pointer block');
 });
 
 test('step 0 fixes: the phone\'s contacts line up with their heading; touch targets of 44 px in the menus; the configure bar shortens instead of cutting off', () => {
@@ -1038,7 +1042,7 @@ test('the static home in CSS: colour on hover and focus only -- no sticky, no tr
   });
   assert.ok(block.length > 500);
   assert.doesNotMatch(block, /sticky|position: fixed|(?<!text-)transform|animation|@keyframes|will-change|perspective|clip-path/);
-  [...block.matchAll(/transition: ([^;]+);/g)].forEach(m => assert.match(m[1], /^(color|opacity) 0\.15s$/, m[1]));
+  [...block.matchAll(/transition: ([^;]+);/g)].forEach(m => assert.match(m[1], /^(color|opacity) (0\.15s|var\(--dur-fast\))$/, m[1]));   // --dur-fast: 150 ms (css/tokens.css)
   assert.match(block, /\.home-hero \{\s*display: grid;/);
   assert.match(block, /\.home-groups \{ display: grid; grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
 });
@@ -1252,10 +1256,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '833033fc7c384432bb9175eb740373bf72143e20ba74e34b2a10b90d4bc2446b', 'css/header.css as the owner approved it');
+  assert.equal(print, '77fee24331a05ece9bb090096dafe98abcdf050cbda5e7f032b86148a44a31fd', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);

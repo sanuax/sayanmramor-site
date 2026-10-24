@@ -327,8 +327,8 @@ test('the viewer: a photo grows from its frame to the screen; whole, centred, cl
   assert.match(src, /opener\.focus\(\{ preventScroll: true \}\)/, 'the focus goes back to the photo it came from');
   assert.match(src, /matchMedia\('\(prefers-reduced-motion: reduce\)'\)/);
   assert.match(css, /\.portfolio-item\[role="button"\] \{ cursor: zoom-in; \}/);
-  // The reveal: one quiet movement -- a fade and a 24 px rise; with reduced motion, the fade alone.
-  assert.match(css, /\.portfolio-item\.will-reveal \{ opacity: 0; transform: translateY\(24px\); \}/);
+  // The reveal: one quiet movement -- a fade and a 14 px rise (24 px until 2026-10-24); with reduced motion, the fade alone.
+  assert.match(css, /\.portfolio-item\.will-reveal \{ opacity: 0; transform: translateY\(14px\); \}/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.portfolio-item\.will-reveal \{ transform: none; \}/);
   assert.doesNotMatch(css, /will-reveal[^{]*\{[^}]*clip-path/, 'no wipe');
 });

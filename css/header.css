@@ -167,7 +167,7 @@
 }
 .nav-group a::before {
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.2s var(--ease);   /* 0.2 s, not 0.3 (2026-10-24, the owner) */
 }
 /* The arrow takes no room of its own: it comes out into the gap after the word, so the
    words stand at an even step (2026-10-20, the owner: the directions were spread too wide). */
@@ -313,11 +313,11 @@ html.menu-lock { overflow: hidden; }
     --capsule-bg: rgba(248, 247, 244, 0.97);
     max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);
   }
-  /* The capsule opens smoothly (the owner, 2026-10-19): js/header.js animates its height
-     down into the menu and back up, the capsule's own curve cutting off what is not yet
-     in; the menu's contents come in a little after and fade out as it folds. */
+  /* The capsule opens smoothly (the owner, 2026-10-19): js/header.js uncovers it down into
+     the menu and covers it back up with a clip in the capsule's own curve -- no height moves
+     (2026-10-24, the owner); the menu's contents come in a little after and fade out as it folds. */
   .js .site-header.menu-anim { overflow: hidden; }
-  .js .site-header.menu-open .site-nav, .js .site-header.menu-open .site-header-actions { animation: menu-content-in 0.34s var(--ease) both; }
+  .js .site-header.menu-open .site-nav, .js .site-header.menu-open .site-header-actions { animation: menu-content-in 0.3s var(--ease) both; }
   .js .site-header.menu-closing .site-nav, .js .site-header.menu-closing .site-header-actions { animation: menu-content-out 0.2s var(--ease) both; }
   .js .site-header.menu-open .site-header-inner { height: auto; flex-wrap: wrap; padding: 6px 6px 6px 20px; }
   .js .site-header.menu-open .site-nav {

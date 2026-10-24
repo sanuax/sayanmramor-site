@@ -25,7 +25,7 @@ export function createMarkers(layer, { onSelect }) {
       label.className = 'sr-marker-label';
       label.textContent = m.title;
       el.append(dot, label);
-      el.addEventListener('click', () => onSelect(m.id));
+      el.addEventListener('click', () => { layer.classList.add('is-known'); onSelect(m.id); });   // known: the rings stop pulsing
       layer.appendChild(el);
       return { el, marker: m, occluded: false };
     });

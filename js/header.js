@@ -17,8 +17,8 @@
   const MOBILE_QUERY = '(max-width: 1000px)';
   const REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
   const FOLD_MS = 260;   // a little longer than the fold (0.18 s): the fallback when no animationend comes
-  const MENU_OPEN_MS = 340;   // the phone capsule growing into the menu
-  const MENU_CLOSE_MS = 260;  // and folding back
+  const MENU_OPEN_MS = 300;   // the phone capsule uncovering the menu
+  const MENU_CLOSE_MS = 220;  // and covering it back up
   const MENU_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';   // css --ease
 
   // «Изделия» with the groups' photographs (2026-10-20, the owner: «переноси на сайт»). Built on
@@ -32,6 +32,14 @@
   const NAV_NOTES = { 'Фасады': 'Облицовка фасада камнем' };
   const NAV_ASSETS = '/sayanmramor-site/assets/nav/';
   const BACK_MS = 400;   // the rows' way back in (0.34 s), then the class goes
+  // The bottom inset of a computed inset() clip: «inset(0px 0px 312.5px round 28px)» -> 312.5.
+  function clipCut(value) {
+    const m = /inset\(([^)]*?)(?:\s+round\b|\))/.exec(value || '');
+    if (!m) return null;
+    const v = m[1].trim().split(/\s+/).map(parseFloat);
+    const b = v.length >= 3 ? v[2] : v[0];
+    return Number.isFinite(b) ? b : null;
+  }
   function directions(n) {
     const d = n % 10, h = n % 100;
     return n + ' ' + (d === 1 && h !== 11 ? 'направление' : d >= 2 && d <= 4 && (h < 10 || h >= 20) ? 'направления' : 'направлений');
@@ -236,35 +244,39 @@
       if (next) { pull = pageTop(next) - before; overlay(heightOf()); }
     }
 
-    // On a phone the capsule grows down into the menu and shrinks back (the owner,
-    // 2026-10-19): its height goes from what it is now to what it will be. Closing, the
-    // menu stays drawn until the capsule has folded up; the page is unlocked at once, so
-    // an anchor in the menu scrolls. A tap mid-way turns it round from where it is.
+    // On a phone the capsule opens down into the menu and folds back up (the owner,
+    // 2026-10-19). No height moves (2026-10-24, the owner): that laid the page out again in
+    // every frame. The capsule stands at its open size at once, and a clip rounded as the
+    // capsule uncovers it from its closed height down -- and covers it back up -- so a frame
+    // is only drawn. Closing, the menu stays drawn until the clip is up; the page is unlocked
+    // at once, so an anchor in the menu scrolls. A tap mid-way turns it round from where it is.
     function setMenu(open) {
       const animate = open !== menuOpen() && mq.matches && !reduced() && !!header.animate && !!header.getBoundingClientRect;
-      const from = animate ? header.getBoundingClientRect().height : 0;
+      const cut = animate && menuAnim && win.getComputedStyle ? clipCut(win.getComputedStyle(header).clipPath) : null;
       if (menuAnim) { menuAnim.onfinish = null; menuAnim.cancel(); menuAnim = null; }
       const settle = () => { menuClosing = false; header.classList.toggle('menu-closing', false); header.classList.toggle('menu-anim', false); };
       if (!animate) { settle(); applyMenu(open); return; }
       header.classList.toggle('menu-anim', true);
-      let to;
       if (open) {
         menuClosing = false;
         header.classList.toggle('menu-closing', false);
         applyMenu(true);
-        to = header.getBoundingClientRect().height;
       } else {
         menuClosing = true;
         header.classList.toggle('menu-closing', true);
         header.classList.toggle('menu-open', false);   // measured closed, drawn open
-        to = closedH = header.getBoundingClientRect().height;
+        closedH = heightOf();
         header.classList.toggle('menu-open', true);
         setLock(false);
       }
-      // Held at its last height until the menu has settled, so no frame shows it open again.
-      // The margin goes with the height, so the page under it never moves.
-      const frame = h => ({ height: h + 'px', marginBottom: marginFor(h) + 'px' });
-      const anim = header.animate([frame(from), frame(to)], { duration: open ? MENU_OPEN_MS : MENU_CLOSE_MS, easing: MENU_EASE, fill: 'forwards' });
+      // The open capsule's margin already takes back its height, so the page under it never
+      // moves; the clip is held at its end until the menu has settled, so no frame shows it open again.
+      const full = Math.max(0, heightOf() - closedH);
+      const from = cut != null ? Math.min(full, cut) : (open ? full : 0), to = open ? 0 : full;
+      const round = win.getComputedStyle ? win.getComputedStyle(header).borderTopLeftRadius : '28px';
+      const frame = c => ({ clipPath: 'inset(0 0 ' + c + 'px 0 round ' + round + ')' });
+      const ms = (open ? MENU_OPEN_MS : MENU_CLOSE_MS) * (full ? Math.abs(to - from) / full : 1);   // turned round mid-way: only the rest of the way
+      const anim = header.animate([frame(from), frame(to)], { duration: ms, easing: MENU_EASE, fill: 'forwards' });
       anim.onfinish = () => { menuAnim = null; settle(); if (!open) applyMenu(false); anim.cancel(); };
       menuAnim = anim;
     }
@@ -401,5 +413,5 @@
 
   if (typeof document !== 'undefined' && typeof window !== 'undefined') init(document, window);
 
-  return { init, initIndicator, initProducts, mountGlass, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
+  return { init, initIndicator, initProducts, mountGlass, clipCut, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
 });

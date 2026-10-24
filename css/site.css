@@ -253,7 +253,7 @@ h3 { font-size: var(--fs-h3); }
 }
 .home-products h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 3.4vw, 46px); letter-spacing: -0.01em; line-height: 1.1; color: var(--order-ink); }
 .home-order-lead { font-size: var(--fs-small); line-height: 1.5; color: var(--order-dim); }
-.home-order-go { display: grid; place-items: center; width: var(--control-h); height: var(--control-h); color: var(--order-ink); transition: opacity 0.15s; }
+.home-order-go { display: grid; place-items: center; width: var(--control-h); height: var(--control-h); color: var(--order-ink); transition: opacity var(--dur-fast); }
 .home-order-go::after { content: ''; width: 30px; height: 19px; background: currentColor; -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; }
 .home-groups { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-3); margin-top: var(--s-6); }
 /* Each group on a pane of glass over the marble (liquid glass, 2026-10-10): the veins show through. */
@@ -274,10 +274,10 @@ h3 { font-size: var(--fs-h3); }
 .home-group a {
   display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 40px;
   font-size: var(--fs-small); font-weight: 500; line-height: 1.3; color: var(--order-dim); text-decoration: none;
-  transition: color 0.15s;
+  transition: color var(--dur-fast);
 }
 .home-group a::after {
-  content: ''; flex: none; width: 14px; height: 9px; background: currentColor; opacity: 0.6; transition: opacity 0.15s;
+  content: ''; flex: none; width: 14px; height: 9px; background: currentColor; opacity: 0.6; transition: opacity var(--dur-fast);
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
 }
 .home-order :focus-visible { outline-color: var(--order-ink); }
@@ -294,13 +294,13 @@ h3 { font-size: var(--fs-h3); }
 .home-instock-head { grid-column: 1 / 3; display: flex; align-items: center; gap: var(--s-4); min-width: 0; }
 .home-instock-icon { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: var(--surface-sunk); color: var(--ink); }
 .home-instock-words { display: grid; gap: 2px; min-width: 0; }
-.home-instock-title { font-size: 20px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; transition: color 0.15s; }
+.home-instock-title { font-size: 20px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; transition: color var(--dur-fast); }
 .home-instock-text { font-size: var(--fs-small); color: var(--muted); }
 .home-instock-point { align-self: stretch; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); min-width: 0; font-size: var(--fs-small); line-height: 1.4; color: var(--muted); }   /* five abreast: the icon over the words, the words the column's width */
 .home-instock-point svg { flex: none; margin-top: 1px; color: var(--ink-soft); }
 .home-instock-point b { display: block; margin-bottom: 2px; font-size: 15px; font-weight: 600; color: var(--ink); }
 .home-instock::after {
-  content: ''; grid-column: 5; justify-self: end; width: 20px; height: 13px; background: currentColor; transition: color 0.15s;
+  content: ''; grid-column: 5; justify-self: end; width: 20px; height: 13px; background: currentColor; transition: color var(--dur-fast);
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
 }
 @media (hover: hover) {
@@ -450,7 +450,7 @@ h3 { font-size: var(--fs-h3); }
 .home-why-icon svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .home-why-num {
   font-family: var(--font-display); font-size: 40px; font-weight: 600; line-height: 1; letter-spacing: -0.02em;
-  color: rgba(233, 231, 225, 0.22); font-variant-numeric: tabular-nums; transition: color 0.15s;
+  color: rgba(233, 231, 225, 0.22); font-variant-numeric: tabular-nums; transition: color var(--dur-fast);
 }
 .home-why-title { min-height: 2.6em; margin-top: var(--s-4); font-size: 18px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: var(--on-dark); }
 .home-why-text { padding-top: var(--s-4); border-top: 1px dashed rgba(233, 231, 225, 0.22); font-size: 15px; line-height: 1.5; color: var(--on-dark); }
@@ -489,10 +489,10 @@ h3 { font-size: var(--fs-h3); }
 }
 .home-trust-item::after {
   content: ''; position: absolute; right: 12px; top: 12px; width: 14px; height: 9px; background: var(--accent);
-  opacity: 0; transition: opacity 0.15s;
+  opacity: 0; transition: opacity var(--dur-fast);
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
 }
-.home-trust-logo { width: auto; max-width: 100%; filter: grayscale(1); opacity: 0.72; transition: opacity 0.15s; }
+.home-trust-logo { width: auto; max-width: 100%; filter: grayscale(1); opacity: 0.72; transition: opacity var(--dur-fast); }
 .trust-reso { height: 60px; }
 .trust-rshb { height: 28px; }
 .trust-bamboo { height: 74px; }
@@ -500,7 +500,7 @@ h3 { font-size: var(--fs-h3); }
 .trust-hleb { height: 56px; }
 .home-trust-mcx { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .trust-mcx { height: 48px; }
-.home-trust-mcx-name { max-width: 19em; font-size: 10px; font-weight: 600; line-height: 1.3; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; color: var(--muted); transition: color 0.15s; }
+.home-trust-mcx-name { max-width: 19em; font-size: 10px; font-weight: 600; line-height: 1.3; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; color: var(--muted); transition: color var(--dur-fast); }
 .home-trust-item:focus-visible { outline-offset: 3px; }
 .home-trust-item:focus-visible .home-trust-logo { filter: none; opacity: 1; }
 .home-trust-item:focus-visible::after { opacity: 1; }
@@ -518,13 +518,14 @@ h3 { font-size: var(--fs-h3); }
    laying the paper and stamping each logo on it (the pass's stamp: from twice the size, settling
    without an overshoot); under a mouse the pass leans towards the pointer; on hover or keyboard
    focus it turns over smoothly, never past and back (2026-10-20, the owner: no tremble in any
-   motion), the name rises and the site is typed out,
-   and a band of foil light follows the pointer across the stub. */
+   motion), the name rises and the site is typed out, and a band of foil light follows the
+   pointer across the stub. A hover waits 0.15 s before it turns, so a pointer passing across
+   the wall turns nothing over, and the whole turn is done in 0.7 s (2026-10-24, the owner). */
 .trust-motion .trust-pass { padding: 0; background: none; box-shadow: none; perspective: 900px; }
 .trust-motion .trust-pass::after { content: none; }
 .trust-tilt, .trust-flip { position: absolute; inset: 0; transform-style: preserve-3d; }
-.trust-tilt { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.trust-flip { transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1); }
+.trust-tilt { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.6s var(--ease-out); }
+.trust-flip { transition: transform 0.6s var(--ease-in-out); }
 .trust-face {
   position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); border-radius: 12px;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
@@ -558,21 +559,21 @@ h3 { font-size: var(--fs-h3); }
 
 .trust-motion:not(.is-in) .trust-front { opacity: 0; }
 .trust-motion:not(.is-in) .trust-front > * { opacity: 0; }
-.trust-motion.is-in .trust-front { animation: trust-lay 0.5s var(--ease) calc(var(--n) * 90ms) both; }
-.trust-motion.is-in .trust-front > * { animation: trust-stamp 0.55s cubic-bezier(0.23, 1, 0.32, 1) calc(0.25s + var(--n) * 110ms) both; }
+.trust-motion.is-in .trust-front { animation: trust-lay 0.5s var(--ease) calc(var(--n) * 60ms) both; }
+.trust-motion.is-in .trust-front > * { animation: trust-stamp 0.55s var(--ease-out) calc(0.25s + var(--n) * 60ms) both; }
 @keyframes trust-lay { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
 @keyframes trust-stamp { from { opacity: 0; transform: rotate(-6deg) scale(1.9); } to { transform: none; } }
 
 .trust-motion .trust-pass:focus-visible .trust-flip { transform: rotateY(180deg); }
-.trust-motion .trust-pass:focus-visible .trust-back-name { animation: trust-rise 0.5s var(--ease) 0.3s both; }
-.trust-motion .trust-pass:focus-visible .trust-back-site { animation: trust-type 0.7s steps(16, end) 0.5s both; }
-.trust-motion .trust-pass:focus-visible .trust-back-go { animation: trust-rise 0.5s var(--ease) 0.75s both; }
+.trust-motion .trust-pass:focus-visible .trust-back-name { animation: trust-rise 0.3s var(--ease) 0.4s both; }
+.trust-motion .trust-pass:focus-visible .trust-back-site { animation: trust-type 0.4s steps(16, end) 0.45s both; }
+.trust-motion .trust-pass:focus-visible .trust-back-go { animation: trust-rise 0.3s var(--ease) 0.55s both; }
 @media (hover: hover) {
-  .trust-motion .trust-pass:hover .trust-flip { transform: rotateY(180deg); transition-delay: 0.06s; }
+  .trust-motion .trust-pass:hover .trust-flip { transform: rotateY(180deg); transition-delay: var(--dur-fast); }
   .trust-motion .trust-pass:hover .trust-glare { opacity: 1; }
-  .trust-motion .trust-pass:hover .trust-back-name { animation: trust-rise 0.5s var(--ease) 0.3s both; }
-  .trust-motion .trust-pass:hover .trust-back-site { animation: trust-type 0.7s steps(16, end) 0.5s both; }
-  .trust-motion .trust-pass:hover .trust-back-go { animation: trust-rise 0.5s var(--ease) 0.75s both; }
+  .trust-motion .trust-pass:hover .trust-back-name { animation: trust-rise 0.3s var(--ease) 0.4s both; }
+  .trust-motion .trust-pass:hover .trust-back-site { animation: trust-type 0.4s steps(16, end) 0.45s both; }
+  .trust-motion .trust-pass:hover .trust-back-go { animation: trust-rise 0.3s var(--ease) 0.55s both; }
 }
 @keyframes trust-rise { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
 @keyframes trust-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
@@ -627,47 +628,6 @@ h3 { font-size: var(--fs-h3); }
 }
 
 /* ---- Home ------------------------------------------------------------------- */
-/* The slab comes up in the light once its photograph is ready (js/home-hero.js). */
-@keyframes hero-light {
-  0% { transform: translateX(-110%); opacity: 0; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { transform: translateX(260%); opacity: 0; }
-}
-/* 2. What can be ordered: a wall of stone slabs. Not a catalogue of cards but
-   the thing the company itself builds -- a wall clad in slabs, each slab a
-   real work of one direction, set in the five groups of «Изделия +»: a wider
-   reveal between the groups, the group's name on the floor under it. As
-   physical as the hero's slab: joints that are recesses (the wall behind the
-   slabs seen deep in their shadow, each slab casting into the joint below and
-   to its right), a light arris on the sawn edges, the light falling off
-   towards the floor, the wall's own shadow at its foot. On a desktop with a
-   real pointer one slab stands open -- its photograph whole, 2:3 -- drawn out
-   of the wall by its own thickness, over its neighbours, its shadow on them;
-   the others stay in the wall, a shade darker, each with its name turned up
-   its edge (js/home-wall.js: the pointer or the focus opens a slab, and it
-   stays open). Phones, tablets and touch screens: the same wall in two
-   courses, split where the groups split (7 and 6); a tap opens the page.
-   Without JavaScript the first slab stands open and every link works. */
-
-.wall {
-  --joint: 4px;                                          /* between two slabs of a group */
-  --reveal: 12px;                                        /* between two groups */
-  --wall-h: clamp(260px, 46vh, 400px);
-  list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-6) var(--reveal);
-  max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter);
-}
-/* A desktop with a real pointer: one course, one slab open. The open slab is
-   exactly as wide as its photograph at the wall's height (2:3); the others
-   share the rest. It comes out of the wall by its thickness -- the sawn edge,
-   light at the arris and darkening into the cut, as the hero's slab -- over
-   its neighbours, and its shadow falls on them. */
-@media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
-  .wall { --wall-h: clamp(440px, 66vh, 620px); --open: calc(var(--wall-h) * 2 / 3); flex-wrap: nowrap; }
-  }
-@keyframes wall-open-label { from { opacity: 0; } }
-@keyframes wall-close-label { from { opacity: 0; } }
-
 /* 4. The showroom: the one dark opening in the light page, the house as the
    object. One action (the house itself, or «Открыть шоурум»)
    in the showroom's own copper -- the colour of the 3D scene it leads into,
@@ -748,6 +708,8 @@ h3 { font-size: var(--fs-h3); }
   position: absolute; left: 50%; bottom: var(--s-6); z-index: 1; transform: translateX(-50%);
   padding: 6px 12px; border-radius: 999px; background: rgba(28, 29, 27, 0.82); color: var(--on-dark);
   font-size: var(--fs-small); white-space: nowrap; pointer-events: none;
+  transition: opacity var(--dur-fast) ease;
+  @starting-style { opacity: 0; }   /* it comes in softly, not at once (2026-10-24, the owner) */
 }
 .contacts-map-hint[hidden], .contacts-map-fallback[hidden] { display: none; }
 .contacts-map-fallback {
@@ -770,10 +732,6 @@ h3 { font-size: var(--fs-h3); }
    where we are); the showroom keeps its 4 / 8. Narrower screens keep the
    tablet and phone layouts as they are. */
 @media (min-width: 1024px) {
-            /* What can be ordered: the title in the first five columns, its line on the 5 / 7
-     vertical; the wall in the wide field. */
-  .wall { max-width: var(--wide); padding: 0; }
-
   /* The showroom: 4 / 8, the house reaching out into the wide field on the right. */
   .portal { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }
 
@@ -810,12 +768,12 @@ h3 { font-size: var(--fs-h3); }
 .portfolio-grid .portfolio-shot img { position: relative; z-index: 0; opacity: 0; transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
 .portfolio-grid .portfolio-shot.is-loaded img { opacity: 1; }
 /* The rows come into view once (js/site.js, enableReveal): one quiet movement --
-   each photo fades in as it rises 24 px, quick to start and soft to land, left to
-   right 60 ms apart. */
-.portfolio-item.will-reveal { opacity: 0; transform: translateY(24px); }
+   each photo fades in as it rises 14 px, quick to start and soft to land, left to
+   right 60 ms apart (2026-10-24, the owner: shorter and quieter than 24 px in 0.8 s). */
+.portfolio-item.will-reveal { opacity: 0; transform: translateY(14px); }
 .portfolio-item.is-revealed {
   opacity: 1; transform: none;
-  transition: opacity 0.6s ease var(--reveal-delay, 0ms), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1) var(--reveal-delay, 0ms);
+  transition: opacity 0.5s ease var(--reveal-delay, 0ms), transform 0.5s var(--ease-out) var(--reveal-delay, 0ms);
 }
 @media (prefers-reduced-motion: reduce) {
   .portfolio-item.will-reveal { transform: none; }
@@ -838,7 +796,7 @@ h3 { font-size: var(--fs-h3); }
 .viewer[hidden] { display: none; }
 .viewer-veil {
   position: absolute; inset: 0; background: rgba(18, 20, 18, 0.72); opacity: 0; transition: opacity 0.28s ease;
-  -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3);   }
+  -webkit-backdrop-filter: blur(20px) saturate(1.3); backdrop-filter: blur(20px) saturate(1.3);   }   /* 20 px, not 28 (2026-10-24): the same calm, cheaper to fade in, Safari above all */
 .viewer.is-open .viewer-veil { opacity: 1; }
 .viewer-top, .viewer-strip, .viewer-prev, .viewer-next { opacity: 0; transition: opacity 0.2s ease; }
 .viewer.is-open .viewer-top, .viewer.is-open .viewer-strip, .viewer.is-open .viewer-prev, .viewer.is-open .viewer-next { opacity: 1; transition-delay: 0.12s; }
@@ -850,7 +808,7 @@ h3 { font-size: var(--fs-h3); }
   background: var(--glass-shine-dark), rgba(243, 241, 236, 0.08); color: inherit; cursor: pointer;
   -webkit-backdrop-filter: var(--glass-frost); backdrop-filter: var(--glass-frost);
   box-shadow: var(--glass-rim-dark), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
-  transition: background-color 0.15s ease, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background-color var(--dur-fast) ease, transform 0.16s var(--ease-out);
 }
 .viewer-btn:active { transform: scale(0.95); }
 @media (hover: hover) and (pointer: fine) { .viewer-btn:hover { background-color: rgba(243, 241, 236, 0.18); } }
@@ -868,17 +826,15 @@ h3 { font-size: var(--fs-h3); }
 .viewer-strip { position: relative; z-index: 2; display: flex; justify-content: safe center; gap: var(--s-2); padding: 14px 16px 18px; overflow-x: auto; scrollbar-width: none; }
 .viewer-strip button {
   flex: none; height: 56px; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: #2a2d2a; cursor: pointer;
-  opacity: 0.45; outline: 2px solid transparent; outline-offset: 2px; transition: opacity 0.15s ease, outline-color 0.15s ease;
+  opacity: 0.45; outline: 2px solid transparent; outline-offset: 2px; transition: opacity var(--dur-fast) ease, outline-color var(--dur-fast) ease, transform 0.16s var(--ease-out);
 }
+.viewer-strip button:active { transform: scale(0.95); }
 .viewer-strip button[aria-current="true"] { opacity: 1; outline-color: #f3f1ec; }
 @media (hover: hover) and (pointer: fine) { .viewer-strip button:hover { opacity: 0.85; } }
 .viewer-strip img { display: block; width: auto; height: 100%; }
 @media (max-width: 700px) {
   .viewer-prev, .viewer-next { display: none; }   /* a swipe on a phone */
   .viewer-strip button { height: 44px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .viewer-veil, .viewer-top, .viewer-strip, .viewer-prev, .viewer-next { transition: none; }
 }
 
 /* ---- Works in frames: the photographs of real works ---------------------------
@@ -940,10 +896,11 @@ h3 { font-size: var(--fs-h3); }
   display: inline-flex; align-items: center; gap: var(--s-2); padding-bottom: 4px;
   font-size: var(--fs-small); font-weight: 600; letter-spacing: 0.02em; color: var(--cat-ink, var(--ink)); text-decoration: none;
   background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
-  transition: background-size 0.35s cubic-bezier(0.23, 1, 0.32, 1), color 0.15s;
+  transition: background-size var(--dur-move) var(--ease-out), color var(--dur-fast), transform 0.16s var(--ease-out);
 }
+.ask:active { transform: scale(0.97); }
 .ask::after {
-  content: ''; flex: none; width: 16px; height: 10px; background: currentColor; transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+  content: ''; flex: none; width: 16px; height: 10px; background: currentColor; transition: transform 0.25s var(--ease-out);
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -975,8 +932,9 @@ h3 { font-size: var(--fs-h3); }
 .collection-thumbs:empty { display: none; }
 .collection-thumbs button {
   width: 56px; height: 70px; padding: 0; border: 0; border-radius: 2px; overflow: hidden; background: var(--cat-sunk); cursor: pointer;
-  opacity: 0.45; outline: 1px solid transparent; outline-offset: 3px; transition: opacity 0.2s ease, outline-color 0.2s ease;
+  opacity: 0.45; outline: 1px solid transparent; outline-offset: 3px; transition: opacity 0.2s ease, outline-color 0.2s ease, transform 0.16s var(--ease-out);
 }
+.collection-thumbs button:active { transform: scale(0.95); }
 .collection-thumbs button[aria-current="true"] { opacity: 1; outline-color: var(--cat-ink); }
 @media (hover: hover) and (pointer: fine) { .collection-thumbs button:hover { opacity: 0.85; } }
 .collection-thumbs img { width: 100%; height: 100%; object-fit: cover; }
@@ -986,7 +944,7 @@ h3 { font-size: var(--fs-h3); }
 .collection-arrow {
   display: grid; place-items: center; width: var(--control-h); height: var(--control-h); padding: 0; border-radius: 50%;
   border: 1px solid var(--cat-line); background: transparent; color: var(--cat-ink); cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.16s var(--ease-out);
 }
 .collection-arrow::after {
   content: ''; width: 18px; height: 11px; background: currentColor;
@@ -1008,7 +966,7 @@ h3 { font-size: var(--fs-h3); }
 }
 .collection-item::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px; background: currentColor;
-  transform: scaleX(0); transform-origin: left; transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--dur-move) var(--ease-out);
 }
 .collection-row.is-on .collection-item { color: var(--cat-ink); }
 .collection-row.is-on .collection-item::after { transform: scaleX(1); }
@@ -1097,7 +1055,7 @@ h3 { font-size: var(--fs-h3); }
   display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px; border-radius: 999px;
   border: 1px solid var(--line-control); background: transparent; color: var(--ink-soft);
   font: inherit; font-size: var(--fs-small); cursor: pointer; white-space: nowrap;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
 }
 .stone-dd-caret { flex: none; width: 6px; height: 6px; margin-top: -3px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); }
 .stone-dd-btn[aria-expanded="true"] .stone-dd-caret { margin-top: 3px; transform: rotate(-135deg); }
@@ -1108,6 +1066,10 @@ h3 { font-size: var(--fs-h3); }
   min-width: 220px; max-height: 320px; overflow-y: auto; padding: var(--s-2);
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
   box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 18px 40px -18px rgba(28, 29, 27, 0.38);
+  /* It opens from its button -- a little larger and clearer, in 150 ms -- and closes at once (2026-10-24, the owner). */
+  transform-origin: top left;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  @starting-style { opacity: 0; transform: scale(0.97); }
 }
 .stone-dd-panel[hidden] { display: none; }
 .stone-dd-option {
@@ -1126,7 +1088,7 @@ h3 { font-size: var(--fs-h3); }
 .stone-sort { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-sunk); }
 .stone-sort-btn {
   min-height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: none; cursor: pointer;
-  font: inherit; font-size: 13px; color: var(--muted); white-space: nowrap; transition: background-color 0.15s, color 0.15s;
+  font: inherit; font-size: 13px; color: var(--muted); white-space: nowrap; transition: background-color var(--dur-fast), color var(--dur-fast);
 }
 @media (hover: hover) { .stone-sort-btn:hover { color: var(--ink); } }
 .stone-sort-btn[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(28, 29, 27, 0.14); }
@@ -1156,7 +1118,7 @@ h3 { font-size: var(--fs-h3); }
    cut in the stone; the handles are glass capsules -- a highlight on top, the rail seen through
    them -- that swell into a lens while held, a glass tip over them naming the price. The native
    range inputs lie on top, invisible: they take the drag, the keyboard and the screen reader. */
-.pf { --pf-ease: cubic-bezier(0.23, 1, 0.32, 1); }
+.pf { --pf-ease: var(--ease-out); }
 .pf-slider { position: relative; margin-top: 14px; }
 .pf-hist { display: flex; align-items: flex-end; gap: 2px; height: 34px; margin: 0 14px 4px; }
 .pf-bar { flex: 1; min-width: 0; border-radius: 2px 2px 0 0; background: var(--pf-line); transition: background-color 150ms ease; }
@@ -1224,12 +1186,14 @@ h3 { font-size: var(--fs-h3); }
 .stone-card {
   width: 100%; height: 100%; display: flex; flex-direction: column; gap: 2px; text-align: left;
   background: none; border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit;
+  transition: transform 0.16s var(--ease-out);
 }
+.stone-card:active { transform: scale(0.98); }   /* pressed, the card gives a little (2026-10-24, the owner) */
 .stone-card-media {
   display: block; aspect-ratio: 1; border-radius: var(--radius-m); overflow: hidden;
   background: var(--surface-sunk); margin-bottom: var(--s-2);
   box-shadow: inset 0 0 0 1px rgba(28, 29, 27, 0.06);
-  transition: box-shadow 0.15s;
+  transition: box-shadow var(--dur-fast);
 }
 .stone-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s var(--ease); }
 @media (hover: hover) { .stone-card-media img { will-change: transform; } .stone-card:hover .stone-card-media img { transform: scale(1.03); } }
@@ -1289,7 +1253,7 @@ h3 { font-size: var(--fs-h3); }
 .offer-toggle-label { min-width: 0; }
 .offer-toggle::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.35s var(--ease);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--dur-move) var(--ease);
 }
 .offer-toggle-arrow {
   flex: none; width: 24px; height: 15px; margin: 0 4px 8px 0; background: currentColor;
@@ -1353,7 +1317,7 @@ h3 { font-size: var(--fs-h3); }
 .offer-file-input:focus-visible + .offer-file, .offer-field-file:focus-within .offer-file { border-bottom-color: var(--accent); }
 .offer-file-icon {
   flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
-  border: 1px solid var(--muted); color: var(--ink); transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  border: 1px solid var(--muted); color: var(--ink); transition: background-color var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
 }
 .offer-file-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 @media (hover: hover) { .offer-file:hover .offer-file-icon { background: var(--ink); border-color: var(--ink); color: var(--on-dark); } }
@@ -1370,7 +1334,7 @@ h3 { font-size: var(--fs-h3); }
 /* The action: the site's primary button, under the lines. */
 .offer-submit { grid-column: 1 / -1; justify-self: start; gap: var(--s-3); margin: 0; padding: 0 var(--s-5); font-size: var(--fs-body); }
 /* The site's one arrow (as --arrow), drawn inline. */
-.offer-submit svg { flex: none; width: 16px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; transition: transform 0.15s var(--ease); }
+.offer-submit svg { flex: none; width: 16px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; transition: transform var(--dur-fast) var(--ease); }
 @media (hover: hover) { .offer-submit:hover svg { transform: translateX(3px); } }
 .offer-status { grid-column: 1 / -1; font-size: var(--fs-small); color: var(--ink); }
 .offer-status:empty { display: none; }
@@ -1469,7 +1433,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-chip {
   min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px dashed rgba(233, 231, 225, 0.3);
   background: transparent; font: inherit; font-size: 13px; color: var(--on-dark-muted); cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+  transition: color var(--dur-fast), border-color var(--dur-fast), background-color var(--dur-fast);
 }
 .talk-chip.is-current { border-style: solid; border-color: var(--on-dark); color: var(--on-dark); }
 .talk-chip.is-done { border-color: transparent; background: rgba(127, 166, 152, 0.16); color: #cfe2da; }
@@ -1491,7 +1455,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-option {
   min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(233, 231, 225, 0.28);
   background: transparent; font: inherit; font-size: 14px; color: var(--on-dark); cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
 }
 @media (hover: hover) { .talk-option:hover { border-color: var(--on-dark); } }
 .talk-option[aria-pressed="true"] { background: var(--on-dark); border-color: var(--on-dark); color: var(--graphite); }
@@ -1506,7 +1470,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-next {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 64px; padding: 0 26px;
   border: 0; border-radius: 10px; background: var(--on-dark); color: var(--graphite); white-space: nowrap;
-  font: inherit; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background-color 0.15s;
+  font: inherit; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background-color var(--dur-fast);
 }
 @media (hover: hover) { .talk-next:hover { background: #ffffff; } }
 .talk-next svg { flex: none; width: 16px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
@@ -1518,7 +1482,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .talk-link {
   min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(233, 231, 225, 0.25);
-  background: transparent; font: inherit; font-size: 13px; color: #d7d6cf; cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  background: transparent; font: inherit; font-size: 13px; color: #d7d6cf; cursor: pointer; transition: border-color var(--dur-fast), color var(--dur-fast);
 }
 @media (hover: hover) { .talk-link:hover { border-color: var(--on-dark); color: var(--on-dark); } }
 /* The last question's extras: a drawing or photo, and the consent. */
@@ -1692,8 +1656,13 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 @media (max-width: 420px) {
   .configure-cta .configure-tail { display: none; }
 }
+/* Reduced motion means fewer and gentler movements, not none (2026-10-24, the owner): nothing
+   travels, grows or turns -- a transform, a top, a clip or a row's height changes at once --
+   but a fade or a change of colour keeps its own soft timing, so a state still reads as it changes. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition: none !important; }
+  *, *::before, *::after {
+    transition-property: opacity, color, background-color, border-color, outline-color, box-shadow, fill, stroke !important;
+  }
 }
 
 /* Firefox and a moving photograph (the owner, 2026-10-20: «в firefox колебания остались»; filmed

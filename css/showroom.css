@@ -21,7 +21,8 @@
   --sr-line-strong: rgba(241, 236, 228, 0.22);
   --sr-stage: #2a2621;
   --sr-radius: 14px;
-  --sr-ease: cubic-bezier(0.22, 0.68, 0.24, 1);
+  --sr-ease: var(--ease);   /* the site's own curve (css/tokens.css) */
+  --sr-ease-drawer: var(--ease-drawer);   /* a sheet from the bottom edge: quick to answer, soft to land */
   --sr-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
   --sr-safe-bottom: env(safe-area-inset-bottom, 0px);
   /* Type scale: 12 eyebrow/meta, 14 small UI, 15 body, 22 titles. */
@@ -73,7 +74,7 @@ button { font: inherit; color: inherit; }
 .sr-loading-mark {
   width: 28px; height: 28px; border-radius: 50%;
   border: 1.5px solid var(--sr-line-strong); border-top-color: var(--sr-ink);
-  animation: sr-spin 1s linear infinite;
+  animation: sr-spin 0.8s linear infinite;   /* a quicker turn: the wait feels shorter (2026-10-24) */
 }
 @keyframes sr-spin { to { transform: rotate(360deg); } }
 
@@ -93,7 +94,7 @@ button { font: inherit; color: inherit; }
 .sr-btn {
   display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 16px;
   border-radius: 999px; font-size: var(--sr-fs-ui); font-weight: 600; text-decoration: none; cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.16s var(--ease-out);
 }
 .sr-btn-ghost { background: rgba(30, 26, 22, 0.55); border: 1px solid var(--sr-line-strong); color: var(--sr-ink); }
 .sr-btn-ghost[aria-expanded="true"] { background: rgba(30, 26, 22, 0.85); border-color: rgba(241, 236, 228, 0.4); }
@@ -112,9 +113,10 @@ button { font: inherit; color: inherit; }
   background: var(--sr-panel); border: 1px solid var(--sr-line-strong);
   font-size: var(--sr-fs-ui); font-weight: 600;
   box-shadow: var(--sr-shadow);
+  transition: border-color 0.2s, transform 0.16s var(--ease-out);
 }
 @media (hover: hover) { .sr-back:hover { border-color: rgba(241, 236, 228, 0.45); } }
-body.is-interior .sr-caption { top: 128px; }
+body.is-interior .sr-caption { transform: translateY(52px); }   /* under «На улицу»: moved, not laid out again (2026-10-24) */
 
 /* ---- zone caption: where am I, what can I make here ------------------------- */
 /* Desktop: top-left, under the header, so the bottom of the frame -- where
@@ -122,7 +124,7 @@ body.is-interior .sr-caption { top: 128px; }
    sits above it. */
 .sr-caption {
   position: fixed; left: 28px; top: 76px; z-index: 10; width: 320px;
-  transition: top 0.35s var(--sr-ease);
+  transition: transform 0.35s var(--sr-ease);
   padding: 20px 22px; border-radius: var(--sr-radius);
   background: var(--sr-panel); border: 1px solid var(--sr-line);
   box-shadow: var(--sr-shadow);
@@ -135,7 +137,7 @@ body.is-interior .sr-caption { top: 128px; }
 .sr-chip {
   min-height: 32px; padding: 0 12px; border-radius: 999px; cursor: pointer;
   background: transparent; border: 1px solid var(--sr-line-strong);
-  font-size: 13px; color: var(--sr-ink); transition: border-color 0.2s, background-color 0.2s;
+  font-size: 13px; color: var(--sr-ink); transition: border-color 0.2s, background-color 0.2s, transform 0.16s var(--ease-out);
 }
 @media (hover: hover) { .sr-chip:hover { border-color: rgba(241, 236, 228, 0.5); background: rgba(241, 236, 228, 0.06); } }
 
@@ -148,7 +150,7 @@ body.is-interior .sr-caption { top: 128px; }
 .sr-zone {
   min-height: 40px; padding: 0 18px; border: 0; border-radius: 999px; cursor: pointer; background: transparent;
   font-size: var(--sr-fs-ui); font-weight: 600; color: var(--sr-muted); white-space: nowrap;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s, transform 0.16s var(--ease-out);
 }
 @media (hover: hover) { .sr-zone:hover { color: var(--sr-ink); } }
 .sr-zone[aria-current="true"] { background: var(--sr-ink); color: #1e1a16; }
@@ -184,6 +186,8 @@ body.is-interior .sr-caption { top: 128px; }
 @media (hover: hover) { .sr-marker:hover .sr-marker-dot { transform: scale(1.15); } }
 .sr-marker.is-selected .sr-marker-dot { background: var(--accent); box-shadow: 0 0 0 5px rgba(42, 84, 70, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35); }   /* the site's green (2026-10-15) */
 .sr-marker.is-selected .sr-marker-dot::after { animation: none; opacity: 0; }
+/* Once a marker has been pressed the client knows what the dots are: the rings rest (2026-10-24, the owner). */
+.sr-markers.is-known .sr-marker-dot::after { animation: none; opacity: 0; }
 .sr-marker.is-occluded { opacity: 0.4; }
 .sr-marker.is-offscreen { opacity: 0; pointer-events: none; }
 .sr-marker-label {
@@ -206,10 +210,15 @@ body.is-interior .sr-caption { top: 128px; }
   animation: sr-in 0.35s var(--sr-ease);
 }
 @keyframes sr-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* Closing, a card or a panel leaves as it came, only quicker (js/showroom/showroom-ui.js keeps it
+   shown that long; 2026-10-24, the owner: before, it vanished at once). */
+.sr-card.is-leaving, .sr-panel.is-leaving { animation: sr-out 0.15s ease-out forwards; pointer-events: none; }
+@keyframes sr-out { to { opacity: 0; } }
 .sr-close {
   position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
   display: inline-grid; place-items: center; padding: 0;
   border: 1px solid var(--sr-line); background: transparent; cursor: pointer; color: var(--sr-muted);
+  transition: transform 0.16s var(--ease-out);
 }
 /* The cross: a line icon, 1.5 px, like the site's other line icons. */
 .sr-close svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: square; }
@@ -236,8 +245,10 @@ body.is-interior .sr-caption { top: 128px; }
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px;
   border-radius: 6px; background: var(--accent); color: #fff; text-decoration: none;
   font-size: var(--sr-fs-body); font-weight: 700; letter-spacing: 0.2px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.16s var(--ease-out);
 }
+/* Pressed, a button gives a little under the finger (2026-10-24, the owner). */
+.sr-btn:active, .sr-back:active, .sr-chip:active, .sr-zone:active, .sr-close:active, .sr-cta:active { transform: scale(0.97); }
 @media (hover: hover) { .sr-cta:hover { background: var(--accent-hover); } }
 .sr-link { font-size: var(--sr-fs-ui); color: var(--sr-muted); text-decoration: none; border-bottom: 1px solid var(--sr-line-strong); padding-bottom: 1px; }
 @media (hover: hover) { .sr-link:hover { color: var(--sr-ink); border-color: var(--sr-ink); } }
@@ -330,7 +341,7 @@ body.is-interior .sr-caption { top: 128px; }
   .sr-btn-contact .sr-btn-label { display: none; }
   .sr-back { top: 64px; left: 16px; }
   .sr-caption, body.is-interior .sr-caption {
-    left: 16px; right: 16px; width: auto; top: auto; bottom: calc(76px + var(--sr-safe-bottom));
+    left: 16px; right: 16px; width: auto; top: auto; bottom: calc(76px + var(--sr-safe-bottom)); transform: none;
     padding: 14px 16px; border-radius: 12px;
   }
   .sr-caption-title { font-size: 18px; margin: 2px 0 4px; }
@@ -351,9 +362,12 @@ body.is-interior .sr-caption { top: 128px; }
     top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 72vh; overflow-y: auto;
     border-radius: 18px 18px 0 0; border-width: 1px 0 0;
     padding: 22px 20px calc(22px + var(--sr-safe-bottom));
-    animation: sr-sheet 0.35s var(--sr-ease);
+    animation: sr-sheet 0.4s var(--sr-ease-drawer);
   }
-  @keyframes sr-sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  /* A sheet rises whole from the bottom edge and goes back down there, quicker (2026-10-24, the owner). */
+  @keyframes sr-sheet { from { transform: translateY(100%); } }
+  .sr-card.is-leaving, .sr-panel.is-leaving { animation: sr-sheet-out 0.2s var(--sr-ease-drawer) forwards; }
+  @keyframes sr-sheet-out { to { transform: translateY(100%); } }
   .sr-card-actions { flex-direction: column; align-items: stretch; gap: 14px; }
   .sr-cta { width: 100%; }
   .sr-link, .sr-share { align-self: center; }
@@ -368,7 +382,10 @@ body.is-interior .sr-caption { top: 128px; }
   .sr-logo { font-size: 12px; letter-spacing: 0.06em; }
 }
 
+/* Reduced motion: nothing slides; a card or a sheet fades in and out where it stands. */
 @media (prefers-reduced-motion: reduce) {
   .sr-marker-dot::after, .sr-loading-mark { animation: none; }
-  .sr-card, .sr-panel { animation: none; }
+  .sr-card, .sr-panel, .glass-bend .sr-card, .glass-bend .sr-panel { animation: sr-fade 0.2s ease; }
+  .sr-card.is-leaving, .sr-panel.is-leaving { animation: sr-out 0.15s ease forwards; }
 }
+@keyframes sr-fade { from { opacity: 0; } }
