@@ -231,11 +231,15 @@
     return { left: stageRect.left + (stageRect.width - w) / 2, top: stageRect.top + (stageRect.height - h) / 2, width: w, height: h };
   }
 
-  function enableViewer(container, items) {
+  // `parts` (optional): for photographs that are not the container's own figures (the ready-made
+  // pieces' cards): `triggers` -- what opens photo i (its own image), `radius` -- their corners.
+  function enableViewer(container, items, parts) {
     if (typeof document === 'undefined' || !document.body || !items.length || container.dataset.viewer) return;
     container.dataset.viewer = 'on';
     const doc = document;
-    const figures = Array.from(container.children);
+    const figures = parts && parts.triggers ? parts.triggers : Array.from(container.children);
+    const RADIUS = parts && parts.radius ? parts.radius : 20;   // the frame's corners, as it grows from it and goes back
+    const imgOf = f => (f.tagName === 'IMG' ? f : f.querySelector('img'));
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let lb = null, stage, count, strip, veil, index = -1, img = null, opener = null, opening = false;
     // The move under way: its animations and what is left to do when they end. A press never waits
@@ -260,7 +264,7 @@
     }
 
     figures.forEach((f, i) => {
-      const alt = f.querySelector('img') ? f.querySelector('img').alt : '';
+      const alt = imgOf(f) ? imgOf(f).alt : '';
       f.tabIndex = 0;
       f.setAttribute('role', 'button');
       f.setAttribute('aria-label', (alt || 'Фото ' + (i + 1)) + ': открыть крупно');
@@ -322,8 +326,10 @@
     }
 
     // On whole pixels: a photograph at rest between two pixels is drawn soft and shifts when redrawn.
-    const target = i => { const r = fitRect(stage.getBoundingClientRect(), photoRatio(items[i]), innerWidth < 700 ? 12 : 88); return { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) }; };
-    const shotOf = i => figures[i].querySelector('.portfolio-shot');
+    // A photo listed without its size takes the proportion of its own image on the page, once it is there.
+    const ratioOf = i => { const it = items[i], im = imgOf(figures[i]); return !(it.width && it.height) && im && im.naturalWidth ? im.naturalWidth / im.naturalHeight : photoRatio(it); };
+    const target = i => { const r = fitRect(stage.getBoundingClientRect(), ratioOf(i), innerWidth < 700 ? 12 : 88); return { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) }; };
+    const shotOf = i => (parts && parts.triggers ? figures[i] : figures[i].querySelector('.portfolio-shot'));
     function place(el, r) {
       el._rect = r;
       el.style.width = r.width + 'px';
@@ -333,7 +339,7 @@
     function photo(i) {
       const el = doc.createElement('img');
       el.className = 'viewer-img';
-      el.alt = figures[i].querySelector('img') ? figures[i].querySelector('img').alt : '';
+      el.alt = imgOf(figures[i]) ? imgOf(figures[i]).alt : '';
       el.src = items[i].image;   // the original: the grid's copy is already cached as a stand-in below
       el.style.backgroundImage = 'url("' + (items[i].thumb || items[i].image) + '")';
       el.draggable = false;
@@ -375,7 +381,7 @@
       if (reduce) return el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease' });
       const sx = a.width / b.width, sy = a.height / b.height;
       return el.animate([
-        { transform: 'translate(' + a.left + 'px,' + a.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
+        { transform: 'translate(' + a.left + 'px,' + a.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: RADIUS / sx + 'px / ' + RADIUS / sy + 'px' },
         { transform: 'translate(' + b.left + 'px,' + b.top + 'px) scale(1,1)' + TURN, borderRadius: '12px' },
       ], { duration: reduce ? 0 : ms, easing: VIEWER_EASE });
     }
@@ -390,7 +396,7 @@
       const sx = to.width / from.width, sy = to.height / from.height;
       begin([img.animate(reduce ? [{ opacity: 1 }, { opacity: 0 }] : [
         { transform: 'translate(' + from.left + 'px,' + from.top + 'px) scale(1,1)' + TURN, borderRadius: '12px' },
-        { transform: 'translate(' + to.left + 'px,' + to.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: 20 / sx + 'px / ' + 20 / sy + 'px' },
+        { transform: 'translate(' + to.left + 'px,' + to.top + 'px) scale(' + sx + ',' + sy + ')' + TURN, borderRadius: RADIUS / sx + 'px / ' + RADIUS / sy + 'px' },
       ], { duration: reduce ? FADE_MS : 340, easing: reduce ? 'ease' : VIEWER_EASE, fill: 'forwards' })], () => {
         shot.style.visibility = '';
         img.remove();
@@ -665,5 +671,5 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') holdHeroHeight(document, window);
 
-  return { renderPortfolio, loadPortfolio, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight };
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight };
 });

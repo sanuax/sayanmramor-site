@@ -8,7 +8,7 @@
 <script>document.documentElement.classList.add('js');</script>
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=687c401d">
 <link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=77fee243">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=57101030">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=98f42ac9">
 <script src="/sayanmramor-site/js/header.js?v=d6959f13" defer></script>
 </head>
 <body>
@@ -92,12 +92,10 @@
 
 <main id="main">
 <header class="wrap catalog-head">
-  <div>
-    <p class="catalog-kicker">В наличии</p>
-    <h1>Готовые изделия</h1>
-    <p class="catalog-lead">Изделия из натурального камня в наличии: фиксированная цена, без ожидания расчёта.</p>
-  </div>
-  <p class="catalog-count" id="catalogCount"></p>
+  <h1>Готовые изделия</h1>
+  <p class="catalog-lead">Изделия из натурального камня в наличии: фиксированная цена, без ожидания расчёта.</p>
+  <p class="catalog-meta" id="catalogMeta"></p>
+  <div class="catalog-filter" id="catalogFilter"></div>
 </header>
 
 <div class="wrap catalog-host" id="catalogGrid"></div>
@@ -142,15 +140,14 @@
   </div>
 </footer>
 
-<script src="/sayanmramor-site/js/site.js?v=5418c873"></script>
-<script src="/sayanmramor-site/js/catalog.js?v=a2819706"></script>
+<script src="/sayanmramor-site/js/site.js?v=c7a1c37f"></script>
+<script src="/sayanmramor-site/js/catalog.js?v=eef593bd"></script>
 <script>
   fetch('/sayanmramor-site/data/products.json')
     .then(r => r.json())
     .then(data => {
-      const products = data.products || [];
-      if (products.length) document.getElementById('catalogCount').textContent = Catalog.countLabel(products.length);
-      Catalog.renderCatalog(document.getElementById('catalogGrid'), products);
+      Catalog.renderCatalog(document.getElementById('catalogGrid'), data.products || [],
+        { meta: document.getElementById('catalogMeta'), filter: document.getElementById('catalogFilter') });
     })
     .catch(() => {
       document.getElementById('catalogGrid').textContent = 'Не удалось загрузить каталог изделий.';

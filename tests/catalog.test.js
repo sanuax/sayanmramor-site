@@ -28,17 +28,18 @@ test('isAvailable is false only when explicitly set to false', () => {
   assert.equal(Catalog.isAvailable({ available: true }), true);
 });
 
-// ---- the photo area of a product card (a minimal stand-in for the DOM) ----------
+// ---- the cards of the grid (a minimal stand-in for the DOM) ----------------------
 
 function fakeDocument() {
   function el(tag) {
     const node = {
-      tagName: tag.toUpperCase(), className: '', textContent: '', children: [], parent: null, listeners: {}, attrs: {},
+      tagName: tag.toUpperCase(), className: '', textContent: '', children: [], parent: null, listeners: {}, attrs: {}, dataset: {}, hidden: false,
       setAttribute(name, value) { node.attrs[name] = String(value); },
       classList: {
         add(c) { if (!node.classList.contains(c)) node.className = (node.className + ' ' + c).trim(); },
         remove(c) { node.className = node.className.split(' ').filter(x => x && x !== c).join(' '); },
         contains(c) { return node.className.split(' ').includes(c); },
+        toggle(c, on) { if (on) node.classList.add(c); else node.classList.remove(c); },
       },
       set innerHTML(v) { node.children = []; },
       appendChild(child) { child.parent = node; node.children.push(child); return child; },
@@ -52,7 +53,7 @@ function fakeDocument() {
     };
     return node;
   }
-  return { createElement: el };
+  return { createElement: el, createTextNode: text => ({ tagName: '#text', textContent: text, children: [] }) };
 }
 
 function withDocument(fn) {
@@ -61,64 +62,150 @@ function withDocument(fn) {
   try { return fn(); } finally { global.document = saved; }
 }
 
-const photoArea = card => card.children.find(c => c.className === 'product-tile-image');
-const placeholders = area => area.children.filter(c => c.className === 'product-tile-placeholder');
+const find = (node, cls) => node.children.find(c => c.classList && c.classList.contains(cls));
+const shotOf = card => find(card, 'stock-shot');
+const placeholders = area => area.children.filter(c => c.className === 'stock-placeholder');
 const images = area => area.children.filter(c => c.tagName === 'IMG');
+const text = node => node.textContent || node.children.map(text).join('');
 
 test('a product with photos: [] gets the text placeholder, not an image with an empty src', () => withDocument(() => {
-  const area = photoArea(Catalog.buildProductCard({ name: 'Светильник из оникса', photos: [] }));
+  const area = shotOf(Catalog.buildProductCard({ name: 'Светильник из оникса', photos: [] }));
   assert.equal(images(area).length, 0);
   assert.equal(placeholders(area).length, 1);
   assert.equal(placeholders(area)[0].textContent, Catalog.NO_PHOTO_TEXT);
 }));
 
 test('a product without a photos field gets the same placeholder', () => withDocument(() => {
-  const area = photoArea(Catalog.buildProductCard({ name: 'Эксклюзивный стол' }));
+  const area = shotOf(Catalog.buildProductCard({ name: 'Эксклюзивный стол' }));
   assert.equal(images(area).length, 0);
   assert.equal(placeholders(area).length, 1);
 }));
 
-test('a product with one photo shows it as before: photos[0], named by the product', () => withDocument(() => {
-  const area = photoArea(Catalog.buildProductCard({ name: 'Ракушка', photos: ['/a.webp'] }));
+test('a product with one photo shows photos[0], named by the product, loaded lazily', () => withDocument(() => {
+  const area = shotOf(Catalog.buildProductCard({ name: 'Ракушка', photos: ['/a.webp'] }));
   const [img] = images(area);
   assert.equal(img.src, '/a.webp');
   assert.equal(img.alt, 'Ракушка');
   assert.equal(img.loading, 'lazy');
-  assert.equal(placeholders(area).length, 0);
+  assert.equal(area.children.length, 1, 'one photo: no row, no count');
 }));
 
 test('a photo that fails to load is replaced by the placeholder in the same place', () => withDocument(() => {
-  const area = photoArea(Catalog.buildProductCard({ name: 'Ракушка', photos: ['/missing.webp'], available: false }));
-  const [img] = images(area);
-  img.listeners.error();
+  const area = shotOf(Catalog.buildProductCard({ name: 'Ракушка', photos: ['/missing.webp'], available: false }));
+  images(area)[0].listeners.error();
   assert.equal(images(area).length, 0);
-  assert.equal(area.children[0].className, 'product-tile-placeholder');   // still ahead of the badge
-  assert.equal(area.children[1].className, 'badge-oos');
+  assert.equal(area.children[0].className, 'stock-placeholder');   // still ahead of the badge
+  assert.equal(area.children[1].className, 'stock-badge');
 }));
 
 test('a product with several photos gets one swipeable, focusable row of them, labelled once, with a count', () => withDocument(() => {
   const photos = ['/1.webp', '/2.webp', '/3.webp', '/4.webp', '/5.webp'];
-  const area = photoArea(Catalog.buildProductCard({ name: 'Светильник', photos }));
-  const strip = area.children.find(c => c.className === 'product-tile-strip');
-  assert.ok(strip);
+  const area = shotOf(Catalog.buildProductCard({ name: 'Светильник', photos }));
+  const strip = find(area, 'stock-strip');
   assert.equal(strip.tabIndex, 0);
   assert.equal(strip.attrs['aria-label'], 'Светильник, 5 фото');
   assert.deepEqual(images(strip).map(i => i.src), photos);
   assert.deepEqual(images(strip).map(i => i.alt), ['Фото 1 из 5', 'Фото 2 из 5', 'Фото 3 из 5', 'Фото 4 из 5', 'Фото 5 из 5']);
-  const count = area.children.find(c => c.className === 'product-tile-count');
+  const count = find(area, 'stock-count');
   assert.equal(count.textContent, '5 фото');
   assert.equal(count.attrs['aria-hidden'], 'true');
   images(strip)[2].listeners.error();                       // one missing photo: only its frame changes
-  assert.equal(strip.children[2].className, 'product-tile-placeholder');
+  assert.equal(strip.children[2].className, 'stock-placeholder');
   assert.equal(images(strip).length, 4);
 }));
 
-test('a product with one photo keeps the single image: no row, no count', () => withDocument(() => {
-  const area = photoArea(Catalog.buildProductCard({ name: 'Ваза настольная', photos: ['/v.jpg'] }));
-  assert.equal(area.children.length, 1);
-  assert.equal(area.children[0].tagName, 'IMG');
-  assert.equal(area.children[0].alt, 'Ваза настольная');
+test('a card (2026-10-24, the owner: «Сетка»): the photograph, the kind, the name, then the price and «Запросить» -- the site\'s main button -- at its foot', () => withDocument(() => {
+  const card = Catalog.buildProductCard({ name: 'Ракушка', category: 'rakushki', price_rub: 37000, photos: ['/r.jpg'] });
+  assert.equal(card.tagName, 'LI');
+  assert.equal(card.dataset.group, 'decor');
+  const words = find(card, 'stock-text');
+  assert.deepEqual(words.children.map(c => c.className), ['stock-kind', 'stock-name', 'stock-foot']);
+  assert.equal(find(words, 'stock-kind').textContent, 'Декор');
+  assert.equal(find(words, 'stock-name').tagName, 'H2');
+  const foot = find(words, 'stock-foot');
+  assert.equal(foot.children[0].textContent, '37 000 ₽');
+  const ask = foot.children[1];
+  assert.equal(ask.tagName, 'A');
+  assert.equal(ask.className, 'btn btn-primary stock-ask');
+  assert.equal(ask.textContent, 'Запросить');
+  assert.equal(ask.href, Catalog.ORDER_URL);
+  assert.equal(Catalog.ORDER_URL, '/sayanmramor-site/index.html#offer');
+  assert.equal(ask.attrs['aria-label'], 'Запросить: Ракушка');
 }));
+
+test('every category in products.json has its kind', () => {
+  const { products } = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'products.json'), 'utf8'));
+  products.forEach(p => assert.ok(Catalog.KINDS[p.category], p.id + ': ' + p.category));
+});
+
+test('the grid: every piece at once; over it the count and the prices; the kinds filter it', () => withDocument(() => {
+  const products = [
+    { name: 'Ванная из оникса', category: 'vanny', price_rub: 3977000, photos: ['/v.webp'] },
+    { name: 'Ракушка', category: 'rakushki', price_rub: 37000, photos: ['/r.jpg'] },
+    { name: 'Стол', category: 'stoly', price_rub: 3177000, photos: [] },
+    { name: 'Арт-стол', category: 'stoly', price_rub: 2377000, photos: ['/a.webp'] },
+    { name: 'Светильник', category: 'svetilniki', price_rub: 20000, photos: ['/s1.webp', '/s2.webp'] },
+  ];
+  const container = document.createElement('div'), meta = document.createElement('p'), slot = document.createElement('div');
+  const r = Catalog.renderCatalog(container, products, { meta, filter: slot });
+  assert.equal(container.children[0].className, 'stock-grid');
+  assert.equal(r.cards.length, 5);
+  assert.equal(text(meta), '5 изделий от 20 000 до 3 977 000 ₽');
+  assert.equal(meta.children[0].tagName, 'B');
+  const chips = slot.children[0].children;
+  assert.deepEqual(chips.map(text), ['Все 5', 'Столы 2', 'Скульптура и декор 1', 'Ванная 1', 'Свет 1']);
+  assert.deepEqual(chips.map(c => c.attrs['aria-pressed']), ['true', 'false', 'false', 'false', 'false']);
+  chips[1].listeners.click();
+  assert.deepEqual(r.cards.map(c => c.hidden), [true, true, false, false, true], 'only the tables');
+  assert.deepEqual(chips.map(c => c.attrs['aria-pressed']), ['false', 'true', 'false', 'false', 'false']);
+  chips[0].listeners.click();
+  assert.ok(r.cards.every(c => !c.hidden), 'all again');
+}));
+
+test('a photograph opens large in the site\'s viewer: every photo of every piece, in order, each opened by its own image', () => withDocument(() => {
+  const calls = [];
+  const saved = global.window;
+  global.window = { SiteCommon: { enableViewer: (...args) => calls.push(args) } };
+  try {
+    const products = [
+      { name: 'Ракушка', category: 'rakushki', price_rub: 37000, photos: ['/r.jpg'] },
+      { name: 'Стол', category: 'stoly', price_rub: 3177000, photos: [] },
+      { name: 'Светильник', category: 'svetilniki', price_rub: 20000, photos: ['/s1.webp', '/s2.webp'] },
+    ];
+    const container = document.createElement('div');
+    const r = Catalog.renderCatalog(container, products);
+    assert.equal(calls.length, 1);
+    const [grid, items, parts] = calls[0];
+    assert.equal(grid, r.grid);
+    assert.deepEqual(items, [{ image: '/r.jpg', thumb: '/r.jpg' }, { image: '/s1.webp', thumb: '/s1.webp' }, { image: '/s2.webp', thumb: '/s2.webp' }]);
+    assert.deepEqual(parts.triggers.map(i => [i.tagName, i.src]), [['IMG', '/r.jpg'], ['IMG', '/s1.webp'], ['IMG', '/s2.webp']]);
+    assert.equal(parts.radius, 12, 'the corners of the cards\' photographs');
+  } finally { global.window = saved; }
+}));
+
+test('an empty catalogue says so; one kind only: no filter', () => withDocument(() => {
+  const container = document.createElement('div');
+  assert.equal(Catalog.renderCatalog(container, []), null);
+  assert.equal(container.children[0].className, 'catalog-empty');
+  const slot = document.createElement('div');
+  Catalog.renderCatalog(container, [{ name: 'Стол', category: 'stoly', price_rub: 1 }, { name: 'Стол 2', category: 'stoly', price_rub: 2 }], { filter: slot });
+  assert.equal(slot.children.length, 0);
+}));
+
+test('the price range: the pieces in stock, the lowest to the highest', () => {
+  assert.equal(Catalog.priceRange([{ price_rub: 37000 }, { price_rub: 3977000 }, { price_rub: 999, available: false }]), 'от 37 000 до 3 977 000 ₽');
+  assert.equal(Catalog.priceRange([{ price_rub: 20000 }]), '20 000 ₽');
+  assert.equal(Catalog.priceRange([{ price_rub: null }]), '');
+});
+
+test('the page: the head holds the count and the filter; the gallery is gone', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'katalog.html'), 'utf8');
+  assert.match(html, /<p class="catalog-meta" id="catalogMeta"><\/p>\s*<div class="catalog-filter" id="catalogFilter"><\/div>/);
+  assert.doesNotMatch(html, /catalog-kicker|catalogCount/);
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
+  assert.doesNotMatch(css, /\.collection-|\.product-tile|\n\.ask \{/, 'no leftovers of the gallery');
+  assert.match(css, /\.stock-foot \{[^}]*margin-top: auto;/, 'the price and the button at the card\'s foot');
+});
 
 test('products.json: the 8 finished goods with the owner prices, real photo files, no invented text', () => {
   const fs = require('node:fs');
@@ -146,79 +233,6 @@ test('products.json: the 8 finished goods with the owner prices, real photo file
   assert.equal(products.find(p => p.id === 'svetilnik-01').photos.length, 5);
 });
 
-test('a piece\'s label: the price is plain text; «Запросить» is a quiet link to the request form, naming the piece', () => withDocument(() => {
-  const card = Catalog.buildProductCard({ name: 'Ракушка', price_rub: 37000, photos: ['/r.jpg'] });
-  const price = card.children.find(c => c.className === 'product-tile-price');
-  assert.equal(price.tagName, 'DIV');
-  assert.equal(price.textContent, '37\u00a0000\u00a0₽');
-  const ask = card.children[card.children.length - 1];
-  assert.equal(ask.tagName, 'A');
-  assert.equal(ask.className, 'ask');
-  assert.equal(ask.textContent, 'Запросить');
-  assert.equal(ask.href, Catalog.ORDER_URL);
-  assert.equal(Catalog.ORDER_URL, '/sayanmramor-site/index.html#offer');
-  assert.equal(ask.attrs['aria-label'], 'Запросить: Ракушка');
-  assert.ok(!card.children.some(c => /btn/.test(c.className)), 'no button in a row of buttons');
-}));
-
-test('the gallery: one piece at a time -- its words, its photograph; the arrows, the index and ← → change it', () => withDocument(() => {
-  const products = [
-    { name: 'Ракушка', price_rub: 37000, photos: ['/r.jpg'] },
-    { name: 'Светильник', price_rub: 20000, photos: ['/s1.webp', '/s2.webp', '/s3.webp'] },
-    { name: 'Стол', price_rub: 3177000, photos: [] },
-  ];
-  const c = Catalog.buildCollection(products);
-  assert.deepEqual(c.root.children.map(x => x.className), ['collection-info', 'collection-stage', 'collection-cards']);
-  const [info, stage, cards] = c.root.children;
-  assert.deepEqual(info.children.map(x => x.className), ['collection-piece', 'collection-thumbs', 'collection-list', 'collection-nav']);
-  const [piece, thumbs, list, nav] = info.children;
-  const frame = stage.children[0];
-  const words = () => [piece.children[0].textContent, piece.children[1].textContent, piece.children[2].children[0].textContent];
-  const count = () => nav.children[1].textContent;
-  const current = () => c.rows.map(b => b.attrs['aria-current']);
-  const shown = () => frame.children.filter(s => s.classList.contains('is-on'));
-  // The first piece: its name as a heading, its price, «Запросить».
-  assert.equal(piece.children[0].tagName, 'H2');
-  assert.deepEqual(words(), ['Ракушка', '37 000 ₽', 'Запросить']);
-  assert.equal(count(), '1 из 3');
-  assert.deepEqual(current(), ['true', 'false', 'false']);
-  assert.equal(thumbs.children.length, 0, 'one photo: no thumbnails');
-  assert.equal(list.tagName, 'OL');
-  assert.deepEqual(c.rows.map(b => [b.tagName, b.type, b.textContent]), [['BUTTON', 'button', 'Ракушка'], ['BUTTON', 'button', 'Светильник'], ['BUTTON', 'button', 'Стол']]);
-  // The arrow: the next piece; its photographs as thumbnails; one photograph at a time.
-  c.next.listeners.click();
-  assert.deepEqual(words(), ['Светильник', '20 000 ₽', 'Запросить']);
-  assert.equal(count(), '2 из 3');
-  assert.equal(thumbs.children.length, 3);
-  thumbs.children[2].listeners.click();
-  assert.deepEqual(thumbs.children.map(t => t.attrs['aria-current']), ['false', 'false', 'true']);
-  assert.equal(shown().length, 1);
-  assert.equal(shown()[0].children[0].src, '/s3.webp');
-  // The index (the keyboard reaches it): no photo -- the quiet line.
-  c.rows[2].listeners.focus();
-  assert.equal(shown()[0].children[0].textContent, Catalog.NO_PHOTO_TEXT);
-  // Past the last piece: the first again; back from the first: the last. ← → do the same.
-  c.next.listeners.click();
-  assert.equal(count(), '1 из 3');
-  c.prev.listeners.click();
-  assert.equal(count(), '3 из 3');
-  let prevented = 0;
-  c.root.listeners.keydown({ key: 'ArrowRight', preventDefault: () => prevented++ });
-  assert.equal(count(), '1 из 3');
-  assert.equal(prevented, 1);
-  // A touch passing over the index does not preview.
-  c.rows[1].listeners.pointerenter({ pointerType: 'touch' });
-  assert.equal(count(), '1 из 3');
-  // The narrow screen's column: every piece, as a card.
-  assert.equal(cards.children.length, 3);
-  assert.ok(cards.children.every(x => x.className === 'product-tile'));
-}));
-
-test('the place in the collection: «1 из 8» (2026-10-15, the owner: no «01 / 08»)', () => {
-  assert.equal(Catalog.position(0, 8), '1 из 8');
-  assert.equal(Catalog.position(11, 12), '12 из 12');
-});
-
 test('the count: «1 изделие», «3 изделия», «8 изделий», «11 изделий», «21 изделие»', () => {
   assert.deepEqual([1, 3, 8, 11, 21, 22, 25].map(Catalog.countLabel),
     ['1 изделие', '3 изделия', '8 изделий', '11 изделий', '21 изделие', '22 изделия', '25 изделий']);
@@ -226,38 +240,4 @@ test('the count: «1 изделие», «3 изделия», «8 изделий�
 
 test('the ruble sign never wraps away from its number', () => {
   assert.ok(Catalog.formatProductPrice(3977000).endsWith(' ₽'));
-});
-
-// Smoother photographs (2026-10-15, the owner: «более плавные анимации переходов фоток»). A photograph
-// still loading never shows an empty frame: the current one stays until the new one is ready, then
-// the new one fades in over it; the pieces either side are fetched ahead.
-test('the gallery waits for a photograph: the current one stays until the new one has loaded, then it takes over', () => withDocument(() => {
-  const make = document.createElement;
-  document.createElement = tag => { const node = make(tag); if (tag === 'img') node.complete = false; return node; };
-  const products = [
-    { name: 'Ракушка', price_rub: 37000, photos: ['/r.jpg'] },
-    { name: 'Светильник', price_rub: 20000, photos: ['/s1.webp'] },
-    { name: 'Ваза', price_rub: 9000, photos: ['/v1.webp'] },
-    { name: 'Стол', price_rub: 3177000, photos: ['/t1.webp'] },
-  ];
-  const c = Catalog.buildCollection(products);
-  const frame = c.root.children[1].children[0];
-  const srcs = () => frame.children.map(s => s.children[0].src);
-  const shown = () => frame.children.filter(s => s.classList.contains('is-on')).map(s => s.children[0].src);
-  assert.deepEqual(srcs().sort(), ['/r.jpg', '/s1.webp', '/t1.webp'], 'the piece, the next and the previous are fetched at once');
-  frame.children.find(s => s.children[0].src === '/r.jpg').children[0].listeners.load();
-  assert.deepEqual(shown(), ['/r.jpg']);
-  c.rows[2].listeners.click();
-  assert.deepEqual(shown(), ['/r.jpg'], 'still loading: the current photograph stays');
-  frame.children.find(s => s.children[0].src === '/v1.webp').children[0].listeners.load();
-  assert.deepEqual(shown(), ['/v1.webp'], 'loaded: it takes over');
-}));
-
-test('the gallery switches photographs without any animation: no fade, no zoom (2026-10-15, the owner: «убери анимацию»)', () => {
-  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
-  const block = css.slice(css.indexOf('.collection-stage {'), css.indexOf('/* Narrow: no stage'));
-  assert.ok(block.length > 100);
-  assert.doesNotMatch(block, /\.collection-shot[^{]*\{[^}]*(transition|transform|animation)/, 'nothing moves');
-  assert.match(block, /\.collection-shot \{[^}]*opacity: 0;/);
-  assert.match(block, /\.collection-shot\.is-on \{[^}]*opacity: 1;/);
 });
