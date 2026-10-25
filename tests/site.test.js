@@ -1485,3 +1485,14 @@ test('«Скачать паспорт» is a button drawn as the talk\'s outline
   assert.match(rule, /font-family: inherit;/);
   assert.match(rule, /cursor: pointer;/);
 });
+
+test('the passport preview is the piece\'s photograph edge to edge, not a small shot on a white sheet (the owner, 2026-10-26)', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const sheet = (css.match(/\n\.talk-passport-sheet \{([^}]*)\}/) || [])[1] || '';
+  assert.match(sheet, /width: 112px;/);
+  assert.match(sheet, /aspect-ratio: 4 \/ 3;/);
+  assert.doesNotMatch(sheet, /padding|var\(--surface\)/, 'no white margins');
+  const img = (css.match(/\n\.talk-passport-sheet img \{([^}]*)\}/) || [])[1] || '';
+  assert.match(img, /width: 100%; height: 100%; object-fit: cover;/);
+  assert.match(css, /\.talk-passport \{\s*display: grid; grid-template-columns: 112px minmax\(0, 1fr\) auto;/);
+});
