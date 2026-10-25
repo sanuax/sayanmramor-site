@@ -502,7 +502,8 @@ test('the offer form: fields in the order they are filled in, written lines (lab
   assert.match(src, /first\.focus\(\{ preventScroll: true \}\)/);
   assert.doesNotMatch(src, /<dialog|showModal|window\.open/);
   // The sending is unchanged: no request leaves the page, the message says so.
-  assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon/);
+  assert.doesNotMatch(src, /XMLHttpRequest|sendBeacon|method: 'POST'/);
+  [...src.matchAll(/fetch\(([^)]*)\)/g)].forEach(m => assert.equal(m[1], 'url', 'fetch only reads the site\'s own JSON (fetchJson)'));
   assert.match(OfferForm.NOT_SENT, /Заявки с сайта пока не отправляются/);
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /\.offer-band\.is-collapsible \.offer-reveal \{[^}]*grid-template-rows: 0fr; visibility: hidden;/);
@@ -1419,4 +1420,39 @@ test('home hero CSS: the held height first, the large viewport where nothing hol
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
   assert.match(phone, /@supports \(height: 100lvh\) \{ \.home-hero \{ min-height: var\(--hero-h, 100lvh\); \} \}/);
+});
+
+test('the piece in the request (2026-10-26, the owner): a card over the questions, the request summed up with it', () => {
+  const OfferForm = require('../js/offer-form.js');
+  const calc = { kind: 'calc', query: 'product=stoleshnitsa_kuhnya&stone=s1&pv=1', product: 'Столешницы на кухню', stone: 'Taj Mahal', stoneImage: '/sayanmramor-calculator/data/images/s1.webp', sizes: '2400 × 600 мм', price: '≈ 186 400 ₽', priced: true };
+  assert.deepEqual(OfferForm.pieceCard(calc), {
+    kicker: 'Из калькулятора', title: 'Столешницы на кухню · Taj Mahal', meta: '2400 × 600 мм', price: '≈ 186 400 ₽', note: 'ориентировочно',
+    image: '/sayanmramor-calculator/data/images/s1.webp', actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
+  });
+  assert.equal(OfferForm.pieceCard(Object.assign({}, calc, { price: '', priced: false })).note, '', 'no price, no «ориентировочно»');
+  const shell = { kind: 'katalog', id: 'rakushka-01', name: 'Ракушка', price: 37000, photo: '/sayanmramor-site/assets/products/rakushka-01/1.webp' };
+  const card = OfferForm.pieceCard(shell);
+  assert.equal(card.kicker, 'Из каталога');
+  assert.equal(card.title, 'Ракушка');
+  assert.equal(card.price, '37 000 ₽');
+  assert.equal(card.note, '');
+  assert.equal(card.image, shell.photo);
+  assert.deepEqual(card.actions, [{ label: 'Выбрать другое', kind: 'other' }, { label: 'Убрать изделие', kind: 'drop' }]);
+  assert.equal(OfferForm.pieceCard(Object.assign({}, shell, { price: null })).price, 'Цена по запросу');
+  assert.equal(OfferForm.summaryLine({ direction: 'kuhnya', name: 'Анна', phone: '+7 999 123-45-67', piece: calc }), 'Столешницы на кухню · Taj Mahal · Анна · +7 999 123-45-67');
+  assert.equal(OfferForm.summaryLine({ direction: 'gotovye-izdeliya', name: '', phone: '+7 999 123-45-67', piece: shell }), 'Ракушка · +7 999 123-45-67');
+  assert.equal(OfferForm.summaryLine({ direction: 'hammamy', name: 'Анна', phone: '+7 999', piece: null }), 'Хаммамы · Анна · +7 999');
+  assert.deepEqual(OfferForm.PIECE_HINTS, {
+    name: 'Изделие уже в заявке. Осталось имя и телефон.',
+    phoneCalc: 'Мастер проверит размеры и подтвердит цену.',
+    phoneKatalog: 'Мастер подтвердит, что изделие ждёт вас, и расскажет о доставке.',
+  });
+  const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  assert.match(src, /readArrival\((win\.)?location\.search\)/, 'the address brings the piece');
+  assert.match(src, /history\.replaceState\(/, 'and is cleaned after it');
+  assert.match(src, /takeCalcPiece\(/);
+  assert.match(src, /blobs\.put\('attachment'/, 'an attached file survives the trip');
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* ---- «Получить расчёт» на главной: три вопроса мастеру'), css.indexOf('/* ---- Footer'));
+  assert.match(block, /\.talk-piece \{/);
 });

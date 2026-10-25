@@ -1420,6 +1420,23 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .talk-fork-btn:hover { border-color: var(--on-dark); }
   .talk-fork-btn.is-main:hover { background: #ffffff; }
 }
+/* The piece from the calculator or the catalogue, over the questions (2026-10-26, the owner). */
+.talk-piece {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; column-gap: var(--s-4); row-gap: var(--s-2);
+  margin-top: 18px; padding: 14px; border-radius: 12px;
+  background: rgba(127, 166, 152, 0.12); box-shadow: inset 0 0 0 1px rgba(127, 166, 152, 0.35);
+  animation: talk-in 0.3s var(--ease);
+}
+.talk-piece.is-bare { grid-template-columns: minmax(0, 1fr) auto; }
+.talk-piece-image { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; }
+.talk-piece-words { min-width: 0; }
+.talk-piece-kicker { font-size: var(--fs-meta); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-on-dark); }
+.talk-piece-title { margin-top: 2px; font-weight: 600; color: var(--on-dark); }
+.talk-piece-meta { font-size: 13px; color: var(--on-dark-muted); }
+.talk-piece-price { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--on-dark); text-align: right; white-space: nowrap; }
+.talk-piece-price small { display: block; font-family: var(--font); font-size: 11px; font-weight: 500; color: var(--on-dark-muted); }
+.talk-piece-actions { grid-column: 2 / -1; margin-top: 0; }
+.talk-piece.is-bare .talk-piece-actions { grid-column: 1 / -1; }
 .talk-links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .talk-link {
   min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(233, 231, 225, 0.25);
@@ -1445,6 +1462,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   outline: 2px solid var(--accent-on-dark); outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) { .talk-step { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .talk-piece { animation: none; } }
 
 /* Narrower: the photo as a strip on top, the words under it on the graphite (not over
    the photo), then the questions; on a phone, each answer row stacks. */
@@ -1463,6 +1481,10 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .talk-answer { flex-direction: column; }
   .talk-fork { grid-template-columns: minmax(0, 1fr); }
   .talk-fork-btn { min-height: 0; }
+  .talk-piece { grid-template-columns: 52px minmax(0, 1fr); }
+  .talk-piece-image { width: 52px; height: 52px; }
+  .talk-piece-price { grid-column: 2; text-align: left; }
+  .talk-piece.is-bare .talk-piece-price { grid-column: 1; }
   .talk-input { flex: none; }
   .talk-input, .talk-next, .talk-ghost { height: 56px; }
   .talk-count { margin-left: 0; width: 100%; order: -1; }

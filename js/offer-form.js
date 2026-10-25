@@ -249,6 +249,40 @@
     if (piece.kind === 'katalog') return key === Handoff.KATALOG_KEY;
     return new URLSearchParams(piece.query || '').get('product') === Handoff.CALC_PRODUCT[key];
   }
+  const directionLabel = key => (key === UNSURE_KEY ? UNSURE : (DIRECTIONS.find(d => d.key === key) || { label: '' }).label);
+  // The direction a piece came back to: the catalogue's, or the one whose product the calculator built.
+  function directionOfPiece(piece) {
+    if (piece.kind === 'katalog') return Handoff.KATALOG_KEY;
+    const product = new URLSearchParams(piece.query || '').get('product');
+    return Object.keys(Handoff.CALC_PRODUCT).find(k => Handoff.CALC_PRODUCT[k] === product) || '';
+  }
+
+  // The hints of the name and the phone while a piece is in the request.
+  const PIECE_HINTS = {
+    name: 'Изделие уже в заявке. Осталось имя и телефон.',
+    phoneCalc: 'Мастер проверит размеры и подтвердит цену.',
+    phoneKatalog: 'Мастер подтвердит, что изделие ждёт вас, и расскажет о доставке.',
+  };
+  // What the card over the questions says: the calculator's price is an estimate, the catalogue's exact.
+  function pieceCard(piece) {
+    if (piece.kind === 'katalog') {
+      return {
+        kicker: 'Из каталога', title: piece.name || '', meta: '', price: Handoff.formatRub(piece.price), note: '', image: piece.photo || '',
+        actions: [{ label: 'Выбрать другое', kind: 'other' }, { label: 'Убрать изделие', kind: 'drop' }],
+      };
+    }
+    return {
+      kicker: 'Из калькулятора', title: [piece.product, piece.stone].filter(Boolean).join(' · '), meta: piece.sizes || '',
+      price: piece.price || '', note: piece.priced ? 'ориентировочно' : '', image: piece.stoneImage || '',
+      actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
+    };
+  }
+  // The request in one line: the piece (or the direction), the name, the phone.
+  function summaryLine(state) {
+    const lead = state.piece ? pieceCard(state.piece).title : directionLabel(state.direction);
+    return [lead, state.name, state.phone].filter(Boolean).join(' · ');
+  }
+
   // A new first answer: the piece stays only with its own direction (then the fork is behind it).
   function chooseDirection(state, key) {
     const piece = pieceOf(state.piece, key) ? state.piece : null;
@@ -260,13 +294,19 @@
     const win = doc.defaultView || {};
     const n = ++formCount;
     const id = name => 'offer-' + n + '-' + name;
-    let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '' };
-    const labelOf = key => (key === UNSURE_KEY ? UNSURE : (DIRECTIONS.find(d => d.key === key) || { label: '' }).label);
+    let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '', draftName: '', draftPhone: '' };
+    const labelOf = directionLabel;
     const keyOf = label => (label === UNSURE ? UNSURE_KEY : DIRECTIONS.find(d => d.label === label).key);
 
     // The answers ride along in this tab's storage, with the page, so a trip out and back keeps them.
     function session() {
       try { return win.sessionStorage || null; } catch (e) { return null; }
+    }
+    function local() {
+      try { return win.localStorage || null; } catch (e) { return null; }
+    }
+    function fetchJson(url) {
+      return typeof win.fetch === 'function' ? win.fetch(url).then(r => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null);
     }
     function persist() {
       Handoff.saveTalk(session(), Object.assign({}, state, { page: win.location ? win.location.pathname : '' }));
@@ -297,6 +337,29 @@
     });
     const count = el(doc, 'span', { className: 'talk-count', 'aria-live': 'polite' });
     const receipt = el(doc, 'div', { className: 'talk-receipt' }, chips.concat([count]));
+
+    // The piece from the calculator or the catalogue, over the questions.
+    const pieceSlot = el(doc, 'div', { className: 'talk-piece-slot' });
+    function renderPiece() {
+      if (!state.piece) { pieceSlot.replaceChildren(); return; }
+      const card = pieceCard(state.piece);
+      const words = el(doc, 'div', { className: 'talk-piece-words' }, [
+        el(doc, 'p', { className: 'talk-piece-kicker', textContent: card.kicker }),
+        el(doc, 'p', { className: 'talk-piece-title', textContent: card.title }),
+      ].concat(card.meta ? [el(doc, 'p', { className: 'talk-piece-meta', textContent: card.meta })] : []));
+      const price = el(doc, 'p', { className: 'talk-piece-price', textContent: card.price },
+        card.note ? [el(doc, 'small', { textContent: card.note })] : []);
+      const parts = (card.image ? [el(doc, 'img', { className: 'talk-piece-image', src: card.image, alt: '', width: '64', height: '64', loading: 'lazy', decoding: 'async' })] : [])
+        .concat([words, price]);
+      if (state.current !== 3) {
+        parts.push(el(doc, 'div', { className: 'talk-links talk-piece-actions' }, card.actions.map(a => linkButton(a.label, () => {
+          if (a.kind === 'edit') leave(Handoff.editUrl(state.piece.query));
+          else if (a.kind === 'other') leave(Handoff.KATALOG);
+          else { state.piece = null; render(); persist(); }
+        }))));
+      }
+      pieceSlot.replaceChildren(el(doc, 'div', { className: 'talk-piece' + (card.image ? '' : ' is-bare') }, parts));
+    }
 
     // 1. What to make: every direction of the site, and «Пока не знаю».
     const options = DIRECTIONS.map(d => d.label).concat([UNSURE]).map(label => {
@@ -340,6 +403,7 @@
     const toPhone = () => { state.name = name.value.trim(); state.nameSkipped = !state.name; go(2); };
     nameNext.addEventListener('click', toPhone);
     name.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); toPhone(); } });
+    name.addEventListener('input', () => { state.draftName = name.value; persist(); });
     const nameHint = hint(STEPS[1].hint);
     const step2 = question(1, nameHint, [
       el(doc, 'div', { className: 'talk-answer' }, [name, nameNext]),
@@ -354,12 +418,17 @@
     const file = el(doc, 'input', { type: 'file', id: id('file'), name: 'file', className: 'offer-file-input' });
     const fileName = el(doc, 'span', { className: 'talk-file-name', textContent: 'Есть чертёж или фото? Прикрепите файл' });
     file.addEventListener('change', () => {
-      fileName.textContent = file.files && file.files.length ? file.files[0].name : 'Есть чертёж или фото? Прикрепите файл';
+      const chosen = file.files && file.files.length ? file.files[0] : null;
+      fileName.textContent = chosen ? chosen.name : 'Есть чертёж или фото? Прикрепите файл';
+      // Kept in this browser, so «Изменить в калькуляторе» and back does not lose it.
+      state.attachmentName = chosen ? chosen.name : '';
+      if (chosen) Handoff.blobs.put('attachment', chosen); else Handoff.blobs.remove('attachment');
+      persist();
     });
     const consent = el(doc, 'input', { type: 'checkbox', id: id('consent'), name: 'consent', required: '' });
     const status = el(doc, 'p', { className: 'offer-status talk-status', role: 'status' });
     // A hint goes as soon as the field it was about is put right.
-    phone.addEventListener('input', () => { if (phoneOk(phone.value)) status.textContent = ''; });
+    phone.addEventListener('input', () => { if (phoneOk(phone.value)) status.textContent = ''; state.draftPhone = phone.value; persist(); });
     consent.addEventListener('change', () => { if (consent.checked) status.textContent = ''; });
     const phoneHint = hint(STEPS[2].hint);
     const step3 = question(2, phoneHint, [
@@ -394,7 +463,7 @@
     ]);
 
     const steps = { 0: step1, fork: forkStep, katalog: katalogStep, 1: step2, 2: step3, 3: done };
-    const form = el(doc, 'form', { className: 'offer-talk-form', novalidate: '' }, [receipt].concat(Object.values(steps)));
+    const form = el(doc, 'form', { className: 'offer-talk-form', novalidate: '' }, [receipt, pieceSlot].concat(Object.values(steps)));
 
     function reachable(i) {
       return i === 0 || !!state.direction;
@@ -414,6 +483,10 @@
         chip.disabled = !reachable(i) || state.current === 3;
       });
       count.textContent = countLabel(state.current, state.direction);
+      const piece = state.piece;
+      nameHint.textContent = piece ? PIECE_HINTS.name : STEPS[1].hint;
+      phoneHint.textContent = piece ? (piece.kind === 'katalog' ? PIECE_HINTS.phoneKatalog : PIECE_HINTS.phoneCalc) : STEPS[2].hint;
+      renderPiece();
     }
     function go(i, focus) {
       state.current = i;
@@ -440,7 +513,7 @@
         return;
       }
       state.phone = phone.value.trim();
-      summary.textContent = [labelOf(state.direction), state.name, state.phone].filter(Boolean).join(' · ');
+      summary.textContent = summaryLine(state);
       go(3);
     });
 
@@ -449,6 +522,38 @@
     if (preselect) {
       state.direction = preselect.key;
       state.current = startStep(preselect.key);
+    }
+    // The answers given on this page before a trip out (or a reload) come back.
+    const page = win.location ? win.location.pathname : '';
+    const saved = Handoff.loadTalk(session());
+    if (saved && saved.page === page) {
+      ['direction', 'name', 'nameSkipped', 'phone', 'current', 'piece', 'attachmentName', 'draftName', 'draftPhone'].forEach(k => {
+        if (saved[k] !== undefined) state[k] = saved[k];
+      });
+      name.value = state.name || state.draftName || '';
+      phone.value = state.phone || state.draftPhone || '';
+      if (state.attachmentName) fileName.textContent = state.attachmentName;
+      if (state.current === 3) summary.textContent = summaryLine(state);
+    }
+    // And the piece the address brings back: from the catalogue (?piece=) or the calculator (a passport link).
+    const arrival = win.location ? Handoff.readArrival(win.location.search) : null;
+    if (arrival) {
+      const place = piece => {
+        if (!piece || (piece.kind === 'calc' && !piece.product)) return;
+        state.piece = piece;
+        state.direction = directionOfPiece(piece);
+        state.current = state.name || state.nameSkipped ? 2 : 1;
+        render();
+        persist();
+      };
+      if (arrival.kind === 'katalog') {
+        fetchJson('/sayanmramor-site/data/products.json').then(data => place(Handoff.catalogPiece(data && data.products, arrival.id)));
+      } else {
+        const taken = Handoff.takeCalcPiece(local(), arrival.query);
+        if (taken) place(taken);
+        else fetchJson('/sayanmramor-calculator/data/stone-index.json').then(data => place(Handoff.calcPieceFromIndex(arrival.query, data && data.stones)));
+      }
+      if (win.history && win.history.replaceState) win.history.replaceState(null, '', page + '#offer');
     }
     render();
     container.replaceChildren(form);
@@ -462,7 +567,8 @@
   if (typeof document !== 'undefined') mountAll(document);
 
   return {
-    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, DONE_NOTE, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
+    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, DONE_NOTE, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
+    pieceCard, summaryLine,
     mount, mountSteps, mountAll, enhanceBand,
   };
 });
