@@ -8,17 +8,14 @@
 // A photograph opens large in the site's viewer, as the works' photographs do (js/site.js).
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = factory();
+    module.exports = factory(require('./offer-handoff.js'));
   } else {
-    root.Catalog = factory();
+    root.Catalog = factory(root.OfferHandoff);
   }
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+})(typeof window !== 'undefined' ? window : globalThis, function (Handoff) {
 
-  // The ruble sign stays on the line of its number (a no-break space).
-  function formatProductPrice(priceRub) {
-    if (typeof priceRub !== 'number' || !Number.isFinite(priceRub)) return 'Цена по запросу';
-    return Math.round(priceRub).toLocaleString('ru-RU') + ' ₽';
-  }
+  // The ruble sign stays on the line of its number (a no-break space); the request writes it the same way.
+  const formatProductPrice = priceRub => Handoff.formatRub(priceRub);
 
   // «8 изделий», «1 изделие», «3 изделия».
   function countLabel(n) {
@@ -28,9 +25,14 @@
     return n + ' ' + word;
   }
 
-  // A request goes to the request form on the home page, where «Готовые
-  // изделия» is one of the directions to choose.
-  const ORDER_URL = '/sayanmramor-site/index.html#offer';
+  // «Запросить» brings the piece into the request (2026-10-26, the owner): back to the page the
+  // request was started on (js/offer-handoff.js), else the home page, with ?piece=<id>.
+  function askUrl(product, store) {
+    return Handoff.returnUrl(store, 'piece=' + encodeURIComponent(product.id || ''));
+  }
+  function session() {
+    try { return typeof sessionStorage !== 'undefined' ? sessionStorage : null; } catch (e) { return null; }
+  }
 
   // What kind of piece it is, by its category in data/products.json, and the filter it falls under.
   const KINDS = {
@@ -104,7 +106,7 @@
   // «Запросить»: the site's main button, naming the piece for screen readers.
   function askButton(product) {
     const a = el('a', 'btn btn-primary stock-ask', 'Запросить');
-    a.href = ORDER_URL;
+    a.href = askUrl(product, session());
     a.setAttribute('aria-label', 'Запросить: ' + (product.name || ''));
     return a;
   }
@@ -195,5 +197,5 @@
     return { grid, cards, filter, shots };
   }
 
-  return { NO_PHOTO_TEXT, ORDER_URL, KINDS, formatProductPrice, countLabel, priceRange, isAvailable, buildProductCard, buildFilter, renderCatalog };
+  return { NO_PHOTO_TEXT, KINDS, askUrl, formatProductPrice, countLabel, priceRange, isAvailable, buildProductCard, buildFilter, renderCatalog };
 });

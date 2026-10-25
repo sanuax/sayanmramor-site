@@ -115,7 +115,7 @@ test('a product with several photos gets one swipeable, focusable row of them, l
 }));
 
 test('a card (2026-10-24, the owner: «Сетка»): the photograph, the kind, the name, then the price and «Запросить» -- the site\'s main button -- at its foot', () => withDocument(() => {
-  const card = Catalog.buildProductCard({ name: 'Ракушка', category: 'rakushki', price_rub: 37000, photos: ['/r.jpg'] });
+  const card = Catalog.buildProductCard({ id: 'rakushka-01', name: 'Ракушка', category: 'rakushki', price_rub: 37000, photos: ['/r.jpg'] });
   assert.equal(card.tagName, 'LI');
   assert.equal(card.dataset.group, 'decor');
   const words = find(card, 'stock-text');
@@ -128,8 +128,8 @@ test('a card (2026-10-24, the owner: «Сетка»): the photograph, the kind, 
   assert.equal(ask.tagName, 'A');
   assert.equal(ask.className, 'btn btn-primary stock-ask');
   assert.equal(ask.textContent, 'Запросить');
-  assert.equal(ask.href, Catalog.ORDER_URL);
-  assert.equal(Catalog.ORDER_URL, '/sayanmramor-site/index.html#offer');
+  // «Запросить» brings this very piece into the request (2026-10-26, the owner).
+  assert.equal(ask.href, '/sayanmramor-site/index.html?piece=rakushka-01#offer');
   assert.equal(ask.attrs['aria-label'], 'Запросить: Ракушка');
 }));
 
@@ -240,4 +240,15 @@ test('the count: «1 изделие», «3 изделия», «8 изделий�
 
 test('the ruble sign never wraps away from its number', () => {
   assert.ok(Catalog.formatProductPrice(3977000).endsWith(' ₽'));
+});
+
+test('«Запросить» returns to the request where it was started, else to the home page, with the piece (2026-10-26, the owner)', () => {
+  const store = { data: {}, getItem(k) { return k in this.data ? this.data[k] : null; }, setItem(k, v) { this.data[k] = String(v); }, removeItem(k) { delete this.data[k]; } };
+  assert.equal(Catalog.askUrl({ id: 'rakushka-01' }, store), '/sayanmramor-site/index.html?piece=rakushka-01#offer');
+  assert.equal(Catalog.askUrl({ id: 'rakushka-01' }, null), '/sayanmramor-site/index.html?piece=rakushka-01#offer');
+  require('../js/offer-handoff.js').saveTalk(store, { page: '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html' });
+  assert.equal(Catalog.askUrl({ id: 'vaza 01' }, store), '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html?piece=vaza%2001#offer');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'katalog.html'), 'utf8').replace(/\?v=[0-9a-f]{8}"/g, '"');
+  assert.match(html, /<script src="\/sayanmramor-site\/js\/offer-handoff\.js"><\/script>\s*<script src="\/sayanmramor-site\/js\/catalog\.js">/);
+  assert.doesNotMatch(html, /data-offer-form/);
 });
