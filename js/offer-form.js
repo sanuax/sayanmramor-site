@@ -277,6 +277,9 @@
       actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
     };
   }
+  // The calculator's passport at the end of the request.
+  const PASSPORT = { title: 'Паспорт изделия', button: 'Скачать паспорт' };
+
   // The request in one line: the piece (or the direction), the name, the phone.
   function summaryLine(state) {
     const lead = state.piece ? pieceCard(state.piece).title : directionLabel(state.direction);
@@ -451,9 +454,41 @@
 
     // 4. Done: the request summed up, and the honest way to send it today.
     const summary = el(doc, 'p', { className: 'talk-summary' });
+    // A piece built in the calculator brings its passport: the PDF the calculator made when
+    // «Получить расчёт» was pressed (js/offer-handoff.js, IndexedDB), with its preview. It is
+    // read before the tap, so the tap itself saves it (an iPhone drops a download outside a
+    // tap); without it the button opens the calculator on the piece, which makes it anew.
+    const passportSlot = el(doc, 'div', { className: 'talk-passport-slot' });
+    let passportFor = null;
+    function renderPassport() {
+      const piece = state.piece;
+      if (state.current !== 3 || !piece || piece.kind !== 'calc') { passportSlot.replaceChildren(); passportFor = null; return; }
+      if (passportFor === piece.query) return;
+      passportFor = piece.query;
+      const sheet = el(doc, 'div', { className: 'talk-passport-sheet', 'aria-hidden': 'true' });
+      const get = el(doc, 'a', { className: 'talk-ghost talk-passport-get', href: Handoff.editUrl(piece.query), textContent: PASSPORT.button });
+      const box = el(doc, 'div', { className: 'talk-passport' }, [sheet, el(doc, 'div', { className: 'talk-passport-words' }, [
+        el(doc, 'p', { className: 'talk-passport-title', textContent: PASSPORT.title }),
+        el(doc, 'p', { className: 'talk-passport-name', textContent: pieceCard(piece).title }),
+      ]), get]);
+      passportSlot.replaceChildren(box);
+      const mine = record => !!record && record.query === piece.query && passportFor === piece.query;
+      Handoff.blobs.get('passport-preview').then(record => {
+        if (!mine(record) || !record.image) return;
+        const src = typeof record.image === 'string' ? record.image : URL.createObjectURL(record.image);
+        sheet.appendChild(el(doc, 'img', { src, alt: '', decoding: 'async' }));
+      });
+      Handoff.blobs.get('passport').then(record => {
+        if (!mine(record) || !record.file) return;
+        const button = el(doc, 'button', { type: 'button', className: 'talk-ghost talk-passport-get', textContent: PASSPORT.button });
+        button.addEventListener('click', () => Handoff.saveFile(record.file));
+        if (get.parentNode === box) box.replaceChild(button, get);
+      });
+    }
     const done = el(doc, 'section', { className: 'talk-step talk-done', 'data-step': '3', 'aria-labelledby': id('q3') }, [
       el(doc, 'p', { className: 'talk-q', id: id('q3') }, [doc.createTextNode('Заявка '), el(doc, 'em', { textContent: 'собрана' })]),
       summary,
+      passportSlot,
       el(doc, 'p', { className: 'talk-hint', textContent: DONE_NOTE }),
       el(doc, 'div', { className: 'talk-answer talk-done-actions' }, [
         el(doc, 'a', { className: 'talk-next', href: 'tel:' + PHONE.replace(/[^+\d]/g, '') }, [el(doc, 'span', { textContent: 'Позвонить ' + PHONE })]),
@@ -487,6 +522,7 @@
       nameHint.textContent = piece ? PIECE_HINTS.name : STEPS[1].hint;
       phoneHint.textContent = piece ? (piece.kind === 'katalog' ? PIECE_HINTS.phoneKatalog : PIECE_HINTS.phoneCalc) : STEPS[2].hint;
       renderPiece();
+      renderPassport();
     }
     function go(i, focus) {
       state.current = i;
@@ -567,7 +603,7 @@
   if (typeof document !== 'undefined') mountAll(document);
 
   return {
-    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, DONE_NOTE, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
+    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
     pieceCard, summaryLine,
     mount, mountSteps, mountAll, enhanceBand,
   };

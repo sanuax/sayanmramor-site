@@ -1456,3 +1456,19 @@ test('the piece in the request (2026-10-26, the owner): a card over the question
   const block = css.slice(css.indexOf('/* ---- «Получить расчёт» на главной: три вопроса мастеру'), css.indexOf('/* ---- Footer'));
   assert.match(block, /\.talk-piece \{/);
 });
+
+test('the end of the request (2026-10-26, the owner): the piece without its buttons, and for a calculator piece its passport to download', () => {
+  const OfferForm = require('../js/offer-form.js');
+  assert.deepEqual(OfferForm.PASSPORT, { title: 'Паспорт изделия', button: 'Скачать паспорт' });
+  const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  assert.match(src, /blobs\.get\('passport'\)/, 'the PDF the calculator left');
+  assert.match(src, /blobs\.get\('passport-preview'\)/, 'and its preview');
+  assert.match(src, /Handoff\.saveFile\(/, 'saved inside the tap (an iPhone drops a download outside it)');
+  const passport = src.slice(src.indexOf('function renderPassport'), src.indexOf('function renderPassport') + 600);
+  assert.match(passport, /piece\.kind !== 'calc'/, 'only a calculator piece has a passport');
+  assert.match(passport, /talk-passport/);
+  assert.match(src, /\.query === piece\.query/, 'the passport of this very piece, not an older one');
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* ---- «Получить расчёт» на главной: три вопроса мастеру'), css.indexOf('/* ---- Footer'));
+  assert.match(block, /\.talk-passport \{/);
+});

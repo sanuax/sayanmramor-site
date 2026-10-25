@@ -1437,6 +1437,17 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-piece-price small { display: block; font-family: var(--font); font-size: 11px; font-weight: 500; color: var(--on-dark-muted); }
 .talk-piece-actions { grid-column: 2 / -1; margin-top: 0; }
 .talk-piece.is-bare .talk-piece-actions { grid-column: 1 / -1; }
+/* The passport at the end of the request: a small sheet, its name, and the download. */
+.talk-passport {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: var(--s-4);
+  margin-top: var(--s-5); padding: 14px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(233, 231, 225, 0.25);
+}
+.talk-passport-sheet { display: flex; align-items: flex-start; width: 64px; aspect-ratio: 210 / 297; padding: 5px; border-radius: 4px; background: var(--surface); overflow: hidden; }
+.talk-passport-sheet img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 2px; }
+.talk-passport-words { min-width: 0; }
+.talk-passport-title { font-weight: 600; color: var(--on-dark); }
+.talk-passport-name { font-size: 13px; color: var(--on-dark-muted); }
+.talk-passport-get { height: 52px; }
 .talk-links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .talk-link {
   min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(233, 231, 225, 0.25);
@@ -1485,6 +1496,9 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .talk-piece-image { width: 52px; height: 52px; }
   .talk-piece-price { grid-column: 2; text-align: left; }
   .talk-piece.is-bare .talk-piece-price { grid-column: 1; }
+  .talk-passport { grid-template-columns: 52px minmax(0, 1fr); }
+  .talk-passport-sheet { width: 52px; }
+  .talk-passport-get { grid-column: 1 / -1; }
   .talk-input { flex: none; }
   .talk-input, .talk-next, .talk-ghost { height: 56px; }
   .talk-count { margin-left: 0; width: 100%; order: -1; }
