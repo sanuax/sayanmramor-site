@@ -26,9 +26,10 @@
   }
 
   // «Запросить» brings the piece into the request (2026-10-26, the owner): back to the page the
-  // request was started on (js/offer-handoff.js), else the home page, with ?piece=<id>.
+  // request was started on (js/offer-handoff.js), else the home page, with ?piece=<id>. A sold
+  // piece would come back as no card: it opens the plain request.
   function askUrl(product, store) {
-    return Handoff.returnUrl(store, 'piece=' + encodeURIComponent(product.id || ''));
+    return Handoff.returnUrl(store, isAvailable(product) ? 'piece=' + encodeURIComponent(product.id || '') : '');
   }
   function session() {
     try { return typeof sessionStorage !== 'undefined' ? sessionStorage : null; } catch (e) { return null; }

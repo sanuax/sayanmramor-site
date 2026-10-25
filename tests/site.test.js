@@ -1429,7 +1429,11 @@ test('the piece in the request (2026-10-26, the owner): a card over the question
     kicker: 'Из калькулятора', title: 'Столешницы на кухню · Taj Mahal', meta: '2400 × 600 мм', price: '≈ 186 400 ₽', note: 'ориентировочно',
     image: '/sayanmramor-calculator/data/images/s1.webp', actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
   });
-  assert.equal(OfferForm.pieceCard(Object.assign({}, calc, { price: '', priced: false })).note, '', 'no price, no «ориентировочно»');
+  // Unpriced (every fireplace, a stone short of slabs): the calculator's «Стоимость уточнит менеджер» never
+  // takes the price's place -- a long sentence in the price's type broke the card (final review, 2026-10-26).
+  const unpriced = OfferForm.pieceCard(Object.assign({}, calc, { price: 'Стоимость уточнит менеджер', priced: false }));
+  assert.equal(unpriced.price, '');
+  assert.equal(unpriced.note, 'цену уточнит мастер');
   const shell = { kind: 'katalog', id: 'rakushka-01', name: 'Ракушка', price: 37000, photo: '/sayanmramor-site/assets/products/rakushka-01/1.webp' };
   const card = OfferForm.pieceCard(shell);
   assert.equal(card.kicker, 'Из каталога');

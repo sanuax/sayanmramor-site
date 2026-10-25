@@ -273,7 +273,8 @@
     }
     return {
       kicker: 'Из калькулятора', title: [piece.product, piece.stone].filter(Boolean).join(' · '), meta: piece.sizes || '',
-      price: piece.price || '', note: piece.priced ? 'ориентировочно' : '', image: piece.stoneImage || '',
+      // Unpriced, the calculator says «Стоимость уточнит менеджер»: here a small line, not a price.
+      price: piece.priced ? piece.price || '' : '', note: piece.priced ? 'ориентировочно' : 'цену уточнит мастер', image: piece.stoneImage || '',
       actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
     };
   }

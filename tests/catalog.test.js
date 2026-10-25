@@ -245,6 +245,8 @@ test('the ruble sign never wraps away from its number', () => {
 test('«Запросить» returns to the request where it was started, else to the home page, with the piece (2026-10-26, the owner)', () => {
   const store = { data: {}, getItem(k) { return k in this.data ? this.data[k] : null; }, setItem(k, v) { this.data[k] = String(v); }, removeItem(k) { delete this.data[k]; } };
   assert.equal(Catalog.askUrl({ id: 'rakushka-01' }, store), '/sayanmramor-site/index.html?piece=rakushka-01#offer');
+  // A sold piece («Нет в наличии») would come back as no card at all: it opens the plain request (final review).
+  assert.equal(Catalog.askUrl({ id: 'rakushka-01', available: false }, store), '/sayanmramor-site/index.html#offer');
   assert.equal(Catalog.askUrl({ id: 'rakushka-01' }, null), '/sayanmramor-site/index.html?piece=rakushka-01#offer');
   require('../js/offer-handoff.js').saveTalk(store, { page: '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html' });
   assert.equal(Catalog.askUrl({ id: 'vaza 01' }, store), '/sayanmramor-site/categories/stoleshnitsy-kuhnya.html?piece=vaza%2001#offer');
