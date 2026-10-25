@@ -1472,3 +1472,12 @@ test('the end of the request (2026-10-26, the owner): the piece without its butt
   const block = css.slice(css.indexOf('/* ---- «Получить расчёт» на главной: три вопроса мастеру'), css.indexOf('/* ---- Footer'));
   assert.match(block, /\.talk-passport \{/);
 });
+
+test('«Скачать паспорт» is a button drawn as the talk\'s outline buttons, not the browser\'s white one', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  const rule = (css.match(/\n\.talk-passport-get \{([^}]*)\}/) || [])[1] || '';
+  assert.match(rule, /border: 0;/);
+  assert.match(rule, /background: transparent;/);
+  assert.match(rule, /font-family: inherit;/);
+  assert.match(rule, /cursor: pointer;/);
+});

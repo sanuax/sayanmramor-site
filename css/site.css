@@ -1447,7 +1447,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-passport-words { min-width: 0; }
 .talk-passport-title { font-weight: 600; color: var(--on-dark); }
 .talk-passport-name { font-size: 13px; color: var(--on-dark-muted); }
-.talk-passport-get { height: 52px; }
+.talk-passport-get { height: 52px; border: 0; background: transparent; font-family: inherit; cursor: pointer; }
 .talk-links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .talk-link {
   min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(233, 231, 225, 0.25);
