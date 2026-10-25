@@ -16,11 +16,11 @@
 // folded: the form stands open under its heading.
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = factory();
+    module.exports = factory(require('./offer-handoff.js'));
   } else {
-    root.OfferForm = factory();
+    root.OfferForm = factory(root.OfferHandoff);
   }
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+})(typeof window !== 'undefined' ? window : globalThis, function (Handoff) {
 
   // Every direction of the site, in the order of the header menu.
   const DIRECTIONS = [
@@ -189,19 +189,36 @@
     return toggle;
   }
 
-  // ---- Three questions (the home page: <div data-offer-form data-offer-steps>) ----
+  // ---- Three questions (the home page and every direction page: <div data-offer-form data-offer-steps>) ----
   // The same request as a short talk: one question at a time -- what to make,
   // how to address you, where to call -- and the answers gather above as a
   // receipt (each chip takes you back to its question). The phone and the
   // consent are required, as in the form; the name is not; a drawing or a
   // photo can be attached at the last question. There is no backend yet: the
   // last screen says so, sums the request up and gives the phone and Telegram.
+  //
+  // Between the first answer and the name (2026-10-26, the owner): a piece the
+  // calculator builds asks «сами или мастер?» (the fork), and «Готовые изделия»
+  // opens the catalogue -- both in this tab; js/offer-handoff.js brings the
+  // piece back. The other directions go straight on to the name.
   const STEPS = [
     { chip: 'Изделие', q: ['Что будем делать ', 'из камня?'], hint: 'Выберите направление - его можно будет поменять.' },
     { chip: 'Имя', q: ['Как к вам ', 'обращаться?'], hint: 'Чтобы мастер знал, кому звонить с расчётом.' },
     { chip: 'Телефон', q: ['Куда позвонить ', 'с расчётом?'], hint: 'Мастер перезвонит, уточнит детали и подготовит расчёт.' },
   ];
+  const FORK = {
+    q: ['Посчитаете ', 'сами', ' или доверите мастеру?'],
+    hint: label => label + ' есть в нашем калькуляторе: выберите камень и размеры, изделие появится в 3D с ценой. Потом вернётесь сюда.',
+    go: ['Собрать в калькуляторе', 'Камень из каталога, размеры, 3D. Цена сразу.'],
+    master: ['Пусть посчитает мастер', 'Оставите имя и телефон, мастер перезвонит и всё уточнит.'],
+  };
+  const KATALOG_STEP = {
+    q: ['Выберите ', 'готовое', ' изделие'],
+    hint: 'Ванны из оникса, раковины, вазы и столы, которые уже сделаны в нашем цеху и ждут хозяина. Выберите то, что нравится, и мы вернём вас сюда.',
+    go: 'Посмотреть каталог',
+  };
   const UNSURE = 'Пока не знаю';
+  const UNSURE_KEY = 'unsure';
   const TELEGRAM = 'https://t.me/TeaN_SayanMramor';
   const DONE_NOTE = 'Отправка заявок с сайта ещё настраивается. Позвоните или напишите нам в Telegram и назовите вашу заявку - мастер сразу возьмётся за расчёт.';
 
@@ -210,18 +227,61 @@
     return String(value || '').replace(/\D/g, '').length >= 10;
   }
 
+  // Where the talk goes after the first answer: the fork, the catalogue, or the name.
+  function afterDirection(key) {
+    const branch = Handoff.branchOf(key);
+    return branch === 'calc' ? 'fork' : branch === 'katalog' ? 'katalog' : 1;
+  }
+  // «Вопрос 2 из 4» where the fork or the catalogue stands between, «из 3» elsewhere.
+  function countLabel(current, key) {
+    if (current === 3) return 'Готово';
+    const four = Handoff.branchOf(key) !== 'plain';
+    const n = current === 0 ? 1 : current === 'fork' || current === 'katalog' ? 2 : current + (four ? 2 : 1);
+    return 'Вопрос ' + n + ' из ' + (four ? 4 : 3);
+  }
+  // A direction page names its direction: the talk starts after the first question.
+  function startStep(key) {
+    return key ? afterDirection(key) : 0;
+  }
+  // Whether the piece in the request belongs to this direction.
+  function pieceOf(piece, key) {
+    if (!piece) return false;
+    if (piece.kind === 'katalog') return key === Handoff.KATALOG_KEY;
+    return new URLSearchParams(piece.query || '').get('product') === Handoff.CALC_PRODUCT[key];
+  }
+  // A new first answer: the piece stays only with its own direction (then the fork is behind it).
+  function chooseDirection(state, key) {
+    const piece = pieceOf(state.piece, key) ? state.piece : null;
+    return Object.assign({}, state, { direction: key, piece, current: piece ? 1 : afterDirection(key) });
+  }
+
   function mountSteps(container) {
     const doc = container.ownerDocument;
+    const win = doc.defaultView || {};
     const n = ++formCount;
     const id = name => 'offer-' + n + '-' + name;
-    const answers = { direction: '', name: '', phone: '' };
-    let current = 0;
+    let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '' };
+    const labelOf = key => (key === UNSURE_KEY ? UNSURE : (DIRECTIONS.find(d => d.key === key) || { label: '' }).label);
+    const keyOf = label => (label === UNSURE ? UNSURE_KEY : DIRECTIONS.find(d => d.label === label).key);
 
-    const question = (i, extra) => {
-      const q = el(doc, 'p', { className: 'talk-q', id: id('q' + i) }, [doc.createTextNode(STEPS[i].q[0]), el(doc, 'em', { textContent: STEPS[i].q[1] })]);
-      return el(doc, 'section', { className: 'talk-step', 'data-step': String(i), 'aria-labelledby': id('q' + i) },
-        [q, el(doc, 'p', { className: 'talk-hint', textContent: STEPS[i].hint })].concat(extra));
-    };
+    // The answers ride along in this tab's storage, with the page, so a trip out and back keeps them.
+    function session() {
+      try { return win.sessionStorage || null; } catch (e) { return null; }
+    }
+    function persist() {
+      Handoff.saveTalk(session(), Object.assign({}, state, { page: win.location ? win.location.pathname : '' }));
+    }
+    function leave(url) {
+      persist();
+      win.location.assign(url);
+    }
+
+    const talkQ = (qid, parts) => el(doc, 'p', { className: 'talk-q', id: qid },
+      [doc.createTextNode(parts[0]), el(doc, 'em', { textContent: parts[1] })].concat(parts[2] ? [doc.createTextNode(parts[2])] : []));
+    const hint = text => el(doc, 'p', { className: 'talk-hint', textContent: text || '' });
+    const section = (step, parts, hintEl, extra) => el(doc, 'section', { className: 'talk-step', 'data-step': step, 'aria-labelledby': id('q' + step) },
+      [talkQ(id('q' + step), parts), hintEl].concat(extra));
+    const question = (i, hintEl, extra) => section(String(i), STEPS[i].q, hintEl, extra);
     const linkButton = (text, onClick) => {
       const b = el(doc, 'button', { type: 'button', className: 'talk-link', textContent: text });
       b.addEventListener('click', onClick);
@@ -242,24 +302,49 @@
     const options = DIRECTIONS.map(d => d.label).concat([UNSURE]).map(label => {
       const b = el(doc, 'button', { type: 'button', className: 'talk-option', 'aria-pressed': 'false', textContent: label });
       b.addEventListener('click', () => {
-        answers.direction = label;
-        options.forEach(o => o.setAttribute('aria-pressed', String(o === b)));
-        go(1);
+        state = chooseDirection(state, keyOf(label));
+        go(state.current);
       });
       return b;
     });
-    const step1 = question(0, [el(doc, 'div', { className: 'talk-options', role: 'group', 'aria-labelledby': id('q0') }, options)]);
+    const step1 = question(0, hint(STEPS[0].hint), [el(doc, 'div', { className: 'talk-options', role: 'group', 'aria-labelledby': id('q0') }, options)]);
+    // Back from the name: to whatever stands between the first answer and it.
+    const back = () => go(state.piece ? 0 : startStep(state.direction) === 1 ? 0 : startStep(state.direction));
+
+    // The fork: build it in the calculator, or leave it to the master.
+    const forkHint = hint('');
+    const forkButton = (words, main) => el(doc, 'button', { type: 'button', className: 'talk-fork-btn' + (main ? ' is-main' : '') }, [
+      el(doc, 'span', { className: 'talk-fork-title' }, [doc.createTextNode(words[0])].concat(main ? [icon(doc, 'arrow')] : [])),
+      el(doc, 'span', { className: 'talk-fork-text', textContent: words[1] }),
+    ]);
+    const toCalc = forkButton(FORK.go, true);
+    const toMaster = forkButton(FORK.master, false);
+    toCalc.addEventListener('click', () => leave(Handoff.calcUrl(state.direction)));
+    toMaster.addEventListener('click', () => go(1));
+    const forkStep = section('fork', FORK.q, forkHint, [
+      el(doc, 'div', { className: 'talk-fork' }, [toCalc, toMaster]),
+      el(doc, 'div', { className: 'talk-links' }, [linkButton('← Изменить изделие', () => go(0))]),
+    ]);
+
+    // Ready pieces: the catalogue, and back with the one chosen.
+    const toKatalog = el(doc, 'a', { className: 'talk-next', href: Handoff.KATALOG }, [el(doc, 'span', { textContent: KATALOG_STEP.go }), icon(doc, 'arrow')]);
+    toKatalog.addEventListener('click', persist);
+    const katalogStep = section('katalog', KATALOG_STEP.q, hint(KATALOG_STEP.hint), [
+      el(doc, 'div', { className: 'talk-answer' }, [toKatalog]),
+      el(doc, 'div', { className: 'talk-links' }, [linkButton('← Изменить изделие', () => go(0))]),
+    ]);
 
     // 2. The name (may be left out).
     const name = el(doc, 'input', { type: 'text', id: id('name'), name: 'name', className: 'talk-input', autocomplete: 'name', placeholder: 'Ваше имя', 'aria-labelledby': id('q1') });
     const nameNext = nextButton('Дальше');
-    const toPhone = () => { answers.name = name.value.trim(); go(2); };
+    const toPhone = () => { state.name = name.value.trim(); state.nameSkipped = !state.name; go(2); };
     nameNext.addEventListener('click', toPhone);
     name.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); toPhone(); } });
-    const step2 = question(1, [
+    const nameHint = hint(STEPS[1].hint);
+    const step2 = question(1, nameHint, [
       el(doc, 'div', { className: 'talk-answer' }, [name, nameNext]),
       el(doc, 'div', { className: 'talk-links' }, [
-        linkButton('← Изменить изделие', () => go(0)),
+        linkButton('← Изменить изделие', back),
         linkButton('Можно без имени', () => { name.value = ''; toPhone(); }),
       ]),
     ]);
@@ -276,7 +361,8 @@
     // A hint goes as soon as the field it was about is put right.
     phone.addEventListener('input', () => { if (phoneOk(phone.value)) status.textContent = ''; });
     consent.addEventListener('change', () => { if (consent.checked) status.textContent = ''; });
-    const step3 = question(2, [
+    const phoneHint = hint(STEPS[2].hint);
+    const step3 = question(2, phoneHint, [
       el(doc, 'div', { className: 'talk-answer' }, [phone, nextButton('Получить расчёт', 'submit')]),
       el(doc, 'div', { className: 'talk-extra' }, [
         file,
@@ -307,38 +393,42 @@
       el(doc, 'div', { className: 'talk-links' }, [linkButton('← Изменить ответы', () => go(2))]),
     ]);
 
-    const steps = [step1, step2, step3, done];
-    const form = el(doc, 'form', { className: 'offer-talk-form', novalidate: '' }, [receipt].concat(steps));
+    const steps = { 0: step1, fork: forkStep, katalog: katalogStep, 1: step2, 2: step3, 3: done };
+    const form = el(doc, 'form', { className: 'offer-talk-form', novalidate: '' }, [receipt].concat(Object.values(steps)));
 
     function reachable(i) {
-      return i === 0 || !!answers.direction;
+      return i === 0 || !!state.direction;
     }
     function render() {
-      steps.forEach((s, i) => { s.hidden = i !== current; });
+      Object.keys(steps).forEach(k => { steps[k].hidden = k !== String(state.current); });
+      options.forEach(o => o.setAttribute('aria-pressed', String(keyOf(o.textContent) === state.direction)));
+      forkHint.textContent = state.direction ? FORK.hint(labelOf(state.direction)) : '';
       // An answered question shows its answer («✓ Кухня», «✓ Анна»; a skipped
       // name, once passed, «✓ Без имени»); the others their question's name.
-      const values = [answers.direction, answers.name || (current > 1 ? 'Без имени' : ''), answers.phone];
+      const values = [labelOf(state.direction), state.name || (state.nameSkipped ? 'Без имени' : ''), state.phone];
       chips.forEach((chip, i) => {
-        const answered = !!values[i] && i !== current;
+        const answered = !!values[i] && i !== state.current;
         chip.textContent = answered ? '✓ ' + values[i] : STEPS[i].chip;
         chip.classList.toggle('is-done', answered);
-        chip.classList.toggle('is-current', i === current);
-        chip.disabled = !reachable(i) || current === 3;
+        chip.classList.toggle('is-current', i === state.current);
+        chip.disabled = !reachable(i) || state.current === 3;
       });
-      count.textContent = current < 3 ? 'Вопрос ' + (current + 1) + ' из 3' : 'Готово';
+      count.textContent = countLabel(state.current, state.direction);
     }
     function go(i, focus) {
-      current = i;
+      state.current = i;
       status.textContent = '';
       render();
+      persist();
       if (focus === false) return;
-      const target = i === 0 ? (options.find(o => o.getAttribute('aria-pressed') === 'true') || options[0]) : i === 1 ? name : i === 2 ? phone : done.querySelector('.talk-next');
+      const target = i === 0 ? (options.find(o => o.getAttribute('aria-pressed') === 'true') || options[0])
+        : i === 'fork' ? toCalc : i === 'katalog' ? toKatalog : i === 1 ? name : i === 2 ? phone : done.querySelector('.talk-next');
       if (target && target.focus) target.focus({ preventScroll: true });
     }
 
     form.addEventListener('submit', e => {
       e.preventDefault();
-      if (current !== 2) return;
+      if (state.current !== 2) return;
       if (!phoneOk(phone.value)) {
         status.textContent = 'Укажите телефон, чтобы мастер мог перезвонить вам.';
         phone.focus();
@@ -349,17 +439,16 @@
         consent.focus();
         return;
       }
-      answers.phone = phone.value.trim();
-      summary.textContent = [answers.direction, answers.name, answers.phone].filter(Boolean).join(' · ');
+      state.phone = phone.value.trim();
+      summary.textContent = [labelOf(state.direction), state.name, state.phone].filter(Boolean).join(' · ');
       go(3);
     });
 
-    // A page may name its direction (data-preselect): then the talk starts at the name.
+    // A page may name its direction (data-preselect): then the talk starts after the first question.
     const preselect = DIRECTIONS.find(d => d.key === container.getAttribute('data-preselect'));
     if (preselect) {
-      answers.direction = preselect.label;
-      options.forEach(o => o.setAttribute('aria-pressed', String(o.textContent === preselect.label)));
-      current = 1;
+      state.direction = preselect.key;
+      state.current = startStep(preselect.key);
     }
     render();
     container.replaceChildren(form);
@@ -372,5 +461,8 @@
 
   if (typeof document !== 'undefined') mountAll(document);
 
-  return { DIRECTIONS, FIELDS, NOT_SENT, STEPS, DONE_NOTE, phoneOk, mount, mountSteps, mountAll, enhanceBand };
+  return {
+    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, DONE_NOTE, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
+    mount, mountSteps, mountAll, enhanceBand,
+  };
 });

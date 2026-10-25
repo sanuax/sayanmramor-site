@@ -694,6 +694,7 @@ test('the offer band: on the home page and all 13 direction pages, each preselec
     const active = (html.match(/<a class="active"[^>]*>([^<]+)<\/a>/) || [])[1];
     assert.equal(labelOf[key], active, page + ': the form picks the page\'s own direction');
     assert.ok(unstamp(html).includes('<script src="/sayanmramor-site/js/offer-form.js"></script>'), page);
+    assert.match(unstamp(html), /<script src="\/sayanmramor-site\/js\/offer-handoff\.js"><\/script>\s*<script src="\/sayanmramor-site\/js\/offer-form\.js">/, page + ': the hand-off right before the request');
     assert.ok(html.indexOf('class="offer-band offer-talk"') > 0 && html.indexOf('class="offer-band offer-talk"') < html.indexOf('</main>'), page + ': inside main, before the footer');
   });
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
@@ -755,7 +756,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-why', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
-  assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-form.js', 'js/site.js']);
+  assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
@@ -1010,7 +1011,47 @@ test('three questions (offer-form.js): what, how to address you, where to call; 
   assert.match(src, /if \(!phoneOk\(phone\.value\)\)/);
   assert.match(src, /if \(!consent\.checked\)/);
   assert.match(src, /c\.hasAttribute\('data-offer-steps'\) \? mountSteps\(c\) : mount\(c\)/);
-  assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|sendBeacon/, 'nothing leaves the page yet');
+  assert.doesNotMatch(src, /XMLHttpRequest|sendBeacon|method: 'POST'/, 'nothing leaves the page yet (it only reads its own JSON files)');
+});
+
+test('the fork (2026-10-26, the owner): a piece the calculator builds asks «сами или мастер?», ready pieces open the catalogue, the rest go on to the name', () => {
+  const OfferForm = require('../js/offer-form.js');
+  assert.equal(OfferForm.afterDirection('kuhnya'), 'fork');
+  assert.equal(OfferForm.afterDirection('gotovye-izdeliya'), 'katalog');
+  assert.equal(OfferForm.afterDirection('basseyny'), 1);
+  assert.equal(OfferForm.afterDirection(''), 1, '«Пока не знаю»');
+  assert.equal(OfferForm.countLabel(0, ''), 'Вопрос 1 из 3');
+  assert.equal(OfferForm.countLabel('fork', 'kuhnya'), 'Вопрос 2 из 4');
+  assert.equal(OfferForm.countLabel('katalog', 'gotovye-izdeliya'), 'Вопрос 2 из 4');
+  assert.equal(OfferForm.countLabel(1, 'kuhnya'), 'Вопрос 3 из 4');
+  assert.equal(OfferForm.countLabel(2, 'kuhnya'), 'Вопрос 4 из 4');
+  assert.equal(OfferForm.countLabel(1, 'hammamy'), 'Вопрос 2 из 3');
+  assert.equal(OfferForm.countLabel(3, 'kuhnya'), 'Готово');
+  // A direction page names its direction: the calculator's ten start at the fork, the rest at the name.
+  assert.equal(OfferForm.startStep('kuhnya'), 'fork');
+  assert.equal(OfferForm.startStep('spa-zony'), 1);
+  assert.equal(OfferForm.startStep(''), 0);
+  // A piece stays only with its own direction.
+  const kitchen = { kind: 'calc', query: 'product=stoleshnitsa_kuhnya&pv=1' };
+  const state = { direction: 'kuhnya', current: 1, piece: kitchen };
+  assert.equal(OfferForm.chooseDirection(state, 'vannaya').piece, null);
+  assert.equal(OfferForm.chooseDirection(state, 'vannaya').current, 'fork');
+  assert.deepEqual(OfferForm.chooseDirection(state, 'kuhnya').piece, kitchen);
+  const shell = { kind: 'katalog', id: 'rakushka-01' };
+  assert.deepEqual(OfferForm.chooseDirection({ direction: 'gotovye-izdeliya', piece: shell }, 'gotovye-izdeliya').piece, shell);
+  assert.equal(OfferForm.chooseDirection({ direction: 'gotovye-izdeliya', piece: shell }, 'kuhnya').piece, null);
+  // The words, as the owner accepted them.
+  assert.deepEqual(OfferForm.FORK.q, ['Посчитаете ', 'сами', ' или доверите мастеру?']);
+  assert.equal(OfferForm.FORK.hint('Кухня'), 'Кухня есть в нашем калькуляторе: выберите камень и размеры, изделие появится в 3D с ценой. Потом вернётесь сюда.');
+  assert.deepEqual(OfferForm.FORK.go, ['Собрать в калькуляторе', 'Камень из каталога, размеры, 3D. Цена сразу.']);
+  assert.deepEqual(OfferForm.FORK.master, ['Пусть посчитает мастер', 'Оставите имя и телефон, мастер перезвонит и всё уточнит.']);
+  assert.deepEqual(OfferForm.KATALOG_STEP.q, ['Выберите ', 'готовое', ' изделие']);
+  assert.equal(OfferForm.KATALOG_STEP.hint, 'Ванны из оникса, раковины, вазы и столы, которые уже сделаны в нашем цеху и ждут хозяина. Выберите то, что нравится, и мы вернём вас сюда.');
+  assert.equal(OfferForm.KATALOG_STEP.go, 'Посмотреть каталог');
+  const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  assert.doesNotMatch(src, /—/, 'no long dash in the words');
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.talk-fork \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
 });
 
 test('three questions in CSS: scoped to the home page\'s band, hover only where there is a pointer, motion off when asked, a phone stacks each answer', () => {

@@ -1404,6 +1404,22 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   box-shadow: inset 0 0 0 1px rgba(233, 231, 225, 0.35); color: var(--on-dark); font-size: 15px; font-weight: 600; text-decoration: none;
 }
 @media (hover: hover) { .talk-ghost:hover { box-shadow: inset 0 0 0 1px var(--on-dark); } }
+/* The fork (2026-10-26, the owner): build it in the calculator, or leave it to the master. */
+.talk-fork { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); margin-top: var(--s-5); }
+.talk-fork-btn {
+  display: grid; align-content: start; gap: 6px; min-height: 132px; padding: 20px; border-radius: 10px;
+  border: 1px solid rgba(233, 231, 225, 0.28); background: transparent; color: var(--on-dark); text-align: left;
+  font: inherit; cursor: pointer; transition: background-color var(--dur-fast), border-color var(--dur-fast);
+}
+.talk-fork-btn.is-main { border-color: var(--on-dark); background: var(--on-dark); color: var(--graphite); }
+.talk-fork-title { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; }
+.talk-fork-title svg { flex: none; width: 16px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+.talk-fork-text { font-size: 14px; line-height: 1.5; color: var(--on-dark-muted); }
+.talk-fork-btn.is-main .talk-fork-text { color: var(--ink-soft); }
+@media (hover: hover) {
+  .talk-fork-btn:hover { border-color: var(--on-dark); }
+  .talk-fork-btn.is-main:hover { background: #ffffff; }
+}
 .talk-links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .talk-link {
   min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(233, 231, 225, 0.25);
@@ -1425,7 +1441,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-consent a { color: var(--on-dark); }
 .talk-status { margin-top: var(--s-3); color: #f0c795; }
 .talk-summary { margin-top: var(--s-3); font-size: 18px; font-weight: 600; color: var(--on-dark); }
-.offer-talk :is(.talk-chip, .talk-option, .talk-next, .talk-ghost, .talk-link, .offer-phone a, .talk-consent a):focus-visible {
+.offer-talk :is(.talk-chip, .talk-option, .talk-fork-btn, .talk-next, .talk-ghost, .talk-link, .offer-phone a, .talk-consent a):focus-visible {
   outline: 2px solid var(--accent-on-dark); outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) { .talk-step { animation: none; } }
@@ -1445,6 +1461,8 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .offer-talk-words { padding: 24px 20px 0; }
   .offer-talk-main { padding: 24px 20px 28px; }
   .talk-answer { flex-direction: column; }
+  .talk-fork { grid-template-columns: minmax(0, 1fr); }
+  .talk-fork-btn { min-height: 0; }
   .talk-input { flex: none; }
   .talk-input, .talk-next, .talk-ghost { height: 56px; }
   .talk-count { margin-left: 0; width: 100%; order: -1; }
