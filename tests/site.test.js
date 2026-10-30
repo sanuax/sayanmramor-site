@@ -10,6 +10,31 @@ const site = path.join(__dirname, '..');
 const pages = ['index.html', 'katalog.html', 'showroom.html']
   .concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f));
 
+test('between pages: every page opts in inline, before its stylesheets; the header stays out of it', () => {
+  const tokens = fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8');
+  assert.match(tokens, /::view-transition-old\(card-photo\)/);
+  assert.doesNotMatch(tokens, /@view-transition \{/, 'from a stylesheet the switch comes too late for the first render');
+  assert.doesNotMatch(fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8'), /view-transition/);
+  pages.concat('privacy.html').forEach(p => {
+    const html = fs.readFileSync(path.join(site, p), 'utf8');
+    const rule = html.indexOf('<style>@view-transition { navigation: auto; }</style>');
+    assert.ok(rule > 0 && rule < html.indexOf('css/tokens.css'), p);
+  });
+});
+
+test('between pages: only the pressed card\'s photo goes along, and only a frame in the clear', () => {
+  const frameAt = (top, bottom) => ({ getBoundingClientRect: () => ({ top, bottom }) });
+  const linkIn = (selector, frame, frameSelector) => ({
+    closest: s => (s === selector ? { querySelector: q => (q === frameSelector ? frame : null) } : null),
+  });
+  const frame = frameAt(200, 500);
+  assert.equal(SiteCommon.pressedCardPhoto(linkIn('.home-group', frame, '.home-group-frame'), 80, 800), frame);
+  assert.equal(SiteCommon.pressedCardPhoto(linkIn('.home-showroom', frame, '.home-showroom-house'), 80, 800), frame);
+  assert.equal(SiteCommon.pressedCardPhoto(linkIn('.home-group', frameAt(40, 340), '.home-group-frame'), 80, 800), null, 'under the header');
+  assert.equal(SiteCommon.pressedCardPhoto(linkIn('.home-group', frameAt(600, 900), '.home-group-frame'), 80, 800), null, 'below the screen');
+  assert.equal(SiteCommon.pressedCardPhoto({ closest: () => null }, 80, 800), null, 'any other link');
+});
+
 // The header and the buttons it uses live in css/header.css, shared with the
 // configurator; the site loads it before css/site.css.
 const headerAndSiteCss = () => fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8') + '\n' + fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');

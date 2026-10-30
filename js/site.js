@@ -671,5 +671,36 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') holdHeroHeight(document, window);
 
-  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight };
+  // Between pages (css/tokens.css): the photo of the pressed card goes along, it grows and melts
+  // into the next page. The name is given on the press and to one frame only: two frames with one
+  // name would cancel the whole transition. A frame under the header or off the screen stays out,
+  // it would jump over the header. From the keyboard only the plain crossfade.
+  const CARD_PHOTOS = { '.home-group': '.home-group-frame', '.home-showroom': '.home-showroom-house' };
+  function pressedCardPhoto(link, topLine, bottomLine) {
+    const card = Object.keys(CARD_PHOTOS).find(selector => link.closest(selector));
+    const frame = card && link.closest(card).querySelector(CARD_PHOTOS[card]);
+    if (!frame) return null;
+    const box = frame.getBoundingClientRect();
+    return box.top >= topLine && box.bottom <= bottomLine ? frame : null;
+  }
+  function photoGoesAlong(doc, win) {
+    let named = null;
+    const clear = () => {
+      if (named) named.style.viewTransitionName = '';
+      named = null;
+    };
+    doc.addEventListener('click', e => {
+      clear();
+      if (e.defaultPrevented || e.detail === 0 || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      const link = e.target.closest && e.target.closest('a[href]');
+      if (!link) return;
+      const header = doc.querySelector('.site-header');
+      named = pressedCardPhoto(link, header ? header.getBoundingClientRect().bottom : 0, win.innerHeight);
+      if (named) named.style.viewTransitionName = 'card-photo';
+    });
+    win.addEventListener('pageshow', clear);    // back from the next page: the frame is an ordinary frame again
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') photoGoesAlong(document, window);
+
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong };
 });

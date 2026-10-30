@@ -56,3 +56,17 @@
 }
 /* Phones: narrower margins and a smaller h3 (as css/site.css had them). */
 @media (max-width: 600px) { :root { --gutter: 16px; --fs-h3: 17px; } }
+
+/* Between pages: one soft crossfade on all the site's pages (this file is on each of them, the
+   configurator does not load it). The photo of a pressed card (js/site.js) grows and melts into
+   the next page. A browser without cross-document transitions just opens the page.
+   The switch itself, @view-transition, stands inline in each page's <head>: from a stylesheet it
+   often comes too late for the first render and Chromium drops the transition without a word. */
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: var(--dur-move); animation-timing-function: var(--ease-out); }
+::view-transition-old(card-photo) { animation: card-photo-out calc(var(--dur-move) * 1.6) var(--ease-drawer) both; }
+@keyframes card-photo-out { to { opacity: 0; transform: scale(1.14); } }
+@keyframes card-photo-fade { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(card-photo) { animation-name: card-photo-fade; }
+}
