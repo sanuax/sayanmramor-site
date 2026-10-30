@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <style>@view-transition { navigation: auto; }</style>
+<script>if (!('onpagereveal' in window) && (performance.getEntriesByType('navigation')[0] || {}).type === 'navigate' && document.referrer.indexOf(location.origin + '/') === 0) document.documentElement.classList.add('page-fade');</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Саянмрамор - изделия из камня на заказ</title>
 <link rel="icon" href="/sayanmramor-site/assets/brand/favicon.ico">
 <script>document.documentElement.classList.add('js');</script>
-<link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=b90be972">
+<link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
 <link rel="stylesheet" href="/sayanmramor-site/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=77fee243">
 <link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=69a6e86a">
@@ -16,7 +17,7 @@
 <script src="/sayanmramor-site/js/contacts-map.js?v=7b83113b" defer></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f" defer></script>
 <script src="/sayanmramor-site/js/offer-form.js?v=e97200e5" defer></script>
-<script src="/sayanmramor-site/js/site.js?v=68230442" defer></script>
+<script src="/sayanmramor-site/js/site.js?v=d49d1b40" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Перейти к содержимому</a>

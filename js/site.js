@@ -702,5 +702,36 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') photoGoesAlong(document, window);
 
-  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong };
+  // A browser without transitions between pages (Firefox 159): the content fades out, then the
+  // next page opens and fades in (css/tokens.css, the same 150 ms). Only a plain mouse or finger
+  // press on a link to another page of this origin; everything else stays the browser's own.
+  const LEAVE_MS = 150;
+  function leavesWithFade(e, link, here) {
+    if (e.defaultPrevented || e.detail === 0 || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return false;
+    if (link.target && link.target !== '_self') return false;
+    if (link.hasAttribute('download')) return false;
+    const to = new URL(link.href, here.href);
+    return to.origin === here.origin && (to.pathname !== here.pathname || to.search !== here.search);
+  }
+  function fadeOutOnLeaving(doc, win) {
+    if ('onpagereveal' in win) return;
+    let timer = 0;
+    const root = doc.documentElement;
+    win.addEventListener('click', e => {
+      const link = e.target.closest && e.target.closest('a[href]');
+      if (!link || !leavesWithFade(e, link, win.location)) return;
+      e.preventDefault();
+      if (timer) return;
+      root.classList.add('page-leaving');
+      timer = win.setTimeout(() => win.location.assign(link.href), LEAVE_MS);
+    });
+    win.addEventListener('pageshow', () => {    // back from the next page: the content is here again
+      win.clearTimeout(timer);
+      timer = 0;
+      root.classList.remove('page-leaving');
+    });
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') fadeOutOnLeaving(document, window);
+
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving };
 });

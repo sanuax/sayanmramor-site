@@ -22,6 +22,49 @@ test('between pages: every page opts in inline, before its stylesheets; the head
   });
 });
 
+test('between pages: a browser without them gets the fade, only when it came from this origin', () => {
+  const head = fs.readFileSync(path.join(site, 'index.html'), 'utf8').match(/<script>(if \(!\('onpagereveal'[^<]*)<\/script>/);
+  assert.ok(head, 'index.html carries the script');
+  pages.concat('privacy.html').forEach(p => {
+    const html = fs.readFileSync(path.join(site, p), 'utf8');
+    const script = html.indexOf(head[0]);
+    assert.ok(script > 0 && script < html.indexOf('css/tokens.css'), p);
+  });
+  const run = (win, referrer, type) => {
+    const added = [];
+    new Function('window', 'document', 'location', 'performance', head[1])(
+      win,
+      { referrer, documentElement: { classList: { add: c => added.push(c) } } },
+      { origin: 'https://a.example' },
+      { getEntriesByType: () => [{ type }] },
+    );
+    return added;
+  };
+  assert.deepEqual(run({}, 'https://a.example/x.html', 'navigate'), ['page-fade']);
+  assert.deepEqual(run({ onpagereveal: null }, 'https://a.example/x.html', 'navigate'), [], 'real transitions there');
+  assert.deepEqual(run({}, '', 'navigate'), [], 'a first visit');
+  assert.deepEqual(run({}, 'https://a.example.evil/x.html', 'navigate'), [], 'another site');
+  assert.deepEqual(run({}, 'https://a.example/x.html', 'reload'), [], 'a reload');
+});
+
+test('between pages: without them only a plain press on a link to another page of this origin waits for the fade', () => {
+  const here = { href: 'https://a.example/site/index.html?x=1', origin: 'https://a.example', pathname: '/site/index.html', search: '?x=1' };
+  const press = over => Object.assign({ defaultPrevented: false, detail: 1, button: 0, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false }, over);
+  const link = (href, attrs = {}) => ({ href, target: attrs.target || '', hasAttribute: name => name in attrs });
+  const fades = (e, l) => SiteCommon.leavesWithFade(e, l, here);
+  assert.equal(fades(press(), link('https://a.example/site/katalog.html')), true);
+  assert.equal(fades(press(), link('https://a.example/site/index.html')), true, 'the same page without its query');
+  assert.equal(fades(press(), link('https://a.example/site/index.html?x=1#offer')), false, 'an anchor on this page');
+  assert.equal(fades(press(), link('https://b.example/')), false, 'another site');
+  assert.equal(fades(press(), link('tel:+74952155145')), false);
+  assert.equal(fades(press(), link('mailto:info@sayanmramor.ru')), false);
+  assert.equal(fades(press(), link('https://a.example/x.html', { target: '_blank' })), false);
+  assert.equal(fades(press(), link('https://a.example/x.pdf', { download: '' })), false);
+  ['ctrlKey', 'metaKey', 'shiftKey', 'altKey', 'defaultPrevented'].forEach(k => assert.equal(fades(press({ [k]: true }), link('https://a.example/x.html')), false, k));
+  assert.equal(fades(press({ detail: 0 }), link('https://a.example/x.html')), false, 'from the keyboard');
+  assert.equal(fades(press({ button: 1 }), link('https://a.example/x.html')), false, 'the middle button');
+});
+
 test('between pages: only the pressed card\'s photo goes along, and only a frame in the clear', () => {
   const frameAt = (top, bottom) => ({ getBoundingClientRect: () => ({ top, bottom }) });
   const linkIn = (selector, frame, frameSelector) => ({

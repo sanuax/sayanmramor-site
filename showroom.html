@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <style>@view-transition { navigation: auto; }</style>
+<script>if (!('onpagereveal' in window) && (performance.getEntriesByType('navigation')[0] || {}).type === 'navigate' && document.referrer.indexOf(location.origin + '/') === 0) document.documentElement.classList.add('page-fade');</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Шоурум - Саянмрамор</title>
 <link rel="icon" href="/sayanmramor-site/assets/brand/favicon.ico">
 <meta name="description" content="Интерактивный дом из натурального камня: фасад, холл, гостиная, кухня, лестница и ванная. Выберите изделие и создайте своё.">
-<link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=b90be972">
+<link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
 <link rel="stylesheet" href="/sayanmramor-site/css/showroom.css?v=0e3b6568">
 <!-- The 3D modules, fetched together with the page instead of one import level after another. -->
 <link rel="modulepreload" href="/sayanmramor-site/js/showroom/showroom-app.js">

@@ -70,3 +70,12 @@
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(card-photo) { animation-name: card-photo-fade; }
 }
+/* A browser that cannot do that (Firefox 159): the content fades out (js/site.js) and the next
+   page's fades in, under a header that stands still. The inline script in <head> sets .page-fade,
+   only on the way from a page of this origin: a first visit or a reload appears at once. */
+.page-fade main,
+.page-fade .site-footer { animation: page-fade-in calc(var(--dur-move) * 1.4) var(--ease) backwards; }
+.page-leaving main,
+.page-leaving .site-footer { animation: page-fade-out var(--dur-fast) linear forwards; }
+@keyframes page-fade-in { from { opacity: 0; } }
+@keyframes page-fade-out { to { opacity: 0; } }
