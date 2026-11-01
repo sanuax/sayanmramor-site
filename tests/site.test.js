@@ -452,7 +452,7 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
 
 // ---- Typography: the site's own -------------------------------------------------------
 
-test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- local files (no CDN, no preload), each with its licence; the showroom reads both, as the site', () => {
+test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- local files (no CDN), each with its licence; the showroom reads both, as the site', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8'), /--font: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;/, 'the values live in css/tokens.css (2026-10-14)');
   assert.match(fs.readFileSync(path.join(site, 'css', 'tokens.css'), 'utf8'), /--font-display: 'Unbounded', 'Montserrat', Arial, sans-serif;/);
@@ -472,7 +472,9 @@ test('typography: Montserrat for text, Unbounded for h1 / h2 and the name -- loc
   assert.doesNotMatch(css, /Golos|Source Serif|fonts\.googleapis|fonts\.gstatic/);
   headerPages.concat(['showroom.html', 'index.html']).forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    assert.doesNotMatch(html, /\.woff2|rel="preload" [^>]*as="font"|fonts\.googleapis|fonts\.gstatic/, page);
+    // Preloaded since 2026-11-03 (the owner: the fonts came late on the first visit), and only our own files.
+    assert.doesNotMatch(html, /fonts\.googleapis|fonts\.gstatic/, page);
+    [...html.matchAll(/rel="preload" href="([^"]+)" as="font"/g)].forEach(m => assert.match(m[1], /^\/sayanmramor-site\/assets\/fonts\//, page));
   });
 });
 
@@ -825,7 +827,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-why', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
-  assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
+  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
