@@ -298,7 +298,7 @@
     const win = doc.defaultView || {};
     const n = ++formCount;
     const id = name => 'offer-' + n + '-' + name;
-    let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '', draftName: '', draftPhone: '' };
+    let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '', draftName: '', draftPhone: '', picksOff: false };
     const labelOf = directionLabel;
     const keyOf = label => (label === UNSURE ? UNSURE_KEY : DIRECTIONS.find(d => d.label === label).key);
 
@@ -486,14 +486,59 @@
         if (get.parentNode === box) box.replaceChild(button, get);
       });
     }
+    // «Моя подборка» (js/picks.js) goes along in the Telegram message: the request itself is
+    // not sent anywhere yet, so that is the one place it can really be attached.
+    const telegram = el(doc, 'a', { className: 'talk-ghost', href: TELEGRAM, target: '_blank', rel: 'noopener', textContent: 'Написать в Telegram' });
+    const picksSlot = el(doc, 'div', { className: 'talk-picks' });
+    function renderPicks() {
+      const Picks = win.Picks;
+      if (!Picks) { picksSlot.hidden = true; return; }
+      const picks = Picks.forRequest(win.location, local());
+      picksSlot.hidden = !picks;
+      telegram.href = TELEGRAM;
+      if (!picks) return;
+      const address = win.location.origin + Picks.sharePath(picks);
+      if (!state.picksOff) telegram.href = Picks.telegramUrl(TELEGRAM, Picks.requestText(summaryLine(state), address));
+      const see = el(doc, 'a', { className: 'talk-link', href: address, target: '_blank', rel: 'noopener', textContent: 'Посмотреть' });
+      const choice = linkButton(state.picksOff ? 'Приложить' : 'Не прикладывать', () => {
+        state.picksOff = !state.picksOff;
+        renderPicks();
+        persist();
+      });
+      const image = picksCover(picks);
+      const words = el(doc, 'div', { className: 'talk-piece-words' }, [
+        el(doc, 'p', { className: 'talk-piece-kicker', textContent: state.picksOff ? 'Подборка не приложена' : 'Моя подборка' }),
+        el(doc, 'p', { className: 'talk-piece-title', textContent: Picks.label(picks) }),
+      ].concat(state.picksOff ? [] : [el(doc, 'p', { className: 'talk-piece-meta', textContent: 'Ссылка на неё уже в сообщении для Telegram.' })]));
+      const parts = (image ? [el(doc, 'img', { className: 'talk-piece-image', src: image, alt: '', width: '64', height: '64', decoding: 'async' })] : [])
+        .concat([words, el(doc, 'div', { className: 'talk-links talk-piece-actions' }, [see, choice])]);
+      picksSlot.replaceChildren(el(doc, 'div', { className: 'talk-piece talk-picks-card' + (image ? '' : ' is-bare') + (state.picksOff ? ' is-off' : '') }, parts));
+    }
+    // The card's picture: the first stone's photograph, else the first piece's. The catalogues
+    // are read once and only when there is a list to show; until then the card has no picture.
+    let picksRecords = null;
+    function picksCover(picks) {
+      if (!picksRecords) {
+        picksRecords = { stones: [], pieces: [] };
+        Promise.all([fetchJson('/sayanmramor-calculator/data/stone-index.json'), fetchJson('/sayanmramor-site/data/products.json')]).then(([stones, products]) => {
+          picksRecords = { stones: (stones && stones.stones) || [], pieces: (products && products.products) || [] };
+          renderPicks();
+        });
+      }
+      const stone = picksRecords.stones.find(s => s && s.id === picks.stones[0] && s.image);
+      if (stone) return '/sayanmramor-calculator/data/' + stone.image;
+      const piece = picksRecords.pieces.find(p => p && p.id === picks.pieces[0]);
+      return (piece && piece.photos && piece.photos[0]) || '';
+    }
     const done = el(doc, 'section', { className: 'talk-step talk-done', 'data-step': '3', 'aria-labelledby': id('q3') }, [
       el(doc, 'p', { className: 'talk-q', id: id('q3') }, [doc.createTextNode('Заявка '), el(doc, 'em', { textContent: 'собрана' })]),
       summary,
       passportSlot,
+      picksSlot,
       el(doc, 'p', { className: 'talk-hint', textContent: DONE_NOTE }),
       el(doc, 'div', { className: 'talk-answer talk-done-actions' }, [
         el(doc, 'a', { className: 'talk-next', href: 'tel:' + PHONE.replace(/[^+\d]/g, '') }, [el(doc, 'span', { textContent: 'Позвонить ' + PHONE })]),
-        el(doc, 'a', { className: 'talk-ghost', href: TELEGRAM, target: '_blank', rel: 'noopener', textContent: 'Написать в Telegram' }),
+        telegram,
       ]),
       el(doc, 'div', { className: 'talk-links' }, [linkButton('← Изменить ответы', () => go(2))]),
     ]);
@@ -524,6 +569,7 @@
       phoneHint.textContent = piece ? (piece.kind === 'katalog' ? PIECE_HINTS.phoneKatalog : PIECE_HINTS.phoneCalc) : STEPS[2].hint;
       renderPiece();
       renderPassport();
+      renderPicks();
     }
     function go(i, focus) {
       state.current = i;
@@ -564,7 +610,7 @@
     const page = win.location ? win.location.pathname : '';
     const saved = Handoff.loadTalk(session());
     if (saved && saved.page === page) {
-      ['direction', 'name', 'nameSkipped', 'phone', 'current', 'piece', 'attachmentName', 'draftName', 'draftPhone'].forEach(k => {
+      ['direction', 'name', 'nameSkipped', 'phone', 'current', 'piece', 'attachmentName', 'draftName', 'draftPhone', 'picksOff'].forEach(k => {
         if (saved[k] !== undefined) state[k] = saved[k];
       });
       name.value = state.name || state.draftName || '';

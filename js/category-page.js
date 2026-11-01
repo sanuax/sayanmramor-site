@@ -118,6 +118,12 @@
     let selected = null;
 
     cta.href = buildUrl(null);
+    // In the bar at the foot, the one thing that stays in view all the way through the stones.
+    if (window.Picks) {
+      const way = window.Picks.link(document);
+      way.href = window.Picks.PAGE + '?product=' + encodeURIComponent(productKey);   // «Собрать» there keeps this page's product
+      cta.parentNode.insertBefore(way, cta);
+    }
 
     // The empty state as in the page's HTML: «Не выбран» plus a tail that
     // site.css drops on very narrow screens (the bar keeps its one line).
@@ -175,6 +181,8 @@
         renderSelection();
       });
       li.appendChild(card);
+      const picks = window.Picks;
+      if (picks) li.appendChild(picks.heart(document, picks.STONES, stone.id, stone.name));
       return li;
     }
 

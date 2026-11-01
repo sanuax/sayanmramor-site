@@ -825,7 +825,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-why', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
-  assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
+  assert.deepEqual(scripts, ['js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
@@ -1304,7 +1304,7 @@ test('css/header.css: the header and its buttons in one file; its tokens are css
 
 test('every page asks for its own CSS / JS by content: ?v= the file\'s hash, so a browser holding an old copy (Telegram\'s, 2026-10-19) fetches the new one; run scripts/stamp_assets.js after editing css/ or js/', () => {
   const Stamp = require('../scripts/stamp_assets.js');
-  assert.equal(Stamp.pages().length, 17);
+  assert.equal(Stamp.pages().length, 18);
   Stamp.pages().forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     const links = [...html.matchAll(Stamp.ASSET)];

@@ -134,6 +134,8 @@
       shot.appendChild(photoPlaceholder());
     }
     if (!isAvailable(product)) shot.appendChild(el('span', 'stock-badge', 'Нет в наличии'));
+    const picks = typeof window !== 'undefined' && window.Picks;
+    if (picks && product.id) shot.appendChild(picks.heart(document, picks.PIECES, product.id, product.name));
     card.appendChild(shot);
     const text = el('div', 'stock-text');
     if (kind) text.appendChild(el('p', 'stock-kind', kind[0]));
@@ -189,6 +191,12 @@
       meta.appendChild(el('b', '', countLabel(products.length)));
       const range = priceRange(products);
       if (range) meta.appendChild(document.createTextNode(' ' + range));
+      const picks = typeof window !== 'undefined' && window.Picks;
+      if (picks) {
+        const way = el('div', '');
+        way.appendChild(picks.link(document));
+        meta.appendChild(way);
+      }
     }
     const filter = slot ? buildFilter(cards) : null;
     if (filter) slot.appendChild(filter);

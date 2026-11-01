@@ -1,0 +1,99 @@
+/* css/picks.css -- «Моя подборка» (js/picks.js): the heart on a card and the way to the list.
+   The configurator links this file too and may not load css/tokens.css, so every token has
+   its fallback here.
+
+   The heart lies on a photograph, pale marble or black granite, so it carries no plate of its
+   own: a white outline with a dark see-through inside and a soft shadow reads on both (the
+   Airbnb card's way, awesome-design-md). Marked, it fills with the site's green. */
+.pick-heart {
+  position: absolute; top: 4px; right: 4px; z-index: 2;
+  display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  border: 0; border-radius: 50%; background: none; cursor: pointer;
+  color: var(--accent, #2a5446);
+  -webkit-tap-highlight-color: transparent;
+}
+.pick-heart svg {
+  display: block; overflow: visible;
+  fill: rgba(22, 24, 22, 0.2); stroke: #fff; stroke-width: 2; stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.42));
+  transition: fill var(--dur-fast, 150ms) ease, transform var(--dur-fast, 150ms) var(--ease-out, ease-out);
+}
+.pick-heart[aria-pressed="true"] svg { fill: currentColor; }
+@media (hover: hover) { .pick-heart:hover svg { transform: scale(1.1); } }
+.pick-heart:active svg { transform: scale(0.9); }
+.pick-heart:focus-visible { outline: 2px solid #fff; outline-offset: -2px; box-shadow: 0 0 0 4px var(--accent, #2a5446) inset; }
+/* The answer to a press: the heart jumps once and a ring leaves it. */
+.pick-heart::before {
+  content: ""; position: absolute; inset: 7px; border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 0 2px #fff; opacity: 0;
+}
+.pick-heart.just-marked svg { animation: pick-jump 360ms var(--ease-out, ease-out); }
+.pick-heart.just-marked::before { animation: pick-ring 420ms var(--ease-out, ease-out); }
+@keyframes pick-jump { 0% { transform: scale(0.7); } 55% { transform: scale(1.2); } 100% { transform: scale(1); } }
+@keyframes pick-ring { 0% { opacity: 0.7; transform: scale(0.55); } 100% { opacity: 0; transform: scale(1.35); } }
+@media (prefers-reduced-motion: reduce) {
+  .pick-heart.just-marked svg, .pick-heart.just-marked::before { animation: none; }
+  .pick-heart:hover svg, .pick-heart:active svg { transform: none; }
+}
+
+.stone-grid > li { position: relative; }
+/* The calculator's small tiles on a phone: a smaller heart, the same place to press. */
+@media (max-width: 760px) {
+  .stone-card-image .pick-heart { top: 0; right: 0; width: 36px; height: 36px; }
+  .stone-card-image .pick-heart svg { width: 20px; height: 20px; }
+}
+
+/* The way to the list: a pill with the heart and the count. */
+.pick-link {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  min-height: 36px; padding: 0 14px 0 12px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; line-height: 1; white-space: nowrap; text-decoration: none;
+  color: var(--ink, #1c1d1b); background: rgba(28, 29, 27, 0.06);
+  transition: background-color var(--dur-fast, 150ms) ease;
+}
+.pick-link svg { flex: none; width: 17px; height: 17px; fill: none; stroke: var(--accent, #2a5446); stroke-width: 2.2; stroke-linejoin: round; }
+.pick-link.has-picks svg { fill: var(--accent, #2a5446); }
+.pick-link-count {
+  display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-right: -6px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: #fff; background: var(--accent, #2a5446);
+}
+.pick-link-count[hidden] { display: none; }
+.pick-link.just-counted .pick-link-count { animation: pick-count 320ms var(--ease-out, ease-out); }
+@keyframes pick-count { 0% { transform: scale(1); } 45% { transform: scale(1.28); } 100% { transform: scale(1); } }
+@media (hover: hover) { .pick-link:hover { background: rgba(28, 29, 27, 0.11); } }
+@media (prefers-reduced-motion: reduce) { .pick-link.just-counted .pick-link-count { animation: none; } }
+
+/* In the dark glass of the bar at the foot of a direction page. */
+.configure-bar .pick-link { margin-left: auto; min-height: 44px; color: var(--on-dark, #e9e7e1); background: rgba(233, 231, 225, 0.12); }
+.configure-bar .pick-link svg { stroke: #fff; }
+.configure-bar .pick-link.has-picks svg { fill: #fff; }
+.configure-bar .pick-link-count { color: var(--ink, #1c1d1b); background: #fff; }
+@media (hover: hover) { .configure-bar .pick-link:hover { background: rgba(233, 231, 225, 0.2); } }
+/* A phone: no room for the words; the heart and the count say it (the link's aria-label too). */
+@media (max-width: 760px) {
+  .configure-bar .pick-link { padding: 0 11px; }
+  .configure-bar .pick-link-words { display: none; }
+  .configure-bar .pick-link-count { margin-right: 0; }
+  .configure-bar .pick-link { min-height: var(--control-h-s, 40px); }
+}
+.catalog-meta .pick-link { margin-top: 10px; }
+/* In the calculator's glass, at the end of the filter row: a button that shows only the
+   marked stones right there, so the piece being built is never left. */
+button.pick-link { border: 0; font-family: inherit; cursor: pointer; }
+.pick-link[aria-pressed="true"] { color: #fff; background: var(--accent, #2a5446); }
+.pick-link[aria-pressed="true"] svg { fill: #fff; stroke: #fff; }
+.pick-link[aria-pressed="true"] .pick-link-count { color: var(--accent, #2a5446); background: #fff; }
+@media (hover: hover) { .pick-link[aria-pressed="true"]:hover { background: var(--accent-hover, #1f4036); } }
+.picker-filters .pick-link { margin-left: auto; font-size: 13.5px; }
+@media (max-width: 760px) { .picker-filters .pick-link { margin-left: 0; font-size: 13px; } }
+
+/* podborka.html */
+.picks-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3, 12px) var(--s-5, 24px); margin-top: var(--s-5, 24px); }
+.picks-actions:empty { display: none; }
+.picks-address { flex: 1 1 100%; max-width: 34em; padding: 10px 12px; font: inherit; font-size: 14px; color: var(--ink, #1c1d1b); background: var(--surface, #f8f7f4); border: 1px solid var(--line-control, #7e7d73); border-radius: var(--radius-btn, 6px); }
+.picks-address[hidden] { display: none; }
+.picks-status { margin-top: var(--s-3, 12px); font-size: 14px; color: var(--muted, #63645b); min-height: 1.4em; }
+.picks-section + .picks-section { margin-top: var(--s-7, 48px); }
+.picks-section-title { margin: 0 0 var(--s-4, 16px); font-size: 20px; font-weight: 600; }
+.picks-empty { max-width: 34em; font-size: 17px; }
+.picks-empty .picks-actions { margin-top: var(--s-4, 16px); }
