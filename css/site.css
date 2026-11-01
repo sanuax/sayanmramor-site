@@ -970,7 +970,7 @@ h3 { font-size: var(--fs-h3); }
 #stoneSearch:focus { border-color: var(--ink); }
 /* The filters, as in the configurator's stone picker (2026-10-10): «Страна», «Тип», «Цвет» --
    pills opening a list to tick (any number at once), «Цена» opening the price fields and
-   slider, «Сбросить» once anything is set; the sort «A-Z» / «Цена ↑» on the right. A pill
+   slider, «Сбросить» once anything is set; the sort «Цвет» / «A-Z» / «Цена ↑» on the right. A pill
    with something chosen turns dark and names it. One panel open at a time. */
 .stone-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3) var(--s-5); }
 .stone-filters[hidden] { display: none; }

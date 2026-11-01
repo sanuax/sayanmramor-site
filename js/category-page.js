@@ -11,8 +11,8 @@
 // in this site). Each card shows the stone's price per m2 «от …». The gallery has
 // the configurator's own filters (2026-10-10): «Страна», «Тип», «Цвет» -- pills
 // opening lists to tick, any number at once -- «Цена» «от … до …» (price_from:
-// the cheapest slab, js/price-filter.js), «Сбросить», and the sort «A-Z» /
-// «Цена ↑». The price of a piece, its sizes and every other part of the
+// the cheapest slab, js/price-filter.js), «Сбросить», and the sort «Цвет» (the
+// gradient, the index's tone, from the photos) / «A-Z» / «Цена ↑». The price of a piece, its sizes and every other part of the
 // configuration live only in the configurator; this page never loads calculator code.
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
@@ -55,6 +55,7 @@
         price: lowestPrice(s),
         countries: labels(s.countries),
         colors: labels(s.colors),
+        tone: typeof s.tone === 'number' ? s.tone : null,
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
   }
@@ -79,12 +80,15 @@
       (!q || norm(s.name).includes(q) || norm(s.type).includes(q)));
   }
 
-  // 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'; a stone without a price
-  // always last, whichever way the price runs.
+  // 'tone-asc' | 'tone-desc' | 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'; a
+  // stone without a place in the gradient or a price always last, whichever way it runs.
   function sortStones(stones, key) {
     const [field, dir] = (key || 'name-asc').split('-');
     const k = dir === 'desc' ? -1 : 1;
     const byName = (a, b) => a.name.localeCompare(b.name, 'ru');
+    if (field === 'tone') {
+      return stones.slice().sort((a, b) => (a.tone == null) - (b.tone == null) || (a.tone - b.tone) * k || byName(a, b));
+    }
     return stones.slice().sort(field === 'price'
       ? (a, b) => (a.price == null) - (b.price == null) || (a.price - b.price) * k || byName(a, b)
       : (a, b) => byName(a, b) * k);
@@ -95,7 +99,7 @@
     return !!(query && query.trim()) || [types, countries, colors].some(l => l && l.length > 0) || PriceFilter.isActive(price);
   }
 
-  const SORT_LABELS = { 'name-asc': 'A-Z', 'name-desc': 'Z-A', 'price-asc': 'Цена ↑', 'price-desc': 'Цена ↓' };
+  const SORT_LABELS = { 'tone-asc': 'Цвет', 'tone-desc': 'Цвет ↓', 'name-asc': 'A-Z', 'name-desc': 'Z-A', 'price-asc': 'Цена ↑', 'price-desc': 'Цена ↓' };
 
   function init(productKey) {
     const buildUrl = stoneId => ShowroomData.buildConfiguratorUrl(productKey, stoneId);
@@ -110,7 +114,7 @@
     let stones = [];
     let filtered = [];
     let shown = 0;
-    const state = { types: [], countries: [], colors: [], price: null, sort: 'name-asc' };
+    const state = { types: [], countries: [], colors: [], price: null, sort: 'tone-asc' };
     let selected = null;
 
     cta.href = buildUrl(null);
@@ -274,12 +278,12 @@
       return { box: dd.box, reset() { control.reset(); state.price = null; update(); dd.close(); } };
     }
 
-    // «A-Z» / «Цена ↑»: one of two; the chosen one again turns its direction.
+    // «Цвет» / «A-Z» / «Цена ↑»: one of three; the chosen one again turns its direction.
     function sortControl() {
       const box = el('div', 'stone-sort');
       box.setAttribute('role', 'group');
       box.setAttribute('aria-label', 'Сортировка');
-      const buttons = ['name', 'price'].map(field => {
+      const buttons = ['tone', 'name', 'price'].map(field => {
         const b = el('button', 'stone-sort-btn');
         b.type = 'button';
         b.dataset.field = field;

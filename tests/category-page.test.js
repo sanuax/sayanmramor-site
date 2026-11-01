@@ -28,9 +28,9 @@ const SLABS = {
 test('normalizeStones keeps orderable stones with the gallery fields, sorted by name', () => {
   const stones = CategoryPage.normalizeStones(SLABS);
   assert.deepEqual(stones, [
-    { id: 'absolute-black', name: 'Absolute Black', type: 'Гранит', image: '/sayanmramor-calculator/data/images/absolute-black.webp', price: 7000, countries: ['Индия'], colors: ['Черный'] },
-    { id: 'no-image', name: 'Calacatta Ёлка', type: 'Мрамор', image: null, price: null, countries: ['Италия'], colors: [] },
-    { id: 'nero-marquina', name: 'Nero Marquina', type: 'Мрамор', image: '/sayanmramor-calculator/data/images/nero-marquina.webp', price: 11006, countries: ['Испания'], colors: ['Черный'] },
+    { id: 'absolute-black', name: 'Absolute Black', type: 'Гранит', image: '/sayanmramor-calculator/data/images/absolute-black.webp', price: 7000, countries: ['Индия'], colors: ['Черный'], tone: null },
+    { id: 'no-image', name: 'Calacatta Ёлка', type: 'Мрамор', image: null, price: null, countries: ['Италия'], colors: [], tone: null },
+    { id: 'nero-marquina', name: 'Nero Marquina', type: 'Мрамор', image: '/sayanmramor-calculator/data/images/nero-marquina.webp', price: 11006, countries: ['Испания'], colors: ['Черный'], tone: null },
   ]);
 });
 
@@ -76,7 +76,16 @@ test('sortStones: A-Z / Z-A by name, «Цена» up or down by the lowest price
   assert.deepEqual(ids(CategoryPage.sortStones(stones, 'name-desc')), ['nero-marquina', 'no-image', 'absolute-black']);
   assert.deepEqual(ids(CategoryPage.sortStones(stones, 'price-asc')), ['absolute-black', 'nero-marquina', 'no-image']);
   assert.deepEqual(ids(CategoryPage.sortStones(stones, 'price-desc')), ['nero-marquina', 'absolute-black', 'no-image']);
-  assert.deepEqual(CategoryPage.SORT_LABELS, { 'name-asc': 'A-Z', 'name-desc': 'Z-A', 'price-asc': 'Цена ↑', 'price-desc': 'Цена ↓' }, 'the configurator\'s labels');
+  assert.deepEqual(CategoryPage.SORT_LABELS, { 'tone-asc': 'Цвет', 'tone-desc': 'Цвет ↓', 'name-asc': 'A-Z', 'name-desc': 'Z-A', 'price-asc': 'Цена ↑', 'price-desc': 'Цена ↓' }, 'the configurator\'s labels');
+});
+
+test('sortStones by tone: the gradient either way, a stone without a place always last; the index\'s tone comes through', () => {
+  const stones = CategoryPage.normalizeStones({ stones: [
+    { id: 'none', name: 'Aaa' }, { id: 'dark', name: 'Bbb', tone: 2 }, { id: 'light', name: 'Ccc', tone: 0 }, { id: 'mid', name: 'Ddd', tone: 1 },
+  ] });
+  const ids = list => list.map(s => s.id);
+  assert.deepEqual(ids(CategoryPage.sortStones(stones, 'tone-asc')), ['light', 'mid', 'dark', 'none']);
+  assert.deepEqual(ids(CategoryPage.sortStones(stones, 'tone-desc')), ['dark', 'mid', 'light', 'none']);
 });
 
 test('hasActiveFilters: «Сбросить» shows for any search text, any ticked value, any price end', () => {
