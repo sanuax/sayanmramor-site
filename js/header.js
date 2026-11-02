@@ -32,6 +32,14 @@
   const NAV_NOTES = { 'Фасады': 'Облицовка фасада камнем' };
   const NAV_ASSETS = '/sayanmramor-site/assets/nav/';
   const BACK_MS = 400;   // the rows' way back in (0.34 s), then the class goes
+  // The places under «Изделия» in the phone menu (2026-11-03, the owner): «Камень» and «Готовые
+  // изделия» as two tiles with a photograph, «Контакты» as a row with a strip of the brand green.
+  // Built inside the links themselves, so the wide capsule still shows just their names.
+  const NAV_PLACES = {
+    'Камень': { photo: 't-kamen.webp', note: 'Мрамор, оникс, кварцит, гранит' },
+    'Готовые изделия': { photo: 't-katalog.webp', note: 'Ванны, столы, вазы, светильники' },
+    'Контакты': { note: 'Ивантеевка, +7 (495) 215-51-45' },
+  };
   // The bottom inset of a computed inset() clip: «inset(0px 0px 312.5px round 28px)» -> 312.5.
   function clipCut(value) {
     const m = /inset\(([^)]*?)(?:\s+round\b|\))/.exec(value || '');
@@ -176,9 +184,31 @@
     return { show, openGroup, closeGroup, inGroup: () => open >= 0 };
   }
 
+  function initPlaces(doc, header) {
+    if (!doc.createElement || !header.querySelectorAll) return;
+    const make = (tag, cls, text) => { const n = doc.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+    [...header.querySelectorAll('.site-nav > a')].forEach(a => {
+      const name = a.textContent.trim(), place = NAV_PLACES[name];
+      if (!place) return;
+      a.textContent = '';
+      a.classList.add('nav-place', place.photo ? 'is-tile' : 'is-row');
+      if (place.photo) {
+        const i = make('img', 'nav-place-pic');
+        i.src = NAV_ASSETS + place.photo; i.alt = ''; i.width = 440; i.height = 476; i.loading = 'lazy'; i.decoding = 'async';
+        a.append(i);
+      } else {
+        a.append(make('span', 'nav-place-pic'));
+      }
+      const text = make('span', 'nav-place-text');
+      text.append(make('span', 'nav-place-name', name), make('span', 'nav-place-note', place.note));
+      a.append(text);
+    });
+  }
+
   function init(doc, win) {
     const header = doc.querySelector('.site-header');
     if (!header) return null;
+    initPlaces(doc, header);
     const drops = header.querySelectorAll ? [...header.querySelectorAll('.nav-drop')] : [];
     const toggle = header.querySelector('.nav-toggle');
     const mq = win.matchMedia ? win.matchMedia(MOBILE_QUERY) : { matches: false };

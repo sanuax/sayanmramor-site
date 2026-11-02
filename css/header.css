@@ -250,6 +250,9 @@
   .js .site-header.menu-open .site-header-actions > a.btn { flex: none; }
   /* The list a row shorter, so both actions stay in view under it. */
   .js .site-header.menu-open nav.site-nav { max-height: calc(100vh - 228px); max-height: calc(100dvh - 228px); }
+  /* The tiles' columns are narrower: «Открыть шоурум» a size smaller, so it still fits its column. */
+  .js .site-header .nav-showroom-enter { padding: 0 6px; font-size: 12px; }
+  .js .site-header .is-tile .nav-place-text { padding: 32px 12px 10px; }
 }
 
 /* Desktops (from 1001 px; until 2026-11-02 only to 1200): the places and the two actions a little
@@ -335,7 +338,7 @@ html.menu-lock { overflow: hidden; }
   .js .site-header.menu-closing .site-nav, .js .site-header.menu-closing .site-header-actions { animation: menu-content-out 0.2s var(--ease) both; }
   .js .site-header.menu-open .site-header-inner { height: auto; flex-wrap: wrap; padding: 6px 6px 6px 20px; }
   .js .site-header.menu-open .site-nav {
-    order: 3; flex: 1 0 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0;
+    order: 3; flex: 1 0 100%; display: flex; flex-flow: row wrap; align-items: flex-start; align-content: flex-start; justify-content: flex-start; gap: 0 10px;
     margin: 6px 14px 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line);
     /* Only the list scrolls: the name and the close button above it, the action under it, stay in view. */
     max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
@@ -433,12 +436,45 @@ html.menu-lock { overflow: hidden; }
     -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
   }
   .js .site-nav > a.active { color: var(--accent); }
-  /* The showroom in the menu: its name as a heading, then the house small and the way in. */
+  /* One place per line; only the two tiles share theirs (js/header.js initPlaces). */
+  .js .site-header.menu-open .site-nav > * { flex: 1 0 100%; min-width: 0; }
+  .js .site-header.menu-open .site-nav > a.is-tile { flex: 1 1 0; }
+  .js .site-header:not(.menu-detail) .nav-products.is-rich { border-bottom: 1px solid var(--line); margin-bottom: var(--s-4); }
+  /* «Камень» and «Готовые изделия»: two tiles, the photograph whole, the name and the note on it. */
+  .js .site-nav > a.is-tile {
+    position: relative; display: block; aspect-ratio: 1 / 1.08; max-height: 240px; min-height: 0; margin-bottom: var(--s-4); padding: 0;
+    border: 0; border-radius: 18px; overflow: hidden; background: var(--surface-sunk); color: #fff; white-space: normal;
+    -webkit-tap-highlight-color: transparent; transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .js .site-nav > a.is-tile:active { transform: scale(0.97); }
+  .js .site-nav > a.is-tile::after { display: none; }
+  .js .site-nav > a.is-tile.active { color: #fff; }
+  .js .site-nav > a.is-tile.active::before { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; box-shadow: inset 0 0 0 3px var(--accent); pointer-events: none; }
+  .js .is-tile .nav-place-pic { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .js .is-tile .nav-place-text { position: absolute; inset: auto 0 0 0; padding: 40px 14px 12px; background: linear-gradient(to top, rgba(18, 19, 17, 0.66), transparent); }
+  .js .is-tile .nav-place-name { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 16px; line-height: 1.2; }
+  .js .is-tile .nav-place-name::after {
+    content: ''; flex: none; width: 16px; height: 10px; background: currentColor;
+    -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+  }
+  .js .is-tile .nav-place-note { display: block; margin-top: 3px; font-size: 12px; font-weight: 400; line-height: 1.3; opacity: 0.86; }
+  /* «Контакты»: a strip of the brand green, the name in the brand's face, where and how to call. */
+  .js .site-nav > a.is-row { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; column-gap: 16px; min-height: 72px; padding: 10px 0; }
+  .js .is-row .nav-place-pic { width: 8px; height: 48px; border-radius: 3px; background: var(--accent); }
+  .js .is-row .nav-place-name { display: block; font-family: var(--font-display); font-size: 19px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; }
+  .js .is-row .nav-place-note { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .js .site-nav > a.is-row.active { color: var(--ink); }
+  .js .site-nav > a.is-row.active .nav-place-name { color: var(--accent); }
+  /* The showroom in the menu: its name as a heading, then the house and the way in on the tiles'
+     own two columns -- the house as wide as a tile and as tall as the text beside it. */
   .js .nav-showroom { border-top: 1px solid var(--line); padding-top: var(--s-4); }
-  .js .nav-showroom-inner { grid-template-columns: 120px minmax(0, 1fr); gap: var(--s-4); padding: 0 0 var(--s-4); }
+  .js .nav-showroom-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; padding: 0 0 var(--s-4); }
+  .js .nav-showroom-house { position: relative; min-height: 112px; border-radius: 18px; }
+  .js .nav-showroom-house img { position: absolute; inset: 0; height: 100%; aspect-ratio: auto; }
+  .js .nav-showroom-text { display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-3); padding-left: 4px; }
   .js .nav-showroom-note, .js .nav-showroom-rooms { display: none; }
   .js .nav-showroom-title { font-size: 16px; }
-  .js .nav-showroom-enter { min-height: 40px; padding: 0 16px; margin-top: var(--s-2); }
+  .js .nav-showroom-enter { align-self: stretch; justify-content: center; min-height: 40px; margin-top: 0; padding: 0 8px; font-size: 13px; white-space: nowrap; }
 }
 /* The capsule marks places with its soft pills, not with a line: js/header.js still
    places its travelling line (.nav-indicator), and the capsule simply does not
@@ -446,6 +482,10 @@ html.menu-lock { overflow: hidden; }
    it closes, folds back up into it (js/header.js keeps the <details> open while
    it folds -- .is-closing -- and closes it after). */
 .nav-indicator { display: none; }
+/* The wide capsule shows a place by its name alone: its photograph and note are the phone's. */
+@media (min-width: 1001px) {
+  .nav-place-pic, .nav-place-note { display: none; }
+}
 @media (min-width: 1001px) {
   .nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }
   .nav-drop.is-closing > .nav-panel { animation: nav-panel-fold 0.18s var(--ease) forwards; pointer-events: none; }
