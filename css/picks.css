@@ -37,6 +37,9 @@
 }
 
 .stone-grid > li { position: relative; }
+/* The heart stays inside its own card: lifted over the photo, never over what lies over the cards
+   (the calculator's glass with the search and filters is on the same level as it). */
+.stone-grid > li, .stone-card-image, .stock-shot { isolation: isolate; }
 /* The calculator's small tiles on a phone: a smaller heart, the same place to press. */
 @media (max-width: 760px) {
   .stone-card-image .pick-heart { top: 0; right: 0; width: 36px; height: 36px; }
