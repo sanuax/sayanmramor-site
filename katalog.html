@@ -12,9 +12,9 @@
 <link rel="preload" href="/sayanmramor-site/assets/fonts/unbounded-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/sayanmramor-site/assets/fonts/montserrat-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
-<link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=77fee243">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=4f3f407a">
-<link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=c2a87b81">
+<link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=c16a1081">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=f6b7db12">
+<link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=32e97c19">
 <script src="/sayanmramor-site/js/header.js?v=d6959f13" defer></script>
 </head>
 <body>
@@ -68,6 +68,7 @@
           </div>
         </div>
       </details>
+      <a href="/sayanmramor-site/kamen.html">Камень</a>
       <a class="active" href="/sayanmramor-site/katalog.html" aria-current="page">Готовые изделия</a>
       <details class="nav-drop nav-showroom">
         <summary>Шоурум</summary>
@@ -100,11 +101,24 @@
 <header class="wrap catalog-head">
   <h1>Готовые изделия</h1>
   <p class="catalog-lead">Изделия из натурального камня в наличии: фиксированная цена, без ожидания расчёта.</p>
-  <p class="catalog-meta" id="catalogMeta"></p>
-  <div class="catalog-filter" id="catalogFilter"></div>
+  <!-- Until products.json answers, the head and the grid hold the room of what comes (no jump):
+       the same parts, unseen; the catalogue's script puts the real ones in their place. -->
+  <p class="catalog-meta" id="catalogMeta" data-waiting><b>8 изделий</b> от 20 000 до 3 977 000 ₽<span class="pick-link-wait"><span class="pick-link">Моя подборка</span></span></p>
+  <div class="catalog-filter" id="catalogFilter" data-waiting><div class="stock-filter"><span class="stock-chip">Все</span></div></div>
 </header>
 
-<div class="wrap catalog-host" id="catalogGrid"></div>
+<div class="wrap catalog-host" id="catalogGrid">
+  <ul class="stock-grid stock-skeleton" aria-hidden="true">
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+    <li class="stock-card"><div class="stock-shot"></div><div class="stock-text"><p class="stock-kind">&nbsp;</p><p class="stock-name">&nbsp;</p><div class="stock-foot"><p class="stock-price">&nbsp;</p><span class="btn btn-primary stock-ask">Запросить</span></div></div></li>
+  </ul>
+</div>
 </main>
 
 <footer class="site-footer">
@@ -151,7 +165,7 @@
 <script src="/sayanmramor-site/js/site.js?v=d49d1b40"></script>
 <script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
-<script src="/sayanmramor-site/js/catalog.js?v=b4392995"></script>
+<script src="/sayanmramor-site/js/catalog.js?v=6b9c5bf8"></script>
 <script>
   fetch('/sayanmramor-site/data/products.json')
     .then(r => r.json())
@@ -160,6 +174,7 @@
         { meta: document.getElementById('catalogMeta'), filter: document.getElementById('catalogFilter') });
     })
     .catch(() => {
+      ['catalogMeta', 'catalogFilter'].forEach(id => { const n = document.getElementById(id); n.replaceChildren(); n.removeAttribute('data-waiting'); });
       document.getElementById('catalogGrid').textContent = 'Не удалось загрузить каталог изделий.';
     });
 </script>

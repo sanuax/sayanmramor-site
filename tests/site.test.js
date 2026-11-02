@@ -202,6 +202,7 @@ test('every page: the header is «Изделия» (a panel with all 13 directio
       .map(m => (m[1] ? ['details:' + m[1], m[2]] : ['a:' + m[3], m[4]]));
     assert.deepEqual(places, [
       ['details:nav-drop nav-products', 'Изделия'],
+      ['a:/sayanmramor-site/kamen.html', 'Камень'],
       ['a:/sayanmramor-site/katalog.html', 'Готовые изделия'],
       ['details:nav-drop nav-showroom', 'Шоурум'],
       ['a:/sayanmramor-site/index.html#contacts', 'Контакты'],
@@ -222,7 +223,7 @@ test('the page\'s own direction is marked active (and aria-current) in the panel
     const nav = navOf(html);
     const active = [...nav.matchAll(/<a class="active" href="([^"]+)" aria-current="page">([^<]+)<\/a>/g)].map(m => m[1]);
     const isDirection = page.startsWith('categories/');
-    assert.deepEqual(active, isDirection ? ['/sayanmramor-site/' + page] : page === 'katalog.html' ? ['/sayanmramor-site/katalog.html'] : [], page);
+    assert.deepEqual(active, isDirection || page === 'katalog.html' || page === 'kamen.html' ? ['/sayanmramor-site/' + page] : [], page);
     assert.equal(nav.includes('<summary class="active">Изделия</summary>'), isDirection, page);
     assert.equal((nav.match(/aria-current/g) || []).length, active.length, page);
   });
@@ -417,13 +418,14 @@ test('header.js, wide screen: a panel folds up before it closes (caught while fo
   assert.ok(!showroom.open && !showroom.classList.contains('is-closing'), 'reduced motion: closed at once');
 });
 
-test('the header points only at what exists: «Контакты» lands on the home page contacts; no «Камень» / «Производство» items or sections', () => {
+test('the header points only at what exists: «Контакты» lands on the home page contacts, «Камень» on its own page (since 2026-11-02, the owner); no «Производство», no #stone / #production sections', () => {
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
   assert.equal((home.match(/id="contacts"/g) || []).length, 1);
   assert.doesNotMatch(home, /id="stone"|id="production"/);
   headerPages.forEach(page => {
     const nav = navOf(fs.readFileSync(path.join(site, page), 'utf8'));
-    assert.doesNotMatch(nav, />Камень<|>Производство<|#stone|#production/, page);
+    assert.doesNotMatch(nav, />Производство<|#stone|#production/, page);
+    assert.match(nav, /<a (?:class="active" )?href="\/sayanmramor-site\/kamen\.html"(?: aria-current="page")?>Камень<\/a>/, page);
   });
 });
 
@@ -1368,10 +1370,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s; 2026-11-02: «Камень» in the header, the places closer-set at 1001..1080 px so the five fit). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '77fee24331a05ece9bb090096dafe98abcdf050cbda5e7f032b86148a44a31fd', 'css/header.css as the owner approved it');
+  assert.equal(print, 'c16a1081546eb8887099516b1b321116d82a34b9b42fb01df7de060410fd282f', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);

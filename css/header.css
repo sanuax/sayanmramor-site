@@ -263,6 +263,17 @@
   .site-header-inner { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: var(--s-3); }
   .site-nav > a, .nav-drop > summary { padding: 0 8px; }
 }
+/* Five places since «Камень» (2026-11-02): below 1080 px they touched the name and «Заказать»;
+   here the places sit closer still, and up to 1040 px their letters are a size smaller (the
+   name and both actions keep theirs). */
+@media (min-width: 1001px) and (max-width: 1080px) {
+  .site-header-inner { column-gap: var(--s-2); }
+  .site-nav { gap: 0; }
+  .site-nav > a, .nav-drop > summary { padding: 0 6px; }
+}
+@media (min-width: 1001px) and (max-width: 1040px) {
+  .site-nav > a, .nav-drop > summary { font-size: 13px; }
+}
 
 /* The menu button: only where there is a menu to open. */
 .nav-toggle {

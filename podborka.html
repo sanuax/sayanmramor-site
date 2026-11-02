@@ -12,9 +12,9 @@
 <link rel="preload" href="/sayanmramor-site/assets/fonts/unbounded-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/sayanmramor-site/assets/fonts/montserrat-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
-<link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=77fee243">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=4f3f407a">
-<link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=c2a87b81">
+<link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=c16a1081">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=f6b7db12">
+<link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=32e97c19">
 <script src="/sayanmramor-site/js/header.js?v=d6959f13" defer></script>
 </head>
 <body>
@@ -68,6 +68,7 @@
           </div>
         </div>
       </details>
+      <a href="/sayanmramor-site/kamen.html">Камень</a>
       <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
       <details class="nav-drop nav-showroom">
         <summary>Шоурум</summary>
@@ -105,6 +106,13 @@
 </header>
 
 <div class="wrap catalog-host" id="picksHost"></div>
+<!-- Right here, not at the end: the list stands at its size (js/picks-page.js prepare) before the
+     request and the footer below it are drawn, so they never jump when the stones come. -->
+<script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
+<script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
+<script src="/sayanmramor-site/js/catalog.js?v=6b9c5bf8"></script>
+<script src="/sayanmramor-site/js/picks-page.js?v=3c1ef772"></script>
+<script>PicksPage.prepare(document);</script>
   <section class="offer-band offer-talk" id="offer" aria-labelledby="offerTitle" data-offer-open>
     <div class="offer-band-inner">
       <div class="offer-talk-side">
@@ -168,11 +176,7 @@
 </footer>
 
 <script src="/sayanmramor-site/js/site.js?v=d49d1b40"></script>
-<script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
-<script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
-<script src="/sayanmramor-site/js/catalog.js?v=b4392995"></script>
-<script src="/sayanmramor-site/js/offer-form.js?v=51fd252f"></script>
-<script src="/sayanmramor-site/js/picks-page.js?v=3e3d0268"></script>
+<script src="/sayanmramor-site/js/offer-form.js?v=751ce894"></script>
 <script>
   PicksPage.init(document);
 </script>

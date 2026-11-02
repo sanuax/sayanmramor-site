@@ -97,6 +97,28 @@ button.pick-link { border: 0; font-family: inherit; cursor: pointer; }
 .picks-address[hidden] { display: none; }
 .picks-status { margin-top: var(--s-3, 12px); font-size: 14px; color: var(--muted, #63645b); min-height: 1.4em; }
 .picks-section + .picks-section { margin-top: var(--s-7, 48px); }
-.picks-section-title { margin: 0 0 var(--s-4, 16px); font-size: 20px; font-weight: 600; }
+.picks-section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2, 8px) var(--s-5, 24px); margin: 0 0 var(--s-4, 16px); }
+.picks-section-title { margin: 0; font-size: 20px; font-weight: 600; }
+/* The way to more of the same: the stone gallery, the ready pieces (2026-11-02, the owner: no way to the gallery from here). */
+.picks-more { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--accent, #2a5446); text-decoration: none; }
+.picks-more::after { content: ''; width: 16px; height: 10px; background: currentColor; -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; transition: transform var(--dur-fast, 150ms) var(--ease-out, ease-out); }
+@media (hover: hover) { .picks-more:hover::after { transform: translateX(3px); } }
 .picks-empty { max-width: 34em; font-size: 17px; }
+/* Taken off the list on this visit: still here to be put back by its heart, but dimmed -- a veil
+   over the photograph (the photo's own motion is left as it is), the words faded, the heart clear. */
+.picks-section .stock-shot::after {
+  content: ''; position: absolute; inset: 0; background: var(--page, #efede8); opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-move, 250ms) var(--ease-out, ease-out);
+}
+.picks-section .stock-text { transition: opacity var(--dur-move, 250ms) var(--ease-out, ease-out); }
+.picks-section .stock-card.is-removed .stock-shot::after { opacity: 0.6; }
+.picks-section .stock-card.is-removed .stock-text { opacity: 0.45; }
 .picks-empty .picks-actions { margin-top: var(--s-4, 16px); }
+/* «Собрать изделие» on one line in a phone's narrow card: a size smaller; on the narrowest
+   phones «Собрать» alone (its aria-label keeps the whole name). */
+@container (max-width: 160px) {
+  .stock-card-stone .stock-ask { padding: 0 8px; font-size: 14px; white-space: nowrap; }
+}
+@container (max-width: 136px) {
+  .stock-ask-tail { display: none; }
+}

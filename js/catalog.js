@@ -149,8 +149,23 @@
     return card;
   }
 
+  // The address keeps the kind being looked at (?kind=tables), so a reload or «назад» shows it again.
+  const KIND_PARAM = 'kind';
+  function kindFromSearch(search) {
+    const k = new URLSearchParams(search || '').get(KIND_PARAM);
+    return GROUPS.some(([id]) => id === k) ? k : 'all';
+  }
+  function searchWithKind(search, id) {
+    const params = new URLSearchParams(search || '');
+    if (id === 'all') params.delete(KIND_PARAM);
+    else params.set(KIND_PARAM, id);
+    const q = params.toString();
+    return q ? '?' + q : '';
+  }
+
   // The kinds to filter by: «Все» and each kind there is, with how many pieces it has.
-  function buildFilter(cards) {
+  // `onChoose(id, label)` hears a press; `initial` is the kind to show first.
+  function buildFilter(cards, onChoose, initial) {
     const box = el('div', 'stock-filter');
     box.setAttribute('role', 'group');
     box.setAttribute('aria-label', 'Показать');
@@ -165,12 +180,17 @@
       b.appendChild(document.createTextNode(g.label + ' '));
       b.appendChild(el('span', '', String(g.n)));
       b.addEventListener('click', () => {
-        chips.forEach(c => { c.classList.toggle('is-on', c === b); c.setAttribute('aria-pressed', String(c === b)); });
-        cards.forEach(card => { card.hidden = g.id !== 'all' && card.dataset.group !== g.id; });
+        choose(g.id);
+        if (onChoose) onChoose(g.id, g.label);
       });
       box.appendChild(b);
       return b;
     });
+    function choose(id) {
+      chips.forEach((c, i) => { const on = groups[i].id === id; c.classList.toggle('is-on', on); c.setAttribute('aria-pressed', String(on)); });
+      cards.forEach(card => { card.hidden = id !== 'all' && card.dataset.group !== id; });
+    }
+    if (initial && initial !== 'all' && groups.some(g => g.id === initial)) choose(initial);
     return box;
   }
 
@@ -186,11 +206,23 @@
     cards.forEach(c => grid.appendChild(c));
     container.appendChild(grid);
     const meta = parts && parts.meta, slot = parts && parts.filter;
+    // The count and the prices are those of what is shown: all, or the kind chosen.
+    const count = el('b', '', '');
+    const prices = document.createTextNode('');
+    const show = id => {
+      const list = products.filter((p, i) => id === 'all' || cards[i].dataset.group === id);
+      count.textContent = countLabel(list.length);
+      const range = priceRange(list);
+      prices.textContent = range ? ' ' + range : '';
+      return list;
+    };
+    const win = typeof window !== 'undefined' ? window : null;
+    const initial = win && win.location ? kindFromSearch(win.location.search) : 'all';
     if (meta) {
       meta.innerHTML = '';
-      meta.appendChild(el('b', '', countLabel(products.length)));
-      const range = priceRange(products);
-      if (range) meta.appendChild(document.createTextNode(' ' + range));
+      meta.removeAttribute('data-waiting');
+      meta.appendChild(count);
+      meta.appendChild(prices);
       const picks = typeof window !== 'undefined' && window.Picks;
       if (picks) {
         const way = el('div', '');
@@ -198,13 +230,31 @@
         meta.appendChild(way);
       }
     }
-    const filter = slot ? buildFilter(cards) : null;
-    if (filter) slot.appendChild(filter);
+    // A choice is said aloud to a screen reader too, and kept in the address.
+    const said = el('p', 'visually-hidden');
+    said.setAttribute('aria-live', 'polite');
+    const onChoose = (id, label) => {
+      const list = show(id);
+      said.textContent = (id === 'all' ? 'Все изделия' : label) + ': ' + countLabel(list.length);
+      if (win && win.history && win.history.replaceState && win.location) {
+        win.history.replaceState(win.history.state, '', win.location.pathname + searchWithKind(win.location.search, id) + win.location.hash);
+      }
+    };
+    const filter = slot ? buildFilter(cards, onChoose, initial) : null;
+    show(filter ? initial : 'all');
+    if (slot) {
+      slot.replaceChildren();
+      slot.removeAttribute('data-waiting');
+    }
+    if (filter) {
+      slot.appendChild(filter);
+      slot.appendChild(said);
+    }
     const shots = [].concat(...cards.map(c => c.photos));
     const viewer = typeof window !== 'undefined' && window.SiteCommon && window.SiteCommon.enableViewer;
     if (viewer && shots.length) viewer(grid, shots.map(p => ({ image: p.src, thumb: p.src })), { triggers: shots.map(p => p.img), radius: 12 });
     return { grid, cards, filter, shots };
   }
 
-  return { NO_PHOTO_TEXT, KINDS, askUrl, formatProductPrice, countLabel, priceRange, isAvailable, buildProductCard, buildFilter, renderCatalog };
+  return { NO_PHOTO_TEXT, KINDS, askUrl, formatProductPrice, countLabel, priceRange, isAvailable, kindFromSearch, searchWithKind, buildProductCard, buildFilter, renderCatalog };
 });

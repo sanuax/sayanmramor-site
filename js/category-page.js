@@ -350,6 +350,13 @@
 
     search.addEventListener('input', apply);
     more.addEventListener('click', showMore);
+    // The page's inline script held the room of the filters, the plates and «Показать ещё»
+    // (.is-waiting); the real ones are in place now.
+    function ready() {
+      const section = grid.closest && grid.closest('.stone-section');
+      if (section) section.classList.remove('is-waiting');
+      if (filtersBox) filtersBox.inert = false;
+    }
 
     fetch(STONE_INDEX_URL)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -358,8 +365,13 @@
         search.disabled = false;
         renderFilters();
         apply();
+        ready();
       })
       .catch(() => {
+        grid.innerHTML = '';
+        if (filtersBox) filtersBox.hidden = true;
+        more.hidden = true;
+        ready();
         status.textContent = 'Не удалось загрузить каталог камня - выберите камень в конфигураторе.';
       });
   }

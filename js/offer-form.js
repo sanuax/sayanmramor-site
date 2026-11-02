@@ -221,6 +221,16 @@
   const UNSURE_KEY = 'unsure';
   const TELEGRAM = 'https://t.me/TeaN_SayanMramor';
   const DONE_NOTE = 'Отправка заявок с сайта ещё настраивается. Позвоните или напишите нам в Telegram и назовите вашу заявку - мастер сразу возьмётся за расчёт.';
+  // A ready piece from the catalogue has its price: it is booked, not priced (2026-11-02, the owner:
+  // the page promised «без ожидания расчёта» and «Запросить» led to «Получить расчёт»). The band's
+  // heading and lead, the last button and the closing note say so while such a piece is in the request.
+  const BOOKING = {
+    title: 'Забронировать',
+    titleSoft: 'готовое изделие',
+    lead: 'Оставьте имя и телефон. Мастер подтвердит, что изделие в наличии, и договорится о доставке.',
+    submit: 'Забронировать',
+    done: 'Отправка заявок с сайта ещё настраивается. Позвоните или напишите нам в Telegram и назовите изделие - мастер подтвердит, что оно ждёт вас.',
+  };
 
   // A phone is a phone with at least ten digits («+7 999 123-45-67», «89991234567»).
   function phoneOk(value) {
@@ -298,6 +308,20 @@
     const win = doc.defaultView || {};
     const n = ++formCount;
     const id = name => 'offer-' + n + '-' + name;
+    // The band's heading and lead: the page's own words, or the booking's for a ready piece.
+    const band = container.closest && container.closest('.offer-band');
+    const bandTitle = band && band.querySelector('.offer-title');
+    const bandLead = band && band.querySelector('.offer-lead');
+    const ownWords = bandTitle && bandLead ? { title: [...bandTitle.childNodes].map(c => c.cloneNode(true)), lead: bandLead.textContent } : null;
+    let booked = false;
+    function bandWords(booking) {
+      if (!ownWords || booking === booked) return;
+      booked = booking;
+      const where = bandTitle.querySelector('.offer-toggle-label') || bandTitle;
+      if (booking) where.replaceChildren(doc.createTextNode(BOOKING.title + ' '), el(doc, 'span', { className: 'offer-title-soft', textContent: BOOKING.titleSoft }));
+      else where.replaceChildren(...ownWords.title.map(c => c.cloneNode(true)));
+      bandLead.textContent = booking ? BOOKING.lead : ownWords.lead;
+    }
     let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '', draftName: '', draftPhone: '', picksOff: false };
     const labelOf = directionLabel;
     const keyOf = label => (label === UNSURE ? UNSURE_KEY : DIRECTIONS.find(d => d.label === label).key);
@@ -435,8 +459,9 @@
     phone.addEventListener('input', () => { if (phoneOk(phone.value)) status.textContent = ''; state.draftPhone = phone.value; persist(); });
     consent.addEventListener('change', () => { if (consent.checked) status.textContent = ''; });
     const phoneHint = hint(STEPS[2].hint);
+    const submit = nextButton('Получить расчёт', 'submit');
     const step3 = question(2, phoneHint, [
-      el(doc, 'div', { className: 'talk-answer' }, [phone, nextButton('Получить расчёт', 'submit')]),
+      el(doc, 'div', { className: 'talk-answer' }, [phone, submit]),
       el(doc, 'div', { className: 'talk-extra' }, [
         file,
         el(doc, 'label', { className: 'talk-file', htmlFor: id('file') }, [el(doc, 'span', { className: 'talk-file-icon' }, [icon(doc, 'clip')]), fileName]),
@@ -530,12 +555,13 @@
       const piece = picksRecords.pieces.find(p => p && p.id === picks.pieces[0]);
       return (piece && piece.photos && piece.photos[0]) || '';
     }
+    const doneNote = el(doc, 'p', { className: 'talk-hint', textContent: DONE_NOTE });
     const done = el(doc, 'section', { className: 'talk-step talk-done', 'data-step': '3', 'aria-labelledby': id('q3') }, [
       el(doc, 'p', { className: 'talk-q', id: id('q3') }, [doc.createTextNode('Заявка '), el(doc, 'em', { textContent: 'собрана' })]),
       summary,
       passportSlot,
       picksSlot,
-      el(doc, 'p', { className: 'talk-hint', textContent: DONE_NOTE }),
+      doneNote,
       el(doc, 'div', { className: 'talk-answer talk-done-actions' }, [
         el(doc, 'a', { className: 'talk-next', href: 'tel:' + PHONE.replace(/[^+\d]/g, '') }, [el(doc, 'span', { textContent: 'Позвонить ' + PHONE })]),
         telegram,
@@ -567,6 +593,10 @@
       const piece = state.piece;
       nameHint.textContent = piece ? PIECE_HINTS.name : STEPS[1].hint;
       phoneHint.textContent = piece ? (piece.kind === 'katalog' ? PIECE_HINTS.phoneKatalog : PIECE_HINTS.phoneCalc) : STEPS[2].hint;
+      const booking = !!piece && piece.kind === 'katalog';
+      submit.firstChild.textContent = booking ? BOOKING.submit : 'Получить расчёт';
+      doneNote.textContent = booking ? BOOKING.done : DONE_NOTE;
+      bandWords(booking);
       renderPiece();
       renderPassport();
       renderPicks();
@@ -650,7 +680,7 @@
   if (typeof document !== 'undefined') mountAll(document);
 
   return {
-    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
+    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, BOOKING, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
     pieceCard, summaryLine,
     mount, mountSteps, mountAll, enhanceBand,
   };

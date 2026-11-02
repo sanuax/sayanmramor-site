@@ -35,6 +35,8 @@ function fakeDocument() {
     const node = {
       tagName: tag.toUpperCase(), className: '', textContent: '', children: [], parent: null, listeners: {}, attrs: {}, dataset: {}, hidden: false,
       setAttribute(name, value) { node.attrs[name] = String(value); },
+      removeAttribute(name) { delete node.attrs[name]; },
+      replaceChildren(...kids) { node.children = []; kids.forEach(k => node.appendChild(k)); },
       classList: {
         add(c) { if (!node.classList.contains(c)) node.className = (node.className + ' ' + c).trim(); },
         remove(c) { node.className = node.className.split(' ').filter(x => x && x !== c).join(' '); },
@@ -158,8 +160,13 @@ test('the grid: every piece at once; over it the count and the prices; the kinds
   chips[1].listeners.click();
   assert.deepEqual(r.cards.map(c => c.hidden), [true, true, false, false, true], 'only the tables');
   assert.deepEqual(chips.map(c => c.attrs['aria-pressed']), ['false', 'true', 'false', 'false', 'false']);
+  // the count and the prices follow the kind shown, and a screen reader hears it (2026-11-02)
+  assert.equal(text(meta).replace(/\s/g, ' '), '2 изделия от 2 377 000 до 3 177 000 ₽');
+  assert.equal(slot.children[1].attrs['aria-live'], 'polite');
+  assert.equal(slot.children[1].textContent, 'Столы: 2 изделия');
   chips[0].listeners.click();
   assert.ok(r.cards.every(c => !c.hidden), 'all again');
+  assert.equal(text(meta).replace(/\s/g, ' '), '5 изделий от 20 000 до 3 977 000 ₽');
 }));
 
 test('a photograph opens large in the site\'s viewer: every photo of every piece, in order, each opened by its own image', () => withDocument(() => {
@@ -183,6 +190,15 @@ test('a photograph opens large in the site\'s viewer: every photo of every piece
   } finally { global.window = saved; }
 }));
 
+test('the address keeps the kind looked at: ?kind=, «Все» leaves it out, an unknown kind is «Все»', () => {
+  assert.equal(Catalog.kindFromSearch('?kind=tables'), 'tables');
+  assert.equal(Catalog.kindFromSearch('?kind=nope'), 'all');
+  assert.equal(Catalog.kindFromSearch(''), 'all');
+  assert.equal(Catalog.searchWithKind('', 'decor'), '?kind=decor');
+  assert.equal(Catalog.searchWithKind('?kind=decor&x=1', 'all'), '?x=1');
+  assert.equal(Catalog.searchWithKind('?kind=decor', 'all'), '');
+});
+
 test('an empty catalogue says so; one kind only: no filter', () => withDocument(() => {
   const container = document.createElement('div');
   assert.equal(Catalog.renderCatalog(container, []), null);
@@ -200,7 +216,10 @@ test('the price range: the pieces in stock, the lowest to the highest', () => {
 
 test('the page: the head holds the count and the filter; the gallery is gone', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'katalog.html'), 'utf8');
-  assert.match(html, /<p class="catalog-meta" id="catalogMeta"><\/p>\s*<div class="catalog-filter" id="catalogFilter"><\/div>/);
+  // Until products.json answers, the head and the grid hold the room of what comes (2026-11-02: the page jumped).
+  assert.match(html, /<p class="catalog-meta" id="catalogMeta" data-waiting>[\s\S]*?<\/p>\s*<div class="catalog-filter" id="catalogFilter" data-waiting>/);
+  assert.match(html, /<ul class="stock-grid stock-skeleton" aria-hidden="true">/);
+  assert.equal((html.match(/<li class="stock-card"><div class="stock-shot"><\/div>/g) || []).length, 8, 'as many plates as pieces');
   assert.doesNotMatch(html, /catalog-kicker|catalogCount/);
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
   assert.doesNotMatch(css, /\.collection-|\.product-tile|\n\.ask \{/, 'no leftovers of the gallery');

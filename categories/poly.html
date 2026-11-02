@@ -12,9 +12,9 @@
 <link rel="preload" href="/sayanmramor-site/assets/fonts/unbounded-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/sayanmramor-site/assets/fonts/montserrat-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
-<link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=77fee243">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=4f3f407a">
-<link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=c2a87b81">
+<link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=c16a1081">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=f6b7db12">
+<link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=32e97c19">
 <script src="/sayanmramor-site/js/header.js?v=d6959f13" defer></script>
 </head>
 <body>
@@ -68,6 +68,7 @@
           </div>
         </div>
       </details>
+      <a href="/sayanmramor-site/kamen.html">Камень</a>
       <a href="/sayanmramor-site/katalog.html">Готовые изделия</a>
       <details class="nav-drop nav-showroom">
         <summary>Шоурум</summary>
@@ -118,6 +119,19 @@
   <p class="stone-status" id="stoneStatus" aria-live="polite">Загрузка камня…</p>
   <ul class="stone-grid" id="stoneGrid"></ul>
   <button type="button" class="btn btn-secondary stone-more" id="stoneMore" hidden>Показать ещё</button>
+  <script>(function (s) {
+    // Until the stones come (the gallery's own script): the filters, a first page of plates and «Показать ещё»
+    // stand at their size, the words unseen, so the request below never jumps.
+    var f = s.querySelector('.stone-filters'), g = s.querySelector('.stone-grid');
+    var pill = function (t) { return '<div class="stone-dd"><button class="stone-dd-btn" type="button"><span class="stone-dd-label">' + t + '</span><span class="stone-dd-caret"></span></button></div>'; };
+    var sort = function (t) { return '<button class="stone-sort-btn" type="button">' + t + '</button>'; };
+    s.classList.add('is-waiting');
+    f.innerHTML = '<div class="stone-filter-row">' + ['Страна', 'Тип', 'Цвет', 'Цена'].map(pill).join('') + '</div><div class="stone-sort">' + ['Цвет', 'A-Z', 'Цена ↑'].map(sort).join('') + '</div>';
+    f.inert = true;
+    f.hidden = false;
+    g.innerHTML = new Array(25).join('<li aria-hidden="true"><span class="stone-card"><span class="stone-card-media"></span><span class="stone-card-name">&nbsp;</span><span class="stone-card-type">&nbsp;</span><span class="stone-card-price">&nbsp;</span></span></li>');
+    s.querySelector('.stone-more').hidden = false;
+  })(document.currentScript.closest('.stone-section'));</script>
   <p class="stone-supplier">Камень в нашей коллекции закупается у Venezia Stone. <a href="https://veneziastone.com/" target="_blank" rel="noopener">Подробнее о коллекции и материалах - на сайте Venezia Stone</a></p>
 </section>
 
@@ -196,10 +210,10 @@
 <script src="/sayanmramor-site/js/showroom/showroom-data.js"></script>
 <script src="/sayanmramor-site/js/site.js?v=d49d1b40"></script>
 <script src="/sayanmramor-site/js/price-filter.js?v=def91123"></script>
-<script src="/sayanmramor-site/js/category-page.js?v=fedeef59"></script>
+<script src="/sayanmramor-site/js/category-page.js?v=b7555937"></script>
 <script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
-<script src="/sayanmramor-site/js/offer-form.js?v=51fd252f"></script>
+<script src="/sayanmramor-site/js/offer-form.js?v=751ce894"></script>
 <script>
   SiteCommon.loadPortfolio('pol', document.getElementById('portfolioGrid'));
   CategoryPage.init('pol');
