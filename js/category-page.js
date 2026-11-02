@@ -101,8 +101,14 @@
 
   const SORT_LABELS = { 'tone-asc': 'Цвет', 'tone-desc': 'Цвет ↓', 'name-asc': 'A-Z', 'name-desc': 'Z-A', 'price-asc': 'Цена ↑', 'price-desc': 'Цена ↓' };
 
+  // The configurator with only a stone (the page «Камень», kamen.html: no product of its own;
+  // the configurator picks the stone and leaves the product to the client).
+  const CONFIGURATOR = '/sayanmramor-calculator/sayanmramor-calculator.html';
+  const stoneOnlyUrl = stoneId => CONFIGURATOR + (stoneId ? '?stone=' + encodeURIComponent(stoneId) : '');
+
+  // productKey: the direction page's product, or null on «Камень».
   function init(productKey) {
-    const buildUrl = stoneId => ShowroomData.buildConfiguratorUrl(productKey, stoneId);
+    const buildUrl = stoneId => (productKey ? ShowroomData.buildConfiguratorUrl(productKey, stoneId) : stoneOnlyUrl(stoneId));
     const search = document.getElementById('stoneSearch');
     const filtersBox = document.getElementById('stoneFilters');
     const status = document.getElementById('stoneStatus');
@@ -121,7 +127,7 @@
     // In the bar at the foot, the one thing that stays in view all the way through the stones.
     if (window.Picks) {
       const way = window.Picks.link(document);
-      way.href = window.Picks.PAGE + '?product=' + encodeURIComponent(productKey);   // «Собрать» there keeps this page's product
+      if (productKey) way.href = window.Picks.PAGE + '?product=' + encodeURIComponent(productKey);   // «Собрать» there keeps this page's product
       cta.parentNode.insertBefore(way, cta);
     }
 
@@ -358,5 +364,5 @@
       });
   }
 
-  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, SORT_LABELS, normalizeStones, listOptions, filterStones, sortStones, hasActiveFilters, init };
+  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, SORT_LABELS, normalizeStones, listOptions, filterStones, sortStones, hasActiveFilters, stoneOnlyUrl, init };
 });

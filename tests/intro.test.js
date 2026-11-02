@@ -7,7 +7,7 @@ const Intro = require('../js/intro.js');
 
 const site = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(site, p), 'utf8');
-const pages = ['index.html', 'katalog.html', 'privacy.html', 'podborka.html']
+const pages = ['index.html', 'katalog.html', 'privacy.html', 'podborka.html', 'kamen.html']
   .concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f));
 
 test('it plays once, on the way in: not again, not back, not on reload, not to an anchor, not with reduced motion', () => {

@@ -1306,7 +1306,7 @@ test('css/header.css: the header and its buttons in one file; its tokens are css
 
 test('every page asks for its own CSS / JS by content: ?v= the file\'s hash, so a browser holding an old copy (Telegram\'s, 2026-10-19) fetches the new one; run scripts/stamp_assets.js after editing css/ or js/', () => {
   const Stamp = require('../scripts/stamp_assets.js');
-  assert.equal(Stamp.pages().length, 18);
+  assert.equal(Stamp.pages().length, 19);   // 19 since «Камень» (kamen.html, 2026-11-02)
   Stamp.pages().forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     const links = [...html.matchAll(Stamp.ASSET)];

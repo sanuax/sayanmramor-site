@@ -114,9 +114,9 @@
     const links = el(doc, 'div', 'picks-actions');
     const katalog = el(doc, 'a', 'btn btn-primary', 'Готовые изделия');
     katalog.href = Handoff.KATALOG;
-    const calc = el(doc, 'a', 'btn btn-secondary', 'Выбрать камень');
-    calc.href = Handoff.CALCULATOR;
-    links.append(katalog, calc);
+    const stones = el(doc, 'a', 'btn btn-secondary', 'Выбрать камень');
+    stones.href = '/sayanmramor-site/kamen.html';   // the stone gallery (2026-11-02, the owner: not the calculator)
+    links.append(katalog, stones);
     box.appendChild(links);
     return box;
   }

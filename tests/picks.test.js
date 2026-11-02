@@ -101,8 +101,9 @@ test('pages: the page exists, the footer leads to it, galleries and requests loa
   const categories = fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f);
   const page = read('podborka.html');
   ['id="picksTitle"', 'id="picksHost"', 'id="picksActions"', 'data-offer-form data-offer-steps', 'PicksPage.init(document)'].forEach(s => assert.ok(page.includes(s), s));
-  ['index.html', 'katalog.html', 'privacy.html', 'podborka.html'].concat(categories).forEach(p => {
+  ['index.html', 'katalog.html', 'privacy.html', 'podborka.html', 'kamen.html'].concat(categories).forEach(p => {
     assert.ok(read(p).includes('<a href="/sayanmramor-site/podborka.html">Моя подборка</a>'), p + ': footer');
+    assert.ok(read(p).includes('<a href="/sayanmramor-site/kamen.html">Камень</a>'), p + ': footer, the stone');
   });
   ['index.html', 'katalog.html', 'podborka.html'].concat(categories).forEach(p => {
     const html = read(p);
@@ -114,5 +115,18 @@ test('pages: the page exists, the footer leads to it, galleries and requests loa
   });
   const galleries = categories.filter(p => read(p).includes('stone-section'));
   assert.ok(galleries.length > 0);
-  ['katalog.html', 'podborka.html'].concat(galleries).forEach(p => assert.ok(read(p).includes('css/picks.css'), p + ': css'));
+  ['katalog.html', 'podborka.html', 'kamen.html'].concat(galleries).forEach(p => assert.ok(read(p).includes('css/picks.css'), p + ': css'));
+});
+
+test('«Камень»: the stone gallery on its own page; the empty «Моя подборка» leads there, not to the calculator', () => {
+  const read = p => fs.readFileSync(path.join(site, p), 'utf8');
+  const page = read('kamen.html');
+  ['<h1 id="pageTitle">Камень</h1>', 'class="stone-section" aria-labelledby="pageTitle"', 'id="stoneGrid"', 'id="configureCta"', 'data-offer-form data-offer-steps', 'CategoryPage.init(null)'].forEach(s => assert.ok(page.includes(s), s));
+  assert.doesNotMatch(page, /data-preselect=|\?product=|<summary class="active">/, 'no product, no current section of the menu');
+  assert.ok(page.indexOf('js/picks.js') < page.indexOf('CategoryPage.init'));
+  const CategoryPage = require('../js/category-page.js');
+  assert.equal(CategoryPage.stoneOnlyUrl(null), '/sayanmramor-calculator/sayanmramor-calculator.html');
+  assert.equal(CategoryPage.stoneOnlyUrl('nero-marquina'), '/sayanmramor-calculator/sayanmramor-calculator.html?stone=nero-marquina');
+  const empty = read('js/picks-page.js');
+  assert.ok(empty.includes("stones.href = '/sayanmramor-site/kamen.html'"), 'the empty state leads to the stone');
 });
