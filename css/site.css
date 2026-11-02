@@ -882,7 +882,7 @@ h3 { font-size: var(--fs-h3); }
 .catalog-head h1 { margin: 0; font-size: clamp(34px, 4vw, 56px); }
 .catalog-lead { max-width: 34em; margin-top: var(--s-4); font-size: 17px; color: var(--ink); }
 .catalog-head .catalog-meta { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: 15px; line-height: 1.5; color: var(--ink-soft); }
-.catalog-meta b { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; color: var(--ink); }
+.catalog-meta > b { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; color: var(--ink); }
 .catalog-head .catalog-filter { grid-column: 1 / -1; }
 .catalog-filter:empty { display: none; }
 .catalog-host { padding-bottom: var(--section); }
@@ -943,7 +943,7 @@ h3 { font-size: var(--fs-h3); }
 @media (max-width: 640px) {
   .catalog-head { grid-template-columns: 1fr; }
   .catalog-head .catalog-meta { grid-column: 1; grid-row: auto; margin-top: var(--s-4); text-align: left; }
-  .catalog-meta b { display: inline; font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: 0; }
+  .catalog-meta > b { display: inline; font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: 0; }
   .stock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
   .stock-card { padding: 6px 6px 10px; border-radius: 14px; }
   .stock-shot { border-radius: 10px; }
