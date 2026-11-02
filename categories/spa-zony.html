@@ -104,6 +104,16 @@
 
 <section class="portfolio-section">
   <div class="portfolio-grid" id="portfolioGrid"></div>
+  <!-- Right here, not at the end: the photos' rows stand at their size before the page below is drawn. -->
+  <script src="/sayanmramor-site/js/site.js?v=22c93ba7"></script>
+<script>
+  // A direction of the site only (no configurator product): its photos are listed here.
+  SiteCommon.renderPortfolio(document.getElementById('portfolioGrid'), [
+    { image: '/sayanmramor-site/assets/portfolio-yandex/ya-02.webp', caption: '', width: 1280, height: 853, thumb: '/sayanmramor-site/assets/portfolio-yandex/w640/ya-02.webp', preview: 'data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAQCdASoQAAoAA4BaJQBOgBd1mmbcAADiAFTez9kZzOQ4+3vJ8PY7Q6ZDCbCfinAdeJXRHWpflprLE53RZYxu6O3AlGy34e8zIiA3jveJ5Cq36rTsWihy5utj4AlQAAA=' },
+    { image: '/sayanmramor-site/assets/portfolio/090.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/portfolio/w640/090.webp', preview: 'data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwBACdASoQABgAPu1iqU2ppaOiMAgBMB2JZwDG9B0/LHEXl/bMAoFUwAAA/NEpQH3axClwqLnQ8LFIdebtzVjJqcW+RuIWNSqYrf5ZMkMDuoi45NYbFkjxJZWzUEBvVGOgAA==' },
+    { image: '/sayanmramor-site/assets/portfolio/091.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/portfolio/w640/091.webp', preview: 'data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADQAwCdASoQABgAPu1iqU2ppaOiMAgBMB2JZwDA3B5UFQPv0tIVgVAA4lE4mmOHSahKS6DL1bdfpxaYFNRRFJyvCJWavvOFJj0Nq0RMiG5daEfUg9Uo3E1fFMwL66uWx9xbsCNoxSAAAA==' }
+  ]);
+</script>
 </section>
 
 <section class="offer-band offer-talk" id="offer" aria-labelledby="offerTitle" data-offer-open>
@@ -168,17 +178,8 @@
   </div>
 </footer>
 
-<script src="/sayanmramor-site/js/site.js?v=d49d1b40"></script>
 <script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
 <script src="/sayanmramor-site/js/offer-form.js?v=751ce894"></script>
-<script>
-  // A direction of the site only (no configurator product): its photos are listed here.
-  SiteCommon.renderPortfolio(document.getElementById('portfolioGrid'), [
-    { image: '/sayanmramor-site/assets/portfolio-yandex/ya-02.webp', caption: '', width: 1280, height: 853, thumb: '/sayanmramor-site/assets/portfolio-yandex/w640/ya-02.webp', preview: 'data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAQCdASoQAAoAA4BaJQBOgBd1mmbcAADiAFTez9kZzOQ4+3vJ8PY7Q6ZDCbCfinAdeJXRHWpflprLE53RZYxu6O3AlGy34e8zIiA3jveJ5Cq36rTsWihy5utj4AlQAAA=' },
-    { image: '/sayanmramor-site/assets/portfolio/090.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/portfolio/w640/090.webp', preview: 'data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwBACdASoQABgAPu1iqU2ppaOiMAgBMB2JZwDG9B0/LHEXl/bMAoFUwAAA/NEpQH3axClwqLnQ8LFIdebtzVjJqcW+RuIWNSqYrf5ZMkMDuoi45NYbFkjxJZWzUEBvVGOgAA==' },
-    { image: '/sayanmramor-site/assets/portfolio/091.webp', caption: '', width: 1067, height: 1600, thumb: '/sayanmramor-site/assets/portfolio/w640/091.webp', preview: 'data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADQAwCdASoQABgAPu1iqU2ppaOiMAgBMB2JZwDA3B5UFQPv0tIVgVAA4lE4mmOHSahKS6DL1bdfpxaYFNRRFJyvCJWavvOFJj0Nq0RMiG5daEfUg9Uo3E1fFMwL66uWx9xbsCNoxSAAAA==' }
-  ]);
-</script>
 </body>
 </html>

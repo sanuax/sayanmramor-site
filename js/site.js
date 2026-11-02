@@ -487,7 +487,11 @@
     }
   }
 
+  // A direction page loads js/portfolio-data.js right under its photo block: then the photos are
+  // laid out at once, before the page below is drawn, and nothing jumps when they come.
   function loadPortfolio(productKey, container) {
+    const known = typeof window !== 'undefined' && window.SitePortfolio;
+    if (known) { renderPortfolio(container, known[productKey] || []); return; }
     fetch('/sayanmramor-site/data/portfolio.json')
       .then(r => r.json())
       .then(data => renderPortfolio(container, data[productKey] || []))
@@ -511,6 +515,11 @@
   // stone card, or any other scrolled-to element, clear of both.
   const FIXED_UI_GAP = 16;
   function reserveFixedUi(doc) {
+    // A direction page loads this script under its photo block, before the configure bar is parsed.
+    if (doc.readyState === 'loading' && !doc.querySelector('.configure-bar') && doc.addEventListener) {
+      doc.addEventListener('DOMContentLoaded', () => reserveFixedUi(doc), { once: true });
+      return;
+    }
     const root = doc.documentElement;
     const parts = [['--sticky-top', doc.querySelector('.site-header')], ['--fixed-bottom', doc.querySelector('.configure-bar')]]
       .filter(([, el]) => el);

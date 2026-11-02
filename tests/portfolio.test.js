@@ -338,3 +338,26 @@ test('reveal: the photos entering together rise top to bottom, left to right', (
   const a = at(0, 300), b = at(0, 0), c = at(400, 0);
   assert.deepEqual(SiteCommon.revealOrder([c, a, b]), [b, a, c]);
 });
+
+// The rows stand before the page below them is drawn (2026-11-02: the page jumped while
+// portfolio.json was on its way): each direction's photos as a script of its own, made from
+// portfolio.json, loaded with site.js right under the photo block, before the stone gallery.
+test('each direction page lays its photos out under the photo block itself, from js/portfolio/<key>.js made from portfolio.json', () => {
+  const Build = require('../scripts/build_portfolio_data.js');
+  Object.keys(portfolio).forEach(key => {
+    const file = path.join(site, 'js', 'portfolio', key + '.js');
+    assert.ok(fs.existsSync(file), key + ': node scripts/build_portfolio_data.js');
+    assert.equal(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'), Build.build(key, portfolio[key]), key + ': out of date -- node scripts/build_portfolio_data.js');
+  });
+  fs.readdirSync(path.join(site, 'categories')).filter(f => f.endsWith('.html')).forEach(f => {
+    const html = fs.readFileSync(path.join(site, 'categories', f), 'utf8');
+    const grid = html.indexOf('<div class="portfolio-grid" id="portfolioGrid"></div>');
+    const end = html.indexOf('</section>', grid);
+    const block = html.slice(grid, end);
+    assert.ok(grid > 0 && /<script src="\/sayanmramor-site\/js\/site\.js\?v=[0-9a-f]+"><\/script>/.test(block), f + ': site.js under the photo block');
+    const key = (block.match(/SiteCommon\.loadPortfolio\('([^']+)'/) || [])[1];
+    if (key) assert.ok(block.indexOf('js/portfolio/' + key + '.js') > 0 && block.indexOf('js/portfolio/' + key + '.js') < block.indexOf('js/site.js'), f + ': its photos before site.js');
+    else assert.match(block, /SiteCommon\.renderPortfolio\(document\.getElementById\('portfolioGrid'\), \[/, f + ': its listed photos');
+    assert.equal((html.match(/js\/site\.js/g) || []).length, 1, f + ': site.js once');
+  });
+});
