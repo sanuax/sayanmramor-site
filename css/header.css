@@ -97,7 +97,9 @@
 }
 .site-header-inner {
   position: relative; height: var(--header-h);
-  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--s-5);
+  /* The two sides equal while each holds what it carries (2026-11-02: with five places «Создать
+     изделие» ran past the capsule's edge): the places stand on the middle, or a little off it. */
+  display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); align-items: center; column-gap: var(--s-5);
   padding: 0 8px;   /* the same on both sides: the places stand on the capsule's middle */
 }
 /* The name: the brand's own letters once their font is settled (--font-brand), the site's until then. */
@@ -250,9 +252,10 @@
   .js .site-header.menu-open nav.site-nav { max-height: calc(100vh - 228px); max-height: calc(100dvh - 228px); }
 }
 
-/* Small desktops (1001..1200 px): the places and the two actions a little closer-set, so the
-   actions keep clear of the places. */
-@media (min-width: 1001px) and (max-width: 1200px) {
+/* Desktops (from 1001 px; until 2026-11-02 only to 1200): the places and the two actions a little
+   closer-set, so the actions keep clear of the places -- with five places on every width, and the
+   places stay about on the capsule's middle. */
+@media (min-width: 1001px) {
   .site-nav > a, .nav-drop > summary { padding: 0 11px; }
   .site-header-order, .site-header-cta { padding: 0 16px; }
 }
