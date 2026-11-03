@@ -898,16 +898,15 @@ h3 { font-size: var(--fs-h3); }
 .stock-chip.is-on { background: var(--ink); color: var(--on-dark); }
 .stock-chip.is-on span { color: var(--on-dark-muted); }
 
-.stock-grid { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }
-.stock-card {
-  display: flex; flex-direction: column; padding: 10px 10px 14px; border-radius: 18px;
-  background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow var(--dur-fast);
-}
+/* «Галерея» (2026-11-04, the owner: the cards to look like a premium site's): no plate -- the
+   photograph carries the card, its corners the buttons' 6 px; the name in the site's own face, the
+   price quieter, the action a green link with the site's arrow. */
+.stock-grid { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-7) var(--s-5); }
+.stock-card { display: flex; flex-direction: column; }
 .stock-card[hidden] { display: none; }
-@media (hover: hover) { .stock-card:hover { box-shadow: inset 0 0 0 1px var(--line-strong); } }
-.stock-shot { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 12px; background: var(--surface-sunk); }
+.stock-shot { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius-s); background: var(--surface-sunk); }
 .stock-shot img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); cursor: zoom-in; }   /* opens large in the viewer (js/site.js) */
-.stock-shot img:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 12px; }
+.stock-shot img:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: var(--radius-s); }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .stock-shot img { will-change: transform; }   /* its own layer for good, so the zoom never ends in a jump */
   .stock-card:hover .stock-shot img { transform: scale(1.03); }
@@ -931,26 +930,29 @@ h3 { font-size: var(--fs-h3); }
   background: rgba(28, 29, 27, 0.72); color: #fff; font-size: 13px; pointer-events: none;
 }
 .stock-badge { bottom: auto; top: 10px; }
-.stock-text { display: flex; flex-direction: column; flex: 1; padding: 0 6px; }
-.stock-kind { margin-top: var(--s-4); font-size: 13px; color: var(--muted); }
-.stock-name { margin: 4px 0 0; font-size: 18px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
+.stock-text { display: flex; flex-direction: column; flex: 1; }
+.stock-kind { margin-top: 14px; font-size: 13px; color: var(--muted); }
+.stock-name { margin: 4px 0 0; font-family: var(--font); font-size: 17px; font-weight: 500; line-height: 1.3; letter-spacing: -0.01em; text-wrap: pretty; }
 .stock-description { margin-top: var(--s-2); font-size: var(--fs-small); line-height: 1.45; color: var(--ink-soft); }
-.stock-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); margin-top: auto; padding-top: var(--s-4); }
-.stock-price { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
-.stock-ask { min-height: 44px; padding: 0 20px; }
-/* The price and its button side by side while both fit in the card, one above the other once it is
-   too narrow (2026-11-02: at 768-1280 px they ran out of it). The card asks its own width (inside
-   its padding): the longest price of a piece and «Запросить» need 253 px, a stone's
-   «от 727 354 ₽/м²» and «Собрать изделие» 344, measured. */
+/* The price under the name, the link under the price -- on every card the same, whatever the
+   length of the price (2026-11-04, the owner: a short price stood beside the link, a long one above it). */
+.stock-foot { display: flex; flex-direction: column; align-items: flex-start; margin-top: auto; padding-top: 6px; }
+.stock-price { font-size: 15px; font-weight: 400; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
+.stock-card .stock-ask {
+  min-height: 44px; padding: 0; gap: 0; border: 0; border-radius: 0; background: none; color: var(--accent);
+  font-size: 15px; font-weight: 600; white-space: nowrap;
+}
+.stock-ask-tail { margin-left: 0.28em; }   /* a flex item: its own leading space would collapse */
+.stock-ask::after {
+  content: ''; flex: none; width: 16px; height: 10px; margin-left: 10px; background: currentColor;
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) {
+  .stock-card .stock-ask:hover { background: none; color: var(--accent-hover); }
+  .stock-card .stock-ask:hover::after { transform: translateX(3px); }
+}
 .stock-card { container-type: inline-size; }
-@container (max-width: 254px) {
-  .stock-foot { flex-direction: column; align-items: stretch; gap: var(--s-3); }
-  .stock-ask { width: 100%; padding: 0 12px; }
-}
-@container (max-width: 345px) {
-  .stock-card-stone .stock-foot { flex-direction: column; align-items: stretch; gap: var(--s-3); }
-  .stock-card-stone .stock-ask { width: 100%; padding: 0 12px; }
-}
 /* While the data is on its way (katalog.html, js/picks-page.js): the plates and their photo areas
    stand where the cards will be, the words keep their room unseen, so nothing jumps when they come. */
 [data-waiting], .stock-skeleton .stock-text { visibility: hidden; }
@@ -961,15 +963,11 @@ h3 { font-size: var(--fs-h3); }
   .catalog-head { grid-template-columns: 1fr; }
   .catalog-head .catalog-meta { grid-column: 1; grid-row: auto; margin-top: var(--s-4); text-align: left; }
   .catalog-meta > b { display: inline; font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: 0; }
-  .stock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
-  .stock-card { padding: 6px 6px 10px; border-radius: 14px; }
-  .stock-shot { border-radius: 10px; }
-  .stock-text { padding: 0 4px; }
-  .stock-kind { margin-top: var(--s-3); }
-  .stock-name { font-size: 16px; }
-  .stock-foot { flex-direction: column; align-items: stretch; gap: var(--s-3); padding-top: var(--s-3); }
-  .stock-price { font-size: 16px; }
-  .stock-ask { width: 100%; padding: 0 12px; }
+  .stock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-3); }
+  .stock-kind { margin-top: 10px; font-size: 12px; }
+  .stock-name { font-size: 15px; }
+  .stock-price { font-size: 14px; }
+  .stock-card .stock-ask { min-height: 40px; font-size: 14px; }
 }
 
 /* ---- Category page: stone gallery + hand-off to the configurator ------------ */

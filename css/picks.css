@@ -114,11 +114,8 @@ button.pick-link { border: 0; font-family: inherit; cursor: pointer; }
 .picks-section .stock-card.is-removed .stock-shot::after { opacity: 0.6; }
 .picks-section .stock-card.is-removed .stock-text { opacity: 0.45; }
 .picks-empty .picks-actions { margin-top: var(--s-4, 16px); }
-/* «Собрать изделие» on one line in a phone's narrow card: a size smaller; on the narrowest
-   phones «Собрать» alone (its aria-label keeps the whole name). */
-@container (max-width: 160px) {
-  .stock-card-stone .stock-ask { padding: 0 8px; font-size: 14px; white-space: nowrap; }
-}
-@container (max-width: 136px) {
+/* On the narrowest phones «Собрать →» alone, so the link stays on one line (its aria-label keeps
+   the whole name). */
+@container (max-width: 150px) {
   .stock-ask-tail { display: none; }
 }
