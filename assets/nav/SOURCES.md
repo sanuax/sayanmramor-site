@@ -21,5 +21,5 @@
 
 | Плитка | Исходник | Файл |
 |---|---|---|
-| Камень | `data/images/black-marquina.webp` конфигуратора (Black Marquina) | `t-kamen.webp` |
-| Готовые изделия | `assets/products/vaza-01/1.jpg` | `t-katalog.webp` |
+| Камень | `data/images/amazonite.webp` конфигуратора (Amazonite; до 2026-11-04 был Black Marquina) | `t-kamen.webp` |
+| Готовые изделия | `assets/products/rakushka-01/1.webp` (до 2026-11-04 была ваза vaza-01) | `t-katalog.webp` |
