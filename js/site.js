@@ -742,5 +742,47 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') fadeOutOnLeaving(document, window);
 
-  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving };
+  // «Заказать» lands on the questions (2026-11-04, the owner: on a phone #offer showed the photo
+  // and the words, the questions and their button below the screen). Where the band stands in one
+  // column, the way in is its questions, just under the capsule; side by side, the band's top.
+  // On this page the way there is a smooth scroll; from another page the jump, made once more
+  // when the page has loaded (photos and fonts above may have moved it), unless the reader scrolled.
+  const OFFER_GAP = 16;   // between the capsule and the questions
+  function offerTarget(band) {
+    const main = band.querySelector('.offer-talk-main');
+    if (!main) return band;
+    return main.getBoundingClientRect().top - band.getBoundingClientRect().top > 160 ? main : band;
+  }
+  function offerTop(doc, win, band) {
+    // The closed capsule's line: pressed in the phone menu, the capsule is still drawn open as it folds.
+    const header = doc.querySelector('.site-header');
+    const closedH = header && win.getComputedStyle ? parseFloat(win.getComputedStyle(header).getPropertyValue('--header-h')) : NaN;
+    const under = !header ? 0 : Number.isFinite(closedH) ? header.getBoundingClientRect().top + closedH : header.getBoundingClientRect().bottom;
+    return Math.max(0, Math.round(offerTarget(band).getBoundingClientRect().top + win.scrollY - under - OFFER_GAP));
+  }
+  function landOnOffer(doc, win) {
+    // On the direction pages this script stands above the band (right under #portfolioGrid).
+    if (doc.readyState === 'loading') { doc.addEventListener('DOMContentLoaded', () => landOnOffer(doc, win), { once: true }); return; }
+    const band = doc.getElementById('offer');
+    if (!band) return;
+    const reduce = () => !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    doc.addEventListener('click', e => {
+      if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      const link = e.target.closest && e.target.closest('a[href]');
+      if (!link) return;
+      const to = new URL(link.href, win.location.href);
+      if (to.hash !== '#offer' || to.origin !== win.location.origin || to.pathname !== win.location.pathname || to.search !== win.location.search) return;
+      e.preventDefault();
+      if (win.location.hash !== '#offer' && win.history && win.history.pushState) win.history.pushState(null, '', '#offer');
+      win.scrollTo({ top: offerTop(doc, win, band), behavior: reduce() ? 'auto' : 'smooth' });
+    });
+    if (win.location.hash !== '#offer') return;
+    let landed = -1;
+    const jump = () => { landed = offerTop(doc, win, band); win.scrollTo(0, landed); };
+    win.requestAnimationFrame(jump);
+    win.addEventListener('load', () => { if (landed < 0 || Math.abs(win.scrollY - landed) < 2) jump(); }, { once: true });
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') landOnOffer(document, window);
+
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
 });
