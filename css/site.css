@@ -934,22 +934,28 @@ h3 { font-size: var(--fs-h3); }
 .stock-kind { margin-top: 14px; font-size: 13px; color: var(--muted); }
 .stock-name { margin: 4px 0 0; font-family: var(--font); font-size: 17px; font-weight: 500; line-height: 1.3; letter-spacing: -0.01em; text-wrap: pretty; }
 .stock-description { margin-top: var(--s-2); font-size: var(--fs-small); line-height: 1.45; color: var(--ink-soft); }
-/* The price under the name, the link under the price -- on every card the same, whatever the
+/* The price under the name, the button under the price -- on every card the same, whatever the
    length of the price (2026-11-04, the owner: a short price stood beside the link, a long one above it). */
-.stock-foot { display: flex; flex-direction: column; align-items: flex-start; margin-top: auto; padding-top: 6px; }
+.stock-foot { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: auto; padding-top: 12px; }
 .stock-price { font-size: 15px; font-weight: 400; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
+/* «Тихая заливка» (2026-11-04, the owner): the card's width, a pale wash of the brand green, the
+   word and the arrow in it; a deeper wash under a pointer, a little press under a finger. */
 .stock-card .stock-ask {
-  min-height: 44px; padding: 0; gap: 0; border: 0; border-radius: 0; background: none; color: var(--accent);
-  font-size: 15px; font-weight: 600; white-space: nowrap;
+  width: 100%; min-height: 42px; padding: 0 12px; gap: 0; border: 0; border-radius: var(--radius-s);
+  background: rgba(42, 84, 70, 0.08); color: var(--accent); font-size: 14px; font-weight: 600; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-fast) ease, transform 160ms var(--ease-out);
 }
+.stock-card .stock-ask:active { transform: scale(0.97); }
+.stock-card .stock-ask:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .stock-ask-tail { margin-left: 0.28em; }   /* a flex item: its own leading space would collapse */
 .stock-ask::after {
   content: ''; flex: none; width: 16px; height: 10px; margin-left: 10px; background: currentColor;
   -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat;
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform 200ms var(--ease-out);
 }
-@media (hover: hover) {
-  .stock-card .stock-ask:hover { background: none; color: var(--accent-hover); }
+@media (hover: hover) and (pointer: fine) {
+  .stock-card .stock-ask:hover { background: rgba(42, 84, 70, 0.14); color: var(--accent); }
   .stock-card .stock-ask:hover::after { transform: translateX(3px); }
 }
 .stock-card { container-type: inline-size; }
@@ -967,7 +973,8 @@ h3 { font-size: var(--fs-h3); }
   .stock-kind { margin-top: 10px; font-size: 12px; }
   .stock-name { font-size: 15px; }
   .stock-price { font-size: 14px; }
-  .stock-card .stock-ask { min-height: 40px; font-size: 14px; }
+  .stock-card .stock-ask { min-height: 40px; padding: 0 8px; font-size: 13px; }
+  .stock-ask::after { margin-left: 8px; }
 }
 
 /* ---- Category page: stone gallery + hand-off to the configurator ------------ */
