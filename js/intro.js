@@ -1,15 +1,19 @@
 // js/intro.js
 //
-// The first moment on the site: «Полировка» (2026-11-02, the owner chose it from three concepts,
-// .claude/concepts/intro/). The screen is the raw face of a slab of white Sayan marble: grey, matte,
-// the saw's grooves across it, its veins half-seen. A line of light goes over it - the polishing
-// pass - and behind it the stone turns white and deep, its veins sharp, and an engraved
-// «САЯНМРАМОР» shows in it, letter by letter as the light reaches it. When the fonts and the first
-// photo are ready, the slab is lifted away and the name lands on the header's logo.
+// The first moment on the site: «Свет на камне» (2026-11-04: the owner found «Полировка» cartoonish
+// and asked for a serious, premium first look; free choice). A polished slab of dark marble comes up
+// out of the dark, a slow broad sheen of light glides over it, as over a slab in a showroom. In the
+// middle the name, small and widely spaced, in the colour of the white veins, settles in as one
+// word; under it a hairline and a quiet line: what the company makes and since when. When the fonts
+// and the first photo are ready, the words go, then the slab fades into the page. Nothing jumps,
+// nothing flies: one slow light, one word.
+//
+// The earlier ones stay in .claude/concepts/intro/ (А «Хребет», Б «Полировка», В «Вырез»).
 //
 // In <head>, without defer, so the slab is there before the first paint. Everything it needs is in
 // this file: the letters are outlines (the logo's Unbounded, weight 800), so no font has to load for
 // them; the marble is painted by the GPU from a noise texture made here, so no picture has to load.
+// The quiet line under the name is in Montserrat and shows only once that font is there.
 // The shaders are built off the main thread where the browser can (KHR_parallel_shader_compile):
 // until the stone is ready the slab is its flat colour, and without WebGL it stays so. Once a session
 // in a tab: not on a way in from a page of this address, not back or on reload, not to an anchor, not
@@ -25,7 +29,7 @@
   const KEY = 'sayan-intro-seen';
   const NAME = 'САЯНМРАМОР';
   // Outlines in 1/1000 em, y down, the top of the capitals at 0; [path, advance]. The contours of
-  // each letter are merged into one (skia-pathops), so the engraving's walls run only along its edge.
+  // each letter are merged into one (skia-pathops), one clean edge per letter.
   const GLYPHS = {
     'А': ['M642.4 0H334.2L-1 750H247.2L304 614.8H672.6L729.4 750H977.6ZM594.5 429H382.1L488.3 176.2L594.5 429Z', 977],
     'М': ['M1190.6 0H831L628.4 519.6L424.4 0H64.8V750H286V204.2L511.6 750H743.8L969.4 202V750H1190.6Z', 1255],
@@ -35,22 +39,24 @@
     'С': ['M912.6 430.6H678.8Q669.4 475.4 642.9 506.1Q616.4 536.8 574 552.2Q531.6 567.6 474.8 567.6Q410.8 567.6 364.7 544.2Q318.6 520.8 294 477.8Q269.4 434.8 269.4 375Q269.4 315.2 294 271.8Q318.6 228.4 364.7 205.4Q410.8 182.4 474.8 182.4Q531.6 182.4 574 198.7Q616.4 215 642.9 245.6Q669.4 276.2 678.8 319.4H912.6Q901 218.4 843.3 142.8Q785.6 67.2 691.2 25Q596.8 -17.2 475 -17.2Q342.6 -17.2 243.6 31.8Q144.6 80.8 89.6 169.1Q34.6 257.4 34.6 375Q34.6 492.6 89.6 580.9Q144.6 669.2 243.6 718.2Q342.6 767.2 475 767.2Q596.8 767.2 691.2 725Q785.6 682.8 843.3 607.1Q901 531.4 912.6 430.6Z', 942],
     'Я': ['M225.6 470.8 23 750H290.4L472.5 490H574V750H806.8V0H336.8Q249 0 183.1 30.9Q117.2 61.8 80.5 116.7Q43.8 171.6 43.8 245.8Q43.8 318.4 80.5 372.4Q117.2 426.4 183.1 455.6Q203.3 464.5 225.6 470.8ZM574 327.2H371.8Q327.6 327.2 302.9 305.9Q278.2 284.6 278.2 245.8Q278.2 207 302.9 185.8Q327.6 164.6 371.8 164.6H574V327.2Z', 872],
   };
-  const TRACKING = 120;           // the logo's letter-spacing, 0.12em
+  const TRACKING = 440;           // wide: a wordmark on a slab, not the header's 0.12em
+  const SPREAD = 0.07;            // the letters come in from this much wider, of the name's width
   const CAP = 750;
   const PAD = 20;                 // room around the letters in the name's svg, glyph units
-  const RAW = '#b9b7b1';          // the raw face, flat: what shows before the marble is ready
-  const INK = '#2c2e2a';          // the engraving
+  const DARK = '#0c0d0d';         // the slab before its light: what shows before the marble is ready
+  const VEIN = '#e9e7e1';         // the name, the colour of the veins (--on-dark)
+  const QUIET = '#a3a89f';        // the line under it (--on-dark-muted)
+  const LINE = 'Изделия из натурального камня';
+  const SINCE = 'с 2014 года';    // index.html, «на рынке»: data-since="2014-02-06"
   const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-  const EASE_OPEN = 'cubic-bezier(0.76, 0, 0.24, 1)';
-  const EASE_FLY = 'cubic-bezier(0.32, 0.72, 0, 1)';    // the name leaves at once and settles slowly
-  const PASS_AT = 200;            // the pass starts no sooner than this,
-  const PASS_WAIT = 700;          // and waits no longer than this for the stone to be ready
-  const PASS_MS = 1300;
-  const HOLD_MS = 300;            // the polished slab is seen still for a moment before it is lifted
-  const CAP_MS = 3400;            // the slab is lifted by then, ready or not
-  const OPEN_MS = 1000;
-  const MAX_MS = 6000;
-  // The pass runs along sd = (x * .94 + y * .34) / sqrt(w * h): from the top-left corner on.
+  const EASE_SOFT = 'cubic-bezier(0.22, 0.68, 0.24, 1)';   // the site's own curve (--ease)
+  const EASE_FADE = 'cubic-bezier(0.65, 0, 0.35, 1)';
+  const STONE_WAIT = 700;         // the show waits no longer than this for the stone to be ready
+  // From the start of the show, ms. The name, then the hairline, then the quiet line; the words go
+  // at HOLD at the soonest (when the page is ready), then the slab fades into the page.
+  const TIMELINE = { expose: 1300, name: 250, nameMs: 1600, rule: 1000, ruleMs: 900, quiet: 1350, quietMs: 800, quietLate: 2300, hold: 2600, out: 450, fade: 850, cap: 3500 };
+  const MAX_MS = 6500;
+  // The light runs along sd = (x * .94 + y * .34) / sqrt(w * h): from the top-left corner on.
   const SWEEP = [0.94, 0.34];
 
   function shouldPlay({ reduced, canAnimate, hash, navigationType, seen, fromThisAddress }) {
@@ -69,8 +75,12 @@
     };
   }
 
-  // Where the polishing line is at a point of a w x h screen.
+  // Where the light's path is at a point of a w x h screen.
   const sweepAt = (x, y, w, h) => (x * SWEEP[0] + y * SWEEP[1]) / Math.sqrt(w * h);
+
+  // How far a letter starts from its place, in glyph units: away from the middle of the name, the
+  // farther the more, so the word draws together around its centre.
+  const spreadOf = (letter, units) => (letter.x + letter.adv / 2 - units / 2) * SPREAD;
 
   // The letters of the name laid out in glyph units: x of each, the width of the whole.
   function layout() {
@@ -132,8 +142,8 @@
   const BAKE = `#extension GL_OES_standard_derivatives : enable
     precision highp float;
     uniform vec2 uRes; uniform float uMode, uPx; uniform sampler2D uNoise;
-    const vec3 BASE=vec3(.94,.93,.905), CLOUD=vec3(.875,.866,.838), DEEP=vec3(.95,.942,.918);
-    const vec3 VEIN=vec3(.5,.5,.48), GOLD=vec3(.66,.56,.4);
+    const vec3 BASE=vec3(.07,.074,.073), CLOUD=vec3(.155,.158,.152), DEEP=vec3(.04,.043,.044);
+    const vec3 VEIN=vec3(.7,.695,.67), GOLD=vec3(.66,.58,.45);
     float noise(vec2 p){vec4 t=texture2D(uNoise,(p+.03125)/32.);return t.r*.99611+t.g*.003891;}
     const mat2 R=mat2(1.6,1.2,-1.2,1.6);
     float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<6;i++){v+=a*noise(p);p=R*p;a*=.5;}return v;}
@@ -162,55 +172,53 @@
       float fv=fbm3(p*1.3+1.2*rv);
       // main veins: level lines of a warped slanted field, coming and going along their way
       float crinkle=fbm(p*4.5+21.)-.5;
-      float fm0=dot(p,vec2(.62,.36))*1.6+1.4*rv.x+.35*fv;
+      float fm0=dot(p,vec2(.62,.36))*1.6+.95*rv.x+.3*fv;
       float fm=fm0+.16*crinkle;
       float dm=dist(fm,fm0);
       float wmain=1.3*(.25+2.2*pow(smoothstep(.35,.9,noise(p*1.1+7.)),2.));
       float on=smoothstep(.2,.48,fbm(p*.6+13.));
-      float m=vein(dm,wmain)*on*.75;
+      float m=vein(dm,wmain)*on*.5;
       // a few thin threads beside a main vein
       float b=vein(dist(fm*5.+.6*fv,fm0*5.+.6*fv),.22+.3*noise(p*3.+9.))*exp(-dm/(uPx*55.))*on*smoothstep(.3,.6,noise(p*1.7+41.))*.25;
       m+=b*.75;
       // the stone clouds up around a vein, and grey haze streaks lie along the veins
-      float halo=exp(-dm/(uPx*(6.+wmain*12.)))*on*.1;
+      float halo=exp(-dm/(uPx*(6.+wmain*12.)))*on*.025;
       vec2 dir=normalize(vec2(.62,.36));
       vec2 sp=vec2(dot(p,dir)*1.2,dot(p,vec2(-dir.y,dir.x))*7.)+rv*2.;
-      halo+=pow(1.-clamp(abs(fract(fm)-.5)/.22,0.,1.),2.)*smoothstep(.3,.75,fbm(sp+71.))*on*.4;
+      halo+=pow(1.-clamp(abs(fract(fm)-.5)/.22,0.,1.),2.)*smoothstep(.3,.75,fbm(sp+71.))*on*.07;
       // finer veins branching off across them
       float fs0=dot(p,vec2(-.42,.9))*1.9+1.6*rv.y+.9*qv.x;
       float fs=fs0+.12*crinkle;
-      float s=vein(dist(fs,fs0),.2+.5*noise(p*2.+3.))*smoothstep(.34,.62,fbm(p*1.15+31.))*.4;
+      float s=vein(dist(fs,fs0),.2+.5*noise(p*2.+3.))*smoothstep(.34,.62,fbm(p*1.15+31.))*.22;
       // hairlines along the main run, short and broken
       float fh=dot(p,vec2(.85,.1))*3.4+2.4*rv.x+1.3*qv.y;
-      float h=vein(dist(fh,fh),.2)*smoothstep(.45,.7,fbm(p*1.6+51.))*.2;
+      float h=vein(dist(fh,fh),.2)*smoothstep(.45,.7,fbm(p*1.6+51.))*.07;
       float a=clamp(m+s+h+halo,0.,1.);
       gl_FragColor=vec4(mix(VEIN,GOLD,smoothstep(.6,.8,noise(p*.9+3.))*.5),a);
     }
   `;
   const SHOW = `precision highp float;
-    uniform sampler2D uStone, uVeins; uniform vec2 uRes; uniform float uPolishAt, uEdge;
-    const vec3 MATTE=vec3(.69,.685,.665);
+    uniform sampler2D uStone, uVeins; uniform vec2 uRes; uniform float uLight, uExpose;
     float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
     void main(){
       vec2 st=gl_FragCoord.xy/uRes;
       vec4 S=texture2D(uStone,st); vec4 V=texture2D(uVeins,st);
       vec2 uv=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y)/sqrt(uRes.x*uRes.y);
       vec3 col=mix(S.rgb,V.rgb,V.a);
-      // behind the pass polished stone, ahead of it the raw face: grey and flat, the veins only
-      // hinted, the saw's grooves across it
-      float sd=dot(uv,vec2(${SWEEP[0]},${SWEEP[1]}));
-      float pol=smoothstep(uPolishAt+.012,uPolishAt-.012,sd+(S.a-.5)*.05);
       float lum=dot(col,vec3(.3,.59,.11));
-      float saw=sin(gl_FragCoord.y/uRes.y*900.+S.a*6.)*.5+.5;
-      vec3 raw=mix(mix(col,vec3(lum),.8),MATTE,.62)*(1.-.035*saw)+(hash(gl_FragCoord.xy*.73)-.5)*.06;
-      col=mix(raw,col,pol);
-      // the front of the pass: a soft line of light, and wet gloss behind it drying off
-      float e=sd-uPolishAt;
-      float wet=e<0.?exp(e/.09):0.;
-      col+=vec3(1.,.985,.96)*(exp(-e*e/.0003)*.08+exp(-e*e/.006)*.05+wet*.06)*uEdge;
-      vec2 c=st-.5;
-      col*=1.-dot(c,c)*.35;
-      col+=(hash(gl_FragCoord.xy+17.)-.5)*(1.2/255.);
+      // the room's light from above the middle: the slab is lit there and falls off to the dark
+      vec2 c=(st-vec2(.5,.56))*vec2(uRes.x/sqrt(uRes.x*uRes.y),uRes.y/sqrt(uRes.x*uRes.y));
+      col*=.42+.78*exp(-dot(c,c)*2.2);
+      // the sheen: a broad soft reflection of a long light gliding over the polish, brighter on the
+      // dark of the stone than on its veins, with a narrower core in it; the clouds bend it a little
+      float sd=dot(uv,vec2(${SWEEP[0]},${SWEEP[1]}))+(S.a-.5)*.03;
+      float e=sd-uLight;
+      float sheen=exp(-e*e/.06)*.07+exp(-e*e/.0045)*.045;
+      col+=vec3(.93,.95,.95)*sheen*(1.-lum*.7);
+      vec2 v=st-.5;
+      col*=1.-dot(v,v)*.6;
+      col*=uExpose;
+      col+=(hash(gl_FragCoord.xy+17.)-.5)*(1.6/255.);
       gl_FragColor=vec4(col,1.);
     }
   `;
@@ -229,7 +237,8 @@
   }
 
   // A canvas of marble, w x h css px, or null without WebGL. It comes back at once, transparent;
-  // the stone is baked when the shaders are ready, then onReady runs. draw(at, edge) moves the pass.
+  // the stone is baked when the shaders are ready, then onReady runs. draw(light, expose) moves the
+  // sheen along its path and sets how much the slab is lit, 0 to 1.
   function marble(doc, win, w, h) {
     let dpr = Math.min(win.devicePixelRatio || 1, 2);
     dpr = Math.min(dpr, 4096 / w, 4096 / h);
@@ -246,7 +255,7 @@
     const parallel = gl.getExtension('KHR_parallel_shader_compile');
     const bake = program(gl, BAKE);
     const show = program(gl, SHOW);
-    let ready = false, stopped = false, readyFn = null, polishAt = -9, edge = 1;
+    let ready = false, stopped = false, readyFn = null, light = -9, expose = 0;
     const u = (p, name) => gl.getUniformLocation(p, name);
 
     function setup() {
@@ -296,15 +305,15 @@
       gl.uniform1i(u(show, 'uVeins'), 1);
       gl.uniform2f(u(show, 'uRes'), W, H);
       ready = true;
-      draw(polishAt, edge);
+      draw(light, expose);
       if (readyFn) readyFn();
     }
-    function draw(at, withEdge) {
-      polishAt = at;
-      edge = withEdge;
+    function draw(at, lit) {
+      light = at;
+      expose = lit;
       if (!ready || stopped) return;
-      gl.uniform1f(u(show, 'uPolishAt'), at);
-      gl.uniform1f(u(show, 'uEdge'), withEdge);
+      gl.uniform1f(u(show, 'uLight'), at);
+      gl.uniform1f(u(show, 'uExpose'), lit);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
     if (parallel) {
@@ -331,13 +340,22 @@
   }
 
   const STYLE = `
-    html.si-on .site-logo { visibility: hidden; }
-    #site-intro { position: fixed; top: 0; bottom: 0; left: 0; width: 100vw; z-index: 2147483000; overflow: hidden; cursor: default; -webkit-user-select: none; user-select: none; background: ${RAW}; }
-    #site-intro .si-slab { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: ${RAW}; will-change: transform;
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6), 0 26px 60px -10px rgba(40, 34, 26, 0.38), 0 8px 18px rgba(40, 34, 26, 0.18); }
+    #site-intro { position: fixed; top: 0; bottom: 0; left: 0; width: 100vw; z-index: 2147483000; overflow: hidden; cursor: default; -webkit-user-select: none; user-select: none; background: ${DARK}; }
     #site-intro .si-marble { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; opacity: 0; }
+    #site-intro .si-glow { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; background: radial-gradient(120% 90% at 50% 56%, #1d201f, ${DARK} 72%); }
+    #site-intro .si-words { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
     #site-intro svg { display: block; position: absolute; left: 0; top: 0; overflow: visible; }
-    #site-intro .si-name { transform-origin: 0 0; fill: ${INK}; will-change: transform; }
+    #site-intro .si-name { fill: ${VEIN}; opacity: 0; }
+    #site-intro .si-rule { position: absolute; height: 1px; background: ${VEIN}; opacity: 0.34; transform: scaleX(0); }
+    #site-intro .si-quiet { position: absolute; left: 0; width: 100%; margin: 0; padding: 0 16px; box-sizing: border-box; text-align: center; text-indent: 0.26em; color: ${QUIET}; opacity: 0;
+      font: 500 12px/1.7 Montserrat, 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.26em; text-transform: uppercase; }
+    #site-intro .si-quiet span { white-space: nowrap; }
+    #site-intro .si-quiet .si-dot { padding: 0 0.7em; }
+    @media (max-width: 560px) {
+      #site-intro .si-quiet { font-size: 10.5px; letter-spacing: 0.22em; text-indent: 0.22em; }
+      #site-intro .si-quiet span { display: block; }
+      #site-intro .si-quiet .si-dot { display: none; }
+    }
   `;
 
   const SVG = 'http://www.w3.org/2000/svg';
@@ -346,26 +364,11 @@
     Object.keys(attrs || {}).forEach(k => node.setAttribute(k, attrs[k]));
     return node;
   }
-
-  // The engraving: the cut dark, its upper wall in shadow, its lower lip catching the light.
-  function engraving(doc, px) {
-    const filter = svgEl(doc, 'filter', { id: 'si-engrave', x: '-2%', y: '-10%', width: '104%', height: '120%', 'color-interpolation-filters': 'sRGB' });
-    [
-      ['feOffset', { in: 'SourceAlpha', dy: 1.6 * px, result: 'dn' }],
-      ['feComposite', { in: 'SourceAlpha', in2: 'dn', operator: 'out', result: 'topband' }],
-      ['feGaussianBlur', { in: 'topband', stdDeviation: 0.8 * px, result: 'topsoft' }],
-      ['feFlood', { 'flood-color': '#000', 'flood-opacity': 0.55, result: 'black' }],
-      ['feComposite', { in: 'black', in2: 'topsoft', operator: 'in', result: 'shade' }],
-      ['feComposite', { in: 'shade', in2: 'SourceAlpha', operator: 'in', result: 'shadeIn' }],
-      ['feOffset', { in: 'SourceAlpha', dy: -1.2 * px, result: 'up' }],
-      ['feComposite', { in: 'SourceAlpha', in2: 'up', operator: 'out', result: 'lowband' }],
-      ['feFlood', { 'flood-color': '#fffdf6', 'flood-opacity': 0.75, result: 'white' }],
-      ['feComposite', { in: 'white', in2: 'lowband', operator: 'in', result: 'lip' }],
-    ].forEach(([tag, attrs]) => filter.appendChild(svgEl(doc, tag, attrs)));
-    const merge = svgEl(doc, 'feMerge');
-    ['SourceGraphic', 'shadeIn', 'lip'].forEach(n => merge.appendChild(svgEl(doc, 'feMergeNode', { in: n })));
-    filter.appendChild(merge);
-    return filter;
+  function el(doc, tag, className, text) {
+    const node = doc.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
   }
 
   function play(doc, win) {
@@ -373,90 +376,126 @@
     // The whole window, the page's scrollbar included (it comes only once the page has loaded; the
     // slab runs on under it), so the marble is drawn pixel for pixel and never squeezed when it comes.
     const w = win.innerWidth, h = win.innerHeight;
+    const T = TIMELINE;
 
     const style = doc.createElement('style');
     style.textContent = STYLE;
     doc.head.appendChild(style);
-    const box = doc.createElement('div');
+    const box = el(doc, 'div');
     box.id = 'site-intro';
     box.setAttribute('aria-hidden', 'true');
-    const slab = doc.createElement('div');
-    slab.className = 'si-slab';
-    box.appendChild(slab);
 
-    const t0 = win.performance.now();
     const timers = [];
-    let ended = false;
-    const sweepFrom = sweepAt(0, 0, w, h) - 0.08, sweepTo = sweepAt(w, h, w, h) + 0.08;
+    const later = (fn, ms) => timers.push(win.setTimeout(fn, ms));
+    let ended = false, leaving = false, frame = 0, t0 = 0;
+    // The sheen glides from the top-left part of the slab past its middle over the whole show.
+    const lightFrom = sweepAt(0, 0, w, h) + 0.1, lightTo = sweepAt(w, h, w, h) * 0.9;
+    const lightAt = t => lightFrom + (lightTo - lightFrom) * Math.min(1, t / (T.cap + T.fade));
+    const exposeEase = bezier(0.22, 0.68, 0.24, 1);
     const m = marble(doc, win, w, h);
-    // The pass waits for the stone, so that it is seen whole; on a slow device not past PASS_WAIT.
-    let passStart = 0, passDone;
-    const passed = new Promise(resolve => { passDone = resolve; });
-    const startPass = () => {
-      if (passStart || ended) return;
-      passStart = win.performance.now();
-      timers.push(win.setTimeout(passDone, PASS_MS + HOLD_MS));
-    };
-    timers.push(win.setTimeout(startPass, m ? PASS_WAIT : PASS_AT));
+    const glow = m ? null : el(doc, 'div', 'si-glow');
     if (m) {
-      slab.appendChild(m.canvas);
-      m.draw(sweepFrom, 1);
-      m.onReady(() => {
-        m.canvas.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out', fill: 'both' });
-        timers.push(win.setTimeout(startPass, Math.max(0, PASS_AT - (win.performance.now() - t0))));
-      });
+      box.appendChild(m.canvas);
+      m.draw(lightFrom, 0);
+    } else {
+      box.appendChild(glow);
     }
 
-    // The name, engraved in the middle of the slab.
-    const fontSize = Math.max(22, Math.min(64, w * 0.056));
+    // ---- the words: the name, a hairline, the quiet line
+    const words = el(doc, 'div', 'si-words');
+    const fontSize = Math.max(18, Math.min(34, w * 0.025));
     const scale = fontSize / 1000;
     const lay = layout();
+    const nameW = lay.units * scale;
+    const capPx = CAP * scale;
     const name = svgEl(doc, 'svg', {
       class: 'si-name',
       viewBox: (-PAD) + ' ' + (-PAD) + ' ' + (lay.units + PAD * 2) + ' ' + (CAP + PAD * 2),
       width: (lay.units + PAD * 2) * scale, height: (CAP + PAD * 2) * scale,
     });
-    const defs = svgEl(doc, 'defs');
-    defs.appendChild(engraving(doc, 1 / scale));
-    name.appendChild(defs);
-    const engraved = svgEl(doc, 'g', { filter: 'url(#si-engrave)' });
-    name.appendChild(engraved);
-    const nameW = lay.units * scale;
     const nameX = (w - nameW) / 2 - PAD * scale;
-    const nameY = Math.round(h * 0.5 - CAP * scale / 2) - PAD * scale;
-    name.style.transform = 'translate(' + nameX + 'px,' + nameY + 'px)';
-    // each letter, faint on the raw face, shows when the line of light reaches its middle
+    const nameTop = Math.round(h * 0.46 - capPx / 2);
+    name.style.transform = 'translate(' + nameX + 'px,' + (nameTop - PAD * scale) + 'px)';
     const letters = lay.letters.map(l => {
-      const g = svgEl(doc, 'g', { opacity: 0.1 });
+      const g = svgEl(doc, 'g');
       g.appendChild(svgEl(doc, 'path', { d: l.d, transform: 'translate(' + l.x + ' 0)' }));
-      engraved.appendChild(g);
-      return { g, at: sweepAt(nameX + (PAD + l.x + l.adv / 2) * scale, nameY + (PAD + CAP / 2) * scale, w, h), shown: false };
+      name.appendChild(g);
+      return { g, spread: spreadOf(l, lay.units) };
     });
-    box.appendChild(name);
+    words.appendChild(name);
+
+    const RULE_W = 56;
+    const ruleTop = Math.round(nameTop + capPx + Math.max(20, fontSize * 0.95));
+    const rule = el(doc, 'div', 'si-rule');
+    rule.style.cssText = 'left:' + Math.round(w / 2 - RULE_W / 2) + 'px;top:' + ruleTop + 'px;width:' + RULE_W + 'px';
+    words.appendChild(rule);
+
+    const quiet = el(doc, 'p', 'si-quiet');
+    quiet.style.top = Math.round(ruleTop + Math.max(14, fontSize * 0.6)) + 'px';
+    quiet.appendChild(el(doc, 'span', '', LINE));
+    quiet.appendChild(el(doc, 'span', 'si-dot', '·'));
+    quiet.appendChild(el(doc, 'span', '', SINCE));
+    words.appendChild(quiet);
+    box.appendChild(words);
 
     root.classList.add('si-on');
     root.appendChild(box);
 
-    // ---- the pass of the polisher
-    const passEase = bezier(0.55, 0.05, 0.4, 1);
-    let frame = 0;
+    // ---- the light: every frame while the slab is there
     const tick = now => {
-      if (!passStart) { frame = win.requestAnimationFrame(tick); return; }
-      const t = now - passStart;
-      const at = sweepFrom + (sweepTo - sweepFrom) * passEase(t / PASS_MS);
-      letters.forEach(l => {
-        if (l.shown || at < l.at) return;
-        l.shown = true;
-        l.g.animate([{ opacity: 0.1 }, { opacity: 1 }], { duration: 380, easing: EASE_OUT, fill: 'both' });
-      });
-      if (m) m.draw(at, 1);
-      if (t < PASS_MS + 50) frame = win.requestAnimationFrame(tick);
+      const t = now - t0;
+      if (m) m.draw(lightAt(t), exposeEase(t / T.expose));
+      frame = win.requestAnimationFrame(tick);
     };
-    frame = win.requestAnimationFrame(tick);
+
+    // The page and the font of the quiet line: once the document is there.
+    const dom = doc.readyState === 'loading' ? new Promise(resolve => doc.addEventListener('DOMContentLoaded', resolve, { once: true })) : Promise.resolve();
+    const fontOf = (spec, text) => (doc.fonts && doc.fonts.load ? doc.fonts.load(spec, text) : Promise.resolve()).catch(() => null);
+    const quietFont = dom.then(() => fontOf('500 12px Montserrat', LINE + SINCE));
+    const ready = dom.then(() => {
+      const wait = [fontOf('800 16px Unbounded', 'САЯН'), fontOf('700 16px Unbounded', 'Изделия'), fontOf('400 16px Montserrat', 'Изделия')];
+      const hero = doc.querySelector('.home-hero-picture img');
+      if (hero && hero.decode) wait.push(hero.decode().catch(() => null));
+      return Promise.all(wait);
+    });
+
+    // ---- the show, once the stone is ready (or STONE_WAIT has gone by)
+    let begun = false;
+    function begin() {
+      if (begun || ended) return;
+      begun = true;
+      t0 = win.performance.now();
+      if (m) {
+        m.canvas.style.opacity = 1;
+        frame = win.requestAnimationFrame(tick);
+      } else {
+        glow.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T.expose, easing: EASE_SOFT, fill: 'both' });
+      }
+      later(() => {
+        name.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T.nameMs, easing: EASE_SOFT, fill: 'both' });
+        letters.forEach(l => l.g.animate([{ transform: 'translateX(' + l.spread + 'px)' }, { transform: 'translateX(0)' }], { duration: T.nameMs, easing: EASE_OUT, fill: 'both' }));
+      }, T.name);
+      later(() => rule.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: T.ruleMs, easing: EASE_OUT, fill: 'both' }), T.rule);
+      // the quiet line only in its own font: if that is late, without it
+      let quietTime = false, quietReady = false;
+      const showQuiet = () => {
+        if (!quietTime || !quietReady || ended || leaving) return;
+        if (win.performance.now() - t0 > T.quietLate) return;
+        quiet.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: T.quietMs, easing: EASE_SOFT, fill: 'both' });
+      };
+      quietFont.then(() => { quietReady = true; showQuiet(); });
+      later(() => { quietTime = true; showQuiet(); }, T.quiet);
+      const held = new Promise(resolve => later(resolve, T.hold));
+      Promise.all([ready, held]).then(leave);
+      later(leave, T.cap);
+    }
+    later(begin, m ? STONE_WAIT : 150);   // no stone to wait for: at once
+    if (m) m.onReady(begin);
 
     // ---- the end
     const listeners = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'pagehide'];
     const remove = () => {
+      win.cancelAnimationFrame(frame);
       box.remove();
       style.remove();
       root.classList.remove('si-on');
@@ -465,7 +504,6 @@
     const end = () => {
       if (ended) return;
       ended = true;
-      win.cancelAnimationFrame(frame);
       timers.forEach(t => win.clearTimeout(t));
       listeners.forEach(type => win.removeEventListener(type, cut, true));
       win.removeEventListener('resize', onResize);
@@ -481,62 +519,19 @@
     listeners.forEach(type => win.addEventListener(type, cut, { capture: true, passive: true }));
     win.addEventListener('resize', onResize);
 
-    // ---- the slab is lifted away; the name goes to the header
-    let opened = false;
-    function open() {
-      if (opened || ended) return;
-      opened = true;
-      win.cancelAnimationFrame(frame);
-      letters.forEach(l => { if (!l.shown) { l.shown = true; l.g.setAttribute('opacity', 1); } });
-      if (m) m.draw(99, 0);
-      box.style.pointerEvents = 'none';
-      box.style.background = 'transparent';
-      slab.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(calc(-100% - 90px))' }], { duration: OPEN_MS, easing: EASE_OPEN, fill: 'both' });
-      // The name lands on the header's: same letters, same size, same line.
-      const logo = doc.querySelector('.site-logo');
-      const range = logo && doc.createRange();
-      if (range) range.selectNodeContents(logo);
-      const rect = range && range.getBoundingClientRect();
-      const from = 'translate(' + nameX + 'px,' + nameY + 'px)';
-      if (rect && rect.width) {
-        const css = win.getComputedStyle(logo);
-        const size = parseFloat(css.fontSize);
-        const s = size / fontSize;
-        // The real baseline of the header's line, whatever font metrics this browser goes by.
-        const probe = doc.createElement('span');
-        probe.style.cssText = 'display:inline-block;width:0;height:0';
-        logo.appendChild(probe);
-        const baseline = probe.getBoundingClientRect().bottom;
-        probe.remove();
-        // Its width too: the browser kerns the real letters a touch closer than these advances.
-        const sx = (rect.width - parseFloat(css.letterSpacing || 0)) / nameW;
-        const toX = rect.left - PAD * scale * sx;
-        const toY = baseline - size * CAP / 1000 - PAD * scale * s;
-        // out of the stone it is no longer cut into it: plain ink, as in the header
-        engraved.removeAttribute('filter');
-        name.animate([
-          { transform: from + ' scale(1)', fill: INK },
-          { transform: 'translate(' + toX + 'px,' + toY + 'px) scale(' + sx + ',' + s + ')', fill: css.color },
-        ], { duration: OPEN_MS, easing: EASE_FLY, fill: 'both' });
-      } else {
-        name.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPEN_MS * 0.6, easing: 'ease-out', fill: 'both' });
-      }
-      timers.push(win.setTimeout(() => { end(); remove(); }, OPEN_MS + 30));
+    // ---- the words go, then the slab fades into the page
+    function leave() {
+      if (leaving || ended) return;
+      leaving = true;
+      words.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.out, easing: 'ease-in', fill: 'both' });
+      later(() => {
+        box.style.pointerEvents = 'none';
+        box.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.fade, easing: EASE_FADE, fill: 'both' });
+      }, T.out * 0.6);
+      later(() => { end(); remove(); }, T.out * 0.6 + T.fade + 30);
     }
 
-    timers.push(win.setTimeout(cut, MAX_MS));
-    timers.push(win.setTimeout(open, CAP_MS));
-    const dom = doc.readyState === 'loading' ? new Promise(resolve => doc.addEventListener('DOMContentLoaded', resolve, { once: true })) : Promise.resolve();
-    const ready = dom.then(() => {
-      const wait = [];
-      if (doc.fonts && doc.fonts.load) {
-        wait.push(doc.fonts.load('800 16px Unbounded', 'САЯН'), doc.fonts.load('700 16px Unbounded', 'Изделия'), doc.fonts.load('400 16px Montserrat', 'Изделия'));
-      }
-      const hero = doc.querySelector('.home-hero-picture img');
-      if (hero && hero.decode) wait.push(hero.decode());
-      return Promise.all(wait.map(p => p.catch(() => null)));
-    });
-    Promise.all([ready, passed]).then(open);
+    later(cut, MAX_MS);
   }
 
   function start(doc, win) {
@@ -564,5 +559,5 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') start(document, window);
 
-  return { GLYPHS, NAME, shouldPlay, sweepAt, layout, noiseData };
+  return { GLYPHS, NAME, TIMELINE, MAX_MS, shouldPlay, sweepAt, spreadOf, layout, noiseData };
 });

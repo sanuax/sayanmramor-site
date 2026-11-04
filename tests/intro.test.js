@@ -17,7 +17,7 @@ test('it plays once, on the way in: not again, not back, not on reload, not to a
     .forEach(change => assert.equal(Intro.shouldPlay(Object.assign({}, first, change)), false, JSON.stringify(change)));
 });
 
-test('the polishing line crosses the screen from its top-left corner to its bottom-right one', () => {
+test('the sheen of light crosses the screen from its top-left corner to its bottom-right one', () => {
   [[1280, 800], [390, 844], [2560, 1300]].forEach(([w, h]) => {
     assert.equal(Intro.sweepAt(0, 0, w, h), 0);
     const end = Intro.sweepAt(w, h, w, h);
@@ -25,12 +25,23 @@ test('the polishing line crosses the screen from its top-left corner to its bott
   });
 });
 
-test('the letters show one after another, from the left, as the line reaches them', () => {
+test('the name draws together around its middle: the letters come from outside in, the farther the more', () => {
   const lay = Intro.layout();
   assert.equal(lay.letters.map(l => l.ch).join(''), Intro.NAME);
   lay.letters.slice(1).forEach((l, i) => assert.ok(l.x > lay.letters[i].x));
-  const at = lay.letters.map(l => Intro.sweepAt(100 + (l.x + l.adv / 2) * 0.05, 400, 1280, 800));
-  at.slice(1).forEach((v, i) => assert.ok(v > at[i]));
+  const spread = lay.letters.map(l => Intro.spreadOf(l, lay.units));
+  spread.slice(1).forEach((v, i) => assert.ok(v > spread[i]));
+  assert.ok(spread[0] < 0 && spread[spread.length - 1] > 0);
+  assert.ok(Math.abs(spread[0] + spread[spread.length - 1]) < lay.units * 0.01, 'about as far on both sides');
+  assert.ok(Math.max(...spread.map(Math.abs)) < lay.units * 0.05, 'a quiet move, not a fly-in');
+});
+
+test('one thing after another: the name, the hairline, the quiet line; the words go before the slab, and it is all over in time', () => {
+  const T = Intro.TIMELINE;
+  assert.ok(T.name < T.rule && T.rule < T.quiet && T.quiet < T.quietLate && T.quietLate < T.hold);
+  assert.ok(T.name + T.nameMs <= T.hold && T.quiet + T.quietMs <= T.hold, 'all settled before the words go');
+  assert.ok(T.hold <= T.cap && T.cap + T.out + T.fade < Intro.MAX_MS);
+  assert.ok(T.cap + T.out + T.fade <= 5000, 'a first look, not a film');
 });
 
 test('the noise of the stone is the same every time and seamless at its repeat', () => {
@@ -47,7 +58,7 @@ test('every letter of the name has its outline, so no font has to load; one cont
     assert.ok(Intro.GLYPHS[ch], ch);
     assert.match(Intro.GLYPHS[ch][0], /^M/);
   });
-  // the font's overlapping parts merged: an engraving's wall runs only along the letter's edge
+  // the font's overlapping parts merged: one clean edge per letter
   ['М', 'Н', 'С'].forEach(ch => assert.equal(Intro.GLYPHS[ch][0].split('M').length - 1, 1, ch));
   ['А', 'О', 'Р', 'Я'].forEach(ch => assert.equal(Intro.GLYPHS[ch][0].split('M').length - 1, 2, ch));
   assert.equal(Intro.NAME, 'САЯНМРАМОР');
