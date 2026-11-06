@@ -932,7 +932,8 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-1200\.webp" srcset="[^"]*hammam-1200\.webp 1200w, [^"]*hammam-1800\.webp 1800w"/);
   assert.match(imgs[0], /alt="Хаммам[^"]+" width="1200" height="1600" fetchpriority="high" decoding="async"/);
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
-  assert.match(hero, /<source media="\(min-aspect-ratio: 10001\/10000\) and \(min-width: 901px\)" srcset="[^"]*hammam-wide-1600\.webp 1600w, [^"]*hammam-wide-2400\.webp 2400w"/, 'wide screens get the wide band');
+  // Then the owner widened the photo with a neural network (1997×788): wide screens show that panorama.
+  assert.match(hero, /<source media="\(min-aspect-ratio: 10001\/10000\) and \(min-width: 901px\)" srcset="[^"]*hammam-pano-1997\.webp" width="1997" height="788">/, 'wide screens get the panorama');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
   assert.doesNotMatch(hero, /home-hero-note|визуализация/, 'a real photo needs no caption');
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
