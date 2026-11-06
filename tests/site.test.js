@@ -1570,3 +1570,17 @@ test('the passport preview is the piece\'s photograph edge to edge, not a small 
   assert.match(img, /width: 100%; height: 100%; object-fit: cover;/);
   assert.match(css, /\.talk-passport \{\s*display: grid; grid-template-columns: 112px minmax\(0, 1fr\) auto;/);
 });
+
+// ---- 2026-11-07: a stray «}» left after the hero rewrite swallowed the next rule (.home-s2o) and
+// broke «От камня к изделию» on the live site; every stylesheet keeps its braces balanced.
+test('every stylesheet keeps its braces balanced (a stray «}» silently drops the rule after it)', () => {
+  for (const f of fs.readdirSync(path.join(site, 'css')).filter(n => n.endsWith('.css'))) {
+    const css = fs.readFileSync(path.join(site, 'css', f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/"[^"]*"|'[^']*'/g, '');
+    let depth = 0;
+    for (const ch of css) {
+      if (ch === '{') depth++;
+      else if (ch === '}') { depth--; assert.ok(depth >= 0, `${f}: a «}» with nothing open`); }
+    }
+    assert.equal(depth, 0, `${f}: every «{» closed`);
+  }
+});
