@@ -915,7 +915,7 @@ test('about, why us, who trusts us: the old site\'s three blocks -- its words an
   [...html.matchAll(/\/sayanmramor-site\/(assets\/(?:home\/trust\/|home\/about-|portfolio\/035)[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
 });
 
-test('the home hero: the headline, one line and two plain actions on the wall of one generated picture -- the washbasin, called a visualisation; wide and upright versions; nothing moves', () => {
+test('the home hero: the headline, one line and two plain actions on a real photo of our work -- the hammam, on the whole screen under a dark veil; no caption; nothing moves', () => {
   const hero = sectionOf(homeHtml(), '<section class="home-hero"');
   assert.match(hero, /<h1 id="heroTitle">Изделия из натурального камня на заказ<\/h1>/);
   assert.match(hero, /<p class="lead">Лестницы, столешницы, полы, стены и фасады/);
@@ -926,18 +926,20 @@ test('the home hero: the headline, one line and two plain actions on the wall of
   ]);
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
   assert.equal(imgs.length, 1, 'one picture');
-  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/ai-washbasin-1871\.webp"/);
-  assert.match(imgs[0], /alt="[^"]*визуализация" width="1871" height="841" fetchpriority="high" decoding="async"/);
+  // 2026-11-07, the owner chose «А. Хаммам»: a real photo of our work in place of the visualised washbasin.
+  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-960\.webp" srcset="[^"]*hammam-640\.webp 640w, [^"]*hammam-960\.webp 960w"/);
+  assert.match(imgs[0], /alt="Хаммам[^"]+" width="960" height="1280" fetchpriority="high" decoding="async"/);
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
-  assert.match(hero, /<source media="\(max-aspect-ratio: 1\/1\), \(max-width: 900px\)" srcset="[^"]*ai-washbasin-4x5-720\.webp 720w, [^"]*ai-washbasin-4x5-1121\.webp 1121w"/, 'phones and upright windows get the upright version');
+  assert.doesNotMatch(hero, /<source /, 'one upright photo serves every screen');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
-  assert.match(hero, /<p class="wrap home-hero-note">Раковина из кварцита - визуализация<\/p>/, 'a generated picture is said to be one (2026-10-14, the owner: a hyphen, no long dash)');
+  assert.doesNotMatch(hero, /home-hero-note|визуализация/, 'a real photo needs no caption');
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /\.home-hero \{\s*display: grid;[^}]*margin-top: -74px;/, 'the picture runs under the floating header');
   assert.match(css, /\.js \.home-hero \{ margin-top: -66px; \}/);
   assert.match(css, /html:not\(\.js\) \.home-hero \{ margin-top: 0; \}/);
-  assert.match(css, /\.home-hero \.lead \{[^}]*color: var\(--ink\);/, 'the lead in full ink on the picture');
-  assert.match(css, /@media \(max-aspect-ratio: 1\/1\), \(max-width: 900px\) \{[\s\S]*?\.home-hero-content \{ padding-top: calc\(66px \+ var\(--s-6\)\); padding-bottom: calc\(62cqw \+ var\(--s-6\)\); \}/, 'room kept for the washbasin under the words');
+  assert.match(css, /\.home-hero \.lead \{[^}]*color: var\(--on-dark\);/, 'the lead in full light on the veil');
+  assert.match(css, /\.home-hero-picture::after \{[^}]*linear-gradient\(90deg, rgba\(12, 9, 8, 0\.88\)/, 'a dark veil under the words');
+  assert.match(css, /@media \(max-aspect-ratio: 1\/1\), \(max-width: 900px\) \{[\s\S]*?\.home-hero-picture::after \{ background: linear-gradient\(180deg,/, 'on a phone the veil darkens from above, over the words');
 });
 
 test('«От камня к изделию»: three real photographs in order -- the stone, its cutting, the finished piece -- each with alt, size, srcset and lazy loading; labels and arrows are decoration', () => {
@@ -1441,13 +1443,11 @@ test('the header holds still on a phone too: its menu is a scroll box of its own
 });
 
 // ---- The home hero on a phone (2026-10-21, the owner: «визуализация раковины не на весь экран») ----
-test('home hero on a phone: the wall and the washbasin fill the whole screen, the caption stays above the browser\'s bottom bar', () => {
+test('home hero on a phone: the photo fills the whole screen (since 2026-11-07 the hammam, no caption)', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
   const hero = phone.match(/\n {2}\.home-hero \{[^}]*\}/)[0];
   assert.match(hero, /min-height: 100vh; min-height: 100lvh;/, 'the full screen, the bars hidden or not');
-  const note = phone.match(/\n {2}\.home-hero-note \{[^}]*\}/)[0];
-  assert.match(note, /padding-bottom: calc\(var\(--s-4\) \+ 100lvh - 100svh\);/, 'lifted by the bottom bar\'s height');
 });
 
 // ---- The home hero holds still while a phone's bars come and go (2026-10-21, the owner:

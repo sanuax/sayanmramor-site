@@ -102,43 +102,40 @@ h3 { font-size: var(--fs-h3); }
   /* The picture runs under the floating header: pulled up by its margin, height and border (12 + 60 + 2 px). */
   margin-top: -74px;
   min-height: max(560px, min(100svh, 62vw));
-  background: var(--surface-sunk);
+  background: #0c0908;   /* the hammam's darkness, while the photo is on its way */
 }
-/* The visualised washbasin: one generated picture, the whole hero, the words on its empty wall.
-   The washbasin stands in the right half; 66 % keeps it clear of the words from 1024 to 1920 px. */
-.home-hero-picture, .home-hero-content, .home-hero-note { grid-area: 1 / 1; }
-.home-hero-picture { display: block; }
-.home-hero-picture img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 66% 70%; }
+/* The hammam (2026-11-07, the owner: a real photo of our work on the whole first screen, not the
+   visualised washbasin): an upright photo, the whole hero; on its left a soft dark veil, so the
+   light words read on the mosaic, and the lit marble stays clear on the right. */
+.home-hero-content { grid-area: 1 / 1; }
+.home-hero-picture { position: absolute; inset: 0; overflow: hidden; }
+.home-hero-picture img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 54%; }
+.home-hero-picture::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(12, 9, 8, 0.88) 0, rgba(12, 9, 8, 0.7) 28%, rgba(12, 9, 8, 0.25) 50%, rgba(12, 9, 8, 0) 66%);
+}
 .home-hero-content { position: relative; z-index: 1; padding-top: calc(74px + clamp(40px, 12vh, 140px)); padding-bottom: var(--s-8); }
-.home-hero h1 { max-width: 460px; font-size: clamp(36px, 3.4vw, 52px); line-height: 1.06; letter-spacing: -0.03em; margin-bottom: var(--s-5); text-wrap: balance; }
-.home-hero .lead { max-width: 420px; margin-bottom: var(--s-6); color: var(--ink); }   /* the grey would fall under 4.5:1 on the wall */
+.home-hero h1 { max-width: 460px; font-size: clamp(36px, 3.4vw, 52px); line-height: 1.06; letter-spacing: -0.03em; margin-bottom: var(--s-5); text-wrap: balance; color: var(--on-dark); }
+.home-hero .lead { max-width: 420px; margin-bottom: var(--s-6); color: var(--on-dark); }   /* full light, not the muted grey, on the veil */
+.home-hero .btn-secondary { color: var(--on-dark); border-color: rgba(233, 231, 225, 0.42); }
+@media (hover: hover) { .home-hero .btn-secondary:hover { border-color: var(--on-dark); } }
 .home-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
-.home-hero-note { position: relative; z-index: 1; align-self: end; padding-bottom: var(--s-5); font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 1000px) {
   .js .home-hero { margin-top: -66px; }          /* the phone capsule: 8 + 56 + 2 px */
   html:not(.js) .home-hero { margin-top: 0; }    }
-/* Phones and any upright window: the upright picture, held to the bottom; above it the wall goes on
-   in its own colour, so the words always stand on the wall and room is kept under them for the
-   washbasin (62 % of the width), however long they run. */
+/* Phones and any upright window: the same photo on the whole screen, the words on top under a
+   veil that darkens from above, the lit lounger below. */
 @media (max-aspect-ratio: 1/1), (max-width: 900px) {
   /* The whole screen (2026-10-21, the owner): lvh -- the height with the browser's bars hidden,
-     so the wall and the washbasin go on under the phone's bottom bar too; the words keep to
-     the top and the washbasin to the bottom, the wall's colour fills between. */
-  .home-hero { display: block; min-height: 100vh; min-height: 100lvh; container-type: inline-size; background: #93877a; }
+     so the photo goes on under the phone's bottom bar too. */
+  .home-hero { display: block; min-height: 100vh; min-height: 100lvh; }
   /* Where the bars resize the page (Chrome on an iPhone) js/site.js holds the first height in --hero-h. */
   @supports (height: 100lvh) { .home-hero { min-height: var(--hero-h, 100lvh); } }
-  /* The picture at 162 % of the width, so the washbasin spans about 0.25-0.85 of it; the room's
-     sides and part of the floor fall outside. Its top meets the wall colour through a soft band. */
-  .home-hero-picture { position: absolute; inset: 0; overflow: hidden; }
-  .home-hero-picture img { position: absolute; left: -50cqw; bottom: -36cqw; width: 162cqw; max-width: none; height: auto; aspect-ratio: 1121 / 1403; }
-  .home-hero-picture::before {
-    content: ''; position: absolute; left: 0; right: 0; bottom: calc(166cqw - 34cqw); height: 34cqw; z-index: 1;
-    background: linear-gradient(#93877a, rgba(147, 135, 122, 0));
-  }
-  .home-hero-content { padding-top: calc(66px + var(--s-6)); padding-bottom: calc(62cqw + var(--s-6)); }
+  .home-hero-picture img { object-position: 50% 50%; }
+  .home-hero-picture::after { background: linear-gradient(180deg, rgba(12, 9, 8, 0.9) 0, rgba(12, 9, 8, 0.78) 40%, rgba(12, 9, 8, 0.3) 58%, rgba(12, 9, 8, 0) 72%); }
+  .home-hero-content { padding-top: calc(66px + var(--s-6)); padding-bottom: var(--s-6); }
   .home-hero h1 { font-size: 32px; }
-  /* The caption above the bottom bar: lifted by its height (large minus small viewport). */
-  .home-hero-note { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: var(--s-4); padding-bottom: calc(var(--s-4) + 100lvh - 100svh); }
+}
 }
 
 /* From stone to object: three real photographs of one way -- the stone, its
