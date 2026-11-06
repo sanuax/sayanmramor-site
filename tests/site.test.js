@@ -438,9 +438,17 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
   assert.match(rule, /position: sticky; top: 12px;/);
   assert.match(rule, /width: min\(1120px, calc\(100% - 2 \* var\(--gutter\)\)\); margin: 12px auto 0;/);
   assert.match(rule, /border-radius: 999px;/);
-  assert.match(rule, /--capsule-bg: rgba\(248, 247, 244, 0\.8\);/);
-  assert.match(rule, /backdrop-filter: blur\(18px\) saturate\(1\.2\);/);
-  assert.match(header, /@supports not \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\) \{\s*\.site-header \{ --capsule-bg: rgba\(248, 247, 244, 0\.97\); \}/);
+  // Glass since 2026-11-07 (the owner: «как в Telegram»): more see-through, a stronger blur, richer colour.
+  assert.match(rule, /--capsule-bg: rgba\(255, 255, 255, 0\.56\);/);
+  assert.match(rule, /--glass-blur: blur\(22px\) saturate\(1\.8\);/);
+  assert.match(rule, /backdrop-filter: var\(--glass-blur\);/);
+  assert.match(header, /\.site-header\.is-on-dark \{\s*--capsule-bg: rgba\(22, 20, 18, 0\.46\);[^}]*--ink: #e9e7e1;/, 'over a dark place: dark glass, the header\'s ink turned light');
+  // Everything that opens from the capsule is the same glass (the owner, 2026-11-07).
+  const panel = header.slice(header.indexOf('\n.nav-panel {'), header.indexOf('}', header.indexOf('\n.nav-panel {')));
+  assert.match(panel, /background: var\(--capsule-bg\);[^]*backdrop-filter: var\(--glass-blur\);/, 'the panels: the capsule\'s glass');
+  assert.match(header, /@media \(min-width: 1001px\) \{\s*\.site-header \{ background: none; -webkit-backdrop-filter: none; backdrop-filter: none; \}\s*\.site-header::before \{/, 'on wide screens the capsule blurs on a layer of its own, so its panels can blur the page');
+  assert.doesNotMatch(header, /\.site-header\.menu-open \{\s*--capsule-bg/, 'the open phone menu keeps the glass');
+  assert.match(header, /@supports not \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\) \{\s*\.site-header \{ --capsule-bg: var\(--capsule-solid\); \}/);
   assert.doesNotMatch(header, /position: fixed/);
   // The places stand on the capsule's middle; the action is a pill set into its curve.
   assert.match(header, /grid-template-columns: minmax\(max-content, 1fr\) auto minmax\(max-content, 1fr\);/);   // each side at least what it holds (2026-11-02)
@@ -484,8 +492,8 @@ test('header: the places are soft pills in the capsule -- the current one and th
   const css = headerAndSiteCss();
   const header = headerSection();
   assert.match(header, /\.site-nav > a, \.nav-drop > summary \{[^}]*height: 36px; padding: 0 14px; border-radius: 999px;[^}]*transition: color 0\.15s, background-color 0\.15s;/);
-  assert.match(header, /\.site-nav > a\.active, \.nav-drop > summary\.active \{ color: var\(--ink\); background: rgba\(28, 29, 27, 0\.06\); \}/);
-  assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: rgba\(28, 29, 27, 0\.05\); \} \}/);
+  assert.match(header, /\.site-nav > a\.active, \.nav-drop > summary\.active \{ color: var\(--ink\); background: var\(--glass-fill\); \}/);
+  assert.match(header, /@media \(hover: hover\) \{ \.site-nav > a:hover, \.nav-drop > summary:hover \{[^}]*background: var\(--glass-fill\); \} \}/);
   assert.match(header, /\.nav-indicator \{ display: none; \}/, 'header.js may place its line; the capsule does not show it');
   const wide = css.slice(css.indexOf('@media (min-width: 1001px) {'), css.indexOf('@keyframes nav-panel-unfold'));
   assert.ok(wide.includes('.nav-drop[open] > .nav-panel { animation: nav-panel-unfold 0.22s var(--ease); }'));
@@ -641,7 +649,7 @@ test('the «Изделия» panel (2026-10-20, the owner: «переноси н
   assert.match(rule('.nav-products.is-rich > .nav-panel'), /width: min\(980px,[\s\S]*grid-template-columns: minmax\(0, 1fr\) 270px;/);
   assert.match(rule('.nav-products > .nav-panel'), /width: min\(720px,/, 'without JavaScript: the rows alone');
   assert.doesNotMatch(css, /counter\(nav-group/, 'no numbers before the groups');
-  assert.match(rule('.nav-group.is-on'), /background: rgba\(28, 29, 27, 0\.05\)/, 'the capsule\'s own faint fill');
+  assert.match(rule('.nav-group.is-on'), /background: var\(--glass-fill\)/, 'the capsule\'s own faint fill');
   assert.match(rule('.nav-group a::before'), /background: var\(--accent\)[\s\S]*transform: scaleX\(0\)/);
   assert.match(css, /\.nav-group a:focus-visible::before, \.nav-group a\.active::before \{ transform: scaleX\(1\); \}/);
   assert.match(css, /@media \(hover: hover\) \{ \.nav-group a:hover::before \{ transform: scaleX\(1\); \} \}/);
@@ -1373,10 +1381,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s; 2026-11-02: «Камень» in the header, the places closer-set at 1001..1080 px so the five fit; «Создать изделие» kept inside the capsule -- each side at least what it holds, the closer set on every desktop; 2026-11-03: the phone menu's «Камень» and «Готовые изделия» as two tiles, «Контакты» with the green strip, the showroom on the tiles' columns). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s; 2026-11-02: «Камень» in the header, the places closer-set at 1001..1080 px so the five fit; «Создать изделие» kept inside the capsule -- each side at least what it holds, the closer set on every desktop; 2026-11-03: the phone menu's «Камень» and «Готовые изделия» as two tiles, «Контакты» with the green strip, the showroom on the tiles' columns; 2026-11-07: the capsule as glass, as in Telegram, dark glass over dark places of the page, «переноси»; the panels and the phone menu the same glass). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, '433da3fb77c65193a85b2986f30d7e69f63d64226016b67e201bd10950c6aa81', 'css/header.css as the owner approved it');
+  assert.equal(print, 'ea5c76b7c32e35b00d9d617c4d754826184b0b5b41b7a60ef8789b85522a1179', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1583,3 +1591,28 @@ test('every stylesheet keeps its braces balanced (a stray «}» silently drops t
     assert.equal(depth, 0, `${f}: every «{» closed`);
   }
 });
+
+// ---- 2026-11-07: the header's glass takes the tone of the page under it (the owner: «как в Telegram»).
+test('the capsule turns dark glass over a dark place of the page and light over a light one', () => {
+  const H = require(path.join(site, 'js', 'header.js'));
+  assert.ok(H.luminance('rgb(12, 9, 8)') < 0.18, 'the hammam\'s darkness is dark');
+  assert.ok(H.luminance('rgb(239, 237, 232)') > 0.18, 'the page\'s limestone is light');
+  assert.equal(H.luminance('rgba(0, 0, 0, 0)'), null, 'a see-through box says nothing');
+  let under = 'rgb(12, 9, 8)', frame = null;
+  const classes = new Set();
+  const header = { contains: el => el === header, classList: { toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)), add: c => classes.add(c) },
+    getBoundingClientRect: () => ({ left: 160, top: 12, width: 1120, height: 62 }) };
+  const box = { tagName: 'SECTION', getBoundingClientRect: () => ({ left: 0, top: 0, width: 1440, height: 900 }) };
+  const doc = { elementsFromPoint: () => [header, box], createElement: () => ({}) };
+  const listeners = {};
+  const win = { getComputedStyle: () => ({ backgroundColor: under, backgroundImage: 'none' }), requestAnimationFrame: f => { frame = f; return 1; },
+    addEventListener: (t, f) => { listeners[t] = f; }, Image: function () {} };
+  const tone = H.initTone(doc, win, header);
+  assert.ok(classes.has('is-on-dark'), 'over the dark hero, at once on load');
+  assert.ok(!classes.has('tone-ready'), 'no fade into the first tone');
+  frame(); assert.ok(classes.has('tone-ready'), 'the fade only from the next frame');
+  under = 'rgb(239, 237, 232)'; listeners.scroll(); frame();
+  assert.ok(!classes.has('is-on-dark'), 'over the light page');
+  assert.ok(tone && tone.check);
+});
+

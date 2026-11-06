@@ -83,17 +83,53 @@
    itself, with «Создать изделие» at its foot. Nothing about it moves on scroll. */
 .site-header {
   --header-h: 60px;
-  --capsule-bg: rgba(248, 247, 244, 0.8);
+  /* Glass (2026-11-07, the owner: «как в Telegram» -- the same see-through, and it changes with
+     the page under it): a light pane, the page behind it strongly blurred and a little richer in
+     colour, a bright hairline along its edge. Over a dark place of the page (js/header.js puts
+     .is-on-dark on the capsule) the pane turns dark glass with light letters. Everything that
+     opens from the capsule -- the panels, the phone menu -- is the same glass in the same tone. */
+  --capsule-bg: rgba(255, 255, 255, 0.56);
+  --capsule-solid: rgba(248, 247, 244, 0.97);   /* where there is no blur */
+  --glass-blur: blur(22px) saturate(1.8);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(28, 29, 27, 0.1), 0 12px 32px -14px rgba(28, 29, 27, 0.4);
+  --glass-fill: rgba(28, 29, 27, 0.06);         /* a pressed or current place */
   position: sticky; top: 12px; z-index: 20;
   width: min(1120px, calc(100% - 2 * var(--gutter))); margin: 12px auto 0;
   border-radius: 999px; background: var(--capsule-bg);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
-  border: 1px solid rgba(28, 29, 27, 0.09);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(28, 29, 27, 0.06), 0 14px 34px -20px rgba(28, 29, 27, 0.38);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
 }
-/* Where the browser cannot blur behind it, the plate is simply solid. */
+/* Dark glass: the site's own colours turned over inside the header -- its ink light, its lines and
+   fills white and faint -- so the capsule, its panels and the phone menu all follow at once. */
+.site-header.is-on-dark {
+  --capsule-bg: rgba(22, 20, 18, 0.46);
+  --capsule-solid: rgba(22, 20, 18, 0.94);
+  --glass-edge: rgba(255, 255, 255, 0.14);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.3), 0 12px 32px -14px rgba(0, 0, 0, 0.7);
+  --glass-fill: rgba(255, 255, 255, 0.12);
+  --ink: #e9e7e1; --ink-soft: rgba(233, 231, 225, 0.76); --muted: rgba(233, 231, 225, 0.56);
+  --line: rgba(255, 255, 255, 0.12); --line-strong: rgba(233, 231, 225, 0.34); --surface-sunk: rgba(255, 255, 255, 0.06);
+}
+/* The glass changes tone in a third of a second -- but not on load: js/header.js sets the first
+   tone at once and only then .tone-ready. */
+.site-header.tone-ready { transition: background-color 0.35s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease); }
+.site-header.tone-ready .site-logo, .site-header.tone-ready .nav-toggle { transition: color 0.35s var(--ease); }   /* the places and the buttons keep their own 150 ms */
+/* Wide screens: the capsule's blur on a layer of its own under its contents. A blurring element
+   lets nothing inside it see past it, so the panels hanging from the capsule could not blur the
+   page; with the blur on this layer they can. */
+@media (min-width: 1001px) {
+  .site-header { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .site-header::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+    background: var(--capsule-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  }
+  .site-header.tone-ready::before { transition: background-color 0.35s var(--ease); }
+}
+/* Where the browser cannot blur behind it, the glass is simply solid. */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .site-header { --capsule-bg: rgba(248, 247, 244, 0.97); }
+  .site-header { --capsule-bg: var(--capsule-solid); }
 }
 .site-header-inner {
   position: relative; height: var(--header-h);
@@ -118,9 +154,9 @@
   transition: color 0.15s, background-color 0.15s;
 }
 .site-nav > a:focus-visible, .nav-drop > summary:focus-visible { outline-offset: 0; }
-.nav-drop[open] > summary { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
-@media (hover: hover) { .site-nav > a:hover, .nav-drop > summary:hover { color: var(--ink); background: rgba(28, 29, 27, 0.05); } }
-.site-nav > a.active, .nav-drop > summary.active { color: var(--ink); background: rgba(28, 29, 27, 0.06); }
+.nav-drop[open] > summary { color: var(--ink); background: var(--glass-fill); }
+@media (hover: hover) { .site-nav > a:hover, .nav-drop > summary:hover { color: var(--ink); background: var(--glass-fill); } }
+.site-nav > a.active, .nav-drop > summary.active { color: var(--ink); background: var(--glass-fill); }
 .nav-drop { position: static; }
 .nav-drop > summary { position: relative; list-style: none; gap: 6px; }
 .nav-drop > summary::-webkit-details-marker { display: none; }
@@ -142,9 +178,9 @@
    JavaScript it is the rows alone. */
 .nav-panel {
   position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0; width: min(640px, calc(100vw - 2 * var(--gutter)));
-  background: rgba(248, 247, 244, 0.97); border: 1px solid rgba(28, 29, 27, 0.09); border-radius: 24px;
-  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
-  box-shadow: 0 1px 2px rgba(28, 29, 27, 0.06), 0 24px 48px -24px rgba(28, 29, 27, 0.4);
+  background: var(--capsule-bg); border: 1px solid var(--glass-edge); border-radius: 24px;   /* the capsule's own glass (2026-11-07) */
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
 }
 .nav-products > .nav-panel { width: min(720px, calc(100vw - 2 * var(--gutter))); overflow: hidden;
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 14' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.5 1.5 6.5 7l-5 5.5'/%3E%3C/svg%3E"); }
@@ -154,7 +190,7 @@
   display: grid; grid-template-columns: 196px minmax(0, 1fr); column-gap: 20px; align-items: baseline;
   padding: 9px 16px; border-radius: 16px; transition: background-color 0.18s;
 }
-.nav-group.is-on { background: rgba(28, 29, 27, 0.05); }
+.nav-group.is-on { background: var(--glass-fill); }
 .nav-group-title {
   font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--muted); white-space: nowrap;   /* the links' size (the owner, 2026-10-15) */
   transition: color 0.18s;
@@ -196,11 +232,11 @@
 }
 /* And under a backdrop blur -- the capsule's or the panel's -- Firefox ends that crossfade a sixth
    of a pixel off (filmed: gone only with both blurs off). So while «Изделия» is open there, the
-   capsule and the panel are plain milk-white stone: the capsule's own look where blur is missing. */
+   panel is the glass's solid colour, in its tone, without a blur. Since 2026-11-07 the capsule's
+   blur lies on a layer of its own beside the panel, not around it, so the capsule keeps it. */
 @supports (-moz-appearance: none) {
   @media (min-width: 1001px) {
-    .site-header:has(.nav-products[open]) { --capsule-bg: rgba(248, 247, 244, 0.97); -webkit-backdrop-filter: none; backdrop-filter: none; }
-    .site-header:has(.nav-products[open]) .nav-products > .nav-panel { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .site-header:has(.nav-products[open]) .nav-products > .nav-panel { background: var(--capsule-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
   }
 }
 .nav-shot figcaption { position: absolute; inset: auto 0 0 0; padding: 64px 20px 18px; background: linear-gradient(to top, rgba(18, 19, 17, 0.62), transparent); color: #fff; }
@@ -325,10 +361,9 @@ html.menu-lock { overflow: hidden; }
   .js .site-header-cta { display: none; }
   .js .site-header-actions { display: none; }
   .js .site-nav { display: none; }
-  .js .site-header { transition: background-color 0.3s var(--ease); }
+  .js .site-header.tone-ready { transition: background-color 0.3s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease); }
   .js .site-header.menu-open {
-    --capsule-bg: rgba(248, 247, 244, 0.97);
-    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);
+    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);   /* the same glass as closed (2026-11-07) */
   }
   /* The capsule opens smoothly (the owner, 2026-10-19): js/header.js uncovers it down into
      the menu and covers it back up with a clip in the capsule's own curve -- no height moves
@@ -382,7 +417,7 @@ html.menu-lock { overflow: hidden; }
     font: inherit; color: var(--ink); text-align: left; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background-color 0.15s, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
   }
-  .js .nav-group-row:active { background: rgba(28, 29, 27, 0.05); transform: scale(0.985); }
+  .js .nav-group-row:active { background: var(--glass-fill); transform: scale(0.985); }
   .js .nav-group-row img { width: 60px; height: 60px; border-radius: 14px; object-fit: cover; background: var(--surface-sunk); }
   .js .nav-group-row-name { display: block; font-size: 17px; font-weight: 600; line-height: 1.25; }
   .js .nav-group-row-note { display: block; margin-top: 3px; font-size: 13px; line-height: 1.35; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -410,7 +445,7 @@ html.menu-lock { overflow: hidden; }
     content: ''; width: 8px; height: 14px; background: currentColor; transform: scaleX(-1);
     -webkit-mask: var(--chevron) center / contain no-repeat; mask: var(--chevron) center / contain no-repeat;
   }
-  .js .nav-group-back:active { background: rgba(28, 29, 27, 0.05); }
+  .js .nav-group-back:active { background: var(--glass-fill); }
   .js .nav-group-hero { position: relative; margin: 0; aspect-ratio: 16 / 10; max-width: 100%; border-radius: 20px; overflow: hidden; background: var(--surface-sunk); }
   .js .nav-group-hero img { width: 100%; height: 100%; object-fit: cover; }
   .js .nav-group-hero figcaption { position: absolute; inset: auto 0 0 0; padding: 48px 18px 16px; background: linear-gradient(to top, rgba(18, 19, 17, 0.62), transparent); color: #fff; }

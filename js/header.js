@@ -364,11 +364,90 @@
     });
     // A turned phone: the open menu takes a new height, its margin follows.
     if (win.addEventListener) win.addEventListener('resize', () => { if (menuOpen() && !menuAnim) overlay(heightOf()); });
+    initTone(doc, win, header);
     const indicator = initIndicator(doc, win, header, mq);
     const onModeChange = () => { syncMode(); if (indicator) indicator.rest(); };
     if (mq.addEventListener) mq.addEventListener('change', onModeChange); else if (mq.addListener) mq.addListener(onModeChange);
     syncMode();
     return { setMenu, closePanel, indicator };
+  }
+
+  // The glass takes the tone of the page under it (2026-11-07, the owner: «как в Telegram»):
+  // three points along the capsule's middle line; at each, the first thing under the capsule
+  // that shows a colour decides -- a photo by its own brightness there (drawn once into a small
+  // canvas; same-origin files), else a solid enough background. Two dark of three: .is-on-dark.
+  function luminance(css) {
+    const m = String(css || '').match(/[\d.]+/g);
+    if (!m || m.length < 3) return null;
+    const [r, g, b, a = 1] = m.map(Number);
+    if (a < 0.5) return null;
+    const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  }
+  const DARK_BELOW = 0.18;
+  function initTone(doc, win, header) {
+    if (!doc.elementsFromPoint || !win.getComputedStyle || !win.requestAnimationFrame || !win.addEventListener) return null;
+    const shots = new Map();
+    let raf = 0;
+    const ask = () => { if (!raf) raf = win.requestAnimationFrame(check); };
+    function picture(src, fx, fy) {
+      let s = shots.get(src);
+      if (!s) {
+        s = { data: null };
+        shots.set(src, s);
+        const im = new win.Image();
+        im.onload = () => {
+          try {
+            const c = doc.createElement('canvas'); c.width = c.height = 24;
+            const g = c.getContext('2d'); g.drawImage(im, 0, 0, 24, 24);
+            s.data = g.getImageData(0, 0, 24, 24).data; ask();
+          } catch (e) { s.data = false; }
+        };
+        im.src = src;
+      }
+      if (!s.data) return null;
+      const px = Math.min(23, Math.max(0, Math.floor(fx * 24))), py = Math.min(23, Math.max(0, Math.floor(fy * 24)));
+      let sum = 0, n = 0;
+      for (let x = Math.max(0, px - 2); x <= Math.min(23, px + 2); x++) {
+        const i = (py * 24 + x) * 4;
+        sum += luminance(`rgb(${s.data[i]},${s.data[i + 1]},${s.data[i + 2]})`); n++;
+      }
+      return sum / n;
+    }
+    function toneAt(x, y) {
+      for (const el of doc.elementsFromPoint(x, y)) {
+        if (header.contains(el)) continue;
+        const cs = win.getComputedStyle(el), b = el.getBoundingClientRect();
+        if (el.tagName === 'IMG' && el.currentSrc && el.naturalWidth) {
+          // where the point falls in a picture laid like object-fit: cover
+          const k = Math.max(b.width / el.naturalWidth, b.height / el.naturalHeight), w = el.naturalWidth * k, h = el.naturalHeight * k;
+          const L = picture(el.currentSrc, (x - b.left - (b.width - w) / 2) / w, (y - b.top - (b.height - h) / 2) / h);
+          if (L !== null) return L;
+          continue;
+        }
+        const bg = /url\(["']?([^"')]+)/.exec(cs.backgroundImage || '');
+        if (bg && b.width && b.height) { const L = picture(bg[1], (x - b.left) / b.width, (y - b.top) / b.height); if (L !== null) return L; }
+        const L = luminance(cs.backgroundColor);
+        if (L !== null) return L;
+      }
+      return 1;
+    }
+    function check() {
+      raf = 0;
+      const r = header.getBoundingClientRect(), y = r.top + Math.min(r.height, 60) / 2;
+      let dark = 0;
+      [0.12, 0.5, 0.88].forEach(t => { if (toneAt(r.left + r.width * t, y) < DARK_BELOW) dark++; });
+      header.classList.toggle('is-on-dark', dark >= 2);
+    }
+    win.addEventListener('scroll', ask, { passive: true });
+    win.addEventListener('resize', ask);
+    win.addEventListener('load', ask);
+    win.addEventListener('pageshow', ask);
+    // The first tone at once, without a fade (else the capsule lit up light and faded to dark on
+    // every load over the dark hero); the glass changes smoothly only from the next frame on.
+    check();
+    win.requestAnimationFrame(() => header.classList.add('tone-ready'));
+    return { check, toneAt };
   }
 
   // One graphite line for the whole row: it rests under the current section
@@ -443,5 +522,5 @@
 
   if (typeof document !== 'undefined' && typeof window !== 'undefined') init(document, window);
 
-  return { init, initIndicator, initProducts, mountGlass, clipCut, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
+  return { init, initIndicator, initProducts, initTone, luminance, mountGlass, clipCut, MOBILE_QUERY, REDUCED_QUERY, FOLD_MS };
 });
