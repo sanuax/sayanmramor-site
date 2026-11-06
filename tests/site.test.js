@@ -927,10 +927,12 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
   assert.equal(imgs.length, 1, 'one picture');
   // 2026-11-07, the owner chose «А. Хаммам»: a real photo of our work in place of the visualised washbasin.
-  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-960\.webp" srcset="[^"]*hammam-640\.webp 640w, [^"]*hammam-960\.webp 960w"/);
-  assert.match(imgs[0], /alt="Хаммам[^"]+" width="960" height="1280" fetchpriority="high" decoding="async"/);
+  // Same day, the owner: «что с качеством» -- the 960 px copy was soft on a wide screen; now from the
+  // 3024×4032 original: upright 1200/1800 for phones and upright windows, a 4:3 band 1600/2400 for wide screens.
+  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-1200\.webp" srcset="[^"]*hammam-1200\.webp 1200w, [^"]*hammam-1800\.webp 1800w"/);
+  assert.match(imgs[0], /alt="Хаммам[^"]+" width="1200" height="1600" fetchpriority="high" decoding="async"/);
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
-  assert.doesNotMatch(hero, /<source /, 'one upright photo serves every screen');
+  assert.match(hero, /<source media="\(min-aspect-ratio: 10001\/10000\) and \(min-width: 901px\)" srcset="[^"]*hammam-wide-1600\.webp 1600w, [^"]*hammam-wide-2400\.webp 2400w"/, 'wide screens get the wide band');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
   assert.doesNotMatch(hero, /home-hero-note|визуализация/, 'a real photo needs no caption');
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
