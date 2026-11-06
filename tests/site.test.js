@@ -927,13 +927,11 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   const imgs = [...hero.matchAll(/<img [^>]*>/g)].map(m => m[0]);
   assert.equal(imgs.length, 1, 'one picture');
   // 2026-11-07, the owner chose «А. Хаммам»: a real photo of our work in place of the visualised washbasin.
-  // Same day, the owner: «что с качеством» -- the 960 px copy was soft on a wide screen; now from the
-  // 3024×4032 original: upright 1200/1800 for phones and upright windows, a 4:3 band 1600/2400 for wide screens.
-  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-1200\.webp" srcset="[^"]*hammam-1200\.webp 1200w, [^"]*hammam-1800\.webp 1800w"/);
-  assert.match(imgs[0], /alt="Хаммам[^"]+" width="1200" height="1600" fetchpriority="high" decoding="async"/);
+  // Same day the owner made a panorama of it (a neural network widened the frame; the painted dome
+  // replaced by the real one) and asked for that one photo on every screen, phones too.
+  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-pano-1997\.webp" alt="Хаммам[^"]+" width="1997" height="788" fetchpriority="high" decoding="async"/);
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
-  // Then the owner widened the photo with a neural network (1997×788): wide screens show that panorama.
-  assert.match(hero, /<source media="\(min-aspect-ratio: 10001\/10000\) and \(min-width: 901px\)" srcset="[^"]*hammam-pano-1997\.webp" width="1997" height="788">/, 'wide screens get the panorama');
+  assert.doesNotMatch(hero, /<source /, 'one photo for every screen');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
   assert.doesNotMatch(hero, /home-hero-note|визуализация/, 'a real photo needs no caption');
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
