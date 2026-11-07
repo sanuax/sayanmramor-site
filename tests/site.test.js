@@ -937,8 +937,9 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   // 2026-11-07, the owner chose «А. Хаммам»: a real photo of our work in place of the visualised washbasin.
   // Same day the owner made a panorama of it (a neural network widened the frame; the painted dome
   // replaced by the real one) and asked for that one photo on every screen, phones too; later the
-  // same day the owner's own new frame of the hall (IMG_6710, 1536×1024) took its place.
-  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-1536\.webp" alt="Хаммам[^"]+" width="1536" height="1024" fetchpriority="high" decoding="async"/);
+  // same day the owner's own new frame of the hall (IMG_6710, 1536×1024) took its place; on
+  // 2026-11-07 (later) the owner's hero.png (1448×1086, «давай эту фотку попробуем»).
+  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-1448\.webp" alt="Хаммам[^"]+" width="1448" height="1086" fetchpriority="high" decoding="async"/);
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
   assert.doesNotMatch(hero, /<source /, 'one photo for every screen');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
