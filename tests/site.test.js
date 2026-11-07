@@ -1305,7 +1305,16 @@ test('every page asks for its own CSS / JS by content: ?v= the file\'s hash, so 
     links.forEach(m => assert.match(m[0], /\?v=[0-9a-f]{8}"$/, page + ': ' + m[2] + ' has no stamp'));
     assert.equal(Stamp.stamped(html), html, page + ': a stamp is stale -- node scripts/stamp_assets.js');
   });
-  assert.doesNotMatch(fs.readFileSync(path.join(site, 'showroom.html'), 'utf8'), /showroom\/[\w-]+\.js\?v=/, 'the showroom modules as their imports name them');
+  // The showroom's modules import each other by plain URLs: an import map sends each of them to its
+  // stamped URL, before anything loads a module (2026-11-08: a phone kept the old modules otherwise).
+  const sr = fs.readFileSync(path.join(site, 'showroom.html'), 'utf8');
+  const map = /<script type="importmap">([^<]+)<\/script>/.exec(sr);
+  assert.ok(map && map.index < sr.indexOf('rel="modulepreload"') && map.index < sr.indexOf('type="module"'), 'the import map comes first');
+  const imports = JSON.parse(map[1]).imports;
+  assert.deepEqual(Object.keys(imports), Stamp.modules().map(f => '/sayanmramor-site/' + f));
+  assert.ok(Stamp.modules().includes('js/showroom/showroom-scene.js') && !Stamp.modules().includes('js/showroom/house-model.js'), 'the ES modules, not the classic scripts');
+  Object.entries(imports).forEach(([plain, stamped]) => assert.equal(stamped, plain + '?v=' + Stamp.stampOf(plain.replace('/sayanmramor-site/', ''))));
+  [...sr.matchAll(/<link rel="modulepreload" href="(\/sayanmramor-site\/js\/showroom\/[^"]+)">/g)].forEach(m => assert.ok(Object.values(imports).includes(m[1]), m[1] + ' preloads what the map loads'));
 });
 
 test('every header page loads css/header.css right before css/site.css', () => {
