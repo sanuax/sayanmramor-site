@@ -1,7 +1,8 @@
 // js/showroom/house-model.js
 //
-// The showroom house as data: one modern two-storey stone house on a
-// fenced plot (a light stone plinth, dark metal fins, stone pillars). A
+// The showroom house as data: one modern two-storey stone house shown as an
+// architectural model -- on a plain base, no plot round it, every room
+// furnished as in a design project. A
 // limestone ground floor on a Steel Grey
 // granite plinth, a cantilevered upper floor clad in large limestone panels
 // with deep stone window surrounds, a stone belt and cornice, a deep
@@ -11,7 +12,7 @@
 // architecture is testable and the renderer (showroom-scene.js) only turns
 // parts into meshes.
 //
-// Units: metres. Y up, grade (the plot's lawn) at y = 0. The street side
+// Units: metres. Y up, the model's base at y = 0. The street side
 // is +Z, east is +X.
 // Part kinds:
 //   box      { min:[x,y,z], max:[x,y,z], bevel?, photo? }    (bevel = chamfer on every edge)
@@ -23,9 +24,10 @@
 //   joints   { plane, at, a, b, module, stagger, normal, tone }  (drawn joint lines)
 //   slats    { min, max, axis:'x'|'z', pitch, width }      (a row of vertical fins along axis)
 //   cyl      { base:[x,y,z], radius, radiusTop?, height }
-//   tree     { position:[x,0,z], trunk, crown }
+//   rbox     { min, max, radius }                        (every edge and corner rounded, shaded smooth)
+//   lathe    { base:[x,y,z], profile:[[r,h],...], segments }  (a turned form round a vertical axis)
 // One set of stones, repeated: our own light limestone (facades, frames,
-// cornices, fence, paving, floors, the stair), Steel Grey granite (plinth,
+// cornices, paving, floors, the stair), Steel Grey granite (plinth,
 // steps, outside sills, the niche, the hall wall), Viscont White granite
 // (kitchen), Calacatta Nova marble (bathroom), Majestic marble (the one
 // feature wall, bookmatched). `photo` / `photos` (cladding: one per slab)
@@ -53,12 +55,8 @@
   // Main stair: one straight run of 18 risers with a landing after the 9th.
   const STAIR = { x0: -6.6, x1: -5.3, zStart: 3.4, risers: 18, going: 0.28, landingAfter: 8, landing: 1.2 };
   const RISE = (FF2 - FF1) / STAIR.risers;
-  // The site: the fenced plot, the fence line (pillar centres), the path to
-  // the entrance and the gate opening on it.
-  const PLOT = { x0: -13, x1: 14, z0: -10.5, z1: 12 };
-  const FENCE = { x0: -12.7, x1: 13.7, z0: -10.2, z1: 11.7, plinth: 0.4, height: 1.5 };
-  const PATH = { x0: -3.4, x1: -0.2 };
-  const GATE = { x0: -3.95, x1: 0.35 };
+  // The model's base: one slab under the house, its entrance and its terrace.
+  const BASE = { x0: -9.6, x1: 12.4, z0: -7.2, z1: 11.4, depth: 0.5 };
 
   function stairFront(i) {
     return STAIR.zStart - i * STAIR.going - (i > STAIR.landingAfter ? STAIR.landing - STAIR.going : 0);
@@ -105,7 +103,7 @@
 
   // Stone slabs over a surface, on a thin dark bed so the joints read as
   // real gaps. `bed: false` lays them straight on what is behind (a floor on
-  // the dark slab, a path on the lawn).
+  // the dark slab).
   function clad(parts, spec) {
     const bed = spec.bed === false ? 0 : 0.006;
     const extra = spec.object ? { object: spec.object } : null;
@@ -262,110 +260,9 @@
     parts.push(Object.assign({ kind: 'cyl', base, radius, height, mat, group }, extra || {}));
   }
 
-  // A low stone fence run between two stone pillars' faces (u0..u1) along
-  // `axis` ('x': the run follows x at z = at; 'z': it follows z at x = at):
-  // a light limestone plinth with a coping, dark vertical metal fins above
-  // it with a slim top rail, open enough to see the house through.
-  function fenceRun(parts, axis, at, u0, u1) {
-    const B = (a0, a1, y0, y1, half) => (axis === 'x'
-      ? [[a0, y0, at - half], [a1, y1, at + half]]
-      : [[at - half, y0, a0], [at + half, y1, a1]]);
-    const add = (spec, mat, extra) => parts.push(box(spec[0], spec[1], mat, 'site', extra));
-    add(B(u0, u1, 0, FENCE.plinth, 0.16), 'limestone', { bevel: 0.01 });
-    add(B(u0, u1, FENCE.plinth, FENCE.plinth + 0.06, 0.19), 'limestone-light', { bevel: 0.008 });
-    [-1, 1].forEach(side => joints(parts, {
-      plane: axis === 'x' ? 'z' : 'x', at: at + side * 0.16, normal: side, a: [u0, u1], b: [0, FENCE.plinth],
-      module: [1.2, 1], group: 'site', tone: 'dark',
-    }));
-    const [smin, smax] = B(u0 + 0.06, u1 - 0.06, FENCE.plinth + 0.06, FENCE.height - 0.035, 0.025);
-    parts.push({ kind: 'slats', min: smin, max: smax, axis, pitch: 0.15, width: 0.025, mat: 'metal-dark', group: 'site' });
-    add(B(u0, u1, FENCE.height - 0.035, FENCE.height, 0.035), 'metal-dark');
-  }
-
-  // A stone pillar centred on (x, z); gate pillars are larger and carry a lamp.
-  function pillar(parts, x, z, gate, facing) {
-    const h = gate ? 0.32 : 0.25, top = gate ? FENCE.height + 0.45 : FENCE.height + 0.18;
-    parts.push(box([x - h, 0, z - h], [x + h, top, z + h], 'limestone', 'site', { bevel: 0.012 }));
-    parts.push(box([x - h - 0.04, top, z - h - 0.04], [x + h + 0.04, top + 0.08, z + h + 0.04], 'limestone-light', 'site', { bevel: 0.01 }));
-    if (gate) parts.push(box([x - 0.12, top - 0.55, z + facing * h], [x + 0.12, top - 0.49, z + facing * (h + 0.02)], 'lamp', 'site'));
-  }
-
-  // Pillars at both ends of a straight side and at most every ~3.6 m, with
-  // fence runs between their faces.
-  function fenceSide(parts, axis, at, u0, u1, opts) {
-    const n = Math.max(1, Math.ceil((u1 - u0) / 3.6));
-    const posts = Array.from({ length: n + 1 }, (_, k) => u0 + (u1 - u0) * (k / n));
-    posts.forEach((u, k) => {
-      const end = k === 0 ? 'start' : k === n ? 'end' : null;
-      if (end && opts.skip && opts.skip.includes(end)) return;
-      const gate = end && opts.gate === end;
-      if (axis === 'x') pillar(parts, u, at, gate, 1); else pillar(parts, at, u, gate, 1);
-    });
-    for (let k = 0; k < n; k++) {
-      const a = posts[k] + (k === 0 && opts.gate === 'start' ? 0.32 : 0.25);
-      const b = posts[k + 1] - (k === n - 1 && opts.gate === 'end' ? 0.32 : 0.25);
-      fenceRun(parts, axis, at, a, b);
-    }
-  }
-
-  // ---- the site: plot, fence, path, planting ------------------------------------
-  function buildSite(parts) {
-    const P = PLOT, F = FENCE, R = 140, low = -0.5;
-    // The fenced lawn plot, and the quieter meadow round it.
-    parts.push(box([P.x0, low, P.z0], [P.x1, 0, P.z1], 'lawn', 'site'));
-    [
-      [[-R, low, -R], [R, 0, P.z0]], [[-R, low, P.z1], [R, 0, R]],
-      [[-R, low, P.z0], [P.x0, 0, P.z1]], [[P.x1, low, P.z0], [R, 0, P.z1]],
-    ].forEach(([min, max]) => parts.push(box(min, max, 'meadow', 'site')));
-
-    // The fence: north side and the two ends of the street side own the
-    // corner pillars; the street side opens between two gate pillars on
-    // the path.
-    fenceSide(parts, 'x', F.z0, F.x0, F.x1, {});
-    fenceSide(parts, 'x', F.z1, F.x0, GATE.x0, { gate: 'end' });
-    fenceSide(parts, 'x', F.z1, GATE.x1, F.x1, { gate: 'start' });
-    fenceSide(parts, 'z', F.x0, F.z0, F.z1, { skip: ['start', 'end'] });
-    fenceSide(parts, 'z', F.x1, F.z0, F.z1, { skip: ['start', 'end'] });
-    parts.push(box([GATE.x0 + 0.32, 0, F.z1 - 0.2], [GATE.x1 - 0.32, 0.04, F.z1 + 0.2], 'limestone', 'site', { bevel: 0.01 }));
-
-    // Path from the street to the entrance: large slabs with lawn joints,
-    // through the gate; a stone pavement outside the fence.
-    clad(parts, {
-      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [PATH.x0, PATH.x1], b: [7.04, F.z1 - 0.2],
-      origin: [PATH.x0, 7.04], module: [3.2, 0.9], gap: 0.1, chamfer: 0.008, mat: 'paving', group: 'site', bed: false,
-    });
-    clad(parts, {
-      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [PATH.x0, PATH.x1], b: [F.z1 + 0.2, P.z1 + 0.4],
-      origin: [PATH.x0, F.z1 + 0.2], module: [3.2, 0.9], gap: 0.1, chamfer: 0.008, mat: 'paving', group: 'site', bed: false,
-    });
-    clad(parts, {
-      plane: 'y', at: 0, normal: 1, depth: 0.03, a: [-22, 24], b: [P.z1 + 0.4, P.z1 + 2.4], origin: [-22, P.z1 + 0.4],
-      module: [1.2, 1.0], stagger: 0.5, gap: 0.008, chamfer: 0.006, mat: 'paving', group: 'site', bed: false,
-    });
-    // Low bollard lights along the path.
-    [8.6, 10.2].forEach(z => [PATH.x0 - 0.35, PATH.x1 + 0.35].forEach(x => {
-      parts.push(box([x - 0.06, 0, z - 0.06], [x + 0.06, 0.55, z + 0.06], 'metal-dark', 'site'));
-      parts.push(box([x - 0.062, 0.44, z - 0.062], [x + 0.062, 0.5, z + 0.062], 'lamp', 'site'));
-    }));
-
-    // A gravel drip strip round the house.
-    parts.push(box([-8.8, 0, -6.2], [8.3, 0.012, 6.8], 'gravel', 'site'));
-
-    // Planting bed west of the path: a clipped hedge and a low clipped mass of
-    // grasses in a stone curb.
-    const bed = { x0: -8.4, x1: -4.4, z0: 7.5, z1: 10.9 };
-    [[[bed.x0, 0, bed.z0], [bed.x1, 0.22, bed.z0 + 0.12]], [[bed.x0, 0, bed.z1 - 0.12], [bed.x1, 0.22, bed.z1]],
-      [[bed.x0, 0, bed.z0 + 0.12], [bed.x0 + 0.12, 0.22, bed.z1 - 0.12]], [[bed.x1 - 0.12, 0, bed.z0 + 0.12], [bed.x1, 0.22, bed.z1 - 0.12]]]
-      .forEach(([min, max]) => parts.push(box(min, max, 'limestone-light', 'site', { bevel: 0.01 })));
-    parts.push(box([bed.x0 + 0.12, 0, bed.z0 + 0.12], [bed.x1 - 0.12, 0.16, bed.z1 - 0.12], 'soil', 'site'));
-    parts.push(box([bed.x0 + 0.25, 0.16, bed.z0 + 0.25], [bed.x1 - 0.25, 0.8, bed.z0 + 1.05], 'foliage', 'site', { bevel: 0.1 }));
-    parts.push(box([bed.x0 + 0.3, 0.16, bed.z0 + 1.35], [bed.x1 - 0.3, 0.5, bed.z1 - 0.3], 'grass', 'site', { bevel: 0.12 }));
-
-    // A few large trees: inside the fence, framing the house, and in the meadow.
-    [
-      [-11.2, -7.6, 3.3, 3.8], [10.8, -6.8, 3.0, 3.6], [-10.4, 8.6, 2.3, 2.8], [11.6, 3.4, 2.1, 2.6],
-      [-29, -5, 3.6, 4.2], [-25, 14, 2.8, 3.4], [5, -27, 3.8, 4.4], [-10, -28, 3.0, 3.6], [31, 3, 3.0, 3.6], [28, -19, 3.6, 4.2], [-17, 27, 2.8, 3.4],
-    ].forEach(([x, z, crown, trunk]) => parts.push({ kind: 'tree', position: [x, 0, z], trunk, crown, mat: 'foliage', group: 'site' }));
+  // ---- the base ------------------------------------------------------------------
+  function buildBase(parts) {
+    parts.push(box([BASE.x0, -BASE.depth, BASE.z0], [BASE.x1, 0, BASE.z1], 'base', 'site', { bevel: 0.02 }));
   }
 
   // ---- the house ----------------------------------------------------------------
@@ -373,7 +270,7 @@
   function buildHouse() {
     pendingEnds = [];
     const parts = [];
-    buildSite(parts);
+    buildBase(parts);
 
     // ---- plinth, entrance, terrace --------------------------------------------
     parts.push(box([GF.x0 - 0.05, 0, GF.z0 - 0.05], [GF.x1 + 0.05, FF1, GF.z1 + 0.05], 'steel-grey', 'site'));
@@ -386,11 +283,11 @@
       parts.push(box([E.x0 + 0.04, 0, z0], [E.x1 - 0.04, top - 0.14, z1 - 0.02], 'steel-grey', 'site'));
     });
     parts.push(box([-5.3, 0, 5.05], [-4.45, 0.9, 7.2], 'steel-grey', 'site', { bevel: 0.015 }));
-    parts.push(box([-5.2, 0.9, 5.15], [-4.55, 1.22, 7.1], 'foliage', 'site', { bevel: 0.08 }));
+    parts.push({ kind: 'rbox', min: [-5.2, 0.9, 5.15], max: [-4.55, 1.18, 7.1], radius: 0.1, mat: 'decor', group: 'site' });
     parts.push(box([0.8, 0, 5.05], [1.0, 0.95, 7.2], 'steel-grey', 'site', { bevel: 0.012 }));
 
     // Terrace off the living room: limestone paving on a Steel Grey podium, steps
-    // down to the lawn on the east, a planter and two loungers.
+    // down on the east, a planter and two loungers.
     parts.push(box([1.0, 0, GF.z1 + 0.05], [10, FF1, 9.5], 'steel-grey', 'site'));
     clad(parts, {
       plane: 'y', at: FF1, normal: 1, depth: 0.02, a: [1.0, 10], b: [GF.z1 + 0.05, 9.5], origin: [1.0, GF.z1],
@@ -401,11 +298,14 @@
       parts.push(box([x0, 0, 6.04], [x1 - 0.03, top - 0.12, 8.56], 'steel-grey', 'site'));
     });
     parts.push(box([1.4, FF1 + 0.02, 8.95], [6.2, 0.95, 9.4], 'steel-grey', 'site', { bevel: 0.012 }));
-    parts.push(box([1.5, 0.95, 9.03], [6.1, 1.28, 9.32], 'foliage', 'site', { bevel: 0.06 }));
+    // The planter holds soft clipped masses, as a model maker would make them.
+    [0, 1, 2, 3].forEach(k => parts.push({ kind: 'rbox', min: [1.5 + k * 1.16, 0.95, 9.04], max: [2.6 + k * 1.16, 1.2 + (k % 2) * 0.05, 9.31], radius: 0.11, mat: 'decor', group: 'site' }));
     [7.2, 8.4].forEach(x => {
-      parts.push(box([x, FF1 + 0.02, 6.3], [x + 0.7, 0.72, 8.2], 'wood', 'site', { bevel: 0.01 }));
-      parts.push(box([x + 0.04, 0.72, 6.6], [x + 0.66, 0.8, 8.16], 'fabric-light', 'site', { bevel: 0.025 }));
-      parts.push({ kind: 'beam', from: [x + 0.35, 0.86, 6.52], to: [x + 0.35, 1.22, 6.24], width: 0.62, height: 0.08, mat: 'fabric-light', group: 'site' });
+      const y = FF1 + 0.02;
+      parts.push({ kind: 'rbox', min: [x, y, 6.3], max: [x + 0.7, y + 0.22, 8.2], radius: 0.02, mat: 'wood', group: 'site' });
+      parts.push({ kind: 'rbox', min: [x + 0.03, y + 0.22, 6.68], max: [x + 0.67, y + 0.32, 8.17], radius: 0.04, mat: 'fabric-light', group: 'site' });
+      parts.push({ kind: 'beam', from: [x + 0.35, y + 0.3, 6.72], to: [x + 0.35, y + 0.68, 6.36], width: 0.62, height: 0.07, mat: 'fabric-light', group: 'site' });
+      parts.push({ kind: 'rbox', min: [x + 0.15, y + 0.52, 6.36], max: [x + 0.55, y + 0.7, 6.5], radius: 0.06, mat: 'decor', group: 'site' });
     });
 
     // ---- ground floor: limestone skin on a plaster core ---------------------------
@@ -558,24 +458,110 @@
       dark([X(0), y1, Z(-1, w)], [X(0.06), yH, Z(1, w)]);
       dark([X(0.06), y1, Z(-1, w)], [X(0.18), y1 + 0.01, Z(1, w)]);
     }
-    parts.push(box([2.2, FF1 + 0.02, 1.3], [5.5, FF1 + 0.03, 4.3], 'rug', 'gf-interior'));
-    parts.push(box([2.65, FF1 + 0.03, 2.25], [3.5, 0.8, 3.25], 'steel-grey-honed', 'gf-interior', { bevel: 0.01 }));
-    // Sofa facing the panno.
-    parts.push(box([4.36, FF1 + 0.03, 1.16], [5.24, 0.56, 4.34], 'poche', 'gf-interior'));
-    parts.push(box([4.3, 0.56, 1.1], [5.3, 0.78, 4.4], 'fabric', 'gf-interior', { bevel: 0.03 }));
-    parts.push(box([4.32, 0.78, 1.32], [5.02, 0.9, 2.74], 'fabric-light', 'gf-interior', { bevel: 0.035 }));
-    parts.push(box([4.32, 0.78, 2.76], [5.02, 0.9, 4.18], 'fabric-light', 'gf-interior', { bevel: 0.035 }));
-    parts.push(box([5.0, 0.78, 1.3], [5.3, 1.28, 4.2], 'fabric', 'gf-interior', { bevel: 0.04 }));
-    parts.push(box([4.3, 0.78, 1.1], [5.3, 1.02, 1.3], 'fabric', 'gf-interior', { bevel: 0.03 }));
-    parts.push(box([4.3, 0.78, 4.2], [5.3, 1.02, 4.4], 'fabric', 'gf-interior', { bevel: 0.03 }));
-    // Armchair by the glazing, facing the room.
-    parts.push(box([2.6, FF1 + 0.03, 3.85], [3.4, 0.8, 4.6], 'fabric', 'gf-interior', { bevel: 0.03 }));
-    parts.push(box([2.6, 0.8, 4.4], [3.4, 1.25, 4.6], 'fabric', 'gf-interior', { bevel: 0.035 }));
-    parts.push(box([2.64, 0.8, 3.88], [3.36, 0.88, 4.4], 'fabric-light', 'gf-interior', { bevel: 0.03 }));
-    // Floor lamp.
-    cyl(parts, [5.6, FF1 + 0.02, 0.85], 0.16, 0.02, 'metal-dark', 'gf-interior');
-    cyl(parts, [5.6, FF1 + 0.04, 0.85], 0.012, 1.1, 'metal-dark', 'gf-interior');
-    cyl(parts, [5.6, 1.45, 0.85], 0.22, 0.3, 'shade', 'gf-interior', { radiusTop: 0.19 });
+    // ---- furniture, as in a design project ---------------------------------------
+    // Soft upholstered forms (rounded, shaded smooth), turned tables and
+    // lamps, a few quiet objects. Same layout as before.
+    const F = FF1 + 0.02, G = 'gf-interior';
+    const rbox = (min, max, r, mat, group = G) => parts.push({ kind: 'rbox', min, max, radius: r, mat, group });
+    const lathe = (base, profile, mat, group = G, segments = 40) => parts.push({ kind: 'lathe', base, profile, mat, group, segments });
+    const beam = (from, to, w, mat, group = G) => parts.push({ kind: 'beam', from, to, width: w, height: w, mat, group });
+    const zr = (a, b) => [Math.min(a, b), Math.max(a, b)];
+    // A vase with a few dry branches.
+    const branches = (x, y, z, h, seed) => {
+      for (let k = 0; k < 5; k++) {
+        const a = seed + k * 1.3, l = h * (0.7 + ((k * 37) % 10) / 30);
+        const tip = [x + Math.cos(a) * l * 0.35, y + l, z + Math.sin(a) * l * 0.35];
+        beam([x, y, z], tip, 0.007, 'wood-dark');
+        beam(tip, [tip[0] + Math.cos(a + 0.8) * 0.12, tip[1] + 0.06, tip[2] + Math.sin(a + 0.8) * 0.12], 0.005, 'wood-dark');
+      }
+    };
+    const vase = (x, y, z, h, w) => lathe([x, y, z], [[0, 0], [w * 0.7, 0], [w, h * 0.35], [w * 0.85, h * 0.75], [w * 0.4, h * 0.95], [w * 0.45, h], [0, h]], 'ceramic');
+    // A lounge armchair; facing +1 looks towards +z.
+    const armchair = (cx, cz, facing) => {
+      const Z = (a, b) => zr(cz + facing * a, cz + facing * b);
+      const [p0, p1] = Z(-0.34, 0.34);
+      rbox([cx - 0.34, F, p0], [cx + 0.34, F + 0.05, p1], 0.01, 'wood-dark');
+      const [b0, b1] = Z(-0.4, 0.4);
+      rbox([cx - 0.41, F + 0.05, b0], [cx + 0.41, F + 0.34, b1], 0.06, 'fabric');
+      const [s0, s1] = Z(-0.24, 0.38);
+      rbox([cx - 0.3, F + 0.32, s0], [cx + 0.3, F + 0.45, s1], 0.055, 'fabric-light');
+      const [k0, k1] = Z(-0.4, -0.2);
+      rbox([cx - 0.41, F + 0.32, k0], [cx + 0.41, F + 0.8, k1], 0.08, 'fabric');
+      [-1, 1].forEach(sx => rbox([cx + (sx < 0 ? -0.41 : 0.29), F + 0.32, b0], [cx + (sx < 0 ? -0.29 : 0.41), F + 0.6, b1], 0.055, 'fabric'));
+    };
+
+    // Living room: a soft rug, the sofa facing the panno, two lounge chairs
+    // across a round stone table.
+    rbox([1.95, F, 1.1], [5.8, F + 0.012, 4.5], 0.005, 'rug');
+    rbox([4.42, F, 1.15], [5.25, F + 0.06, 4.35], 0.01, 'wood-dark');
+    rbox([4.28, F + 0.06, 1.0], [5.4, F + 0.27, 4.5], 0.05, 'fabric');
+    [[1.24, 2.24], [2.25, 3.25], [3.26, 4.26]].forEach(([z0, z1]) => {
+      rbox([4.29, F + 0.25, z0], [5.12, F + 0.4, z1], 0.065, 'fabric-light');
+      rbox([4.96, F + 0.36, z0 + 0.01], [5.2, F + 0.84, z1 - 0.01], 0.1, 'fabric-light');
+    });
+    rbox([5.12, F + 0.25, 1.0], [5.4, F + 0.7, 4.5], 0.07, 'fabric');
+    [[1.0, 1.24], [4.26, 4.5]].forEach(([z0, z1]) => rbox([4.28, F + 0.25, z0], [5.4, F + 0.55, z1], 0.08, 'fabric'));
+    rbox([4.84, F + 0.4, 1.34], [5.0, F + 0.8, 1.76], 0.07, 'decor');
+    rbox([4.84, F + 0.4, 3.74], [5.0, F + 0.8, 4.16], 0.07, 'decor');
+    rbox([4.4, F + 0.4, 3.45], [4.98, F + 0.425, 3.98], 0.01, 'fabric');   // a folded throw
+    // Round table: a turned pedestal under a thick limestone top.
+    lathe([3.35, F, 2.75], [[0, 0], [0.3, 0], [0.3, 0.006], [0.25, 0.05], [0.22, 0.33], [0, 0.33]], 'wood-dark');
+    lathe([3.35, F + 0.33, 2.75], [[0, 0], [0.56, 0], [0.578, 0.014], [0.578, 0.036], [0.56, 0.05], [0, 0.05]], 'limestone-light', G, 64);
+    rbox([3.02, F + 0.38, 2.5], [3.38, F + 0.405, 2.78], 0.004, 'decor');
+    rbox([3.05, F + 0.405, 2.53], [3.35, F + 0.428, 2.76], 0.004, 'fabric');
+    lathe([3.62, F + 0.38, 2.95], [[0, 0], [0.06, 0], [0.13, 0.035], [0.155, 0.075], [0.145, 0.078], [0.12, 0.045], [0, 0.03]], 'ceramic');
+    armchair(3.35, 1.0, 1);
+    armchair(3.35, 4.25, -1);
+    // Side table and lamp at the sofa's end.
+    lathe([4.75, F, 0.66], [[0, 0], [0.19, 0], [0.19, 0.012], [0.035, 0.03], [0.03, 0.5], [0.22, 0.5], [0.22, 0.53], [0, 0.53]], 'metal-dark');
+    vase(4.72, F + 0.53, 0.62, 0.22, 0.07);
+    // Floor lamp: a weighted disc, a thin stem, a soft drum.
+    lathe([5.6, F, 0.85], [[0, 0], [0.17, 0], [0.17, 0.012], [0.03, 0.026], [0, 0.026]], 'metal-dark');
+    beam([5.6, F + 0.02, 0.85], [5.6, 1.32, 0.85], 0.016, 'metal-dark');
+    lathe([5.6, 1.3, 0.85], [[0, 0], [0.21, 0], [0.2, 0.32], [0, 0.32]], 'shade');
+    // By the glazing: a tall vase with branches.
+    vase(6.25, F, 4.35, 0.62, 0.17);
+    branches(6.25, F + 0.6, 4.35, 0.9, 0.4);
+    // On the mantel shelf.
+    vase(1.28, 1.52, 2.32, 0.26, 0.06);
+    vase(1.3, 1.52, 3.45, 0.16, 0.07);
+
+    // ---- hall: a dining table ----------------------------------------------------
+    const DZ = -1.9;   // the table's near edge
+    rbox([-3.45, F + 0.72, DZ], [-1.35, F + 0.76, DZ + 1.0], 0.018, 'wood');
+    [-3.2, -1.68].forEach(x => rbox([x, F, DZ + 0.14], [x + 0.08, F + 0.72, DZ + 0.86], 0.012, 'wood'));
+    rbox([-3.2, F + 0.62, DZ + 0.46], [-1.6, F + 0.67, DZ + 0.54], 0.01, 'wood');
+    const chair = (cx, cz, facing) => {
+      const back = cz - facing * 0.22;
+      [[-0.2, -0.2], [0.2, -0.2], [0.2, 0.2], [-0.2, 0.2]].forEach(([dx, dz]) => beam([cx + dx, F, cz + dz], [cx + dx * 0.95, F + 0.43, cz + dz * 0.95], 0.028, 'wood'));
+      rbox([cx - 0.23, F + 0.42, cz - 0.23], [cx + 0.23, F + 0.48, cz + 0.23], 0.025, 'fabric-light');
+      const [z0, z1] = zr(back, back + facing * 0.045);
+      rbox([cx - 0.22, F + 0.6, z0], [cx + 0.22, F + 0.86, z1], 0.02, 'wood');
+      [-0.2, 0.2].forEach(dx => beam([cx + dx, F + 0.43, back + facing * 0.02], [cx + dx, F + 0.62, back + facing * 0.02], 0.026, 'wood'));
+    };
+    [-2.95, -2.4, -1.85].forEach(x => { chair(x, DZ - 0.22, 1); chair(x, DZ + 1.22, -1); });
+    vase(-2.4, F + 0.76, DZ + 0.5, 0.3, 0.09);
+    branches(-2.4, F + 1.02, DZ + 0.5, 0.55, 1.7);
+    rbox([-3.75, F, DZ - 0.75], [-1.05, F + 0.01, DZ + 1.75], 0.004, 'rug');
+    // Console on the partition, an artwork above it.
+    rbox([0.5, F + 0.1, 2.0], [0.93, F + 0.78, 3.6], 0.012, 'wood-dark');
+    rbox([0.48, F + 0.78, 1.98], [0.93, F + 0.82, 3.62], 0.008, 'wood-dark');
+    vase(0.7, F + 0.82, 2.3, 0.4, 0.1);
+    branches(0.7, F + 1.18, 2.3, 0.5, 2.9);
+    lathe([0.7, F + 0.82, 3.25], [[0, 0], [0.12, 0], [0.16, 0.05], [0.17, 0.08], [0, 0.06]], 'ceramic');
+    rbox([0.895, 1.55, 2.15], [0.93, 2.55, 3.45], 0.006, 'decor');
+    rbox([0.885, 1.6, 2.2], [0.9, 2.5, 3.4], 0.004, 'fabric-light');
+
+    // ---- kitchen details -------------------------------------------------------------
+    [3.0, 3.9, 4.8].forEach(x => {
+      beam([x, SLAB, -2.65], [x, 2.55, -2.65], 0.006, 'metal-dark');
+      lathe([x, 2.28, -2.65], [[0, 0], [0.15, 0], [0.16, 0.02], [0.11, 0.22], [0.025, 0.28], [0, 0.28]], 'shade');
+    });
+    lathe([4.55, 1.35, -2.7], [[0, 0], [0.08, 0], [0.18, 0.05], [0.2, 0.09], [0.19, 0.092], [0.16, 0.055], [0, 0.04]], 'ceramic');
+    rbox([5.3, 1.35, -4.66], [5.72, 1.92, -4.635], 0.008, 'wood');
+    rbox([5.5, 1.35, -4.635], [5.82, 1.72, -4.61], 0.008, 'wood-dark');
+    vase(2.75, 1.35, -4.5, 0.22, 0.06);
+
     // Wide stone sill with a thick front edge.
     parts.push(box([6.36, 1.26, 0.5], [6.86, 1.31, 4.5], 'limestone-light', 'gf-interior', { bevel: 0.006, object: 'living-sill' }));
     parts.push(box([6.36, 1.2, 0.5], [6.41, 1.26, 4.5], 'limestone-light', 'gf-interior', { object: 'living-sill' }));
@@ -906,6 +892,229 @@
     parts.push(box([3.36, 4.55, bz0], [UF.x1 - 0.005, 4.562, -0.87], 'poche', 'uf-interior'));
     parts.push(box([2.95, 4.55, -3.7], [3.36, 4.605, -1.5], 'calacatta-nova', 'uf-interior', { bevel: 0.005, object: 'bath-sill' }));
 
+    // ---- the upper floor furnished ----------------------------------------------------
+    // A bedroom suite behind a partition (the bathroom is its en-suite), a
+    // dressing room along the north wall, a reading corner by the west
+    // window, a study and a small lounge on the south side.
+    const F2 = FF2 + 0.02, U = 'uf-interior';
+    const urbox = (min, max, r, mat) => rbox(min, max, r, mat, U);
+    const ulathe = (base, profile, mat, segments) => lathe(base, profile, mat, U, segments || 40);
+    const ubeam = (from, to, w, mat) => beam(from, to, w, mat, U);
+    const uvase = (x, y, z, h, w) => ulathe([x, y, z], [[0, 0], [w * 0.7, 0], [w, h * 0.35], [w * 0.85, h * 0.75], [w * 0.4, h * 0.95], [w * 0.45, h], [0, h]], 'ceramic');
+    const ubranches = (x, y, z, h, seed) => {
+      for (let k = 0; k < 5; k++) {
+        const a = seed + k * 1.3, l = h * (0.7 + ((k * 37) % 10) / 30);
+        const tip = [x + Math.cos(a) * l * 0.35, y + l, z + Math.sin(a) * l * 0.35];
+        ubeam([x, y, z], tip, 0.007, 'wood-dark');
+        ubeam(tip, [tip[0] + Math.cos(a + 0.8) * 0.12, tip[1] + 0.06, tip[2] + Math.sin(a + 0.8) * 0.12], 0.005, 'wood-dark');
+      }
+    };
+    const tableLamp = (x, y, z) => {
+      ulathe([x, y, z], [[0, 0], [0.07, 0], [0.09, 0.08], [0.07, 0.2], [0.02, 0.24], [0, 0.24]], 'ceramic');
+      ulathe([x, y + 0.24, z], [[0, 0], [0.15, 0], [0.12, 0.2], [0, 0.2]], 'shade');
+    };
+    const floorLamp = (x, y, z) => {
+      ulathe([x, y, z], [[0, 0], [0.16, 0], [0.16, 0.012], [0.03, 0.026], [0, 0.026]], 'metal-dark');
+      ubeam([x, y + 0.02, z], [x, y + 1.32, z], 0.016, 'metal-dark');
+      ulathe([x, y + 1.3, z], [[0, 0], [0.2, 0], [0.19, 0.3], [0, 0.3]], 'shade');
+    };
+    // A sofa with its back on the +x side, facing -x.
+    const sofa = (y, x0, x1, z0, z1, seats) => {
+      const arm = 0.24, inner = (z1 - z0 - 2 * arm) / seats;
+      urbox([x0 + 0.14, y, z0 + 0.15], [x1 - 0.15, y + 0.06, z1 - 0.15], 0.01, 'wood-dark');
+      urbox([x0, y + 0.06, z0], [x1, y + 0.27, z1], 0.05, 'fabric');
+      for (let k = 0; k < seats; k++) {
+        const a = z0 + arm + k * inner + 0.005, b = a + inner - 0.01;
+        urbox([x0 + 0.01, y + 0.25, a], [x1 - 0.28, y + 0.4, b], 0.065, 'fabric-light');
+        urbox([x1 - 0.44, y + 0.36, a + 0.01], [x1 - 0.2, y + 0.84, b - 0.01], 0.1, 'fabric-light');
+      }
+      urbox([x1 - 0.28, y + 0.25, z0], [x1, y + 0.7, z1], 0.07, 'fabric');
+      [[z0, z0 + arm], [z1 - arm, z1]].forEach(([a, b]) => urbox([x0, y + 0.25, a], [x1, y + 0.55, b], 0.08, 'fabric'));
+      urbox([x1 - 0.56, y + 0.4, z0 + arm + 0.1], [x1 - 0.4, y + 0.8, z0 + arm + 0.52], 0.07, 'decor');
+    };
+    const uchair = (cx, cz, facing) => {
+      const back = cz - facing * 0.22;
+      [[-0.2, -0.2], [0.2, -0.2], [0.2, 0.2], [-0.2, 0.2]].forEach(([dx, dz]) => ubeam([cx + dx, F2, cz + dz], [cx + dx * 0.95, F2 + 0.43, cz + dz * 0.95], 0.028, 'wood'));
+      urbox([cx - 0.23, F2 + 0.42, cz - 0.23], [cx + 0.23, F2 + 0.48, cz + 0.23], 0.025, 'fabric-light');
+      const [z0, z1] = zr(back, back + facing * 0.045);
+      urbox([cx - 0.22, F2 + 0.6, z0], [cx + 0.22, F2 + 0.86, z1], 0.02, 'wood');
+      [-0.2, 0.2].forEach(dx => ubeam([cx + dx, F2 + 0.43, back + facing * 0.02], [cx + dx, F2 + 0.62, back + facing * 0.02], 0.026, 'wood'));
+    };
+    const uarmchair = (cx, cz, facing) => {
+      const Z = (a, b) => zr(cz + facing * a, cz + facing * b);
+      const [p0, p1] = Z(-0.34, 0.34);
+      urbox([cx - 0.34, F2, p0], [cx + 0.34, F2 + 0.05, p1], 0.01, 'wood-dark');
+      const [b0, b1] = Z(-0.4, 0.4);
+      urbox([cx - 0.41, F2 + 0.05, b0], [cx + 0.41, F2 + 0.34, b1], 0.06, 'fabric');
+      const [s0, s1] = Z(-0.24, 0.38);
+      urbox([cx - 0.3, F2 + 0.32, s0], [cx + 0.3, F2 + 0.45, s1], 0.055, 'fabric-light');
+      const [k0, k1] = Z(-0.4, -0.2);
+      urbox([cx - 0.41, F2 + 0.32, k0], [cx + 0.41, F2 + 0.8, k1], 0.08, 'fabric');
+      [-1, 1].forEach(sx => urbox([cx + (sx < 0 ? -0.41 : 0.29), F2 + 0.32, b0], [cx + (sx < 0 ? -0.29 : 0.41), F2 + 0.6, b1], 0.055, 'fabric'));
+    };
+
+    // The bedroom's partition (a door by the bathroom's door).
+    wall(parts, { axis: 'x', outer: -1.07, inward: 1, u: [-0.8, ufIn.z1], v: [FF2, TOP], group: U, cap: true,
+      layers: [{ t: 0.14, mat: 'plaster' }], openings: [{ u0: -0.55, u1: 0.45, v0: FF2, v1: 5.9 }] });
+
+    // Bedroom: a wall of our limestone behind the bed (a showroom object),
+    // an upholstered bed against it, facing the terrace door; a stone sill
+    // in the south window.
+    clad(parts, {
+      plane: 'x', at: -0.93, normal: 1, depth: 0.036, a: [0.8, 4.65], b: [F2, TOP], origin: [0.8, F2],
+      module: [1.2, 0.8], stagger: 0.5, gap: 0.005, chamfer: 0.005, mat: 'limestone', group: U, object: 'bedroom-wall',
+    });
+    parts.push(box([-0.93, 4.6, 5.96], [2.6, 4.66, 6.3], 'limestone-light', U, { bevel: 0.006, object: 'bedroom-sill' }));
+    {
+      const x0 = -0.894, x1 = 1.25, z0 = 2.0, z1 = 3.85;
+      urbox([-0.6, F2, 1.0], [2.4, F2 + 0.012, 4.85], 0.005, 'rug');
+      urbox([x0 + 0.12, F2, z0 + 0.12], [x1 - 0.12, F2 + 0.08, z1 - 0.12], 0.01, 'wood-dark');
+      urbox([x0 + 0.08, F2 + 0.08, z0], [x1, F2 + 0.32, z1], 0.04, 'fabric');
+      urbox([x0 + 0.12, F2 + 0.32, z0 + 0.04], [x1 - 0.03, F2 + 0.53, z1 - 0.04], 0.06, 'fabric-light');
+      urbox([x0 + 0.62, F2 + 0.5, z0 + 0.01], [x1 + 0.01, F2 + 0.58, z1 - 0.01], 0.04, 'decor');
+      urbox([x1 - 0.48, F2 + 0.58, z0 + 0.0], [x1 + 0.015, F2 + 0.61, z1 - 0.0], 0.012, 'fabric');
+      [[z0 + 0.1, (z0 + z1) / 2 - 0.03], [(z0 + z1) / 2 + 0.03, z1 - 0.1]].forEach(([a, b]) => {
+        urbox([x0 + 0.13, F2 + 0.52, a], [x0 + 0.32, F2 + 0.96, b], 0.08, 'fabric-light');
+        urbox([x0 + 0.3, F2 + 0.52, a + 0.12], [x0 + 0.45, F2 + 0.84, b - 0.12], 0.07, 'decor');
+      });
+      urbox([x0, F2, z0 - 0.12], [x0 + 0.12, F2 + 1.3, z1 + 0.12], 0.045, 'fabric');
+      // Bedside tables and lamps.
+      [[z0 - 0.66, z0 - 0.18], [z1 + 0.18, z1 + 0.66]].forEach(([a, b]) => {
+        urbox([x0, F2 + 0.04, a], [x0 + 0.46, F2 + 0.52, b], 0.015, 'wood-dark');
+        urbox([x0 + 0.03, F2, a + 0.05], [x0 + 0.43, F2 + 0.04, b - 0.05], 0.005, 'wood-dark');
+        tableLamp(x0 + 0.24, F2 + 0.52, (a + b) / 2);
+      });
+      // A bench at the foot of the bed.
+      urbox([x1 + 0.18, F2, z0 + 0.15], [x1 + 0.6, F2 + 0.44, z1 - 0.15], 0.05, 'fabric');
+      // An armchair and a lamp in the window corner, a vase by the terrace door.
+      uarmchair(2.35, 5.55, -1);
+      floorLamp(2.95, F2, 5.95);
+      uvase(2.95, F2, 0.6, 0.62, 0.17);
+      ubranches(2.95, F2 + 0.6, 0.6, 0.9, 2.2);
+      // A low chest of drawers on the partition, an artwork above it.
+      urbox([-0.93, F2 + 0.06, 4.75], [-0.45, F2 + 0.78, 6.1], 0.012, 'wood-dark');
+      [0, 1, 2].forEach(k => urbox([-0.452, F2 + 0.1 + k * 0.226, 4.79], [-0.44, F2 + 0.31 + k * 0.226, 6.06], 0.003, 'wood-dark'));
+      uvase(-0.7, F2 + 0.78, 5.0, 0.3, 0.08);
+      urbox([-0.93, F2 + 1.05, 4.95], [-0.9, F2 + 1.95, 5.9], 0.006, 'decor');
+      urbox([-0.9, F2 + 1.1, 5.0], [-0.885, F2 + 1.9, 5.85], 0.004, 'fabric-light');
+    }
+
+    // Dressing room along the north wall: open wardrobes, clothes on rails,
+    // folded stacks, a round pouf on a round rug.
+    {
+      const zb = ufIn.z0, zf = ufIn.z0 + 0.6, xa = -8.1, xb = -3.62, top = F2 + 2.4;
+      parts.push(box([xa, F2 + 0.12, zb], [xb, top - 0.04, zb + 0.03], 'cabinet', U));
+      parts.push(box([xa, top - 0.04, zb], [xb, top, zf], 'cabinet', U));
+      parts.push(box([xa, F2, zb], [xb, F2 + 0.12, zf - 0.04], 'cabinet', U));
+      const bays = 4, bw = (xb - xa) / bays;
+      for (let k = 0; k <= bays; k++) urbox([xa + k * bw - 0.012, F2, zb], [xa + k * bw + 0.012, top, zf], 0.004, 'cabinet');
+      const tones = ['fabric', 'fabric-light', 'decor', 'rug', 'fabric-light', 'fabric', 'decor'];
+      for (let k = 0; k < bays; k++) {
+        const b0 = xa + k * bw + 0.03, b1 = b0 + bw - 0.06;
+        urbox([b0, F2 + 1.95, zb], [b1, F2 + 1.98, zf - 0.02], 0.004, 'cabinet');
+        if (k === 3) {
+          // Shelves of folded things.
+          [0.12, 0.5, 0.88, 1.26, 1.64].forEach((h, i) => {
+            urbox([b0, F2 + h, zb], [b1, F2 + h + 0.025, zf - 0.02], 0.004, 'cabinet');
+            for (let s = 0; s < 3; s++) {
+              const sx = b0 + 0.06 + s * (b1 - b0 - 0.12) / 3;
+              urbox([sx, F2 + h + 0.025, zb + 0.08], [sx + 0.28, F2 + h + 0.1 + ((i + s) % 3) * 0.04, zf - 0.08], 0.02, tones[(i + s) % tones.length]);
+            }
+          });
+          continue;
+        }
+        ubeam([b0, F2 + 1.86, (zb + zf) / 2], [b1, F2 + 1.86, (zb + zf) / 2], 0.02, 'metal');
+        const n = 9, step = (b1 - b0 - 0.1) / n;
+        for (let i = 0; i < n; i++) {
+          const gx = b0 + 0.05 + i * step, long = (i + k) % 3 !== 0;
+          urbox([gx, F2 + (long ? 0.8 : 1.15), zb + 0.08], [gx + 0.045, F2 + 1.84, zf - 0.06], 0.018, tones[(i * 3 + k) % tones.length]);
+        }
+        // Shoes below.
+        for (let i = 0; i < 4; i++) {
+          const sx = b0 + 0.08 + i * (b1 - b0 - 0.16) / 4;
+          urbox([sx, F2 + 0.12, zb + 0.15], [sx + 0.2, F2 + 0.2, zf - 0.12], 0.03, i % 2 ? 'wood-dark' : 'decor');
+        }
+      }
+      ulathe([-5.85, F2, -3.4], [[0, 0], [1.0, 0], [1.0, 0.01], [0, 0.01]], 'rug', 64);
+      ulathe([-5.85, F2 + 0.01, -3.4], [[0, 0], [0.34, 0], [0.4, 0.07], [0.41, 0.34], [0.36, 0.43], [0, 0.45]], 'fabric', 48);
+      // A full-height mirror leaning on the stair's guard side.
+      urbox([-3.6, F2, -3.9], [-3.54, F2 + 1.9, -3.2], 0.02, 'wood-dark');
+      urbox([-3.66, F2 + 0.04, -3.86], [-3.6, F2 + 1.86, -3.24], 0.004, 'mirror');
+    }
+
+    // Reading corner by the west window: a daybed with cushions, a side
+    // table, a lamp.
+    {
+      const xw = ufIn.x0;
+      urbox([xw + 0.05, F2, -0.75], [xw + 0.9, F2 + 0.3, 2.75], 0.04, 'fabric');
+      urbox([xw + 0.07, F2 + 0.3, -0.73], [xw + 0.88, F2 + 0.43, 2.73], 0.05, 'fabric-light');
+      [[-0.6, 0.5], [0.55, 1.65], [1.7, 2.6]].forEach(([a, b]) => urbox([xw + 0.02, F2 + 0.42, a], [xw + 0.24, F2 + 0.86, b], 0.09, 'fabric-light'));
+      urbox([xw + 0.24, F2 + 0.43, 0.6], [xw + 0.38, F2 + 0.75, 0.98], 0.06, 'decor');
+      ulathe([xw + 0.45, F2, 3.08], [[0, 0], [0.18, 0], [0.18, 0.012], [0.035, 0.03], [0.03, 0.5], [0.22, 0.5], [0.22, 0.53], [0, 0.53]], 'metal-dark');
+      uvase(xw + 0.42, F2 + 0.53, 3.05, 0.2, 0.06);
+      floorLamp(xw + 0.5, F2, -1.2);
+      urbox([xw + 0.95, F2, -0.4], [xw + 1.45, F2 + 0.012, 2.4], 0.005, 'rug');
+    }
+
+    // Study under the south-west window: a desk, a chair, books; a tall
+    // bookcase on the west wall.
+    {
+      urbox([-7.4, F2 + 0.72, 5.5], [-5.0, F2 + 0.76, 6.16], 0.012, 'wood');
+      [-7.36, -5.12].forEach(x => urbox([x, F2, 5.56], [x + 0.08, F2 + 0.72, 6.1], 0.01, 'wood'));
+      uchair(-6.2, 5.05, 1);
+      tableLamp(-5.35, F2 + 0.76, 5.85);
+      urbox([-7.1, F2 + 0.76, 5.7], [-6.75, F2 + 0.8, 5.98], 0.004, 'decor');
+      urbox([-6.4, F2 + 0.76, 5.62], [-6.0, F2 + 0.775, 5.92], 0.004, 'metal-dark');
+      const xw = ufIn.x0, bz0 = 3.55, bz1 = 5.25;
+      [bz0, bz1 - 0.025].forEach(z => urbox([xw, F2, z], [xw + 0.36, F2 + 2.3, z + 0.025], 0.004, 'wood-dark'));
+      parts.push(box([xw, F2, bz0], [xw + 0.02, F2 + 2.3, bz1], 'wood-dark', U));
+      const bookTones = ['decor', 'fabric', 'fabric-light', 'wood', 'rug', 'decor', 'wood-dark', 'fabric-light'];
+      [0.0, 0.45, 0.9, 1.35, 1.8, 2.27].forEach((h, i) => {
+        urbox([xw, F2 + h, bz0], [xw + 0.36, F2 + h + 0.025, bz1], 0.004, 'wood-dark');
+        if (h > 2) return;
+        let z = bz0 + 0.06;
+        for (let k = 0; z < bz1 - 0.3; k++) {
+          const t = 0.025 + ((k * 7 + i * 3) % 5) * 0.008, hb = 0.22 + ((k * 5 + i) % 4) * 0.035;
+          if ((k + i) % 7 === 6) { z += 0.12; continue; }
+          urbox([xw + 0.06, F2 + h + 0.025, z], [xw + 0.3, F2 + h + 0.025 + hb, z + t], 0.004, bookTones[(k + i * 2) % bookTones.length]);
+          z += t + 0.003;
+        }
+        if (i % 2 === 0) uvase(xw + 0.18, F2 + h + 0.025, bz1 - 0.15, 0.2, 0.06);
+      });
+    }
+
+    // Small lounge against the partition: a sofa, a round table, a rug.
+    sofa(F2, -2.05, -1.08, 3.75, 5.95, 2);
+    urbox([-3.45, F2, 3.65], [-1.2, F2 + 0.012, 6.05], 0.005, 'rug');
+    ulathe([-2.75, F2, 4.85], [[0, 0], [0.42, 0], [0.42, 0.012], [0.36, 0.05], [0.36, 0.38], [0.42, 0.38], [0.42, 0.42], [0, 0.42]], 'wood-dark', 56);
+    urbox([-2.92, F2 + 0.42, 4.7], [-2.62, F2 + 0.445, 4.95], 0.004, 'decor');
+    uvase(-2.55, F2 + 0.42, 5.05, 0.22, 0.07);
+
+    // ---- the roof terrace ------------------------------------------------------------
+    {
+      const R = 'gf-roof', y = FF2 + 0.02;
+      const r = (min, max, rad, mat) => rbox(min, max, rad, mat, R);
+      // An outdoor sofa against the east coping, a low round table, two planters.
+      r([5.9, y, -2.6], [6.75, y + 0.06, 0.6], 0.01, 'wood-dark');
+      r([5.75, y + 0.06, -2.75], [6.85, y + 0.3, 0.75], 0.05, 'fabric');
+      [[-2.5, -1.35], [-1.33, -0.18], [-0.16, 0.5]].forEach(([a, b]) => {
+        r([5.77, y + 0.28, a], [6.58, y + 0.42, b], 0.06, 'fabric-light');
+        r([6.42, y + 0.38, a + 0.01], [6.66, y + 0.82, b - 0.01], 0.1, 'fabric-light');
+      });
+      r([6.58, y + 0.28, -2.75], [6.85, y + 0.68, 0.75], 0.07, 'fabric');
+      lathe([4.95, y, -1.0], [[0, 0], [0.5, 0], [0.5, 0.01], [0.42, 0.04], [0.42, 0.34], [0.5, 0.34], [0.5, 0.38], [0, 0.38]], 'limestone-light', R, 56);
+      [[6.4, -4.3], [6.4, 4.2]].forEach(([x, z]) => {
+        lathe([x, y, z], [[0, 0], [0.3, 0], [0.34, 0.6], [0.3, 0.6], [0.28, 0.56], [0, 0.56]], 'ceramic', R, 48);
+        lathe([x, y + 0.56, z], [[0, 0], [0.32, 0], [0.36, 0.25], [0.28, 0.5], [0.1, 0.62], [0, 0.63]], 'decor', R, 32);
+      });
+      // Two lounge chairs on the south side.
+      [[4.2, 3.2], [5.3, 3.2]].forEach(([x, z]) => {
+        r([x - 0.36, y, z - 0.95], [x + 0.36, y + 0.22, z + 0.95], 0.02, 'wood');
+        r([x - 0.33, y + 0.22, z - 0.55], [x + 0.33, y + 0.32, z + 0.92], 0.04, 'fabric-light');
+        parts.push({ kind: 'beam', from: [x, y + 0.3, z - 0.5], to: [x, y + 0.68, z - 0.86], width: 0.62, height: 0.07, mat: 'fabric-light', group: R });
+      });
+    }
+
     return parts.concat(sectionEnds(parts));
   }
 
@@ -949,6 +1158,11 @@
 
   // Axis-aligned bounds of a part.
   function partBounds(part) {
+    if (part.kind === 'rbox') return { min: part.min, max: part.max };
+    if (part.kind === 'lathe') {
+      const r = Math.max(...part.profile.map(q => q[0])), h = Math.max(...part.profile.map(q => q[1]));
+      return { min: [part.base[0] - r, part.base[1], part.base[2] - r], max: [part.base[0] + r, part.base[1] + h, part.base[2] + r] };
+    }
     if (part.kind === 'box' || part.kind === 'slats') return { min: part.min, max: part.max };
     if (part.kind === 'beam') {
       const h = Math.max(part.width, part.height) / 2;
@@ -968,10 +1182,6 @@
     if (part.kind === 'cyl') {
       const r = Math.max(part.radius, part.radiusTop || 0), [x, y, z] = part.base;
       return { min: [x - r, y, z - r], max: [x + r, y + part.height, z + r] };
-    }
-    if (part.kind === 'tree') {
-      const [x, , z] = part.position;
-      return { min: [x - part.crown, 0, z - part.crown], max: [x + part.crown, part.trunk + part.crown * 1.8, z + part.crown] };
     }
     return null;
   }
@@ -997,6 +1207,6 @@
 
   return {
     buildHouse, partBounds, jointSegments, claddingSlabs, solidRects,
-    LEVELS: { FF1, SLAB, FF2, TOP }, SITE: { PLOT, FENCE, PATH, GATE }, STAIR: Object.assign({ end: STAIR_END }, STAIR), LIGHTS,
+    LEVELS: { FF1, SLAB, FF2, TOP }, BASE, STAIR: Object.assign({ end: STAIR_END }, STAIR), LIGHTS,
   };
 });

@@ -166,39 +166,35 @@ test('stone cladding: slabs tile each surface exactly, in whole courses, with no
   assert.ok(joints(courses[0]).every(a => !joints(courses[1]).some(b => Math.abs(a - b) < 0.01)));
 });
 
-test('the plot is fenced: stone plinth, dark metal fins, stone pillars -- and no water anywhere', () => {
-  const { FENCE, PATH, GATE } = House.SITE;
+test('an architectural model: the house on one plain base -- no lawn, trees, fence, path or water (2026-11-08)', () => {
+  const { BASE } = House;
   assert.ok(!parts.some(p => p.mat === 'water'), 'no water');
-  assert.ok(!parts.some(p => p.kind !== 'joints' && House.partBounds(p).max[1] < -0.01), 'nothing sunk below grade (no basin)');
-  const house = parts.filter(p => p.kind === 'box' && p.group !== 'site');
-  house.forEach(p => assert.ok(p.min[0] > FENCE.x0 && p.max[0] < FENCE.x1 && p.min[2] > FENCE.z0 && p.max[2] < FENCE.z1, p.group + ' inside the fence'));
-  const near = (p, axis, at) => { const b = House.partBounds(p); const i = axis === 'x' ? 2 : 0; return b.min[i] <= at + 0.4 && b.max[i] >= at - 0.4; };
-  const fence = parts.filter(p => p.group === 'site' && !['joints', 'cladding', 'tree'].includes(p.kind) &&
-    [['x', FENCE.z0], ['x', FENCE.z1], ['z', FENCE.x0], ['z', FENCE.x1]].some(([axis, at]) => near(p, axis, at)) &&
-    House.partBounds(p).min[1] >= -0.001 && House.partBounds(p).max[1] > 0.3 &&
-    !(p.kind === 'box' && ['lawn', 'meadow'].includes(p.mat)));
-  [['x', FENCE.z0], ['x', FENCE.z1], ['z', FENCE.x0], ['z', FENCE.x1]].forEach(([axis, at]) => {
-    const side = fence.filter(p => near(p, axis, at));
-    assert.ok(side.some(p => p.mat === 'limestone' && Math.abs(p.max[1] - FENCE.plinth) < 1e-9), 'a stone plinth on ' + axis + at);
-    assert.ok(side.some(p => p.kind === 'slats' && p.mat === 'metal-dark'), 'metal fins on ' + axis + at);
-    assert.ok(side.some(p => p.mat === 'limestone' && p.max[1] > FENCE.height), 'stone pillars on ' + axis + at);
-  });
-  [[FENCE.x0, FENCE.z0], [FENCE.x1, FENCE.z0], [FENCE.x0, FENCE.z1], [FENCE.x1, FENCE.z1]].forEach(([x, z]) => {
-    assert.ok(fence.some(p => p.kind === 'box' && p.max[1] > FENCE.height && p.min[0] <= x && p.max[0] >= x && p.min[2] <= z && p.max[2] >= z), 'corner pillar ' + x + ',' + z);
-  });
-  // It never hides the house: low, and see-through between the fins.
-  fence.forEach(p => assert.ok(House.partBounds(p).max[1] <= 2.3, 'fence part ' + p.mat + ' is low'));
-  assert.ok(FENCE.height < House.LEVELS.FF1 + 1.5, 'below the ground-floor window heads');
-  parts.filter(p => p.kind === 'slats').forEach(p => assert.ok(p.pitch - p.width >= 0.08, 'open between the fins'));
-  // The gate: nothing but a flush threshold across the path at the fence line.
-  fence.filter(p => near(p, 'x', FENCE.z1)).forEach(p => {
+  assert.ok(!parts.some(p => p.kind === 'tree'), 'no trees');
+  ['lawn', 'meadow', 'foliage', 'grass', 'gravel', 'soil'].forEach(m => assert.ok(!parts.some(p => p.mat === m), 'no ' + m));
+  assert.ok(!parts.some(p => p.kind === 'slats'), 'no fence fins');
+  const base = parts.filter(p => p.mat === 'base');
+  assert.equal(base.length, 1, 'one base');
+  assert.deepEqual([base[0].min, base[0].max], [[BASE.x0, -BASE.depth, BASE.z0], [BASE.x1, 0, BASE.z1]]);
+  // Everything else stands on the base, inside its edges.
+  parts.filter(p => p.kind !== 'joints' && p.mat !== 'base').forEach(p => {
     const b = House.partBounds(p);
-    assert.ok(b.max[0] <= PATH.x0 - 0.15 || b.min[0] >= PATH.x1 + 0.15, p.mat + ' blocks the gate');
+    assert.ok(b.min[1] >= -0.001, p.group + ' ' + p.mat + ' sunk below the base');
+    assert.ok(b.min[0] >= BASE.x0 && b.max[0] <= BASE.x1 && b.min[2] >= BASE.z0 && b.max[2] <= BASE.z1, p.group + ' ' + p.mat + ' off the base');
   });
-  assert.ok(GATE.x0 < PATH.x0 && GATE.x1 > PATH.x1, 'the gate is wider than the path');
-  const path = parts.filter(p => p.kind === 'cladding' && p.plane === 'y' && p.a[0] === PATH.x0);
-  assert.ok(path.some(p => p.b[0] <= 7.05) && path.some(p => p.b[1] > FENCE.z1), 'the path runs from the entrance out through the gate');
-  assert.ok(parts.filter(p => p.kind === 'tree').length <= 12, 'a few large trees, not a forest');
+});
+
+test('furnished as a design project: soft upholstered forms, turned pieces, every room lived in', () => {
+  const soft = parts.filter(p => p.kind === 'rbox'), turned = parts.filter(p => p.kind === 'lathe');
+  soft.forEach(p => { [0, 1, 2].forEach(i => assert.ok(p.max[i] > p.min[i], 'degenerate rbox')); assert.ok(p.radius > 0 && p.radius <= Math.min(...[0, 1, 2].map(i => (p.max[i] - p.min[i]) / 2)) + 1e-9, 'radius fits'); });
+  turned.forEach(p => { assert.ok(p.profile.length >= 2 && p.segments >= 24); assert.equal(p.profile[0][0], 0, 'closed at the bottom'); assert.equal(p.profile[p.profile.length - 1][0], 0, 'closed at the top'); });
+  const has = (group, min, max) => soft.concat(turned).some(p => { const b = House.partBounds(p); return p.group === group && b.min[0] >= min[0] && b.max[0] <= max[0] && b.min[2] >= min[1] && b.max[2] <= max[1]; });
+  assert.ok(has('gf-interior', [4.2, 0.9], [5.5, 4.6]), 'the living-room sofa');
+  assert.ok(has('gf-interior', [-3.5, -2.2], [-1.3, -0.8]), 'the dining table in the hall');
+  assert.ok(has('uf-interior', [-0.95, 1.2], [1.9, 4.6]), 'the bed upstairs');
+  assert.ok(has('uf-interior', [-8.2, -4.8], [-3.5, -4.0]), 'the dressing room');
+  assert.ok(has('gf-roof', [3.6, -4.9], [6.9, 4.9]), 'the roof terrace');
+  // The ground-floor rooms' furniture stays below the upper floor (it is cut away there).
+  soft.concat(turned).filter(p => p.group === 'gf-interior').forEach(p => assert.ok(House.partBounds(p).max[1] < House.LEVELS.SLAB + 1e-9));
 });
 
 test('the terrace on the ground-floor roof has a balustrade on every open edge, standing on its coping', () => {
@@ -328,8 +324,8 @@ test('"what can I make here" lists each product of the zone once', () => {
   assert.deepEqual(ext.productsHere.map(p => p.key), ['fasad', 'stupeni', 'podokonnik', 'pol']);
 });
 
-test('all 6 zones exist and every zone has something to create', () => {
-  assert.deepEqual(Data.ZONES.map(z => z.id), ['exterior', 'hall', 'living', 'kitchen', 'staircase', 'bathroom']);
+test('all 7 zones exist and every zone has something to create', () => {
+  assert.deepEqual(Data.ZONES.map(z => z.id), ['exterior', 'hall', 'living', 'kitchen', 'staircase', 'bathroom', 'bedroom']);
   Data.ZONES.forEach(z => assert.ok(Data.objectsInZone(z.id).length >= 2, z.id));
 });
 
@@ -518,8 +514,8 @@ const STONE_FAMILY = {
   'steel-grey': 'steel-grey', 'steel-grey-honed': 'steel-grey',
   'viscont-white': 'viscont-white', 'calacatta-nova': 'calacatta-nova', majestic: 'majestic',
 };
-const NOT_STONE = new Set(['graphite', 'poche', 'grout', 'plaster', 'soil', 'wood', 'wood-dark', 'wood-floor', 'cabinet', 'fabric', 'fabric-light', 'rug', 'shade',
-  'metal', 'metal-dark', 'steel', 'hob-ring', 'glass', 'glass-smoke', 'glass-black', 'ceramic', 'basin', 'mirror', 'lamp', 'foliage', 'grass', 'lawn', 'meadow', 'gravel']);
+const NOT_STONE = new Set(['graphite', 'poche', 'grout', 'plaster', 'wood', 'wood-dark', 'wood-floor', 'cabinet', 'fabric', 'fabric-light', 'rug', 'shade',
+  'metal', 'metal-dark', 'steel', 'hob-ring', 'glass', 'glass-smoke', 'glass-black', 'ceramic', 'basin', 'mirror', 'lamp', 'decor', 'base']);
 const ofObject = id => parts.filter(p => p.object === id);
 
 test('one house, one set of stones: our limestone, Steel Grey, Viscont White, Calacatta Nova, Majestic', () => {
@@ -695,7 +691,7 @@ test('kitchen: an undermount sink cut into the worktop, a flush hob, real fronts
   assert.equal(parts.filter(p => p.kind === 'cyl' && p.mat === 'hob-ring').length, 4, 'four cooking zones');
   const doors = parts.filter(p => p.group === 'gf-interior' && p.kind === 'box' && ['wood', 'cabinet'].includes(p.mat) && Math.abs((p.max[2] - p.min[2]) - 0.02) < 1e-9);
   assert.ok(doors.length >= 15, 'separate fronts, not one block');
-  const legs = parts.filter(p => p.kind === 'beam' && p.mat === 'metal-dark' && p.group === 'gf-interior' && p.from[1] < 0.5 && p.to[1] > 1.1);
+  const legs = parts.filter(p => p.kind === 'beam' && p.mat === 'metal-dark' && p.group === 'gf-interior' && p.from[1] < 0.5 && p.to[1] > 1.1 && Math.abs(p.from[2] + 1.35) < 0.3);
   assert.equal(legs.length, 12, 'three stools on four legs');
   assert.ok(!parts.some(p => p.kind === 'cyl' && p.group === 'gf-interior' && p.base[2] === -1.35), 'no cylinder stools left');
 });
@@ -824,10 +820,10 @@ test('the fireplace replaced the low stone console, and the sofa faces it', () =
   const console = parts.filter(p => p.kind === 'box' && p.group === 'gf-interior' && p.mat === 'limestone-light' && !p.object &&
     House.partBounds(p).min[0] < 1.2 && House.partBounds(p).min[2] > 1.05 && House.partBounds(p).max[2] < 4.7);
   assert.deepEqual(console, []);
-  // The sofa: the fabric seat across the room, its middle on the fireplace's axis.
+  // The sofa: the upholstered base across the room, its middle on the fireplace's axis.
   const fire = ofObject('living-fireplace').map(p => House.partBounds(p));
   const zc = (Math.min(...fire.map(b => b.min[2])) + Math.max(...fire.map(b => b.max[2]))) / 2;
-  const seat = parts.find(p => p.mat === 'fabric' && p.kind === 'box' && Math.abs(p.min[0] - 4.3) < 1e-9 && Math.abs(p.min[1] - 0.56) < 1e-9);
+  const seat = parts.find(p => p.mat === 'fabric' && p.kind === 'rbox' && Math.abs(p.min[0] - 4.28) < 1e-9 && Math.abs(p.min[1] - 0.53) < 1e-9);
   const b = House.partBounds(seat);
   assert.ok(b.min[0] > Math.max(...fire.map(x => x.max[0])), 'across the room');
   assert.ok(Math.abs((b.min[2] + b.max[2]) / 2 - zc) < 0.15, 'facing the fireplace');

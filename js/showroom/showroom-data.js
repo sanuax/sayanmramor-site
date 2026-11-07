@@ -91,6 +91,14 @@
       hide: ['roof', 'uf-south', 'uf-east', 'bath-south'],
       stones: ['calacatta-nova', 'steel-grey'],
     },
+    {
+      id: 'bedroom', label: 'Спальня', title: 'Второй этаж',
+      caption: 'Спальня со стеной из светлого известняка и каменным подоконником, гардеробная, кабинет и выход на террасу.',
+      view: { position: [10.5, 15.5, 13.5], target: [-1.6, 3.8, 0.8] },
+      orbit: { minDistance: 6, maxDistance: 22, minPolar: 0.25, maxPolar: 1.1, azimuthRange: 0.9 },
+      hide: ['roof', 'uf-south', 'uf-east', 'uf-west', 'uf-north', 'bath-south'],
+      stones: ['calacatta-nova', 'steel-grey'],
+    },
   ];
 
   // Showroom objects. `anchor` sits on the object's visible surface (the
@@ -170,6 +178,13 @@
     { id: 'bath-sill', productKey: 'podokonnik', zone: 'bathroom',
       title: 'Подоконник в ванной', description: 'Каменный подоконник у окна ванной.',
       anchor: [3.05, 4.61, -2.6], offset: [-2.8, 1.6, 2.4] },
+    // Bedroom (the upper floor)
+    { id: 'bedroom-wall', productKey: 'stena', zone: 'bedroom',
+      title: 'Стена за кроватью', description: 'Облицовка стены спальни светлым известняком: крупные плиты вразбежку.',
+      anchor: [-0.89, 5.6, 2.9], offset: [4.4, 1.4, 1.4] },
+    { id: 'bedroom-sill', productKey: 'podokonnik', zone: 'bedroom',
+      title: 'Подоконник в спальне', description: 'Каменный подоконник у южного окна спальни.',
+      anchor: [0.8, 4.66, 6.1], offset: [1.2, 2.0, -3.4] },
   ];
 
   const PRODUCT_KEYS = PRODUCTS.map(p => p.key);

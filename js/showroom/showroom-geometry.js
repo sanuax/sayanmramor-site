@@ -155,26 +155,91 @@ export function toGeometry(b) {
   return g;
 }
 
-// White vertex colours for geometry built elsewhere (the materials
-// multiply by vertex colour).
-export function withWhite(geometry) {
-  const n = geometry.attributes.position.count;
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).fill(1), 3));
-  return geometry;
+// ---- soft forms: furniture, cushions, turned pieces -------------------------------
+// A triangle with its own (smooth) vertex normals.
+function triN(b, ps, ns, style) {
+  ps.forEach((p, i) => {
+    const n = ns[i];
+    b.pos.push(p[0], p[1], p[2]);
+    b.nrm.push(n[0], n[1], n[2]);
+    const ax = Math.abs(n[0]), ay = Math.abs(n[1]), az = Math.abs(n[2]);
+    const uv = ax >= ay && ax >= az ? [p[2], p[1]] : ay >= az ? [p[0], p[2]] : [p[0], p[1]];
+    b.uv.push(uv[0] + style.uvOffset[0], uv[1] + style.uvOffset[1]);
+    b.col.push(style.color[0], style.color[1], style.color[2]);
+  });
 }
 
-// A soft, irregular foliage mass: an icosphere pushed in and out by smooth
-// deterministic noise, shaded smooth (normals along the radius).
-export function blobGeometry() {
-  const g = new THREE.IcosahedronGeometry(1, 3);
-  const p = g.attributes.position;
-  const n = new Float32Array(p.count * 3);
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    const k = 1 + 0.11 * Math.sin(x * 4.1 + y * 2.3) * Math.cos(z * 3.7 - x * 1.3) + 0.07 * Math.sin(y * 7.9 + z * 5.3) + 0.05 * Math.cos(x * 9.1 - z * 6.7);
-    p.setXYZ(i, x * k, y * k, z * k);
-    n[i * 3] = x; n[i * 3 + 1] = y; n[i * 3 + 2] = z;
+// A box with every edge and corner rounded by `radius`, shaded smooth: an
+// upholstered cushion, a soft table top. Each face carries its own share of
+// the rounding (the 45 degrees next to it), in equal angular steps: 15
+// degrees on a cushion, 22.5 on a table edge, one step on a book's 4 mm edge.
+// Every face's grid of points is worked out once, then cut into triangles.
+export function pushRoundedBox(b, min, max, radius, style, seg = radius < 0.008 ? 1 : radius < 0.03 ? 2 : 3) {
+  const ctr = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
+  const h = [(max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2];
+  const r = Math.max(1e-4, Math.min(radius, h[0], h[1], h[2]));
+  const inner = [h[0] - r, h[1] - r, h[2] - r];
+  // Coordinates across a face along axis i: into the rounding, the flat, out of it.
+  const C = [0, 1, 2].map(i => {
+    const out = [];
+    for (let k = 0; k <= seg; k++) out.push(-inner[i] - r * Math.tan(((seg - k) / seg) * Math.PI / 4));
+    for (let k = 0; k <= seg; k++) out.push(inner[i] + r * Math.tan((k / seg) * Math.PI / 4));
+    return out;
+  });
+  const n = 2 * seg + 2, P = new Float64Array(n * n * 3), N = new Float64Array(n * n * 3);
+  const q = [0, 0, 0];
+  const { pos, nrm, uv, col } = b, [ou, ov] = style.uvOffset, [cr, cg, cb] = style.color;
+  const emit = k => {
+    const x = P[k], y = P[k + 1], z = P[k + 2], nx = N[k], ny = N[k + 1], nz = N[k + 2];
+    pos.push(x, y, z);
+    nrm.push(nx, ny, nz);
+    const ax = Math.abs(nx), ay = Math.abs(ny), az = Math.abs(nz);
+    if (ax >= ay && ax >= az) uv.push(z + ou, y + ov); else if (ay >= az) uv.push(x + ou, z + ov); else uv.push(x + ou, y + ov);
+    col.push(cr, cg, cb);
+  };
+  for (let f = 0; f < 3; f++) {
+    const a = (f + 1) % 3, d = (f + 2) % 3, A = C[a], D = C[d];
+    for (let sf = -1; sf <= 1; sf += 2) {
+      q[f] = sf * h[f];
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        q[a] = A[i]; q[d] = D[j];
+        const k = (i * n + j) * 3;
+        let l = 0;
+        for (let t = 0; t < 3; t++) {
+          const c = Math.max(-inner[t], Math.min(inner[t], q[t]));
+          P[k + t] = c; N[k + t] = q[t] - c; l += N[k + t] * N[k + t];
+        }
+        l = Math.sqrt(l) || 1;
+        for (let t = 0; t < 3; t++) { N[k + t] /= l; P[k + t] = ctr[t] + P[k + t] + N[k + t] * r; }
+      }
+      // Wind outward: (a, d, f) is a right-handed cycle.
+      for (let i = 0; i < n - 1; i++) for (let j = 0; j < n - 1; j++) {
+        const k00 = (i * n + j) * 3, k10 = ((i + 1) * n + j) * 3, k11 = ((i + 1) * n + j + 1) * 3, k01 = (i * n + j + 1) * 3;
+        if (sf > 0) { emit(k00); emit(k10); emit(k11); emit(k00); emit(k11); emit(k01); }
+        else { emit(k00); emit(k01); emit(k11); emit(k00); emit(k11); emit(k10); }
+      }
+    }
   }
-  g.setAttribute('normal', new THREE.BufferAttribute(n, 3));
-  return withWhite(g);
+}
+
+// A turned form round a vertical axis: profile [[radius, height], ...] from
+// the bottom up (heights above `base`), shaded smooth; radius 0 closes it.
+export function pushLathe(b, base, profile, segments, style) {
+  const [x, y, z] = base;
+  const nrm = profile.map((p, i) => {
+    const a = profile[Math.max(0, i - 1)], c = profile[Math.min(profile.length - 1, i + 1)];
+    const dr = c[0] - a[0], dy = c[1] - a[1];
+    const l = Math.hypot(dr, dy) || 1;
+    return [dy / l, -dr / l];   // outward in (r, y)
+  });
+  const cs = [], sn = [];
+  for (let s = 0; s <= segments; s++) { cs.push(Math.cos((s / segments) * Math.PI * 2)); sn.push(Math.sin((s / segments) * Math.PI * 2)); }
+  const P = (i, s) => [x + cs[s] * profile[i][0], y + profile[i][1], z + sn[s] * profile[i][0]];
+  const N = (i, s) => [cs[s] * nrm[i][0], nrm[i][1], sn[s] * nrm[i][0]];
+  for (let s = 0; s < segments; s++) {
+    for (let i = 0; i < profile.length - 1; i++) {
+      triN(b, [P(i, s), P(i + 1, s), P(i + 1, s + 1)], [N(i, s), N(i + 1, s), N(i + 1, s + 1)], style);
+      triN(b, [P(i, s), P(i + 1, s + 1), P(i, s + 1)], [N(i, s), N(i + 1, s + 1), N(i, s + 1)], style);
+    }
+  }
 }

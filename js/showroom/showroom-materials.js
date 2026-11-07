@@ -3,7 +3,7 @@
 // Material roles used by house-model.js -> Three.js materials.
 //
 // The house is one set of stones:
-//   - our own light limestone (facades, frames, fence, paving) --
+//   - our own light limestone (facades, frames, paving) --
 //     procedural, drawn once on a canvas: soft clouds, faint bedding, a few
 //     pores and calcite specks, no veins; one large (4 m) non-repeating
 //     field that every slab samples at its own random offset, so no two
@@ -22,6 +22,11 @@
 // tints procedural slabs slightly differently). One shared material per
 // role (+ photo); objects that can be highlighted get their own clone (see
 // forObject) so highlighting one never tints the others.
+//
+// The house is shown as an architectural model (2026-11-08): what is not a
+// showroom object and not one of the stones above -- walls, furniture,
+// fabrics, metal, the plinth outside -- takes the model's own quiet
+// palette (MODEL); a showroom object keeps its real material.
 import * as THREE from '../../vendor/three/three.module.js';
 
 // ---- painters ----------------------------------------------------------------
@@ -132,20 +137,8 @@ function oakPixels(w, h, y0 = 0, y1 = h) {
 
 // Small colour maps for the non-stone roles.
 function detailPixels(kind, size) {
-  const rand = rng({ speckle: 41, wood: 53, lawn: 67, meadow: 79 }[kind]);
+  const rand = rng({ speckle: 41, wood: 53 }[kind]);
   const n1 = lattice(4, rand), n2 = lattice(16, rand), n3 = lattice(64, rand);
-  if (kind === 'meadow') {
-    // Unmown grass beyond the fence, one tile ~36 m: patches of drier,
-    // yellower grass and of lusher, darker grass tens of metres across,
-    // tussocks, and a fine grain -- so the far ground is not one flat green.
-    const m2 = lattice(2, rand), m5 = lattice(5, rand), m40 = lattice(40, rand), m160 = lattice(160, rand);
-    return paintPixels(size, (u, v) => {
-      const macro = m2(u * 2, v * 2) * 0.6 + m5(u * 5, v * 5) * 0.4;
-      const dry = Math.min(1, Math.max(0, (macro - 0.42) * 2.2));
-      const l = 1 + (macro - 0.5) * 0.24 + (m40(u * 40, v * 40) - 0.5) * 0.15 + (m160(u * 160, v * 160) - 0.5) * 0.1;
-      return [230 * l * (1 + dry * 0.15), 230 * l * (1 + dry * 0.06), 230 * l * (1 - dry * 0.08)].map(clamp255);
-    });
-  }
   const fbm = (u, v) => n1(u * 4, v * 4) * 0.55 + n2(u * 16, v * 16) * 0.3 + n3(u * 64, v * 64) * 0.15;
   const tone = (d, warm) => [236 + d * 26, 236 + d * (26 - warm * 4), 236 + d * (26 - warm * 10)].map(clamp255);
   return paintPixels(size, (u, v) => {
@@ -285,7 +278,7 @@ const ROLES = {
   poche:              ['#2b2825', 0.9, {}],
   grout:              ['#3a3530', 0.95, {}],
   plaster:            ['#ebe6dd', 0.95, {}],
-  soil:               ['#4a4035', 1, {}],
+  decor:              ['#e9dfcf', 0.9, {}],
   wood:               ['#9a7453', 0.58, { detail: 'wood', tint: 0.04 }],
   'wood-dark':        ['#5d4332', 0.55, { detail: 'wood', tint: 0.03 }],
   cabinet:            ['#3c3935', 0.62, {}],
@@ -302,22 +295,44 @@ const ROLES = {
   basin:              ['#8f8a83', 0.3, {}],
   mirror:             ['#b9c1c6', 0.1, { metalness: 0.9 }],
   lamp:               ['#000000', 1, { emissive: '#ffd9a6', emissiveIntensity: 2.4 }],
-  foliage:            ['#56613f', 0.92, { detail: 'lawn', leafy: true, tint: 0.06 }],
-  grass:              ['#8b8762', 0.95, { detail: 'lawn', leafy: true }],
-  bark:               ['#4f4337', 0.9, { detail: 'wood' }],
-  lawn:               ['#6c7654', 0.96, { detail: 'lawn' }],
-  meadow:             ['#626d4e', 0.98, { detail: 'meadow' }],
-  gravel:             ['#b0a898', 0.95, { stone: true, detail: 'speckle' }],
+};
+
+// The model's palette: warm cream, sand and taupe, matt. [colour, roughness, extra]
+const MODEL = {
+  plaster:        ['#ece3d4', 0.95],
+  poche:          ['#f2ebdf', 0.95],
+  grout:          ['#d9cdb9', 0.95],
+  graphite:       ['#dacfbb', 0.92],
+  wood:           ['#d8c5a7', 0.8],
+  'wood-dark':    ['#cbb697', 0.8],
+  'wood-floor':   ['#ddcdb2', 0.85],
+  cabinet:        ['#e7ddcc', 0.75],
+  fabric:         ['#ddd0ba', 1],
+  'fabric-light': ['#ece3d3', 1],
+  rug:            ['#d4c5ac', 1],
+  decor:          ['#f0e8da', 0.9],
+  metal:          ['#b5a994', 0.5, { metalness: 0.3 }],
+  'metal-dark':   ['#a1957f', 0.55, { metalness: 0.25 }],
+  steel:          ['#d4cdc1', 0.35, { metalness: 0.6 }],
+  'hob-ring':     ['#4d4740', 0.5],
+  'glass-black':  ['#2d2925', 0.12, { clearcoat: 0.6 }],
+  ceramic:        ['#f6f1e8', 0.3],
+  basin:          ['#ddd4c5', 0.4],
+  mirror:         ['#e4ddd2', 0.18, { metalness: 0.35 }],
+  shade:          ['#f4ecdd', 0.9, { emissive: '#ffd9a8', emissiveIntensity: 0.5 }],
+  'steel-grey':   ['#cfc1a8', 0.9],
+  base:           ['#e2d6c2', 0.95],
 };
 
 // How many metres one tile of each detail map covers.
-const DETAIL_SIZE = { speckle: 0.5, wood: 1.2, lawn: 2.5, meadow: 36 };
+const DETAIL_SIZE = { speckle: 0.5, wood: 1.2 };
 // Pixels per tile, where a map needs more than the usual 256.
-const DETAIL_PX = { meadow: 512 };
+const DETAIL_PX = {};
 const LIMESTONE_SIZE = 4;   // metres covered by one limestone image
 const OAK_SIZE = [4, 1];    // metres covered by one oak image (along, across the grain)
 
 export function roleTint(role) {
+  if (MODEL[role]) return 0;
   const def = ROLES[role];
   return def ? def[2].tint || 0 : 0;
 }
@@ -365,9 +380,6 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
   const grain = new THREE.CanvasTexture(grainImage);
   grain.wrapS = grain.wrapT = THREE.RepeatWrapping;
   grain.repeat.set(1.25, 1.25);
-  // Leaf-scale relief for foliage masses (the same grain, much finer).
-  const leaf = grain.clone();
-  leaf.repeat.set(9, 5);
   const limestone = new THREE.CanvasTexture(limestoneImage);
   limestone.colorSpace = THREE.SRGBColorSpace;
   limestone.wrapS = limestone.wrapT = THREE.RepeatWrapping;
@@ -395,7 +407,7 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
     details.set(kind, t);
   });
   const detail = kind => details.get(kind);
-  const procedural = [grain, leaf, limestone, limestoneRelief, oak, ...details.values()];
+  const procedural = [grain, limestone, limestoneRelief, oak, ...details.values()];
   const ready = Promise.all(paintJobs).then(() => { procedural.forEach(t => { t.needsUpdate = true; }); });
 
   const cache = new Map();
@@ -529,7 +541,17 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
     if (photoTextures.has(key)) applyPhoto(material, key);
   }
 
-  function build(role, photoKey) {
+  function build(role, photoKey, real) {
+    // Not a showroom object: the model's palette, no texture.
+    if (!real && MODEL[role]) {
+      const [color, roughness, extra = {}] = MODEL[role];
+      const params = { color, roughness, metalness: extra.metalness || 0, vertexColors: true };
+      if (extra.clearcoat) { params.clearcoat = extra.clearcoat; params.clearcoatRoughness = 0.2; }
+      if (extra.emissive) { params.emissive = extra.emissive; params.emissiveIntensity = extra.emissiveIntensity; }
+      const material = new THREE.MeshPhysicalMaterial(params);
+      material.userData.roleExtra = extra;
+      return material;
+    }
     if (role === 'glass') {
       // Smoky glazing: a dark grey-green tint that mostly reflects the sky.
       return new THREE.MeshPhysicalMaterial({
@@ -551,7 +573,6 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
     if (extra.clearcoat) { params.clearcoat = extra.clearcoat; params.clearcoatRoughness = 0.2; }
     if (extra.stone) { params.roughnessMap = grain; params.bumpMap = grain; params.bumpScale = 0.18; }
     if (extra.photo) { params.roughnessMap = grain; }
-    if (extra.leafy) { params.bumpMap = leaf; params.bumpScale = 2.5; }
     if (extra.limestone) { params.map = limestone; params.bumpMap = limestoneRelief; params.bumpScale = 0.9; params.roughnessMap = grain; }
     if (extra.oak) { params.map = oak; params.bumpMap = oak; params.bumpScale = 0.25; }
     if (extra.detail) params.map = detail(extra.detail);
@@ -573,10 +594,11 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
     return material;
   }
 
-  // role, or role + the slab photo a surface is cut from.
-  function get(role, photoKey) {
-    const key = photoKey ? role + '@' + photoKey : role;
-    if (!cache.has(key)) cache.set(key, build(role, photoKey));
+  // role, or role + the slab photo a surface is cut from; `real`: the role's
+  // own material, not the model's palette (for showroom objects).
+  function get(role, photoKey, real) {
+    const key = (real ? 'real:' : '') + (photoKey ? role + '@' + photoKey : role);
+    if (!cache.has(key)) cache.set(key, build(role, photoKey, real));
     return cache.get(key);
   }
 
@@ -585,7 +607,7 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
   function forObject(role, objectId, photoKey) {
     const key = (photoKey ? role + '@' + photoKey : role) + '|' + objectId;
     if (!clones.has(key)) {
-      const base = get(role, photoKey);
+      const base = get(role, photoKey, true);
       const clone = base.clone();
       clone.userData = Object.assign({}, base.userData);
       if (base.userData.photoKey) usePhoto(clone, base.userData.photoKey);
@@ -613,7 +635,6 @@ export function createMaterials({ Photos, anisotropy = 4, onChange, upload } = {
     photoTextures.forEach(t => t.dispose());
     blank.dispose();
     grain.dispose();
-    leaf.dispose();
     limestone.dispose();
     limestoneRelief.dispose();
     oak.dispose();

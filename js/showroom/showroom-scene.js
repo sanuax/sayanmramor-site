@@ -3,145 +3,66 @@
 // One WebGL renderer and one scene for the whole house. Builds meshes from
 // HouseModel parts (batched: one mesh per group + material + object, see
 // showroom-geometry.js), lays real stone photographs on the pieces cut
-// from them (stone-photos.js), lights them like an architectural
-// photograph (a warm low sun with soft shadows, a photographed sky for
-// reflections and the backdrop, a few warm interior lights), and exposes what the app
-// needs: hide/show cut-away groups, highlight an object, test whether a
-// marker is hidden behind something, render.
+// from them (stone-photos.js), and lights the house as an architectural
+// model photographed in the evening (the owner's choice, 2026-11-08,
+// «Б. Вечер»): a warm dark room round the model, a large soft light above,
+// a warm key with soft shadows, the rooms' own lamps, soft contact shadows
+// on the floors. It exposes what the app needs: hide/show cut-away groups,
+// highlight an object, test whether a marker is hidden behind something,
+// render.
 import * as THREE from '../../vendor/three/three.module.js';
-import { RGBELoader } from '../../vendor/three/RGBELoader.js';
 import { createMaterials, roleTint } from './showroom-materials.js';
-import { hash3, createBatch, pushBox, pushSlab, pushCylinder, pushBeam, toGeometry, withWhite, blobGeometry } from './showroom-geometry.js';
+import { hash3, createBatch, pushBox, pushSlab, pushCylinder, pushBeam, toGeometry, pushRoundedBox, pushLathe } from './showroom-geometry.js';
 
-// The procedural sky (shown until the photographed one fades in, and the
-// whole sky if it cannot load) and the fog take the photograph's colours:
-// its zenith, and the haze at its horizon (assets/showroom/sky/SOURCES.md).
-const SKY_TOP = '#7c8ba8';
-const SKY_HORIZON = '#979caa';
-const FOG_COLOR = '#979caa';
-
-// The photographed sky: Poly Haven «Kloofendal 48d Partly Cloudy (Pure Sky)»,
-// CC0. The HDR lights the house and is what stone, glass and metal reflect;
-// the WebP (its upper half, down to the horizon) is the backdrop -- 4K where
-// there is a large screen and a mouse, 2K on phones and tablets.
-const SKY_URL = {
-  hdr: new URL('../../assets/showroom/sky/sky-512.hdr', import.meta.url).href,
-  wide: new URL('../../assets/showroom/sky/sky-4096.webp', import.meta.url).href,
-  compact: new URL('../../assets/showroom/sky/sky-2048.webp', import.meta.url).href,
+// The room round the model, and its light.
+const LOOK = {
+  bg: { inner: '#2a221c', outer: '#0b0907' },                                   // backdrop: lighter behind the model
+  env: { top: [1.5, 1.3, 1.05], mid: '#4a3f34', low: '#100d0b', fill: 0.7 },   // reflections and fill: a softbox overhead
+  hemi: ['#f3e3ca', '#2a221b', 0.22],
+  key: { color: '#ffdcb0', intensity: 1.55, position: [-8, 22, 10], soft: 9 },
+  exposure: 1.0,
+  lamps: 2.4,                                                                   // the rooms' lamps, brighter than by day
 };
-// Where the sun is in the panorama (u across, measured on the HDR), and the
-// brightest it may be in the environment: the scene's own sun light gives
-// the direct light and the shadows, the photograph's sun only a glint.
-const SKY_SUN_U = 0.595;
-const SKY_SUN_CLAMP = 6;
-// White balance of the environment, as a photographer sets it for daylight:
-// the open sky's blue cast taken out of the fill (the clouds and the sky's
-// shape stay in the reflections), so limestone stays warm and every stone
-// shows its own colour.
-const SKY_BALANCE = new THREE.Vector3(1.12, 1.0, 0.8);
-const GROUND_LINEAR = new THREE.Color('#57584a');
-// How long the photographed backdrop takes to fade in over the procedural one.
-const SKY_FADE_MS = 900;
-
-// Both skies are drawn by direction: u across (turned so the photograph's
-// sun stands where the scene's sun is), v up.
-const SKY_VERTEX = `
-varying vec3 vDir;
-void main() {
-  vDir = position;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-const SKY_UV = `
-varying vec3 vDir;
-uniform float turn;
-vec2 skyUv(vec3 d) {
-  return vec2(fract(atan(d.z, d.x) * 0.15915494309189535 + 0.5 - turn), asin(clamp(d.y, -1.0, 1.0)) * 0.3183098861837907 + 0.5);
-}`;
-// Environment: the HDR, its sun held back, the ground below the horizon.
-const ENV_FRAGMENT = SKY_UV + `
-uniform sampler2D map;
-uniform float sunClamp;
-uniform vec3 ground;
-uniform vec3 balance;
-void main() {
-  vec3 d = normalize(vDir);
-  vec3 c = texture2D(map, skyUv(d)).rgb * balance;
-  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-  if (l > sunClamp) c *= sunClamp / l;
-  c = mix(c, ground, smoothstep(-0.005, -0.06, d.y));
-  gl_FragColor = vec4(c, 1.0);
-}`;
-// Backdrop: the photograph above the horizon, the haze (the fog's colour)
-// below it, where the far ground fades into it.
-const BACKDROP_FRAGMENT = SKY_UV + `
-uniform sampler2D map;
-uniform vec3 haze;
-uniform float opacity;
-void main() {
-  vec3 d = normalize(vDir);
-  vec2 uv = skyUv(d);
-  vec3 c = texture2D(map, vec2(uv.x, max((uv.y - 0.5) * 2.0, 0.002))).rgb;
-  c = mix(c, haze, smoothstep(0.0, -0.015, d.y));
-  gl_FragColor = vec4(c, opacity);
-  #include <colorspace_fragment>
-}`;
 const WHITE = [1, 1, 1];
 
-function skyTexture() {
+// The model's room: a soft radial backdrop.
+function lookBackground() {
   const c = document.createElement('canvas');
-  c.width = 2; c.height = 512;
+  c.width = c.height = 512;
   const g = c.getContext('2d');
-  const grad = g.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, SKY_TOP);
-  grad.addColorStop(0.6, SKY_HORIZON);
-  grad.addColorStop(1, '#d3c9b8');
+  const grad = g.createRadialGradient(256, 230, 20, 256, 256, 400);
+  grad.addColorStop(0, LOOK.bg.inner);
+  grad.addColorStop(1, LOOK.bg.outer);
   g.fillStyle = grad;
-  g.fillRect(0, 0, 2, 512);
+  g.fillRect(0, 0, 512, 512);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
-// The photographed environment, through the same PMREM path (and size) as
-// the procedural one below, so swapping one for the other changes no shader.
-function buildPhotoEnvironment(renderer, hdr, turn) {
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const env = new THREE.Scene();
-  const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(50, 64, 32),
-    new THREE.ShaderMaterial({
-      vertexShader: SKY_VERTEX, fragmentShader: ENV_FRAGMENT, side: THREE.BackSide, depthWrite: false,
-      uniforms: { map: { value: hdr }, turn: { value: turn }, sunClamp: { value: SKY_SUN_CLAMP }, ground: { value: GROUND_LINEAR }, balance: { value: SKY_BALANCE } },
-    }),
-  );
-  env.add(dome);
-  const texture = pmrem.fromScene(env, 0.02).texture;
-  dome.geometry.dispose();
-  dome.material.dispose();
-  hdr.dispose();
-  pmrem.dispose();
-  return texture;
-}
-
-// Soft outdoor environment for reflections on glass, polished stone and
-// metal: a sky dome with a bright warm sun disc and a darker ground. Used
-// until the photographed one is ready, and if it cannot load.
+// A studio for reflections and fill: a large soft light overhead, softer
+// walls, a dark floor -- no sky, no sun disc.
 function buildEnvironment(renderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
-  const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(50, 32, 16),
-    new THREE.MeshBasicMaterial({ side: THREE.BackSide, map: skyTexture() }),
-  );
-  env.add(dome);
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(49, 32), new THREE.MeshBasicMaterial({ color: '#57584a' }));
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -2;
-  env.add(ground);
-  const sun = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 5.3, 4.2) }));
-  sun.position.set(-24, 26, 24);
-  env.add(sun);
-  const texture = pmrem.fromScene(env, 0.02).texture;
+  const c = document.createElement('canvas');
+  c.width = 2; c.height = 256;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, LOOK.env.mid);
+  grad.addColorStop(0.5, LOOK.env.mid);
+  grad.addColorStop(1, LOOK.env.low);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 2, 256);
+  const map = new THREE.CanvasTexture(c);
+  map.colorSpace = THREE.SRGBColorSpace;
+  const f = LOOK.env.fill;
+  env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ side: THREE.BackSide, map, color: new THREE.Color(f, f, f) })));
+  const box = new THREE.Mesh(new THREE.PlaneGeometry(46, 30), new THREE.MeshBasicMaterial({ color: new THREE.Color(...LOOK.env.top), side: THREE.DoubleSide }));
+  box.rotation.x = Math.PI / 2;
+  box.position.set(-6, 40, 8);
+  env.add(box);
+  const texture = pmrem.fromScene(env, 0.06).texture;
   env.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
   pmrem.dispose();
   return texture;
@@ -164,17 +85,17 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.95;
+  renderer.toneMappingExposure = LOOK.exposure;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  // The house is static: shadows are recomputed only when the cut-away changes.
+  // Soft, blurred shadows (VSM). The house is static: shadows -- and their
+  // blur -- are recomputed only when the cut-away changes.
+  renderer.shadowMap.type = THREE.VSMShadowMap;
   renderer.shadowMap.autoUpdate = false;
   renderer.shadowMap.needsUpdate = true;
 
   const scene = new THREE.Scene();
-  const background = skyTexture();
+  const background = lookBackground();
   scene.background = background;
-  scene.fog = new THREE.Fog(FOG_COLOR, 60, 160);
   scene.environment = buildEnvironment(renderer);
 
   const materials = createMaterials({
@@ -182,70 +103,22 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     upload: texture => renderer.initTexture(texture),
   });
 
-  // Light: a warm late-afternoon sun from the south-west, raking across the
-  // street facade (so piers, frames and joints model), sky fill, and a few
-  // warm interior lights.
-  scene.add(new THREE.HemisphereLight('#f2eadc', '#5a5646', 0.45));
-  const sun = new THREE.DirectionalLight('#ffe2c0', 2.7);
-  sun.position.set(-13, 17, 16);
+  // Light: a soft fill, a warm key high over the model's front left (short,
+  // soft shadows), and the rooms' own warm lamps.
+  scene.add(new THREE.HemisphereLight(...LOOK.hemi));
+  const sun = new THREE.DirectionalLight(LOOK.key.color, LOOK.key.intensity);
+  sun.position.set(...LOOK.key.position);
   sun.target.position.set(0, 1, 0);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 16, bottom: -16, near: 1, far: 70 });
-  sun.shadow.bias = -0.0004;
+  sun.shadow.bias = -0.0002;
   sun.shadow.normalBias = 0.03;
+  sun.shadow.radius = LOOK.key.soft;
+  sun.shadow.blurSamples = 16;
   scene.add(sun, sun.target);
-  // The panorama turned so that its sun stands where this one shines from.
-  const sunDir = sun.position.clone().sub(sun.target.position);
-  const skyTurn = Math.atan2(sunDir.z, sunDir.x) / (2 * Math.PI) + 0.5 - SKY_SUN_U;
-
-  // The photographed sky. The HDR is part of being ready (it sets the light
-  // the house is first seen in -- no change of light after it appears); if
-  // it fails, or takes over 10 s, the procedural sky stays and the HDR, if
-  // it comes later, is still taken. The backdrop follows once the house is
-  // shown, fading in.
-  const photoEnv = new Promise(resolve => {
-    let settled = false;
-    const done = () => { if (!settled) { settled = true; resolve(); } };
-    setTimeout(done, 10000);
-    new RGBELoader().load(SKY_URL.hdr, hdr => {
-      const old = scene.environment;
-      scene.environment = buildPhotoEnvironment(renderer, hdr, skyTurn);
-      old.dispose();
-      if (settled) onChange();
-      done();
-    }, undefined, done);
-  });
-  let backdrop = null;
-  function loadBackdrop() {
-    const wide = window.matchMedia('(min-width: 768px) and (pointer: fine)').matches;
-    new THREE.TextureLoader().load(wide ? SKY_URL.wide : SKY_URL.compact, map => {
-      map.colorSpace = THREE.SRGBColorSpace;
-      map.generateMipmaps = false;
-      map.minFilter = THREE.LinearFilter;
-      backdrop = new THREE.Mesh(
-        new THREE.SphereGeometry(300, 64, 32),
-        new THREE.ShaderMaterial({
-          vertexShader: SKY_VERTEX, fragmentShader: BACKDROP_FRAGMENT, side: THREE.BackSide,
-          transparent: true, depthWrite: false, toneMapped: false,
-          uniforms: { map: { value: map }, turn: { value: skyTurn }, haze: { value: new THREE.Color(FOG_COLOR) }, opacity: { value: 0 } },
-        }),
-      );
-      backdrop.frustumCulled = false;
-      backdrop.renderOrder = -1;
-      scene.add(backdrop);
-      const start = performance.now();
-      const fade = now => {
-        const t = Math.min(1, Math.max(0, (now - start) / SKY_FADE_MS));
-        backdrop.material.uniforms.opacity.value = t * t * (3 - 2 * t);
-        onChange();
-        if (t < 1) requestAnimationFrame(fade);
-      };
-      requestAnimationFrame(fade);
-    });
-  }
   (House.LIGHTS || []).forEach(l => {
-    const light = new THREE.PointLight(l.color, l.intensity, l.distance, 2);
+    const light = new THREE.PointLight(l.color, l.intensity * LOOK.lamps, l.distance, 2);
     light.position.set(...l.position);
     scene.add(light);
   });
@@ -271,8 +144,6 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
   };
   const clampTo = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const jointBuckets = new Map();
-  const blobs = { foliage: [] };
-  const trunks = [];
 
   function boxStyle(part) {
     const c = [0, 1, 2].map(i => (part.min[i] + part.max[i]) / 2);
@@ -322,25 +193,13 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     };
   }
 
-  function addTree(part) {
-    const [x, , z] = part.position, r = part.crown, t = part.trunk;
-    const R = i => hash3(x + i * 1.7, i * 0.37, z - i * 2.3);
-    trunks.push({ from: [x, 0, z], to: [x, t + r * 0.7, z], radius: r * 0.07 });
-    for (let i = 0; i < 3; i++) {
-      const a = R(i) * Math.PI * 2;
-      trunks.push({ from: [x, t * 0.75, z], to: [x + Math.cos(a) * r * 0.55, t + r * (0.4 + R(i + 40) * 0.3), z + Math.sin(a) * r * 0.55], radius: r * 0.032 });
-    }
-    blobs.foliage.push({ p: [x, t + r * 1.0, z], s: [r * 0.78, r * 0.7, r * 0.78], shade: R(9) });
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 + R(i + 3) * 0.8;
-      const d = r * (0.42 + R(i + 11) * 0.22);
-      const s = r * (0.48 + R(i + 17) * 0.2);
-      blobs.foliage.push({ p: [x + Math.cos(a) * d, t + r * (0.55 + R(i + 23) * 0.65), z + Math.sin(a) * d], s: [s, s * 0.82, s], shade: R(i + 29) });
-    }
-  }
-
-  House.buildHouse().forEach(part => {
-    if (part.kind === 'box') {
+  const parts = House.buildHouse();
+  parts.forEach(part => {
+    if (part.kind === 'rbox') {
+      pushRoundedBox(batchFor(part), part.min, part.max, part.radius, { color: WHITE, uvOffset: [0, 0] });
+    } else if (part.kind === 'lathe') {
+      pushLathe(batchFor(part), part.base, part.profile, part.segments || 40, { color: WHITE, uvOffset: [0, 0] });
+    } else if (part.kind === 'box') {
       pushBox(batchFor(part, part.photo && part.photo.src), part.min, part.max, boxStyle(part));
     } else if (part.kind === 'cladding') {
       const amount = roleTint(part.mat);
@@ -378,8 +237,6 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
       const key = part.group + '|' + part.tone;
       if (!jointBuckets.has(key)) jointBuckets.set(key, { group: part.group, tone: part.tone, segs: [] });
       House.jointSegments(part).forEach(s => jointBuckets.get(key).segs.push(...s));
-    } else if (part.kind === 'tree') {
-      addTree(part);
     }
   });
 
@@ -402,38 +259,119 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     groupOf(group).add(new THREE.LineSegments(geometry, materials.joints[tone]));
   });
 
-  // Trees: instanced foliage masses and trunks.
-  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), s3 = new THREE.Vector3(), yAxis = new THREE.Vector3(0, 1, 0);
-  const blob = blobGeometry();
-  Object.entries(blobs).forEach(([role, list]) => {
-    if (!list.length) return;
-    const mesh = new THREE.InstancedMesh(blob, materials.get(role), list.length);
-    const c = new THREE.Color();
-    list.forEach((it, i) => {
-      q.setFromAxisAngle(yAxis, it.shade * Math.PI * 2);
-      m4.compose(v.set(...it.p), q, s3.set(...it.s));
-      mesh.setMatrixAt(i, m4);
-      const k = 0.86 + it.shade * 0.24;
-      mesh.setColorAt(i, c.setRGB(k * (0.97 + it.shade * 0.06), k, k * (1.02 - it.shade * 0.08)));
+  // ---- soft contact shadows -------------------------------------------------------
+  // What a soft sky does in a photograph of a model: the floor darkens
+  // gently under furniture and along the walls. Baked once (the house is
+  // static): an orthographic camera looks up from just above each floor,
+  // records how close anything above is (within `reach`), the result is
+  // blurred, and a transparent layer lies on the floor. No cost per frame.
+  function bakeContactShadows() {
+    const LEVELS = [
+      { y: 0.004, area: [House.BASE.x0, House.BASE.x1, House.BASE.z0, House.BASE.z1], reach: 0.7, group: 'site', strength: 0.55 },
+      { y: 3.77 + 0.003, area: [3.5, 7, -5, 5], reach: 0.55, group: 'gf-roof', strength: 0.55 },
+      { y: 0.47 + 0.013, area: [-7, 7, -5, 5], reach: 0.55, group: 'gf-floors', strength: 0.62 },
+      { y: 3.77 + 0.013, area: [-8.5, 3.5, -5, 6.5], reach: 0.55, group: 'uf-interior', strength: 0.55 },
+    ];
+    const SIZE = 1024;
+    const depthMat = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
+      vertexShader: 'void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'void main() { float a = 1.0 - gl_FragCoord.z; gl_FragColor = vec4(a * a, 0.0, 0.0, 1.0); }',
     });
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    groupOf('site').add(mesh);
-  });
-  if (trunks.length) {
-    const unit = new THREE.CylinderGeometry(0.62, 1, 1, 10);
-    unit.translate(0, 0.5, 0);
-    const mesh = new THREE.InstancedMesh(withWhite(unit), materials.get('bark'), trunks.length);
-    trunks.forEach((t, i) => {
-      const from = new THREE.Vector3(...t.from), to = new THREE.Vector3(...t.to);
-      const dir = to.clone().sub(from);
-      q.setFromUnitVectors(yAxis, dir.clone().normalize());
-      m4.compose(from, q, s3.set(t.radius, dir.length(), t.radius));
-      mesh.setMatrixAt(i, m4);
+    const blurMat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: null }, dir: { value: new THREE.Vector2() } },
+      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+      fragmentShader: `uniform sampler2D map; uniform vec2 dir; varying vec2 vUv;
+        void main() {
+          float w[7]; w[0] = 0.1995; w[1] = 0.1760; w[2] = 0.1210; w[3] = 0.0648; w[4] = 0.0270; w[5] = 0.0088; w[6] = 0.0022;
+          float s = texture2D(map, vUv).r * w[0];
+          for (int i = 1; i < 7; i++) { s += texture2D(map, vUv + dir * float(i)).r * w[i]; s += texture2D(map, vUv - dir * float(i)).r * w[i]; }
+          gl_FragColor = vec4(s, 0.0, 0.0, 1.0);
+        }`,
+      depthTest: false, depthWrite: false,
     });
-    mesh.castShadow = true;
-    groupOf('site').add(mesh);
+    const quadScene = new THREE.Scene();
+    const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blurMat);
+    quad.frustumCulled = false;
+    quadScene.add(quad);
+    const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const opts = { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: true };
+    const hiddenLines = [];
+    scene.traverse(o => { if (o.isLineSegments && o.visible) { o.visible = false; hiddenLines.push(o); } });
+    const oldBg = scene.background, oldTarget = renderer.getRenderTarget();
+    const clear = new THREE.Color(); renderer.getClearColor(clear); const clearA = renderer.getClearAlpha();
+    const shadowAuto = renderer.shadowMap.enabled;
+    renderer.shadowMap.enabled = false;
+    scene.background = null;
+    scene.overrideMaterial = depthMat;
+    renderer.setClearColor(0x000000, 1);
+    const layers = [];
+    LEVELS.forEach(L => {
+      const [x0, x1, z0, z1] = L.area, w = x1 - x0, d = z1 - z0;
+      const cam = new THREE.OrthographicCamera(-w / 2, w / 2, d / 2, -d / 2, 0, L.reach);
+      cam.position.set((x0 + x1) / 2, L.y, (z0 + z1) / 2);
+      cam.up.set(0, 0, 1);
+      cam.lookAt(cam.position.x, L.y + 1, cam.position.z);
+      cam.updateMatrixWorld();
+      const a = new THREE.WebGLRenderTarget(SIZE, Math.round(SIZE * d / w), opts), b = a.clone();
+      // Seen from below, a wall standing on the floor is edge-on and leaves no
+      // trace: whatever stands on (or through) this floor is drawn as its
+      // footprint, touching it.
+      const foot = [];
+      parts.forEach(part => {
+        if (part.kind !== 'box' && part.kind !== 'rbox' && part.kind !== 'cladding') return;
+        if (part.mat === 'glass' || part.mat === 'glass-smoke' || part.mat === 'lamp') return;
+        const bb = part.kind === 'rbox' ? part : House.partBounds(part);
+        if (!bb) return;
+        if (!(bb.min[1] < L.y + 0.02 && bb.max[1] > L.y + 0.03)) return;
+        const fx0 = bb.min[0], fx1 = bb.max[0], fz0 = bb.min[2], fz1 = bb.max[2], fy = L.y + 0.0005;
+        if (fx1 - fx0 < 1e-4 || fz1 - fz0 < 1e-4) return;
+        foot.push(fx0, fy, fz0, fx1, fy, fz0, fx1, fy, fz1, fx0, fy, fz0, fx1, fy, fz1, fx0, fy, fz1);
+      });
+      const footGeo = new THREE.BufferGeometry();
+      footGeo.setAttribute('position', new THREE.Float32BufferAttribute(foot, 3));
+      const footMesh = new THREE.Mesh(footGeo, depthMat);
+      footMesh.frustumCulled = false;
+      scene.add(footMesh);
+      renderer.setRenderTarget(a);
+      renderer.clear();
+      renderer.render(scene, cam);
+      scene.remove(footMesh);
+      footGeo.dispose();
+      scene.overrideMaterial = null;
+      // Two passes each way: a wide soft one, then a finer one.
+      [[3.2, 3.2], [1.2, 1.2]].forEach(([sx]) => {
+        blurMat.uniforms.map.value = a.texture; blurMat.uniforms.dir.value.set(sx / a.width, 0);
+        renderer.setRenderTarget(b); renderer.render(quadScene, quadCam);
+        blurMat.uniforms.map.value = b.texture; blurMat.uniforms.dir.value.set(0, sx / a.height);
+        renderer.setRenderTarget(a); renderer.render(quadScene, quadCam);
+      });
+      scene.overrideMaterial = depthMat;
+      b.dispose();
+      const viewProj = new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+      const layer = new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+        uniforms: { map: { value: a.texture }, viewProj: { value: viewProj }, color: { value: new THREE.Color('#2a2118') }, strength: { value: L.strength } },
+        vertexShader: 'uniform mat4 viewProj; varying vec2 vUv; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vec4 p = viewProj * w; vUv = p.xy / p.w * 0.5 + 0.5; gl_Position = projectionMatrix * viewMatrix * w; }',
+        fragmentShader: 'uniform sampler2D map; uniform vec3 color; uniform float strength; varying vec2 vUv; void main() { float a = texture2D(map, vUv).r; gl_FragColor = vec4(color, clamp(a * strength * 1.6, 0.0, strength)); }',
+      }));
+      layer.position.set((x0 + x1) / 2, L.y + 0.001, (z0 + z1) / 2);
+      layer.renderOrder = 1;
+      layer.userData.role = 'contact';
+      groupOf(L.group).add(layer);
+      layers.push(layer);
+    });
+    scene.overrideMaterial = null;
+    scene.background = oldBg;
+    renderer.setRenderTarget(oldTarget);
+    renderer.setClearColor(clear, clearA);
+    renderer.shadowMap.enabled = shadowAuto;
+    renderer.shadowMap.needsUpdate = true;
+    hiddenLines.forEach(o => { o.visible = true; });
+    depthMat.dispose(); blurMat.dispose(); quad.geometry.dispose();
+    return layers;
   }
+  bakeContactShadows();
 
   // ---- visibility, highlight, occlusion ----------------------------------------------
   let occluders = [];
@@ -442,7 +380,7 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     groups.forEach(g => {
       if (!g.visible) return;
       g.children.forEach(o => {
-        if (o.isMesh && !o.isInstancedMesh && !['glass', 'glass-smoke', 'lamp'].includes(o.userData.role)) occluders.push(o);
+        if (o.isMesh && !['glass', 'glass-smoke', 'lamp', 'contact'].includes(o.userData.role)) occluders.push(o);
       });
     });
   }
@@ -487,7 +425,7 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
   // does not freeze on the first render. Nothing is drawn before that.
   // While the painters finish, one draw into a single pixel of the canvas
   // (still under the loading cover) compiles what compile() cannot reach
-  // -- the shadow pass and the sky background -- and renders the shadow map.
+  // -- the shadow pass and the backdrop -- and renders the shadow map.
   function warmUp() {
     const camera = new THREE.PerspectiveCamera(38, 1.6, 0.1, 400);
     camera.position.set(16, 10, 23);
@@ -498,13 +436,11 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     renderer.setScissorTest(false);
   }
   let isReady = false;
-  const ready = Promise.all([materials.ready, renderer.compileAsync(scene, new THREE.PerspectiveCamera()).then(warmUp), photoEnv])
-    .then(() => { isReady = true; loadBackdrop(); });
+  const ready = Promise.all([materials.ready, renderer.compileAsync(scene, new THREE.PerspectiveCamera()).then(warmUp)])
+    .then(() => { isReady = true; });
 
   function render(camera) {
     if (!isReady) return;
-    // The backdrop is infinitely far: it travels with the camera.
-    if (backdrop) backdrop.position.copy(camera.position);
     renderer.render(scene, camera);
   }
 
@@ -512,7 +448,6 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
     scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     materials.dispose();
     background.dispose();
-    if (backdrop) { backdrop.material.uniforms.map.value.dispose(); backdrop.material.dispose(); }
     scene.environment.dispose();
     renderer.dispose();
   }
