@@ -1,0 +1,40 @@
+/* css/consent.css -- the cookie notice (js/consent.js): the first visit only, until «Принять»
+   (the owner, 2026-11-08). A quiet card at the foot of the screen, over the configure bar and the
+   header, under the photo viewer. Its own file, as css/picks.css: the site's pages, the showroom
+   and the configurator all link it, so every var() carries the site's value as a fallback (the
+   configurator does not load css/tokens.css). */
+.cookie-note {
+  position: fixed; z-index: 900; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box; width: min(520px, calc(100vw - 32px)); margin: 0;
+  display: flex; align-items: center; gap: 16px; padding: 16px 16px 16px 24px;
+  background: var(--surface, #f8f7f4); color: var(--ink-soft, #474944); border: 1px solid var(--line, #dcd8cf);
+  border-radius: var(--radius, 16px);
+  box-shadow: var(--shadow-2, 0 2px 6px rgba(28, 29, 27, 0.10), 0 28px 56px -24px rgba(28, 29, 27, 0.45));
+  font-family: var(--font, 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif); font-size: 14px; font-weight: 400; line-height: 1.5;
+  text-align: left; letter-spacing: normal; text-transform: none;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity var(--dur-move, 250ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform var(--dur-move, 250ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+.cookie-note.is-shown { opacity: 1; transform: none; }
+.cookie-note.is-leaving { transition-duration: var(--dur-fast, 150ms); transition-timing-function: ease-in; }
+.cookie-note-text { margin: 0; flex: 1 1 auto; font: inherit; color: inherit; }
+.cookie-note-text a { color: var(--accent, #2a5446); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(42, 84, 70, 0.4); }
+@media (hover: hover) { .cookie-note-text a:hover { text-decoration-color: currentColor; } }
+.cookie-note-ok {
+  flex: none; height: 44px; min-width: 0; margin: 0; padding: 0 24px; border: 0; border-radius: var(--radius-btn, 6px);
+  background: var(--accent, #2a5446); color: #fff; font: inherit; font-weight: 600; cursor: pointer; box-shadow: none;
+  transition: background-color var(--dur-fast, 150ms) var(--ease-out, ease-out), transform var(--dur-fast, 150ms) var(--ease-out, ease-out);
+}
+@media (hover: hover) { .cookie-note-ok:hover { background: var(--accent-hover, #1f4036); } }
+.cookie-note-ok:active { transform: scale(0.97); }
+.cookie-note-ok:focus-visible { outline: 2px solid var(--accent, #2a5446); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .cookie-note {
+    left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: auto;
+    flex-direction: column; align-items: stretch; gap: 12px; padding: 16px;
+  }
+  .cookie-note-ok { height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cookie-note { transform: none; }
+}

@@ -742,14 +742,16 @@ test('every page but the showroom has the footer: directions, contacts, VK and t
   });
 });
 
-test('the privacy policy page: the old site text, from «Город Москва» to its date', () => {
+test('the privacy policy page: the old site text, from «Город Москва» to its date, with the cookie section (2026-11-08)', () => {
   const html = fs.readFileSync(path.join(site, 'privacy.html'), 'utf8');
   assert.match(html, /<h1>Политика конфиденциальности<\/h1>/);
   assert.ok(html.includes('<p>Город Москва</p>'));
-  assert.ok(html.includes('<h2>8. Заключительные положения</h2>'));
+  assert.ok(html.includes('<h2>8. Файлы cookie и данные в браузере</h2>'));
+  assert.ok(html.includes('<h2>9. Заключительные положения</h2>'));
   assert.ok(html.includes('<p>Дата размещения: 17.01.2022</p>'));
   const article = html.slice(html.indexOf('<article'), html.indexOf('</article>'));
-  assert.equal((article.match(/<(p|h2)>/g) || []).length, 51);
+  assert.ok(html.includes('<p>Редакция от 08.11.2026</p>'));
+  assert.equal((article.match(/<(p|h2)>/g) || []).length, 57);
 });
 
 test('the offer form lists every direction of the site, the three new ones included', () => {
@@ -837,7 +839,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
-  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
+  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'js/consent.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
@@ -923,6 +925,7 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   assert.match(css, /html:not\(\.js\) \.home-hero \{ margin-top: 0; \}/);
   assert.match(css, /\.home-hero \.lead \{[^}]*color: var\(--on-dark\);/, 'the lead in full light on the veil');
   assert.match(css, /\.home-hero-picture::after \{[^}]*linear-gradient\(90deg, rgba\(12, 9, 8, 0\.88\)/, 'a dark veil under the words');
+  assert.match(css, /@media \(min-width: 901px\) and \(min-aspect-ratio: 101\/100\) \{\s*\.home-hero-content \{[^}]*bottom: max\(24px, calc\(50% - 3\.75vw \+ 24px\)\);[^}]*text-align: center;/, 'on a desktop the words stand in the middle, above the lounger');
   assert.match(css, /@media \(max-aspect-ratio: 1\/1\), \(max-width: 900px\) \{[\s\S]*?\.home-hero-picture::after \{ background: linear-gradient\(180deg,/, 'on a phone the veil darkens from above, over the words');
 });
 

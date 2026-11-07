@@ -126,6 +126,30 @@ h3 { font-size: var(--fs-h3); }
 @media (max-width: 1000px) {
   .js .home-hero { margin-top: -66px; }          /* the phone capsule: 8 + 56 + 2 px */
   html:not(.js) .home-hero { margin-top: 0; }    }
+/* The desktop (2026-11-08, the owner: «перенеси надпись посередине, чтобы на лежак не наезжала»): the words
+   stand in the middle of the screen, in the dark above the lounger, never over it. The photo is cropped
+   to the hero's width, so the lounger's top edge lies at 3.75vw + half the hero's height (measured on
+   the 1448x1086 frame: the top at 55 % of the photo); the words' box ends 24 px above that line, and
+   the headline gives way on a short screen (5vh) so the whole box still fits under the header. */
+@media (min-width: 901px) and (min-aspect-ratio: 101/100) {
+  .home-hero-content {
+    position: absolute; left: 0; right: 0; top: 74px; bottom: max(24px, calc(50% - 3.75vw + 24px));
+    display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+    padding-top: 0; padding-bottom: 0; text-align: center;
+  }
+  .home-hero h1 { max-width: 760px; font-size: clamp(32px, min(3.4vw, 5vh), 52px); margin-bottom: var(--s-4); }
+  .home-hero .lead { max-width: 640px; margin-bottom: var(--s-5); }
+  .home-hero .home-actions { justify-content: center; }
+  .home-hero-picture::after {
+    background: linear-gradient(180deg, rgba(12, 9, 8, 0.82) 0, rgba(12, 9, 8, 0.66) 38%, rgba(12, 9, 8, 0.28) 62%, rgba(12, 9, 8, 0) 80%);
+  }
+}
+/* A laptop's short window (a 650 px page): the same words, a size smaller and closer, so the box still fits above the lounger. */
+@media (min-width: 901px) and (min-aspect-ratio: 101/100) and (max-height: 760px) {
+  .home-hero-content { top: 68px; }
+  .home-hero h1 { font-size: clamp(28px, 4.4vh, 40px); margin-bottom: var(--s-3); }
+  .home-hero .lead { margin-bottom: var(--s-4); font-size: 15px; line-height: 1.5; }
+}
 /* Phones and any upright window: the same photo on the whole screen, the words on top under a
    veil that darkens from above, the lit lounger below. */
 @media (max-aspect-ratio: 1/1), (max-width: 900px) {
