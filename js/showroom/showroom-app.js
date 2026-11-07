@@ -32,8 +32,21 @@ function start() {
   const stage = doc.getElementById('srStage');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // «Утро» or «Вечер»: the light the visitor chose last time (morning by default).
+  const LIGHT_KEY = 'sayan-showroom-light';
+  let look = 'morning';
+  try { if (localStorage.getItem(LIGHT_KEY) === 'evening') look = 'evening'; } catch (e) { /* no storage */ }
+
   // A stone photograph arriving re-renders the view (the scene renders on demand).
-  const view3d = createShowroomScene(canvas, { House, Photos, zones: Data.ZONES, onChange: () => { occlusionDue = true; requestRender(); } });
+  const view3d = createShowroomScene(canvas, { House, Photos, zones: Data.ZONES, look, onChange: () => { occlusionDue = true; requestRender(); } });
+  const lightButtons = Array.from(doc.querySelectorAll('#srLight [data-look]'));
+  const showLook = name => lightButtons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.look === name)));
+  showLook(look);
+  lightButtons.forEach(b => b.addEventListener('click', () => {
+    view3d.setLook(b.dataset.look);
+    showLook(b.dataset.look);
+    try { localStorage.setItem(LIGHT_KEY, b.dataset.look); } catch (e) { /* this visit only */ }
+  }));
   const rig = createCameraRig(canvas, { reducedMotion });
   let state = State.initialStateFromLocation(location.search, location.hash);
   let size = { width: 1, height: 1 };

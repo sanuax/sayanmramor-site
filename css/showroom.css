@@ -93,12 +93,29 @@ button { font: inherit; color: inherit; }
 
 .sr-btn {
   display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 16px;
-  border-radius: 999px; font-size: var(--sr-fs-ui); font-weight: 600; text-decoration: none; cursor: pointer;
+  border-radius: 999px; font-size: var(--sr-fs-ui); font-weight: 600; text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background-color 0.2s, border-color 0.2s, transform 0.16s var(--ease-out);
 }
 .sr-btn-ghost { background: rgba(30, 26, 22, 0.55); border: 1px solid var(--sr-line-strong); color: var(--sr-ink); }
 .sr-btn-ghost[aria-expanded="true"] { background: rgba(30, 26, 22, 0.85); border-color: rgba(241, 236, 228, 0.4); }
 @media (hover: hover) { .sr-btn-ghost:hover { background: rgba(30, 26, 22, 0.85); border-color: rgba(241, 236, 228, 0.4); } }
+/* «Утро | Вечер»: the light the house is shown in (2026-11-08, the owner); on a phone, the two marks alone, under the header. */
+.sr-light { display: inline-flex; align-items: center; gap: 2px; padding: 3px; min-height: 40px; box-sizing: border-box; border-radius: 999px; border: 1px solid var(--sr-line-strong); }
+.sr-light-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--sr-muted); font: inherit; font-size: var(--sr-fs-ui); font-weight: 600; cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.16s var(--ease-out);
+}
+.sr-light-btn svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) { .sr-light-btn:hover { color: var(--sr-ink); } }
+.sr-light-btn[aria-pressed="true"] { background: var(--sr-ink); color: #1e1a16; }
+.sr-light-btn:active { transform: scale(0.96); }
+/* Narrower screens: the two marks alone (the header keeps one line). */
+@media (max-width: 1099px) {
+  .sr-light-btn { width: 40px; padding: 0; justify-content: center; }
+  .sr-light-label { display: none; }
+}
+@media (min-width: 768px) and (max-width: 899px) { .sr-top-title { display: none; } }
 /* «Связаться»: the phone mark and the word; on a phone, the mark alone. */
 .sr-btn-contact { gap: 8px; }
 .sr-btn-contact svg, .sr-share svg, .sr-contact-icon svg { flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -310,24 +327,24 @@ body.is-interior .sr-caption { transform: translateY(52px); }   /* under «На 
    a rim of light along the top. In Chromium the glass also bends the scene near its edges
    (js/header.js mountGlass puts .glass-bend on <html>); where the visitor asks for less
    transparency, or the browser cannot blur, the panels are solid as before. */
-.sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost {
+.sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost, .sr-light {
   background: var(--sr-glass-shine), var(--sr-glass);
   -webkit-backdrop-filter: var(--sr-glass-frost); backdrop-filter: var(--sr-glass-frost);
 }
 .sr-caption, .sr-zones, .sr-card, .sr-panel, .sr-back { box-shadow: var(--sr-glass-rim), var(--sr-shadow); }
-.sr-hint, .sr-btn-ghost { box-shadow: var(--sr-glass-rim); }
+.sr-hint, .sr-btn-ghost, .sr-light { box-shadow: var(--sr-glass-rim); }
 @media (hover: hover) { .sr-btn-ghost:hover { background: var(--sr-glass-shine), var(--sr-panel); } }
 .sr-btn-ghost[aria-expanded="true"] { background: var(--sr-glass-shine), var(--sr-panel); }
 .glass-bend .sr-caption, .glass-bend .sr-zones, .glass-bend .sr-card, .glass-bend .sr-panel,
-.glass-bend .sr-back, .glass-bend .sr-btn-ghost { backdrop-filter: var(--sr-glass-bend); }
+.glass-bend .sr-back, .glass-bend .sr-btn-ghost, .glass-bend .sr-light { backdrop-filter: var(--sr-glass-bend); }
 @media (prefers-reduced-transparency: reduce) {
-  .sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost,
-  .glass-bend .sr-caption, .glass-bend .sr-zones, .glass-bend .sr-card, .glass-bend .sr-panel, .glass-bend .sr-back, .glass-bend .sr-btn-ghost {
+  .sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost, .sr-light,
+  .glass-bend .sr-caption, .glass-bend .sr-zones, .glass-bend .sr-card, .glass-bend .sr-panel, .glass-bend .sr-back, .glass-bend .sr-btn-ghost, .glass-bend .sr-light {
     background: var(--sr-panel-solid); -webkit-backdrop-filter: none; backdrop-filter: none;
   }
 }
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost { background: var(--sr-panel); }
+  .sr-caption, .sr-zones, .sr-hint, .sr-card, .sr-panel, .sr-back, .sr-btn-ghost, .sr-light { background: var(--sr-panel); }
 }
 
 @media (max-width: 767px) {
@@ -337,6 +354,9 @@ body.is-interior .sr-caption { transform: translateY(52px); }   /* under «На 
   .sr-btn-contact { width: 40px; padding: 0; }
   .sr-btn-contact .sr-btn-label { display: none; }
   .sr-back { top: 64px; left: 16px; }
+  .sr-light { position: fixed; top: 64px; right: 16px; }
+  .sr-light-btn { width: 40px; height: 32px; padding: 0; justify-content: center; }
+  .sr-light-label { display: none; }
   .sr-caption, body.is-interior .sr-caption {
     left: 16px; right: 16px; width: auto; top: auto; bottom: calc(76px + var(--sr-safe-bottom)); transform: none;
     padding: 14px 16px; border-radius: 12px;

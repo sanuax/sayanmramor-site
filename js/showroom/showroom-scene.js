@@ -4,24 +4,37 @@
 // HouseModel parts (batched: one mesh per group + material + object, see
 // showroom-geometry.js), lays real stone photographs on the pieces cut
 // from them (stone-photos.js), and lights the house as an architectural
-// model photographed in the evening (the owner's choice, 2026-11-08,
-// «Б. Вечер»): a warm dark room round the model, a large soft light above,
-// a warm key with soft shadows, the rooms' own lamps, soft contact shadows
-// on the floors. It exposes what the app needs: hide/show cut-away groups,
+// model in a warm dark room (2026-11-08): a large soft light above, a key
+// with soft shadows, the rooms' own warm lamps, soft contact shadows on the
+// floors. Two lights to choose from (the owner, the same night): «Утро»,
+// the default -- a near-white key and a light studio in the polished stones'
+// reflections, so every stone shows its own colour (under the orange light
+// it «плохо раскрывается» on a phone) -- and «Вечер», the warm light first
+// chosen, with the lamps brighter. setLook(name) switches between them. It exposes what the app needs: hide/show cut-away groups,
 // highlight an object, test whether a marker is hidden behind something,
 // render.
 import * as THREE from '../../vendor/three/three.module.js';
 import { createMaterials, roleTint } from './showroom-materials.js';
 import { hash3, createBatch, pushBox, pushSlab, pushCylinder, pushBeam, toGeometry, pushRoundedBox, pushLathe } from './showroom-geometry.js';
 
-// The room round the model, and its light.
-const LOOK = {
-  bg: { inner: '#2a221c', outer: '#0b0907' },                                   // backdrop: lighter behind the model
-  env: { top: [1.5, 1.3, 1.05], mid: '#4a3f34', low: '#100d0b', fill: 0.7 },   // reflections and fill: a softbox overhead
-  hemi: ['#f3e3ca', '#2a221b', 0.22],
-  key: { color: '#ffdcb0', intensity: 1.55, position: [-8, 22, 10], soft: 9 },
-  exposure: 1.0,
-  lamps: 2.4,                                                                   // the rooms' lamps, brighter than by day
+// The room round the model (the same in both lights), and the two lights.
+const BG = { inner: '#2a221c', outer: '#0b0907' };                              // backdrop: lighter behind the model
+const KEY = { position: [-8, 22, 10], soft: 9 };
+export const LOOKS = {
+  morning: {
+    env: { top: [1.6, 1.56, 1.5], mid: '#9a948b', low: '#2b2724', fill: 0.8 }, // reflections and fill: a softbox overhead, light studio walls
+    hemi: ['#f4f0ea', '#2a2622', 0.12],
+    key: { color: '#fff4ea', intensity: 1.7 },
+    exposure: 1.04,
+    lamps: 1.7,                                                                 // the rooms' lamps
+  },
+  evening: {
+    env: { top: [1.5, 1.3, 1.05], mid: '#4a3f34', low: '#100d0b', fill: 0.7 },  // a warm, dark studio
+    hemi: ['#f3e3ca', '#2a221b', 0.22],
+    key: { color: '#ffdcb0', intensity: 1.55 },
+    exposure: 1.0,
+    lamps: 2.4,                                                                 // brighter than in the morning
+  },
 };
 const WHITE = [1, 1, 1];
 
@@ -31,8 +44,8 @@ function lookBackground() {
   c.width = c.height = 512;
   const g = c.getContext('2d');
   const grad = g.createRadialGradient(256, 230, 20, 256, 256, 400);
-  grad.addColorStop(0, LOOK.bg.inner);
-  grad.addColorStop(1, LOOK.bg.outer);
+  grad.addColorStop(0, BG.inner);
+  grad.addColorStop(1, BG.outer);
   g.fillStyle = grad;
   g.fillRect(0, 0, 512, 512);
   const t = new THREE.CanvasTexture(c);
@@ -42,7 +55,7 @@ function lookBackground() {
 
 // A studio for reflections and fill: a large soft light overhead, softer
 // walls, a dark floor -- no sky, no sun disc.
-function buildEnvironment(renderer) {
+function buildEnvironment(renderer, LOOK) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
   const c = document.createElement('canvas');
@@ -81,7 +94,9 @@ function uvOffset(x, y, z) {
   return [hash3(y - 5.3, z, x) * 4, hash3(x + 2.9, y, z - 7.1) * 4];
 }
 
-export function createShowroomScene(canvas, { House, Photos, zones = [], onChange }) {
+export function createShowroomScene(canvas, { House, Photos, zones = [], look = 'morning', onChange }) {
+  let current = LOOKS[look] ? look : 'morning';
+  const LOOK = LOOKS[current];
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -96,32 +111,53 @@ export function createShowroomScene(canvas, { House, Photos, zones = [], onChang
   const scene = new THREE.Scene();
   const background = lookBackground();
   scene.background = background;
-  scene.environment = buildEnvironment(renderer);
+  // Each light's studio is built once, when it is first needed.
+  const environments = new Map([[current, buildEnvironment(renderer, LOOK)]]);
+  scene.environment = environments.get(current);
 
   const materials = createMaterials({
     Photos, anisotropy: renderer.capabilities.getMaxAnisotropy(), onChange,
     upload: texture => renderer.initTexture(texture),
   });
 
-  // Light: a soft fill, a warm key high over the model's front left (short,
-  // soft shadows), and the rooms' own warm lamps.
-  scene.add(new THREE.HemisphereLight(...LOOK.hemi));
+  // Light: a soft fill, a near-white key high over the model's front left
+  // (short, soft shadows; every stone in its own colour), and the rooms'
+  // own warm lamps.
+  const hemi = new THREE.HemisphereLight(...LOOK.hemi);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight(LOOK.key.color, LOOK.key.intensity);
-  sun.position.set(...LOOK.key.position);
+  sun.position.set(...KEY.position);
   sun.target.position.set(0, 1, 0);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 16, bottom: -16, near: 1, far: 70 });
   sun.shadow.bias = -0.0002;
   sun.shadow.normalBias = 0.03;
-  sun.shadow.radius = LOOK.key.soft;
+  sun.shadow.radius = KEY.soft;
   sun.shadow.blurSamples = 16;
   scene.add(sun, sun.target);
-  (House.LIGHTS || []).forEach(l => {
+  const lamps = (House.LIGHTS || []).map(l => {
     const light = new THREE.PointLight(l.color, l.intensity * LOOK.lamps, l.distance, 2);
     light.position.set(...l.position);
+    light.userData.base = l.intensity;
     scene.add(light);
+    return light;
   });
+
+  // The other light: colours and strengths only, so no shader changes and
+  // the shadows stay as they are.
+  function setLook(name) {
+    if (!LOOKS[name] || name === current) return;
+    current = name;
+    const L = LOOKS[name];
+    if (!environments.has(name)) environments.set(name, buildEnvironment(renderer, L));
+    scene.environment = environments.get(name);
+    hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); hemi.intensity = L.hemi[2];
+    sun.color.set(L.key.color); sun.intensity = L.key.intensity;
+    lamps.forEach(light => { light.intensity = light.userData.base * L.lamps; });
+    renderer.toneMappingExposure = L.exposure;
+    onChange();
+  }
 
   // ---- house -----------------------------------------------------------------
   const groups = new Map();
@@ -455,13 +491,13 @@ export function createShowroomScene(canvas, { House, Photos, zones = [], onChang
     scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     materials.dispose();
     background.dispose();
-    scene.environment.dispose();
+    environments.forEach(t => t.dispose());
     renderer.dispose();
   }
 
   refreshOccluders();
   return {
-    renderer, scene, ready, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose,
+    renderer, scene, ready, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose, setLook, look: () => current,
     loadPhotos: materials.loadPhotos, groupNames: () => Array.from(groups.keys()),
   };
 }

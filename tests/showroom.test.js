@@ -828,3 +828,16 @@ test('the fireplace replaced the low stone console, and the sofa faces it', () =
   assert.ok(b.min[0] > Math.max(...fire.map(x => x.max[0])), 'across the room');
   assert.ok(Math.abs((b.min[2] + b.max[2]) / 2 - zc) < 0.15, 'facing the fireplace');
 });
+
+test('«Утро | Вечер»: two lights to choose from in the showroom\'s header, morning first (2026-11-08)', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'showroom.html'), 'utf8');
+  const group = html.slice(html.indexOf('<div class="sr-light"'), html.indexOf('</div>', html.indexOf('<div class="sr-light"')));
+  assert.match(group, /role="group" aria-label="Освещение"/);
+  const buttons = [...group.matchAll(/<button type="button" class="sr-light-btn" data-look="(\w+)" aria-pressed="(true|false)" aria-label="([^"]+)">/g)].map(m => m.slice(1));
+  assert.deepEqual(buttons, [['morning', 'true', 'Утро'], ['evening', 'false', 'Вечер']]);
+  const scene = fs.readFileSync(path.join(__dirname, '..', 'js', 'showroom', 'showroom-scene.js'), 'utf8');
+  assert.match(scene, /export const LOOKS = \{\s*morning: \{/);
+  assert.match(scene, /look = 'morning'/, 'morning by default');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'js', 'showroom', 'showroom-app.js'), 'utf8');
+  assert.match(app, /localStorage\.getItem\(LIGHT_KEY\) === 'evening'/, 'the last choice is remembered');
+});
