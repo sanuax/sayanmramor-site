@@ -338,7 +338,7 @@
     parts.push(box([-1.43, 1.0, 2.86], [-1.4, 2.3, 2.92], 'metal-dark', 'gf-south'));
     clad(parts, {
       plane: 'y', at: FF1, normal: 1, depth: 0.02, a: [-3.2, -0.4], b: [3.0, GF.z1], module: [1.4, 1.0],
-      gap: 0.005, chamfer: 0.004, mat: 'steel-grey', group: 'gf-south', object: 'entrance-steps', bed: false,
+      gap: 0.005, chamfer: 0.004, mat: 'steel-grey', group: 'site', object: 'entrance-steps', bed: false,   // with the steps: it stays when the street wall is cut away
     });
     parts.push(box([-3.15, SLAB - 0.035, 3.0], [-0.45, SLAB - 0.005, 3.1], 'lamp', 'gf-south'));
 

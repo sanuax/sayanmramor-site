@@ -8,7 +8,9 @@
 // configurator, so one «Принять» covers them all). VERSION goes up when the policy changes
 // enough to ask again. No storage (a private window, Telegram's browser): the answer holds
 // for this tab only.
-// Styles: css/consent.css (linked by every page, the showroom and the configurator).
+// Styles: css/consent.css (linked by every page, the showroom and the configurator). The card
+// is glass like the header and takes its tone from the page under it with the header's own
+// check (SiteHeader.initTone), where js/header.js is there.
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = factory();
@@ -73,6 +75,9 @@
     if (doc.querySelector('.cookie-note')) return;
     const { box, ok } = build(doc);
     doc.body.appendChild(box);
+    // Light or dark glass after what lies under it, as the header (js/header.js, loaded first).
+    const header = win.SiteHeader;
+    if (header && header.initTone) { try { header.initTone(doc, win, box); } catch (e) { /* stays light */ } }
     // one frame in the page first, so the entrance runs from its start
     win.requestAnimationFrame(() => win.requestAnimationFrame(() => box.classList.add('is-shown')));
     ok.addEventListener('click', () => {

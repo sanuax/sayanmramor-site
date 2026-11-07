@@ -2,23 +2,47 @@
    (the owner, 2026-11-08). A quiet card at the foot of the screen, over the configure bar and the
    header, under the photo viewer. Its own file, as css/picks.css: the site's pages, the showroom
    and the configurator all link it, so every var() carries the site's value as a fallback (the
-   configurator does not load css/tokens.css). */
+   configurator does not load css/tokens.css).
+   Glass as the header's (2026-11-08, the owner: «как шапку»): the same see-through, blur and edge,
+   light over a light page and dark over a dark one -- js/consent.js asks the header's own tone check
+   (SiteHeader.initTone), which puts .is-on-dark on the card. */
 .cookie-note {
+  --note-bg: rgba(255, 255, 255, 0.56);
+  --note-solid: rgba(248, 247, 244, 0.97);   /* where there is no blur */
+  --note-blur: blur(22px) saturate(1.8);
+  --note-edge: rgba(255, 255, 255, 0.6);
+  --note-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(28, 29, 27, 0.1), 0 12px 32px -14px rgba(28, 29, 27, 0.4);
+  --note-ink: var(--ink-soft, #474944);
+  --note-link: var(--accent, #2a5446);
   position: fixed; z-index: 900; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box; width: min(520px, calc(100vw - 32px)); margin: 0;
   display: flex; align-items: center; gap: 16px; padding: 16px 16px 16px 24px;
-  background: var(--surface, #f8f7f4); color: var(--ink-soft, #474944); border: 1px solid var(--line, #dcd8cf);
+  background: var(--note-bg); color: var(--note-ink); border: 1px solid var(--note-edge);
+  -webkit-backdrop-filter: var(--note-blur); backdrop-filter: var(--note-blur);
   border-radius: var(--radius, 16px);
-  box-shadow: var(--shadow-2, 0 2px 6px rgba(28, 29, 27, 0.10), 0 28px 56px -24px rgba(28, 29, 27, 0.45));
+  box-shadow: var(--note-shadow);
   font-family: var(--font, 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif); font-size: 14px; font-weight: 400; line-height: 1.5;
   text-align: left; letter-spacing: normal; text-transform: none;
   opacity: 0; transform: translateY(12px);
   transition: opacity var(--dur-move, 250ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform var(--dur-move, 250ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
+.cookie-note.is-on-dark {
+  --note-bg: rgba(22, 20, 18, 0.46);
+  --note-solid: rgba(22, 20, 18, 0.94);
+  --note-edge: rgba(255, 255, 255, 0.14);
+  --note-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.3), 0 12px 32px -14px rgba(0, 0, 0, 0.7);
+  --note-ink: rgba(233, 231, 225, 0.86);
+  --note-link: var(--accent-on-dark, #7fa698);
+}
+/* The tone changes in a third of a second, as the header's -- but not on arrival. */
+.cookie-note.tone-ready { transition-property: opacity, transform, background-color, border-color, box-shadow, color; transition-duration: var(--dur-move, 250ms), var(--dur-move, 250ms), 0.35s, 0.35s, 0.35s, 0.35s; }
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .cookie-note { --note-bg: var(--note-solid); }
+}
 .cookie-note.is-shown { opacity: 1; transform: none; }
 .cookie-note.is-leaving { transition-duration: var(--dur-fast, 150ms); transition-timing-function: ease-in; }
 .cookie-note-text { margin: 0; flex: 1 1 auto; font: inherit; color: inherit; }
-.cookie-note-text a { color: var(--accent, #2a5446); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(42, 84, 70, 0.4); }
+.cookie-note-text a { color: var(--note-link); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
 @media (hover: hover) { .cookie-note-text a:hover { text-decoration-color: currentColor; } }
 .cookie-note-ok {
   flex: none; height: 44px; min-width: 0; margin: 0; padding: 0 24px; border: 0; border-radius: var(--radius-btn, 6px);

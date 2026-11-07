@@ -81,7 +81,7 @@ function uvOffset(x, y, z) {
   return [hash3(y - 5.3, z, x) * 4, hash3(x + 2.9, y, z - 7.1) * 4];
 }
 
-export function createShowroomScene(canvas, { House, Photos, onChange }) {
+export function createShowroomScene(canvas, { House, Photos, zones = [], onChange }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -314,13 +314,19 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
       cam.lookAt(cam.position.x, L.y + 1, cam.position.z);
       cam.updateMatrixWorld();
       const a = new THREE.WebGLRenderTarget(SIZE, Math.round(SIZE * d / w), opts), b = a.clone();
+      // Only what stands whenever this floor is in view casts on it: a wall a
+      // zone cuts away while showing the floor leaves no shadow behind.
+      const skip = new Set();
+      zones.filter(z => !z.hide.includes(L.group)).forEach(z => z.hide.forEach(g => skip.add(g)));
+      const shown = [];
+      groups.forEach((g, name) => { if (skip.has(name) && g.visible) { g.visible = false; shown.push(g); } });
       // Seen from below, a wall standing on the floor is edge-on and leaves no
       // trace: whatever stands on (or through) this floor is drawn as its
       // footprint, touching it.
       const foot = [];
       parts.forEach(part => {
         if (part.kind !== 'box' && part.kind !== 'rbox' && part.kind !== 'cladding') return;
-        if (part.mat === 'glass' || part.mat === 'glass-smoke' || part.mat === 'lamp') return;
+        if (part.mat === 'glass' || part.mat === 'glass-smoke' || part.mat === 'lamp' || skip.has(part.group)) return;
         const bb = part.kind === 'rbox' ? part : House.partBounds(part);
         if (!bb) return;
         if (!(bb.min[1] < L.y + 0.02 && bb.max[1] > L.y + 0.03)) return;
@@ -338,6 +344,7 @@ export function createShowroomScene(canvas, { House, Photos, onChange }) {
       renderer.render(scene, cam);
       scene.remove(footMesh);
       footGeo.dispose();
+      shown.forEach(g => { g.visible = true; });
       scene.overrideMaterial = null;
       // Two passes each way: a wide soft one, then a finer one.
       [[3.2, 3.2], [1.2, 1.2]].forEach(([sx]) => {

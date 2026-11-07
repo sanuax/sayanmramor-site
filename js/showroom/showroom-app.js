@@ -33,7 +33,7 @@ function start() {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // A stone photograph arriving re-renders the view (the scene renders on demand).
-  const view3d = createShowroomScene(canvas, { House, Photos, onChange: () => { occlusionDue = true; requestRender(); } });
+  const view3d = createShowroomScene(canvas, { House, Photos, zones: Data.ZONES, onChange: () => { occlusionDue = true; requestRender(); } });
   const rig = createCameraRig(canvas, { reducedMotion });
   let state = State.initialStateFromLocation(location.search, location.hash);
   let size = { width: 1, height: 1 };
