@@ -417,6 +417,7 @@
     function toneAt(x, y) {
       for (const el of doc.elementsFromPoint(x, y)) {
         if (header.contains(el)) continue;
+        if (el.closest && el.closest('#site-intro')) continue;   // the first-visit intro's slab is not the page
         const cs = win.getComputedStyle(el), b = el.getBoundingClientRect();
         if (el.tagName === 'IMG' && el.currentSrc && el.naturalWidth) {
           // where the point falls in a picture laid like object-fit: cover
@@ -441,6 +442,12 @@
     }
     win.addEventListener('scroll', ask, { passive: true });
     win.addEventListener('resize', ask);
+    // The first-visit intro (js/intro.js) lies over the whole page while <html> has .si-on; it is
+    // skipped above, and the tone is read again at once when it goes, without waiting for a frame
+    // (2026-11-07: the capsule stayed dark over a light page until the first scroll).
+    if (win.MutationObserver && doc.documentElement) {
+      new win.MutationObserver(() => check()).observe(doc.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
     win.addEventListener('load', ask);
     win.addEventListener('pageshow', ask);
     // The first tone at once, without a fade (else the capsule lit up light and faded to dark on

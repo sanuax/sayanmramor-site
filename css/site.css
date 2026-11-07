@@ -175,7 +175,7 @@ h3 { font-size: var(--fs-h3); }
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 .home-s2o-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.home-s2o-step:nth-child(2) .home-s2o-shot img { object-position: 50% 100%; }   /* the blade and the strip, not the guard */
+.home-s2o-step:nth-child(2) .home-s2o-shot img { object-position: 50% 62%; }   /* the cutter in the spray of water, a little under the middle (photo 045, 2026-11-07) */
 .home-s2o-chip {
   position: absolute; left: 14px; top: 14px; z-index: 1;
   display: inline-flex; align-items: center; gap: var(--s-2); height: 30px; padding: 0 12px 0 6px; border-radius: 999px;

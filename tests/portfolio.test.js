@@ -19,9 +19,11 @@ const sha256 = file => crypto.createHash('sha256').update(fs.readFileSync(file))
 // portfolio_keys), plus the owner's photos from the Yandex Maps card
 // (assets/portfolio-yandex: pol 2, stena 2, panno 2, stoleshnitsa_kuhnya 1).
 // A photo may belong to several directions.
+// 2026-11-07 (the owner, after the «что дешевит» audit: «сделай»): the best 5-9 per direction,
+// one or two frames per project, no near-twins side by side.
 const EXPECTED_COUNTS = {
-  lestnitsa: 11, stupeni: 7, stoleshnitsa_kuhnya: 26, stoleshnitsa_vannaya: 21, podokonnik: 2,
-  pol: 18, stena: 40, fasad: 7, panno: 22, kaminy: 6,
+  lestnitsa: 7, stupeni: 5, stoleshnitsa_kuhnya: 8, stoleshnitsa_vannaya: 9, podokonnik: 2,
+  pol: 9, stena: 9, fasad: 5, panno: 9, kaminy: 5,
 };
 const YANDEX_DIR = path.join(site, 'assets', 'portfolio-yandex');
 
