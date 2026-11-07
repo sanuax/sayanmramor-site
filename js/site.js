@@ -121,6 +121,7 @@
     };
   }
 
+  const EAGER_PHOTOS = 4;
   function renderPortfolio(container, items) {
     container.innerHTML = '';
     items = items || [];
@@ -140,7 +141,10 @@
       if (sources) { img.srcset = sources.srcset; img.sizes = sources.sizes; }
       img.src = item.thumb || item.image;
       img.alt = portfolioAlt(pageTitle, item, i);
-      img.loading = 'lazy';
+      // The first four are the direction page's first screen (2026-11-07, the audit: on a phone it
+      // stood empty while lazy photos waited): fetched at once, the first one first.
+      if (i < EAGER_PHOTOS) { img.loading = 'eager'; if (i === 0) img.fetchPriority = 'high'; }
+      else img.loading = 'lazy';
       img.decoding = 'async';
       if (item.width && item.height) { img.width = item.width; img.height = item.height; }
       img.addEventListener('load', () => {

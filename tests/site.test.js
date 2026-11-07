@@ -996,9 +996,9 @@ test('«Что можно заказать»: one stone panel with the menu\'s f
   const shots = [...sec.matchAll(/<span class="home-group-frame"><img class="home-group-shot" src="([^"]+)" alt="" width="720" height="300" loading="lazy" decoding="async"><\/span>\s*<h3 class="home-group-title">/g)];
   assert.equal(shots.length, 5);
   shots.forEach(([, src]) => assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src));
-  // The panel's ground: the stone, a local file at two sizes.
+  // The panel's ground: the stone, a local file at three sizes (a tall cut for phones since 2026-11-07).
   const ground = [...sec.matchAll(/(?:srcset|src)="(\/sayanmramor-site\/assets\/home\/order\/bg-[^"]+)"/g)];
-  assert.equal(ground.length, 2);
+  assert.equal(ground.length, 3);
   ground.forEach(([, src]) => assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src));
   assert.match(sec, /<a class="home-order-go" href="\/sayanmramor-calculator\/sayanmramor-calculator\.html" aria-label="Создать изделие в конфигураторе"/);
   assert.doesNotMatch(sec, /home-feature/, 'the four works are gone: the panel has the photographs');
@@ -1589,5 +1589,29 @@ test('the capsule turns dark glass over a dark place of the page and light over 
   under = 'rgb(239, 237, 232)'; listeners.scroll(); frame();
   assert.ok(!classes.has('is-on-dark'), 'over the light page');
   assert.ok(tone && tone.check);
+});
+
+// ---- 2026-11-07 (the owner after the «что дешевит» audit: «сделай»): the phone's soft background,
+// the bar under every first screen, the empty first screen of the direction pages.
+test('the request band\'s background is sharp on a phone: a tall cut for phones, a mid one up to 900 px', () => {
+  const html = homeHtml();
+  assert.match(html, /<source media="\(max-width: 560px\)" srcset="\/sayanmramor-site\/assets\/home\/order\/bg-majestic-tall-800\.webp">\n\s*<source media="\(max-width: 900px\)" srcset="\/sayanmramor-site\/assets\/home\/order\/bg-majestic-1300\.webp">/);
+  ['bg-majestic-tall-800.webp', 'bg-majestic-1300.webp', 'bg-majestic-1600.webp'].forEach(f => assert.ok(fs.existsSync(path.join(site, 'assets', 'home', 'order', f)), f));
+  assert.ok(!fs.existsSync(path.join(site, 'assets', 'home', 'order', 'bg-majestic-900.webp')), 'the stretched square is gone');
+});
+
+test('the configure bar waits: up only after a scroll or a chosen stone, no «Не выбран» in it until then', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.js \.configure-bar:not\(\.is-shown\):not\(:focus-within\) \{ translate: -50% calc\(100% \+ 24px\); opacity: 0; pointer-events: none; \}/);
+  assert.match(css, /\.js \.configure-bar:not\(\.has-stone\) \.configure-choice \{ display: none; \}/);
+  const js = fs.readFileSync(path.join(site, 'js', 'category-page.js'), 'utf8');
+  assert.match(js, /bar\.classList\.toggle\('is-shown', far \|\| !!selected\);/);
+  assert.match(js, /bar\.classList\.toggle\('has-stone', !!selected\);/);
+});
+
+test('a direction page fetches its first four photos at once, the first one first', () => {
+  const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
+  assert.match(js, /const EAGER_PHOTOS = 4;/);
+  assert.match(js, /if \(i < EAGER_PHOTOS\) \{ img\.loading = 'eager'; if \(i === 0\) img\.fetchPriority = 'high'; \}\n\s*else img\.loading = 'lazy';/);
 });
 

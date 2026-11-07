@@ -1110,7 +1110,16 @@ h3 { font-size: var(--fs-h3); }
 .configure-label { font-size: var(--fs-meta); color: rgba(233, 231, 225, 0.8); }   /* brighter than --on-dark-muted: the glass lets light through */
 .configure-stone { font-size: var(--fs-body); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .configure-stone.is-empty { font-size: var(--fs-small); font-weight: 400; color: rgba(233, 231, 225, 0.8); }
-.configure-cta { flex: none; border-radius: 999px; }   /* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
+.configure-cta { flex: none; border-radius: 999px; }
+/* It waits (2026-11-07, the audit: «Камень: Не выбран» under every first screen): with JavaScript the
+   bar comes up only once the page has been scrolled into, or a stone is chosen (js/category-page.js
+   puts .is-shown); the keyboard brings it up too. Until a stone is chosen it holds only its two ways
+   on -- no «Не выбран». Without JavaScript it stays as written. */
+.configure-bar { transition: translate 0.4s var(--ease-out), opacity 0.25s ease; }
+.js .configure-bar:not(.is-shown):not(:focus-within) { translate: -50% calc(100% + 24px); opacity: 0; pointer-events: none; }
+.js .configure-bar:not(.has-stone) .configure-choice { display: none; }
+.js .configure-bar:not(.has-stone) { padding-left: 8px; }
+.js .configure-bar:not(.has-stone) .configure-bar-inner { justify-content: flex-end; }   /* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
    The closing band of the home page and every direction page, built from the
    same parts as the header's panel and the list of directions: a quiet label
    in the left column, one row with an arrow at its end, thin rules, copper

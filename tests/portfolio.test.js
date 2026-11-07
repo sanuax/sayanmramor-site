@@ -297,7 +297,8 @@ test('renderPortfolio: the photos in order, each in its frame with its proportio
   assert.ok(grid.children.every(f => f.children[0].classList.contains('portfolio-shot')), 'each photo in its frame');
   const imgs = grid.children.map(f => f.children[0].children[0]);
   assert.deepEqual(imgs.map(i => i.src), items.map(i => i.image), 'order kept');
-  assert.ok(imgs.every(i => i.loading === 'lazy'), 'still lazy-loaded');
+  assert.deepEqual(imgs.map(i => i.loading), ['eager', 'eager', 'eager'], 'the first four at once (2026-11-07); these three are all among them');
+  assert.equal(imgs[0].fetchPriority, 'high', 'the first one first');
   assert.deepEqual(grid.children.map(f => f.style.props['--ar']), ['0.6669', '1.4995', '0.6667']);
   assert.deepEqual(grid.children.map(f => f.dataset.ar), ['0.6669', '1.4995', '0.6667']);
   assert.deepEqual([imgs[0].width, imgs[0].height], [1067, 1600], 'the size is on the photo: its box is right before it loads');

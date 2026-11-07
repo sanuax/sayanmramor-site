@@ -140,11 +140,29 @@
       return ['Не выбран', tail];
     }
 
+    // The bar at the foot (2026-11-07, the audit: on a phone the capsule above and the bar below took
+    // 118 px of 812, and «Не выбран» on every page read as an error): it comes up only once the
+    // visitor has scrolled past most of the first screen, or has chosen a stone, and it says nothing
+    // about the stone until one is chosen. css/site.css hides it under .js until .is-shown.
+    const bar = cta.closest ? cta.closest('.configure-bar') : null;
+    const showBar = () => {
+      if (!bar) return;
+      const far = (window.scrollY || 0) > (window.innerHeight || 800) * 0.6;
+      bar.classList.toggle('is-shown', far || !!selected);
+      bar.classList.toggle('has-stone', !!selected);
+    };
+    if (bar && window.addEventListener) {
+      let raf = 0;
+      window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; showBar(); }); }, { passive: true });
+      showBar();
+    }
+
     function renderSelection() {
       cta.href = buildUrl(selected && selected.id);
       if (selected) chosen.textContent = selected.name;
       else chosen.replaceChildren(...emptyChoice());
       chosen.classList.toggle('is-empty', !selected);
+      showBar();
       grid.querySelectorAll('.stone-card').forEach(card => {
         card.setAttribute('aria-pressed', String(!!selected && card.dataset.id === selected.id));
       });
