@@ -47,7 +47,7 @@
   const VEIN = '#e9e7e1';         // the name, the colour of the veins (--on-dark)
   const QUIET = '#a3a89f';        // the line under it (--on-dark-muted)
   const LINE = 'Изделия из натурального камня';
-  const SINCE = 'с 2014 года';    // index.html, «на рынке»: data-since="2014-02-06"
+  const SINCE = 'с 2014 года';    // index.html, «О компании»: «Саянмрамор» с 2014 года
   const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
   const EASE_SOFT = 'cubic-bezier(0.22, 0.68, 0.24, 1)';   // the site's own curve (--ease)
   const EASE_FADE = 'cubic-bezier(0.65, 0, 0.35, 1)';

@@ -830,11 +830,11 @@ test('the showroom draws its icons: no ✕ / ← / → typed as text; the cross 
 
 // ---- Home: the static page (rebuilt on 4ad72f4's structure, in the site's own system) -----
 
-test('the home page is static: header, hero, from stone to object, what can be ordered, the showroom, about, why us, who trusts us, the request, where we are, footer -- and no script of the redesign', () => {
+test('the home page is static: header, hero, from stone to object, what can be ordered, the showroom, about, who trusts us, the request, where we are, footer -- and no script of the redesign', () => {
   const html = homeHtml();
   const main = html.slice(html.indexOf('<main'), html.indexOf('</main>'));
   const order = [...main.matchAll(/<section class="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-why', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
+  assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
   assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
@@ -844,34 +844,14 @@ test('the home page is static: header, hero, from stone to object, what can be o
     assert.ok(!fs.existsSync(path.join(site, 'js', f)), f + ' is gone'));
 });
 
-test('years on the market: full years since the founding day, the figure turning over each 6 February, the word agreeing', () => {
-  const at = s => new Date(s + 'T12:00:00');
-  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2026-10-11')), 12);
-  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2027-02-05')), 12);
-  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2027-02-06')), 13);
-  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2035-01-31')), 20);
-  assert.equal(SiteCommon.yearsSince('2014-02-06', at('2035-02-06')), 21);
-  assert.deepEqual([12, 13, 20, 21, 22, 24, 25, 111, 101].map(SiteCommon.yearsWord),
-    ['лет', 'лет', 'лет', 'год', 'года', 'года', 'лет', 'лет', 'год']);
-
-  const el = { dataset: { since: '2014-02-06' }, figure: { textContent: '12' }, word: { textContent: 'лет' },
-    querySelector(s) { return s === '[data-years]' ? this.figure : s === '[data-years-word]' ? this.word : null; } };
-  const doc = { querySelectorAll: s => (s === '[data-since]' ? [el] : []) };
-  SiteCommon.showYearsOnMarket(doc, at('2036-03-01'));
-  assert.deepEqual([el.figure.textContent, el.word.textContent], ['22', 'года']);
-  SiteCommon.showYearsOnMarket(doc, at('2026-10-11'));
-  assert.deepEqual([el.figure.textContent, el.word.textContent], ['12', 'лет']);
-});
-
-test('about: one grid -- the Donatoni wide, the cutter upright beside it, the words over the cutter, four figures; no motion (the owner, 2026-10-12)', () => {
+test('about: one grid -- the Donatoni wide, the cutter upright beside it, the words over the cutter; no figures, no motion (the owner, 2026-10-12, 2026-11-07)', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const about = sectionOf(homeHtml(), '<section class="wrap home-about"');
   assert.deepEqual([...about.matchAll(/<figure class="home-about-shot home-about-shot-(\w+)">/g)].map(m => m[1]), ['wide', 'tall'],
     'one grid (2026-10-11): the Donatoni wide, the cutter upright beside it');
   assert.match(css, /\.home-about-shot-wide \{ grid-column: 1 \/ 10; \}[\s\S]*\.home-about-shot-tall \{ grid-column: 10 \/ -1; \}/);
   assert.match(css, /\.home-about-lead \{ grid-column: 10 \/ -1;/, 'the words over the cutter: one right-hand edge');
-  assert.match(css, /\.home-about-facts \{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
-  assert.match(css, /\.home-about-facts dd \{[^}]*line-height: 1\.05;/);
+  assert.doesNotMatch(css, /home-about-facts|home-why/, 'no figures and no «Почему выбирают нас» (2026-11-07, the owner: «А. Убрать»)');
   assert.doesNotMatch(css, /about-motion|about-count|about-word|@keyframes about-/, 'no animation left in «О компании»');
   const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
   assert.doesNotMatch(js, /mountAboutMotion|counterColumns/);
@@ -897,19 +877,12 @@ test('about, why us, who trusts us: the old site\'s three blocks -- its words an
   assert.doesNotMatch(about, /home-about-kicker|>О компании</);
   assert.match(about, /<h2 id="aboutTitle">Собственное производство в&nbsp;Московской области<\/h2>/);
   assert.match(about, /современным итальянским оборудованием/);
-  const facts = [...about.matchAll(/<dt>([^<]+)<\/dt><dd[^>]*>(.+?)<\/dd>/g)].map(m => [m[2].replace(/<[^>]+>/g, ' ').replace('&#8239;', '').replace(/\s+/g, ' ').trim(), m[1]]);
-  assert.deepEqual(facts, [['12 лет', 'на рынке'], ['8120', 'изделий'], ['145', 'камней'], ['2702', 'клиента']]);
-  assert.match(about, /<dd data-since="2014-02-06"><span data-years>12<\/span><small data-years-word>лет<\/small><\/dd>/,
-    'the years on the market count from the founding day, 6 February 2014 (the date itself is not shown)');
+  // 2026-11-07 (the owner after the «что дешевит» audit, «А. Убрать»): the row of figures and «Почему выбирают нас?» are gone;
+  // the founding year stays in the words.
+  assert.match(about, /<p class="home-about-lead">«Саянмрамор» с&nbsp;2014 года обрабатывает камень/);
+  assert.doesNotMatch(html, /home-about-facts|data-since|home-why|бюджетные/);
   assert.equal((about.match(/<figure class="home-about-shot /g) || []).length, 2, 'two photographs from the workshop');
   assert.doesNotMatch(about, /rutube|home-about-video/, 'no video (the owner, 2026-10-10)');
-
-  const why = sectionOf(html, '<section class="wrap home-why"');
-  assert.match(why, /<h2 id="whyTitle">Почему выбирают <em>нас<\/em>\?<\/h2>/);
-  assert.deepEqual([...why.matchAll(/<span class="home-why-num" aria-hidden="true">(\d+)<\/span>/g)].map(m => m[1]), ['01', '02', '03', '04']);
-  const titles = [...why.matchAll(/<h3 class="home-why-title">([^<]+)<\/h3>/g)].map(m => m[1]);
-  assert.deepEqual(titles, ['Оперативность выполнения', 'Оптимальная стоимость', 'Высокое качество продукции', 'Подготовка дизайн-проектов']);
-  assert.equal((why.match(/<p class="home-why-text">/g) || []).length, 4);
 
   const trust = sectionOf(html, '<section class="wrap home-trust"');
   assert.match(trust, /<h2 id="trustTitle">Нам доверяют<\/h2>/);

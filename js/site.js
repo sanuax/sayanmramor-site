@@ -541,33 +541,6 @@
   }
   if (typeof document !== 'undefined') reserveFixedUi(document);
 
-  // Years on the market (home, «О компании»): counted from the founding day in
-  // data-since (6 February 2014, not shown on the page), so the figure turns
-  // over by itself each 6 February. The page carries the figure as of its last
-  // edit, so it reads right without the script too.
-  function yearsSince(since, now) {
-    const [y, m, d] = since.split('-').map(Number);
-    let years = now.getFullYear() - y;
-    if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) years--;
-    return Math.max(0, years);
-  }
-  function yearsWord(n) {
-    const last = n % 10, lastTwo = n % 100;
-    if (lastTwo >= 11 && lastTwo <= 14) return 'лет';
-    if (last === 1) return 'год';
-    if (last >= 2 && last <= 4) return 'года';
-    return 'лет';
-  }
-  function showYearsOnMarket(doc, now) {
-    Array.from(doc.querySelectorAll('[data-since]')).forEach(el => {
-      const n = yearsSince(el.dataset.since, now || new Date());
-      const figure = el.querySelector('[data-years]'), word = el.querySelector('[data-years-word]');
-      if (figure) figure.textContent = String(n);
-      if (word) word.textContent = yearsWord(n);
-    });
-  }
-  if (typeof document !== 'undefined') showYearsOnMarket(document);
-
   // «Нам доверяют» as passes (2026-10-11, the owner: the motion of the 21st.dev «Lunar Boarding
   // Pass», ported without React): each tile becomes a two-sided pass in a 3D stage. As the wall
   // comes up the screen the logos are stamped onto their tiles one after another; under a mouse
@@ -784,5 +757,5 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') landOnOffer(document, window);
 
-  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, yearsSince, yearsWord, showYearsOnMarket, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
 });
