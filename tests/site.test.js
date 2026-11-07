@@ -936,8 +936,9 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   assert.equal(imgs.length, 1, 'one picture');
   // 2026-11-07, the owner chose «А. Хаммам»: a real photo of our work in place of the visualised washbasin.
   // Same day the owner made a panorama of it (a neural network widened the frame; the painted dome
-  // replaced by the real one) and asked for that one photo on every screen, phones too.
-  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-pano-1997\.webp" alt="Хаммам[^"]+" width="1997" height="788" fetchpriority="high" decoding="async"/);
+  // replaced by the real one) and asked for that one photo on every screen, phones too; later the
+  // same day the owner's own new frame of the hall (IMG_6710, 1536×1024) took its place.
+  assert.match(imgs[0], /src="\/sayanmramor-site\/assets\/hero\/hammam-1536\.webp" alt="Хаммам[^"]+" width="1536" height="1024" fetchpriority="high" decoding="async"/);
   assert.doesNotMatch(imgs[0], /loading="lazy"/, 'the first picture is not held back');
   assert.doesNotMatch(hero, /<source /, 'one photo for every screen');
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
@@ -1456,7 +1457,7 @@ test('home hero on a phone: the photo fills the whole screen (since 2026-11-07 t
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
   const hero = phone.match(/\n {2}\.home-hero \{[^}]*\}/)[0];
-  assert.match(hero, /min-height: 100vh; min-height: 100lvh;/, 'the full screen, the bars hidden or not');
+  assert.match(hero, /min-height: calc\(100vh \+ 2px\); min-height: calc\(100lvh \+ 2px\);/, 'the full screen, the bars hidden or not, 2 px past it (no hairline under it when zoomed)');
 });
 
 // ---- The home hero holds still while a phone's bars come and go (2026-10-21, the owner:
@@ -1500,7 +1501,7 @@ test('home hero: a mouse and a desktop window are left to the CSS', () => {
 test('home hero CSS: the held height first, the large viewport where nothing holds it', () => {
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
-  assert.match(phone, /@supports \(height: 100lvh\) \{ \.home-hero \{ min-height: var\(--hero-h, 100lvh\); \} \}/);
+  assert.match(phone, /@supports \(height: 100lvh\) \{ \.home-hero \{ min-height: calc\(var\(--hero-h, 100lvh\) \+ 2px\); \} \}/);
 });
 
 test('the piece in the request (2026-10-26, the owner): a card over the questions, the request summed up with it', () => {

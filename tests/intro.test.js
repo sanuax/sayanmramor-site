@@ -76,5 +76,5 @@ test('pages: the intro loads in <head> without defer, before the stylesheets; th
     });
   });
   assert.doesNotMatch(read('showroom.html'), /js\/intro\.js/, 'the showroom has its own loading screen');
-  assert.match(read('index.html'), /<img src="[^"]*hammam-pano-1997\.webp"[^>]*fetchpriority="high"/, 'the first photo first');
+  assert.match(read('index.html'), /<img src="[^"]*hammam-1536\.webp"[^>]*fetchpriority="high"/, 'the first photo first');
 });
