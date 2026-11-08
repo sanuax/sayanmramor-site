@@ -274,6 +274,12 @@ const ROLES = {
   'viscont-white':    ['#a8aca6', 0.22, { photo: true, tile: 'viscont-white-01050', clearcoat: 0.25 }],
   'calacatta-nova':   ['#d6d5cf', 0.28, { photo: true, tile: 'calacatta-nova-01940', clearcoat: 0.18 }],
   majestic:           ['#d9d7cf', 0.18, { photo: true, clearcoat: 0.3 }],
+  // 2026-11-08: Onice Crystal Black (the hall wall), Panda (the bedroom wall), White Crystal (the hall floor),
+  // Sahara Noir (the stair): every piece from its own region of a real slab photo (house-model.js).
+  'onice-crystal-black': ['#58554c', 0.14, { photo: true, clearcoat: 0.5 }],
+  panda:              ['#606162', 0.16, { photo: true, clearcoat: 0.4 }],
+  'white-crystal':    ['#e0ddd5', 0.2, { photo: true, clearcoat: 0.3 }],
+  'sahara-noir':      ['#35322d', 0.16, { photo: true, clearcoat: 0.45 }],
   graphite:           ['#36332f', 0.8, {}],
   poche:              ['#2b2825', 0.9, {}],
   grout:              ['#3a3530', 0.95, {}],
@@ -341,6 +347,7 @@ export function roleTint(role) {
 // on a desktop, lighter on phones and low-memory devices.
 function photoMaxSize(photo) {
   const small = Math.min(screen.width, screen.height) < 820 || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+  if (photo.max) return small ? photo.max[1] : photo.max[0];   // a photo that needs less (an almost plain white marble)
   if (photo.kind === 'tile') return small ? 1024 : 2048;
   if (photo.stone === 'calacatta-nova') return 2048;
   return small ? 2048 : 3072;

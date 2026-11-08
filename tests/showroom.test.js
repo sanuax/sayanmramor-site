@@ -244,10 +244,10 @@ test('entrance: wide monolithic steps up to the floor level, even risers, a land
 test('the main stair has a landing, a stone stringer and a balustrade', () => {
   const { landingAfter, landing } = House.STAIR;
   const treads = parts.filter(p => p.group === 'stair' && /^staircase/.test(p.object || '') && p.max[1] - p.min[1] < 0.06).sort((a, b) => a.max[1] - b.max[1]);
-  treads.forEach(p => assert.equal(p.mat, 'steel-grey-honed', 'a stone stair: Steel Grey treads'));
+  treads.forEach(p => assert.equal(p.mat, 'sahara-noir', 'a marble stair: Sahara Noir treads (the owner, 2026-11-08)'));
   assert.equal(treads.length, 18);
   assert.ok(treads[landingAfter].max[2] - treads[landingAfter].min[2] >= landing, 'the landing is a deep tread');
-  assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'steel-grey-honed' && p.kind === 'beam'), 'a stone stringer');
+  assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'sahara-noir' && p.kind === 'beam'), 'a stone stringer');
   assert.ok(parts.some(p => p.group === 'stair' && p.mat === 'glass'), 'a balustrade');
 });
 
@@ -513,18 +513,19 @@ const STONE_FAMILY = {
   limestone: 'limestone', 'limestone-light': 'limestone', paving: 'limestone',
   'steel-grey': 'steel-grey', 'steel-grey-honed': 'steel-grey',
   'viscont-white': 'viscont-white', 'calacatta-nova': 'calacatta-nova', majestic: 'majestic',
+  'onice-crystal-black': 'onice-crystal-black', panda: 'panda', 'white-crystal': 'white-crystal', 'sahara-noir': 'sahara-noir',
 };
 const NOT_STONE = new Set(['graphite', 'poche', 'grout', 'plaster', 'wood', 'wood-dark', 'wood-floor', 'cabinet', 'fabric', 'fabric-light', 'rug', 'shade',
   'metal', 'metal-dark', 'steel', 'hob-ring', 'glass', 'glass-smoke', 'glass-black', 'ceramic', 'basin', 'mirror', 'lamp', 'decor', 'base']);
 const ofObject = id => parts.filter(p => p.object === id);
 
-test('one house, one set of stones: our limestone, Steel Grey, Viscont White, Calacatta Nova, Majestic', () => {
+test('one house, one set of stones: our limestone, Steel Grey, Viscont White, Calacatta Nova, Majestic, and (2026-11-08) Onice Crystal Black, Panda, White Crystal, Sahara Noir', () => {
   const families = new Set();
   parts.filter(p => p.mat).forEach(p => {
     assert.ok(STONE_FAMILY[p.mat] || NOT_STONE.has(p.mat), 'unexpected material ' + p.mat);
     if (STONE_FAMILY[p.mat]) families.add(STONE_FAMILY[p.mat]);
   });
-  assert.deepEqual(Array.from(families).sort(), ['calacatta-nova', 'limestone', 'majestic', 'steel-grey', 'viscont-white']);
+  assert.deepEqual(Array.from(families).sort(), ['calacatta-nova', 'limestone', 'majestic', 'onice-crystal-black', 'panda', 'sahara-noir', 'steel-grey', 'viscont-white', 'white-crystal']);
 });
 
 test('each stone is where the concept puts it', () => {
@@ -543,11 +544,17 @@ test('each stone is where the concept puts it', () => {
   ['bath-counter', 'bath-wall', 'bath-sill'].forEach(id => ofObject(id).filter(p => p.mat !== 'grout').forEach(p => assert.equal(p.mat, 'calacatta-nova', id)));
   parts.filter(p => p.mat === 'majestic').forEach(p => assert.equal(p.object, 'living-panno', 'Majestic stays the one accent'));
   assert.ok(ofObject('living-panno').some(p => p.mat === 'majestic'));
-  // Floors: warm oak boards in the rooms, never the facade limestone; the bathroom's is Calacatta Nova.
-  ['hall-floor', 'living-floor'].forEach(id => ofObject(id).forEach(p => assert.equal(p.mat, 'wood-floor', id)));
+  // Floors: warm oak boards in the living room and upstairs, never the facade limestone; the hall's is White Crystal
+  // (2026-11-08), the bathroom's Calacatta Nova.
+  ofObject('living-floor').forEach(p => assert.equal(p.mat, 'wood-floor', 'living-floor'));
+  ofObject('hall-floor').forEach(p => assert.equal(p.mat, 'white-crystal', 'hall-floor'));
   ofObject('bath-floor').forEach(p => assert.equal(p.mat, 'calacatta-nova'));
   parts.filter(p => p.kind === 'cladding' && p.plane === 'y' && p.normal > 0 && ['gf-floors', 'uf-interior'].includes(p.group))
-    .forEach(p => assert.ok(['wood-floor', 'calacatta-nova'].includes(p.mat), 'indoor floor ' + p.mat));
+    .forEach(p => assert.ok(['wood-floor', 'calacatta-nova', 'white-crystal'].includes(p.mat), 'indoor floor ' + p.mat));
+  // The owner's stones, each where he asked (2026-11-08): the hall wall in onyx, the bedroom wall in Panda, the stair in Sahara Noir.
+  ofObject('hall-wall').filter(p => p.mat !== 'grout').forEach(p => assert.equal(p.mat, 'onice-crystal-black', 'hall-wall'));
+  ofObject('bedroom-wall').filter(p => p.mat !== 'grout').forEach(p => assert.equal(p.mat, 'panda', 'bedroom-wall'));
+  ['staircase', 'staircase-steps'].forEach(id => ofObject(id).forEach(p => assert.equal(p.mat, 'sahara-noir', id)));
 });
 
 // The w x h a photo is laid over, as the renderer measures it.
@@ -586,6 +593,10 @@ test('slab photos: real Venezia Stone slabs of the agreed bundles, each region l
   assert.deepEqual(Array.from(bundles('viscont-white')), ['BLK10421']);
   assert.deepEqual(Array.from(bundles('calacatta-nova')), ['BLP03755']);
   assert.deepEqual(Array.from(bundles('majestic')), ['BLM17290']);
+  assert.deepEqual(Array.from(bundles('onice-crystal-black')), ['BLM21003']);
+  assert.deepEqual(Array.from(bundles('panda')), ['BLP02711']);
+  assert.deepEqual(Array.from(bundles('white-crystal')), ['BLM25352']);
+  assert.deepEqual(Array.from(bundles('sahara-noir')), ['BLM23430']);
   // The kitchen's waves all run along the worktop and the island.
   uses.filter(u => u.part.mat === 'viscont-white' && (u.spec.plane || 'y') === 'y').forEach(u => assert.ok([0, 180].includes(u.spec.rotate || 0)));
 });
@@ -641,9 +652,17 @@ test('stone photos load zone by zone: the outside needs only Steel Grey, every z
   parts.forEach(p => { const f = STONE_FAMILY[p.mat]; if (f && f !== 'limestone') assert.ok(listed.has(f), f); });
 });
 
-test('floors: wide oak boards in the rooms, large Calacatta Nova slabs in the bathroom', () => {
+test('floors: wide oak boards in the living room and upstairs, large marble slabs in the hall and the bathroom', () => {
   const boards = parts.filter(p => p.kind === 'cladding' && p.mat === 'wood-floor');
-  assert.ok(boards.some(p => p.object === 'living-floor') && boards.some(p => p.object === 'hall-floor') && boards.some(p => p.group === 'uf-interior'));
+  assert.ok(boards.some(p => p.object === 'living-floor') && boards.some(p => p.group === 'uf-interior') && !boards.some(p => p.object === 'hall-floor'));
+  // The hall (2026-11-08): large-format White Crystal, every piece from its own region of one of three consecutive slabs.
+  const hall = ofObject('hall-floor').filter(p => p.kind === 'cladding');
+  assert.ok(hall.length >= 3);
+  hall.forEach(p => {
+    assert.ok(p.module[0] >= 1.2 && p.module[1] >= 0.8, 'large format: ' + p.module);
+    assert.equal(p.photos.length, House.claddingSlabs(p).length, 'one photo per piece');
+    assert.deepEqual([...new Set(p.photos.map(ph => ph.src))].sort(), ['white-crystal-M0632071', 'white-crystal-M0632072', 'white-crystal-M0632073']);
+  });
   boards.forEach(p => {
     assert.ok(p.module[0] >= 1.8 && p.module[1] >= 0.18 && p.module[1] <= 0.25, 'wide long boards');
     assert.ok(p.stagger > 0 && p.stagger !== 0.5, 'a loose running bond');
@@ -853,4 +872,41 @@ test('«Утро» and «Вечер» flow into each other (2026-11-08): everyth
   // The flow asks for frames only; the markers are not asked about occlusion on every frame of it.
   const app = fs.readFileSync(path.join(__dirname, '..', 'js', 'showroom', 'showroom-app.js'), 'utf8');
   assert.match(app, /onRedraw: \(\) => requestRender\(\)/);
+});
+
+test('the hall wall is onyx in a four-way bookmatch, the bedroom wall two large Panda slabs (the owner, 2026-11-08)', () => {
+  const wall = ofObject('hall-wall').find(p => p.kind === 'cladding');
+  const slabs = House.claddingSlabs(wall);
+  assert.equal(slabs.length, 4, 'four slabs, two by two');
+  assert.deepEqual([...new Set(slabs.map(r => r.a0.toFixed(3)))].length, 2);
+  assert.deepEqual(wall.photos.map(ph => ph.src), ['onice-crystal-black-M0553069', 'onice-crystal-black-M0553068', 'onice-crystal-black-M0553066', 'onice-crystal-black-M0553067']);
+  // Four consecutive slabs of one bundle...
+  assert.deepEqual(wall.photos.map(ph => Photos.PHOTOS[ph.src].bundle), ['BLM21003', 'BLM21003', 'BLM21003', 'BLM21003']);
+  assert.deepEqual(wall.photos.map(ph => ph.src.slice(-7)).sort(), ['0553066', '0553067', '0553068', '0553069']);
+  // ...mirrored across both joints: the lower row is turned over top to bottom, the right column left to right,
+  // and every piece is taken from the same place (the photo's lower right corner), so the pattern meets in the middle.
+  const flips = wall.photos.map(ph => [(ph.rotate === 180) !== !!ph.mirror, (ph.rotate === 180)]);   // [left-right flipped, top-bottom flipped]
+  // lower left, lower right, upper left, upper right (claddingSlabs lays the lower row first)
+  assert.deepEqual(flips, [[false, true], [true, true], [false, false], [true, false]]);
+  assert.deepEqual(wall.photos.map(ph => ph.offset), [['end', 'end'], ['end', 'end'], ['end', 'end'], ['end', 'end']]);
+
+  const panda = ofObject('bedroom-wall').find(p => p.kind === 'cladding');
+  assert.equal(House.claddingSlabs(panda).length, 2, 'two large slabs, not pieces');
+  House.claddingSlabs(panda).forEach(r => assert.ok(r.a1 - r.a0 > 1.8 && r.b1 - r.b0 > 2.4, 'each slab is large format'));
+  assert.deepEqual(panda.photos.map(ph => ph.src), ['panda-P0471513', 'panda-P0471514']);
+  // A bookmatch with one picture across the joint: the first slab (at the viewer's right, the lower z) turned 270 degrees,
+  // the second (at the left) 90, their photographed edges meeting at the joint -- the pair was chosen by comparing the
+  // edge columns of the photographs over every turn and flip (2026-11-08, the owner: «единый рисунок»).
+  assert.deepEqual(panda.photos.map(ph => [ph.rotate, !!ph.mirror]), [[270, false], [90, false]]);
+  assert.deepEqual(panda.photos.map(ph => ph.offset), [[0.115, 0], [0, 0]]);
+});
+
+test('the hall-floor marker stands on the marble, not on the rug (the owner, 2026-11-08)', () => {
+  const o = Data.objectById('hall-floor');
+  const rugs = parts.filter(p => p.kind === 'rbox' && p.mat === 'rug' && p.group === 'gf-interior' && p.min[1] < 0.5 && p.max[1] < 0.6);
+  assert.ok(rugs.length >= 1);
+  rugs.forEach(r => assert.ok(!(o.anchor[0] > r.min[0] - 0.15 && o.anchor[0] < r.max[0] + 0.15 && o.anchor[2] > r.min[2] - 0.15 && o.anchor[2] < r.max[2] + 0.15), 'the marker is over a rug'));
+  // and clear of the furniture standing on the floor
+  parts.filter(p => (p.kind === 'rbox' || p.kind === 'box') && p.group === 'gf-interior' && p.min[1] < 0.6 && p.max[1] > 0.55 && p.min[0] > -7 && p.max[0] < 1)
+    .forEach(f => assert.ok(!(o.anchor[0] > f.min[0] - 0.1 && o.anchor[0] < f.max[0] + 0.1 && o.anchor[2] > f.min[2] - 0.1 && o.anchor[2] < f.max[2] + 0.1), 'the marker stands under ' + f.mat));
 });

@@ -73,6 +73,61 @@
       party: '13747', bundle: 'BLM17290', form: 'слэб', slab: [3.05, 1.9],
       detected: [0.0264, 0.0361, 0.9619, 0.9843], mean: [221, 221, 209], target: [217, 215, 207],
     },
+    'panda-P0471513': {
+      stone: 'panda', kind: 'slab', page: 'https://veneziastone.com/marble/panda/', source: STORAGE + 'P0471513.JPG',
+      party: '12240', bundle: 'BLP02711', form: 'слэб', slab: [2.65, 1.97],
+      detected: [0.1427, 0.0644, 0.9561, 0.9392], mean: [92, 93, 95], target: [96, 97, 98],
+    },
+    'panda-P0471514': {
+      stone: 'panda', kind: 'slab', page: 'https://veneziastone.com/marble/panda/', source: STORAGE + 'P0471514.JPG',
+      party: '12240', bundle: 'BLP02711', form: 'слэб', slab: [2.41, 1.96],
+      detected: [0.0805, 0.0186, 0.8732, 0.987], mean: [99, 100, 100], target: [96, 97, 98],
+    },
+    'sahara-noir-M0598743': {
+      stone: 'sahara-noir', kind: 'slab', page: 'https://veneziastone.com/marble/sahara-noir/', source: STORAGE + 'M0598743.JPG',
+      party: '14804', bundle: 'BLM23430', form: 'слэб', slab: [3.14, 1.94],
+      detected: [0.039, 0.0276, 0.9829, 0.9742], mean: [48, 46, 40], target: [53, 50, 45],
+    },
+    'sahara-noir-M0598744': {
+      stone: 'sahara-noir', kind: 'slab', page: 'https://veneziastone.com/marble/sahara-noir/', source: STORAGE + 'M0598744.JPG',
+      party: '14804', bundle: 'BLM23430', form: 'слэб', slab: [3.14, 1.96],
+      detected: [0.0183, 0.0221, 0.9695, 0.9779], mean: [57, 55, 50], target: [53, 50, 45],
+    },
+    'onice-crystal-black-M0553066': {
+      stone: 'onice-crystal-black', kind: 'slab', page: 'https://veneziastone.com/oniks/onice-crystal-black/', source: STORAGE + 'M0553066.JPG',
+      party: '14366', bundle: 'BLM21003', form: 'слэб', slab: [2.96, 1.85],
+      detected: [0.0183, 0.0227, 0.9293, 0.9835], mean: [90, 88, 79], target: [88, 86, 77],
+    },
+    'onice-crystal-black-M0553067': {
+      stone: 'onice-crystal-black', kind: 'slab', page: 'https://veneziastone.com/oniks/onice-crystal-black/', source: STORAGE + 'M0553067.JPG',
+      party: '14366', bundle: 'BLM21003', form: 'слэб', slab: [2.72, 1.83],
+      detected: [0.0988, 0.0205, 0.9415, 0.9733], mean: [87, 85, 75], target: [88, 86, 77],
+    },
+    'onice-crystal-black-M0553068': {
+      stone: 'onice-crystal-black', kind: 'slab', page: 'https://veneziastone.com/oniks/onice-crystal-black/', source: STORAGE + 'M0553068.JPG',
+      party: '14366', bundle: 'BLM21003', form: 'слэб', slab: [2.75, 1.85],
+      detected: [0.0963, 0.0185, 0.9476, 0.9774], mean: [87, 85, 76], target: [88, 86, 77],
+    },
+    'onice-crystal-black-M0553069': {
+      stone: 'onice-crystal-black', kind: 'slab', page: 'https://veneziastone.com/oniks/onice-crystal-black/', source: STORAGE + 'M0553069.JPG',
+      party: '14366', bundle: 'BLM21003', form: 'слэб', slab: [2.83, 1.85],
+      detected: [0.0939, 0.0226, 0.9683, 0.9856], mean: [88, 85, 76], target: [88, 86, 77],
+    },
+    'white-crystal-M0632071': {
+      stone: 'white-crystal', kind: 'slab', page: 'https://veneziastone.com/marble/white-crystal/', source: STORAGE + 'M0632071.JPG',
+      party: '15140', bundle: 'BLM25352', form: 'слэб', slab: [2.43, 1.88],
+      detected: [0.0171, 0.065, 0.9756, 0.989], mean: [234, 231, 223], target: [224, 222, 214], max: [2048, 1536],
+    },
+    'white-crystal-M0632072': {
+      stone: 'white-crystal', kind: 'slab', page: 'https://veneziastone.com/marble/white-crystal/', source: STORAGE + 'M0632072.JPG',
+      party: '15140', bundle: 'BLM25352', form: 'слэб', slab: [2.43, 1.87],
+      detected: [0.0232, 0.065, 0.9829, 0.989], mean: [233, 229, 220], target: [224, 222, 214], max: [2048, 1536],
+    },
+    'white-crystal-M0632073': {
+      stone: 'white-crystal', kind: 'slab', page: 'https://veneziastone.com/marble/white-crystal/', source: STORAGE + 'M0632073.JPG',
+      party: '15140', bundle: 'BLM25352', form: 'слэб', slab: [2.43, 1.86],
+      detected: [0.0171, 0.065, 0.9756, 0.9826], mean: [232, 229, 219], target: [224, 222, 214], max: [2048, 1536],
+    },
   };
 
   // The usable crop of a slab photo ([u0, v0, u1, v1], fractions of the

@@ -364,25 +364,51 @@
       layers: [{ t: 0.14, mat: 'plaster' }], openings: [{ u0: -0.2, u1: 1.0, v0: FF1, v1: 2.6 }] });
 
     // ---- floors ------------------------------------------------------------------
-    // Floors: wide boards of warm, light oak, laid east-west in a loose
-    // running bond -- a quiet ground for the stone. (The bathroom has stone.)
+    // The living room: wide boards of warm, light oak, laid east-west in a loose
+    // running bond -- a quiet ground for the stone. The hall (the owner,
+    // 2026-11-08): large slabs of White Crystal, white marble with a fine
+    // grey grain, cut from three consecutive slabs of one bundle; the
+    // bathroom has stone too.
     const BOARD = { module: [2.1, 0.21], stagger: 0.37, gap: 0.002, chamfer: 0.0015 };
     const floor = (a, b, object) => clad(parts, Object.assign({
       plane: 'y', at: FF1, normal: 1, depth: 0.02, a, b, origin: [-6.7, -4.7],
       mat: 'wood-floor', group: 'gf-floors', object, bed: false,
     }, BOARD));
-    floor([-6.7, 0.93], [-4.7, 2.7], 'hall-floor');
-    floor([-6.7, -3.5], [2.7, 4.7], 'hall-floor');
-    floor([-0.1, 0.93], [2.7, 4.7], 'hall-floor');
+    const HALL_SLABS = ['white-crystal-M0632071', 'white-crystal-M0632072', 'white-crystal-M0632073'];
+    const HALL_MODULE = [1.2, 0.93];   // a slab cut in four: 2.4 x 1.86 m
+    const hallFloor = (a, b) => {
+      const spec = { plane: 'y', at: FF1, normal: 1, depth: 0.02, a, b, origin: [-6.7, -4.7], module: HALL_MODULE, gap: 0.003, chamfer: 0.002, mat: 'white-crystal', group: 'gf-floors', object: 'hall-floor', bed: false };
+      // Every piece from its own region of a slab: the four quarters of three slabs, turned over now and then.
+      spec.photos = claddingSlabs(spec).map((r, i) => ({
+        src: HALL_SLABS[i % 3],
+        offset: [(Math.floor(i / 3) % 2) ? 'end' : 0, (Math.floor(i / 6) % 2) ? 'end' : 0],
+        mirror: Math.floor(i / 12) % 2 === 1, rotate: Math.floor(i / 24) % 2 ? 180 : 0,
+      }));
+      clad(parts, spec);
+    };
+    hallFloor([-6.7, 0.93], [-4.7, 2.7]);
+    hallFloor([-6.7, -3.5], [2.7, 4.7]);
+    hallFloor([-0.1, 0.93], [2.7, 4.7]);
     floor([1.07, 6.7], [-4.7, 4.7], 'living-floor');
 
     // ---- hall ------------------------------------------------------------------------
-    // A honed Steel Grey wall in large panels (the plinth's stone, indoors)
-    // with a light cove above it.
-    clad(parts, {
-      plane: 'z', at: -4.7, normal: 1, depth: 0.036, a: [-3.4, 0.93], b: [FF1 + 0.02, SLAB], module: [4.33 / 4, (SLAB - FF1 - 0.02) / 2],
-      gap: 0.004, chamfer: 0.004, mat: 'steel-grey-honed', group: 'gf-interior', object: 'hall-wall',
-    });
+    // An onyx wall (the owner, 2026-11-08): Onice Crystal Black, four consecutive slabs of one bundle
+    // (M0553066-69) in a four-way bookmatch -- a mirror across the vertical joint and across the
+    // horizontal one, so the bands and veins meet in the middle of the wall -- with a light cove above it.
+    {
+      const spec = { plane: 'z', at: -4.7, normal: 1, depth: 0.036, a: [-3.4, 0.93], b: [FF1 + 0.02, SLAB], origin: [-3.4, FF1 + 0.02], module: [4.33 / 2, (SLAB - FF1 - 0.02) / 2],
+        gap: 0.003, chamfer: 0.003, mat: 'onice-crystal-black', group: 'gf-interior', object: 'hall-wall' };
+      // claddingSlabs order: the lower row left to right, then the upper one.
+      const cell = [
+        { src: 'onice-crystal-black-M0553069', rotate: 180, mirror: true },    // lower left: turned over top to bottom
+        { src: 'onice-crystal-black-M0553068', rotate: 180 },                  // lower right: turned over both ways
+        { src: 'onice-crystal-black-M0553066' },                               // upper left: as it lies
+        { src: 'onice-crystal-black-M0553067', mirror: true },                 // upper right: turned over left to right
+      ];
+      // Each piece is the part of its slab beside the wall's middle (the photo's lower right corner).
+      spec.photos = claddingSlabs(spec).map((r, i) => Object.assign({ offset: ['end', 'end'] }, cell[i]));
+      clad(parts, spec);
+    }
     parts.push(box([-3.4, SLAB - 0.04, -4.664], [0.93, SLAB - 0.01, -4.6], 'lamp', 'gf-interior'));
     // A bench: a timber seat on two stone blocks.
     parts.push(box([-2.5, 0.86, -4.6], [0.1, 0.92, -4.18], 'wood', 'gf-interior', { bevel: 0.01 }));
@@ -685,14 +711,21 @@
     });
 
     // ---- staircase ------------------------------------------------------------------------
-    // Honed Steel Grey treads and risers on a smooth monolithic body, a
-    // Steel Grey stringer along the open side, a glass balustrade with a
-    // timber handrail, step lights in the stone wall.
+    // Treads and risers of Sahara Noir (the owner, 2026-11-08: a marble stair), black marble
+    // with white and gold veins, each piece cut from its own place on a real slab -- the
+    // first flight and the landing from one slab, the second flight from the next -- on a
+    // smooth monolithic body, a stringer of the same stone along the open side, a glass
+    // balustrade with a timber handrail, step lights in the stone wall.
     for (let i = 0; i < STAIR.risers; i++) {
       const top = stairTop(i), zFront = stairFront(i), zBack = stairBack(i);
       const object = i < 3 ? 'staircase-steps' : 'staircase';
-      parts.push(box([STAIR.x0, top - 0.05, zBack], [STAIR.x1, top, zFront + 0.03], 'steel-grey-honed', 'stair', { bevel: 0.006, object }));
-      parts.push(box([STAIR.x0, top - RISE, zFront - 0.02], [STAIR.x1, top - 0.05, zFront], 'steel-grey-honed', 'stair', { object }));
+      const first = i <= STAIR.landingAfter;
+      const src = first ? 'sahara-noir-M0598743' : 'sahara-noir-M0598744', k = first ? i : i - STAIR.landingAfter - 1;
+      const depth = zFront + 0.03 - zBack;
+      const tread = { src, plane: 'y', offset: [(k % 2) * 1.6, Math.min(0.05 + Math.floor(k / 2) * 0.36, 1.8 - depth)], mirror: i % 3 === 2 };
+      const riser = { src, plane: 'z', normal: 1, offset: [(k % 2) * 1.6 + 0.1, 0.1 + (k % 9) * 0.19], mirror: i % 3 === 1 };
+      parts.push(box([STAIR.x0, top - 0.05, zBack], [STAIR.x1, top, zFront + 0.03], 'sahara-noir', 'stair', { bevel: 0.006, object, photo: tread }));
+      parts.push(box([STAIR.x0, top - RISE, zFront - 0.02], [STAIR.x1, top - 0.05, zFront], 'sahara-noir', 'stair', { object, photo: riser }));
       parts.push(box([STAIR.x0 + 0.02, FF1, zBack], [STAIR.x1 - 0.02, top - 0.05, zFront - 0.02], 'plaster', 'stair'));
       if (i % 2 === 1 && i !== STAIR.landingAfter && top < SLAB - 0.3) {
         const zc = (zFront + zBack) / 2;
@@ -705,12 +738,12 @@
       [[stairFront(L + 1) + STAIR.going + 0.03, stairTop(L)], [stairFront(last) + 0.03, stairTop(last)]],
     ];
     flights.forEach(([[z0, y0], [z1, y1]]) => {
-      parts.push({ kind: 'beam', from: [xs, y0 - 0.12, z0], to: [xs, y1 - 0.12, z1], width: 0.06, height: 0.34, mat: 'steel-grey-honed', group: 'stair' });
+      parts.push({ kind: 'beam', from: [xs, y0 - 0.12, z0], to: [xs, y1 - 0.12, z1], width: 0.06, height: 0.34, mat: 'sahara-noir', group: 'stair' });
       parts.push({ kind: 'beam', from: [xs + 0.005, y0 + 0.52, z0], to: [xs + 0.005, y1 + 0.52, z1], width: 0.015, height: 0.86, mat: 'glass', group: 'stair' });
       parts.push({ kind: 'beam', from: [xs + 0.005, y0 + 0.97, z0], to: [xs + 0.005, y1 + 0.97, z1], width: 0.05, height: 0.05, mat: 'wood', group: 'stair' });
     });
     const landTop = stairTop(L), landBack = stairBack(L), landFront = stairFront(L) + 0.03;
-    parts.push(box([STAIR.x1, landTop - 0.3, landBack], [STAIR.x1 + 0.06, landTop + 0.02, landFront], 'steel-grey-honed', 'stair', { bevel: 0.006 }));
+    parts.push(box([STAIR.x1, landTop - 0.3, landBack], [STAIR.x1 + 0.06, landTop + 0.02, landFront], 'sahara-noir', 'stair', { bevel: 0.006 }));
     parts.push(box([xs - 0.003, landTop + 0.09, landBack + 0.005], [xs + 0.012, landTop + 0.95, landFront - 0.005], 'glass', 'stair'));
     parts.push(box([xs - 0.02, landTop + 0.945, landBack], [xs + 0.03, landTop + 0.995, landFront], 'wood', 'stair'));
     // The stone wall the stair climbs along.
@@ -957,13 +990,22 @@
     wall(parts, { axis: 'x', outer: -1.07, inward: 1, u: [-0.8, ufIn.z1], v: [FF2, TOP], group: U, cap: true,
       layers: [{ t: 0.14, mat: 'plaster' }], openings: [{ u0: -0.55, u1: 0.45, v0: FF2, v1: 5.9 }] });
 
-    // Bedroom: a wall of our limestone behind the bed (a showroom object),
-    // an upholstered bed against it, facing the terrace door; a stone sill
-    // in the south window.
-    clad(parts, {
-      plane: 'x', at: -0.93, normal: 1, depth: 0.036, a: [0.8, 4.65], b: [F2, TOP], origin: [0.8, F2],
-      module: [1.2, 0.8], stagger: 0.5, gap: 0.005, chamfer: 0.005, mat: 'limestone', group: U, object: 'bedroom-wall',
-    });
+    // Bedroom: a wall of Panda behind the bed (a showroom object, the owner, 2026-11-08: Italian
+    // marble in large format, not in pieces) -- two consecutive slabs of one bundle (P0471513,
+    // P0471514), each hung on its end the whole width of its half of the wall, to 2.5 m, and
+    // turned the way that makes the white band run on across the joint as one picture (a
+    // bookmatch; the edges at the joint were compared on the photographs). An upholstered bed
+    // against it, facing the terrace door; a stone sill in the south window.
+    {
+      const spec = { plane: 'x', at: -0.93, normal: 1, depth: 0.036, a: [0.8, 4.65], b: [F2, F2 + 2.5], origin: [0.8, F2],
+        module: [3.85 / 2, 2.5], gap: 0.003, chamfer: 0.003, mat: 'panda', group: U, object: 'bedroom-wall' };
+      // The slab at the viewer's left (the higher z) is the second one, its photo turned 90 degrees; the
+      // one at the right the first, turned 270: their photographed edges meet at the joint.
+      spec.photos = claddingSlabs(spec).map((r, i) => (i === 0
+        ? { src: 'panda-P0471513', rotate: 270, scale: 0.93, offset: [0.115, 0] }
+        : { src: 'panda-P0471514', rotate: 90, scale: 0.93, offset: [0, 0] }));
+      clad(parts, spec);
+    }
     parts.push(box([-0.93, 4.6, 5.96], [2.6, 4.66, 6.3], 'limestone-light', U, { bevel: 0.006, object: 'bedroom-sill' }));
     {
       const x0 = -0.894, x1 = 1.25, z0 = 2.0, z1 = 3.85;

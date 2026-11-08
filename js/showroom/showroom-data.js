@@ -53,11 +53,11 @@
     },
     {
       id: 'hall', label: 'Холл', title: 'Холл',
-      caption: 'Вход, стена из тёмного камня Steel Grey, каменная лестница и глубокий подоконник-скамья.',
+      caption: 'Вход, стена из оникса Onice Crystal Black в зеркальной раскладке из четырёх слэбов, пол из белого мрамора White Crystal и глубокий подоконник-скамья.',
       view: { position: [-0.6, 7.0, 6.2], target: [-1.5, 1.5, -2.8] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 1.0 },
       hide: INTERIOR_GF_HIDE,
-      stones: ['steel-grey', 'majestic', 'viscont-white'],
+      stones: ['onice-crystal-black', 'white-crystal', 'sahara-noir', 'majestic', 'viscont-white'],
     },
     {
       id: 'living', label: 'Гостиная', title: 'Гостиная',
@@ -77,11 +77,11 @@
     },
     {
       id: 'staircase', label: 'Лестница', title: 'Лестница',
-      caption: 'Главная лестница с площадкой: ступени, подступенки, каменный косоур и облицовка стены.',
+      caption: 'Главная лестница из мрамора Sahara Noir с площадкой: ступени, подступенки, каменный косоур и облицовка стены.',
       view: { position: [-1.6, 7.6, 9.6], target: [-5.9, 1.6, 0.4] },
       orbit: { minDistance: 5, maxDistance: 15, minPolar: 0.35, maxPolar: 1.2, azimuthRange: 0.9 },
       hide: INTERIOR_GF_HIDE,
-      stones: ['steel-grey', 'majestic', 'viscont-white'],
+      stones: ['sahara-noir', 'onice-crystal-black', 'white-crystal', 'majestic', 'viscont-white'],
     },
     {
       id: 'bathroom', label: 'Ванная', title: 'Ванная',
@@ -93,11 +93,11 @@
     },
     {
       id: 'bedroom', label: 'Спальня', title: 'Второй этаж',
-      caption: 'Спальня со стеной из светлого известняка и каменным подоконником, гардеробная, кабинет и выход на террасу.',
+      caption: 'Спальня со стеной из итальянского мрамора Panda крупным форматом и каменным подоконником, гардеробная, кабинет и выход на террасу.',
       view: { position: [10.5, 15.5, 13.5], target: [-1.6, 3.8, 0.8] },
       orbit: { minDistance: 6, maxDistance: 22, minPolar: 0.25, maxPolar: 1.1, azimuthRange: 0.9 },
       hide: ['roof', 'uf-south', 'uf-east', 'uf-west', 'uf-north', 'bath-south'],
-      stones: ['calacatta-nova', 'steel-grey'],
+      stones: ['panda', 'calacatta-nova', 'steel-grey'],
     },
   ];
 
@@ -121,10 +121,10 @@
       anchor: [5.4, 0.47, 6.8], offset: [3.4, 4.2, 6.4] },
     // Hall
     { id: 'hall-floor', productKey: 'pol', zone: 'hall',
-      title: 'Пол в холле', description: 'Пол холла. В шоуруме он деревянный; каменный пол любого формата рассчитывается в конфигураторе.',
-      anchor: [-1.8, 0.48, -1.6], offset: [1.8, 5.0, 5.0] },
+      title: 'Пол в холле', description: 'Пол холла из белого мрамора White Crystal: плиты крупного формата, нарезанные из трёх соседних слэбов. Любой камень и формат рассчитывается в конфигураторе.',
+      anchor: [-0.4, 0.47, -1.2], offset: [-0.6, 5.0, 5.0] },
     { id: 'hall-wall', productKey: 'stena', zone: 'hall', primary: true,
-      title: 'Каменная стена', description: 'Облицовка стены холла натуральным камнем.',
+      title: 'Стена из оникса', description: 'Стена холла из оникса Onice Crystal Black: четыре соседних слэба одной пачки в зеркальной раскладке (букматч), узор сходится в середине стены.',
       anchor: [-1.2, 2.1, -4.66], offset: [1.2, 1.6, 6.4] },
     { id: 'hall-sill', productKey: 'podokonnik', zone: 'hall',
       title: 'Подоконник-скамья', description: 'Глубокий каменный подоконник у окна холла - на нём можно сидеть.',
@@ -157,7 +157,7 @@
       anchor: [4.9, 1.55, -1.95], offset: [2.2, 2.2, 4.0] },
     // Staircase
     { id: 'staircase', productKey: 'lestnitsa', zone: 'staircase', primary: true,
-      title: 'Лестница', description: 'Лестница на второй этаж, облицованная камнем: ступени, подступенки, площадка.',
+      title: 'Лестница', description: 'Лестница на второй этаж из чёрного мрамора Sahara Noir с белыми и золотистыми прожилками: ступени, подступенки, площадка.',
       anchor: [-5.95, 2.1, 0.55], offset: [5.2, 2.8, 4.2] },
     { id: 'staircase-steps', productKey: 'stupeni', zone: 'staircase',
       title: 'Ступени и подступенки', description: 'Отдельные каменные ступени с подступенками - прямые, забежные или радиусные.',
@@ -180,7 +180,7 @@
       anchor: [3.05, 4.61, -2.6], offset: [-2.8, 1.6, 2.4] },
     // Bedroom (the upper floor)
     { id: 'bedroom-wall', productKey: 'stena', zone: 'bedroom',
-      title: 'Стена за кроватью', description: 'Облицовка стены спальни светлым известняком: крупные плиты вразбежку.',
+      title: 'Стена за кроватью', description: 'Стена спальни из итальянского мрамора Panda: букматч из двух соседних слэбов одной пачки, белая жила идёт через шов единым рисунком.',
       anchor: [-0.89, 5.6, 2.9], offset: [4.4, 1.4, 1.4] },
     { id: 'bedroom-sill', productKey: 'podokonnik', zone: 'bedroom',
       title: 'Подоконник в спальне', description: 'Каменный подоконник у южного окна спальни.',
