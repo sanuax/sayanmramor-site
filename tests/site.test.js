@@ -636,7 +636,7 @@ test('«Где мы находимся»: one limestone plane, no cards -- the a
   assert.doesNotMatch(rule('.contacts-card'), /background|border|radius|shadow/, 'the address column is not a card');
   assert.match(rule('.contacts-map-frame'), /border: 1px solid var\(--line-strong\);/);
   assert.doesNotMatch(rule('.contacts-map-frame'), /border-radius/, 'the map is a plain rectangle');
-  assert.match(rule('.contacts-map .leaflet-tile-pane'), /filter: grayscale\(1\) sepia\(0\.3\)/);
+  assert.match(rule('.contacts-map canvas, .contacts-map [class*="scheme-layer"]'), /filter: grayscale\(1\) sepia\(0\.3\)/);
   assert.match(rule('.map-pin'), /color: var\(--accent\);/, 'the verde pin');
   // The section's own planes: no rounded corners (the map's popup and hint are the map's, not cards).
   const block = css.slice(css.indexOf('\n.home-contacts {'), css.indexOf('\n.map-pin {'));
@@ -751,7 +751,7 @@ test('the privacy policy page: the old site text, from «Город Москва
   assert.ok(html.includes('<p>Дата размещения: 17.01.2022</p>'));
   const article = html.slice(html.indexOf('<article'), html.indexOf('</article>'));
   assert.ok(html.includes('<p>Редакция от 08.11.2026</p>'));
-  assert.equal((article.match(/<(p|h2)>/g) || []).length, 57);
+  assert.equal((article.match(/<(p|h2)>/g) || []).length, 58);
 });
 
 test('the offer form lists every direction of the site, the three new ones included', () => {
@@ -839,7 +839,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
-  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'js/consent.js', 'vendor/leaflet/leaflet.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
+  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'js/consent.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>

@@ -27,8 +27,8 @@ test('the marker stands on the company\'s building in the complex (OSM way 13490
   assert.ok(Math.abs(east - 170) < 5 && Math.abs(south - 96) < 5, east + ' / ' + south);
   // One marker, at the pin.
   const src = fs.readFileSync(path.join(site, 'js/contacts-map.js'), 'utf8');
-  assert.equal((src.match(/L\.marker\(/g) || []).length, 1);
-  assert.match(src, /L\.marker\(\[OFFICE\.pin\.lat, OFFICE\.pin\.lon\]/);
+  assert.equal((src.match(/new y\.YMapMarker\(/g) || []).length, 1);
+  assert.match(src, /YMapMarker\(\{ coordinates: \[OFFICE\.pin\.lon, OFFICE\.pin\.lat\] \}/);
 });
 
 test('route and "open in maps" go to the company\'s own card in Yandex Maps, in its building -- not the complex\'s address point', () => {
@@ -63,43 +63,56 @@ test('index.html: the contacts section has the address, the phone and the two li
   assert.match(section, /id="contactsMapFallback" hidden/);
 });
 
-// A stand-in for Leaflet: records the map options and the tile layer events.
-function mountWithFakeLeaflet(coarse) {
-  const handlers = {};
-  const fallback = { hidden: true };
-  let mapOptions = null;
-  const doc = {
-    getElementById: id => (id === 'contactsMapFallback' ? fallback : null),
-    createElement: () => ({ appendChild() {}, textContent: '' }),
-  };
-  const layer = { addTo() { return this; }, on(ev, fn) { handlers[ev] = fn; return this; }, bindPopup() { return this; } };
-  const L = {
-    map: (el, options) => { mapOptions = options; return { attributionControl: { setPrefix() {} }, on() {}, scrollWheelZoom: {} }; },
-    control: { zoom: () => layer }, tileLayer: () => layer, marker: () => layer, divIcon: o => o,
-  };
-  ContactsMap.mount({ ownerDocument: doc, addEventListener() {} }, L, { matchMedia: () => ({ matches: coarse }) });
-  return { handlers, fallback, mapOptions };
+// A stand-in for Yandex's ymaps3: records the map options and what is added to the map.
+function fakeYmaps() {
+  const log = { map: null, children: [], behaviors: null };
+  class Node { constructor(...a) { this.args = a; } addChild(c) { log.children.push(c); return this; } }
+  class YMap extends Node { constructor(el, options, layers) { super(el, options, layers); log.map = options; } setBehaviors(b) { log.behaviors = b; } }
+  const y = { YMap, YMapDefaultSchemeLayer: Node, YMapDefaultFeaturesLayer: Node, YMapControls: Node, YMapMarker: Node,
+    import: async () => ({ YMapZoomControl: Node }), ready: Promise.resolve() };
+  return { y, log };
+}
+function fakeEl() {
+  const listeners = {};
+  const doc = { getElementById: () => null, createElement: () => ({ append() {}, appendChild() {}, addEventListener() {}, setAttribute() {}, set innerHTML(v) {} }) };
+  return { ownerDocument: doc, listeners, addEventListener(ev, fn) { listeners[ev] = fn; } };
 }
 
-test('if no tile loads, the map frame shows the "open in Yandex Maps" fallback, not an empty map', () => {
-  const { handlers, fallback } = mountWithFakeLeaflet(false);
-  for (let i = 0; i < 3; i++) handlers.tileerror();
-  assert.equal(fallback.hidden, true, 'a few failed tiles are not yet a failure');
-  handlers.tileerror();
-  assert.equal(fallback.hidden, false);
-
-  const partial = mountWithFakeLeaflet(false);
-  partial.handlers.tileload();
-  for (let i = 0; i < 10; i++) partial.handlers.tileerror();
-  assert.equal(partial.fallback.hidden, true, 'a map that loaded is kept');
+test('mouse: drag to move, wheel off until the map is used; touch: one finger scrolls the page, two move and zoom', async () => {
+  const d = fakeYmaps(), el = fakeEl();
+  await ContactsMap.mount(el, d.y, { matchMedia: () => ({ matches: false }) });
+  assert.ok(d.log.map.behaviors.includes('drag'));
+  assert.ok(!d.log.map.behaviors.includes('scrollZoom'), 'the wheel does not zoom a map passed by');
+  assert.deepEqual(d.log.map.location.center, [ContactsMap.OFFICE.pin.lon, ContactsMap.OFFICE.pin.lat], 'centred on the marker (lon, lat)');
+  el.listeners.pointerdown();
+  assert.ok(d.log.behaviors.includes('scrollZoom'), 'the wheel zooms once the map is pressed');
+  el.listeners.mouseleave();
+  assert.ok(!d.log.behaviors.includes('scrollZoom'));
+  const t = fakeYmaps();
+  await ContactsMap.mount(fakeEl(), t.y, { matchMedia: () => ({ matches: true }) });
+  assert.ok(!t.log.map.behaviors.includes('drag'), 'one finger scrolls the page');
+  assert.ok(t.log.map.behaviors.includes('pinchZoom'));
+  assert.equal(t.log.children.filter(c => c.args[0] && c.args[0].coordinates).length, 1, 'one marker');
 });
 
-test('mouse: drag to move, wheel off until the map is used; touch: one finger scrolls the page', () => {
-  const desktop = mountWithFakeLeaflet(false).mapOptions;
-  assert.equal(desktop.dragging, true);
-  assert.equal(desktop.scrollWheelZoom, false);
-  assert.deepEqual(desktop.center, [ContactsMap.OFFICE.pin.lat, ContactsMap.OFFICE.pin.lon], 'centred on the marker');
-  assert.equal(mountWithFakeLeaflet(true).mapOptions.dragging, false);
+test('the map comes from Yandex: its script from api-maps.yandex.ru with the site key, only when the section is near; no Leaflet, no OpenStreetMap', () => {
+  assert.match(ContactsMap.API_URL, /^https:\/\/api-maps\.yandex\.ru\/v3\/\?lang=ru_RU&apikey=[0-9a-f-]{36}$/);
+  assert.ok(!/api-maps/.test(index), 'index.html does not load it up front');
+  assert.ok(!/leaflet/i.test(index) && !fs.existsSync(path.join(site, 'vendor/leaflet')));
+  const src = fs.readFileSync(path.join(site, 'js/contacts-map.js'), 'utf8');
+  assert.ok(!/openstreetmap|tile\./i.test(src.replace(/\/\/.*$/gm, '')), 'no tiles from abroad');
+  assert.match(src, /IntersectionObserver/);
+});
+
+test('if the script never loads, the map frame shows the "open in Yandex Maps" fallback, not an empty map', async () => {
+  const fallback = { hidden: true };
+  const scripts = [];
+  const doc = { getElementById: id => (id === 'contactsMapFallback' ? fallback : null), head: { appendChild: s => scripts.push(s) }, createElement: () => ({}) };
+  const win = {};
+  const failed = ContactsMap.loadApi(doc, win);
+  scripts[0].onerror();
+  await assert.rejects(failed);
+  assert.equal(scripts[0].src, ContactsMap.API_URL);
 });
 
 test('the legal address is not shown as a place to visit', () => {
@@ -109,14 +122,4 @@ test('the legal address is not shown as a place to visit', () => {
   const footer = index.slice(index.indexOf('<footer'));
   assert.match(footer, /Юридический адрес: г\.Москва, Складочная/);
   assert.equal((index.match(/Складочная/g) || []).length, 1);
-});
-
-test('Leaflet is vendored and loads before the map script', () => {
-  ['leaflet.js', 'leaflet.css', 'LICENSE', 'VERSION.txt'].forEach(f =>
-    assert.ok(fs.existsSync(path.join(site, 'vendor/leaflet', f)), f));
-  const leaflet = index.indexOf('/sayanmramor-site/vendor/leaflet/leaflet.js');
-  const map = index.indexOf('/sayanmramor-site/js/contacts-map.js');
-  assert.ok(leaflet > 0 && map > leaflet);
-  assert.ok(index.indexOf('vendor/leaflet/leaflet.css') < index.indexOf('css/site.css'), 'site.css overrides leaflet.css');
-  assert.ok(!/sourceMappingURL/.test(fs.readFileSync(path.join(site, 'vendor/leaflet/leaflet.js'), 'utf8')), 'no request for a .map that is not vendored');
 });

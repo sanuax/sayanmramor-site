@@ -627,39 +627,30 @@ h3 { font-size: var(--fs-h3); }
   position: relative; min-height: 480px; overflow: hidden;
   background: var(--page); border: 1px solid var(--line-strong);
 }
-/* z-index: 0 keeps Leaflet's panes and controls (z-index up to 1000) inside
-   the frame -- under the sticky header, not over it. */
+/* z-index: 0 keeps the map's panes and controls inside the frame -- under the sticky
+   header, not over it. The scheme is toned to the site's palette (grey, a little warm). */
 .contacts-map { position: absolute; inset: 0; z-index: 0; background: var(--page); font-family: var(--font); }
-.contacts-map .leaflet-tile-pane { filter: grayscale(1) sepia(0.3) brightness(1.05) contrast(0.84); }
-.contacts-map .leaflet-bar { border: 1px solid var(--line-strong); border-radius: 0; box-shadow: none; overflow: hidden; }
-.contacts-map .leaflet-bar a {
-  width: 36px; height: 36px; line-height: 34px; font-size: 20px; font-weight: 400;
-  color: var(--ink); background: var(--surface); border-bottom-color: var(--line);
-}
-@media (hover: hover) { .contacts-map .leaflet-bar a:hover { background: var(--page); color: var(--ink); } }
-.contacts-map .leaflet-bar a.leaflet-disabled { color: var(--line-strong); background: var(--surface); }
-.contacts-map .leaflet-control-attribution {
-  font-size: 11px; color: var(--muted); background: rgba(248, 247, 244, 0.82); padding: 1px 6px;
-}
-.contacts-map .leaflet-control-attribution a { color: var(--ink-soft); }
+.contacts-map canvas, .contacts-map [class*="scheme-layer"] { filter: grayscale(1) sepia(0.3) brightness(1.05) contrast(0.84); }
 
-.map-pin { color: var(--accent); filter: drop-shadow(0 2px 3px rgba(28, 29, 27, 0.3)); }
+/* the pin: a button standing on the point, its sheet of words above it */
+.map-marker { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.map-pin {
+  position: absolute; left: -17px; top: -43px; width: 34px; height: 44px; padding: 0; border: 0; background: none;
+  color: var(--accent); cursor: pointer; filter: drop-shadow(0 2px 3px rgba(28, 29, 27, 0.3));
+}
 .map-pin svg { display: block; }
 .map-pin path { fill: currentColor; stroke: var(--surface); stroke-width: 2; }
 .map-pin circle { fill: var(--surface); }
+.map-pin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (hover: hover) { .map-pin:hover { color: var(--accent-hover); } }
-
-.map-popup .leaflet-popup-content-wrapper {
-  border-radius: var(--radius-s); background: var(--surface); color: var(--ink);
-  box-shadow: 0 6px 20px rgba(28, 29, 27, 0.16);
+.map-popup {
+  position: absolute; left: 0; bottom: 52px; transform: translateX(-50%); width: max-content; max-width: 240px;
+  display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius-s); background: var(--surface); color: var(--ink);
+  box-shadow: 0 6px 20px rgba(28, 29, 27, 0.16); font-size: var(--fs-small); line-height: 1.4;
 }
-.map-popup .leaflet-popup-tip { background: var(--surface); box-shadow: none; }
-.map-popup .leaflet-popup-content { margin: 12px 30px 12px 14px; font: inherit; font-size: var(--fs-small); line-height: 1.4; }
-.map-popup .leaflet-popup-content div { display: grid; gap: 2px; }
-.map-popup .leaflet-popup-content strong { font-size: 15px; }
-.map-popup .leaflet-popup-content span:nth-child(2) { color: var(--muted); font-size: var(--fs-meta); margin-bottom: 4px; }
-.map-popup a.leaflet-popup-close-button { color: var(--muted); top: 4px; right: 4px; }
-@media (hover: hover) { .map-popup a.leaflet-popup-close-button:hover { color: var(--ink); } }
+.map-popup[hidden] { display: none; }
+.map-popup strong { font-size: 15px; }
+.map-popup span:nth-child(2) { color: var(--muted); font-size: var(--fs-meta); margin-bottom: 4px; }
 
 .contacts-map-hint {
   position: absolute; left: 50%; bottom: var(--s-6); z-index: 1; transform: translateX(-50%);
