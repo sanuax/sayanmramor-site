@@ -1077,8 +1077,12 @@
           urbox([sx, F2 + 0.12, zb + 0.15], [sx + 0.2, F2 + 0.2, zf - 0.12], 0.03, i % 2 ? 'wood-dark' : 'decor');
         }
       }
-      ulathe([-5.85, F2, -3.4], [[0, 0], [1.0, 0], [1.0, 0.01], [0, 0.01]], 'rug', 64);
-      ulathe([-5.85, F2 + 0.01, -3.4], [[0, 0], [0.34, 0], [0.4, 0.07], [0.41, 0.34], [0.36, 0.43], [0, 0.45]], 'fabric', 48);
+      // The pouf stands in the west corner, in line with the daybed along the west wall: the
+      // stair arrives at z = STAIR_END between x -6.6 and -5.3, and the way on (west to the
+      // reading corner, east to the sofa) stays clear (the owner, 2026-11-08: it stood right
+      // in front of the top step).
+      ulathe([-7.68, F2, -3.6], [[0, 0], [0.55, 0], [0.55, 0.01], [0, 0.01]], 'rug', 64);
+      ulathe([-7.68, F2 + 0.01, -3.6], [[0, 0], [0.34, 0], [0.4, 0.07], [0.41, 0.34], [0.36, 0.43], [0, 0.45]], 'fabric', 48);
       // A full-height mirror leaning on the stair's guard side.
       urbox([-3.6, F2, -3.9], [-3.54, F2 + 1.9, -3.2], 0.02, 'wood-dark');
       urbox([-3.66, F2 + 0.04, -3.86], [-3.6, F2 + 1.86, -3.24], 0.004, 'mirror');
