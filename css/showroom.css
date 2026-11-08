@@ -58,6 +58,11 @@ body.sr-page {
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
+/* The page never zooms (2026-11-08, the owner: the light switch took the lock off). iOS Safari ignores
+   user-scalable=no, so a double tap on a button -- «Утро», «Вечер», tapped twice to go back and forth -- zoomed
+   the page. Everything may pan, nothing may pinch or double-tap-zoom; the canvas below keeps its own `none`
+   (the camera takes the gestures) and the scrolling sheets keep their vertical pan. */
+html, .sr-page, .sr-page * { touch-action: pan-x pan-y; }
 
 /* ---- stage ---------------------------------------------------------------- */
 .sr-stage { position: fixed; inset: 0; }

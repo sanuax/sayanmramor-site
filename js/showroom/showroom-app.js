@@ -142,6 +142,8 @@ function start() {
   // A press or the wheel on the house mid-flight takes it over (showroom-camera.js interrupt).
   // Caught on the stage on its way down, before the controls see it, so they take this very drag.
   const takeOver = e => { if (e.target === canvas && rig.isMoving()) { rig.interrupt(); ui.hideHint(); requestRender(); } };
+  // iOS Safari pinches the page whatever the viewport says: its own gesture events can be refused.
+  ['gesturestart', 'gesturechange'].forEach(type => doc.addEventListener(type, e => e.preventDefault(), { passive: false }));
   stage.addEventListener('pointerdown', takeOver, true);
   stage.addEventListener('wheel', takeOver, { capture: true, passive: true });
   rig.controls.addEventListener('change', requestRender);
