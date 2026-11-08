@@ -20,16 +20,19 @@ import { hash3, createBatch, pushBox, pushSlab, pushCylinder, pushBeam, toGeomet
 // The room round the model (the same in both lights), and the two lights.
 const BG = { inner: '#2a221c', outer: '#0b0907' };                              // backdrop: lighter behind the model
 const KEY = { position: [-8, 22, 10], soft: 9 };
+// The studio both lights share, for reflections and fill: a softbox overhead, light walls round it.
+const STUDIO = { top: [1.6, 1.56, 1.5], mid: '#9a948b', low: '#2b2724', fill: 0.8 };
+const ENV_EVENING = 0.4;
 export const LOOKS = {
   morning: {
-    env: { top: [1.6, 1.56, 1.5], mid: '#9a948b', low: '#2b2724', fill: 0.8 }, // reflections and fill: a softbox overhead, light studio walls
+    envScale: 1,                                                                // how strongly the stones and walls take the studio's light
     hemi: ['#f4f0ea', '#2a2622', 0.12],
     key: { color: '#fff4ea', intensity: 1.7 },
     exposure: 1.04,
     lamps: 1.7,                                                                 // the rooms' lamps
   },
   evening: {
-    env: { top: [1.5, 1.3, 1.05], mid: '#4a3f34', low: '#100d0b', fill: 0.7 },  // a warm, dark studio
+    envScale: ENV_EVENING,                                                      // the same studio, dimmer
     hemi: ['#f3e3ca', '#2a221b', 0.22],
     key: { color: '#ffdcb0', intensity: 1.55 },
     exposure: 1.0,
@@ -55,23 +58,23 @@ function lookBackground() {
 
 // A studio for reflections and fill: a large soft light overhead, softer
 // walls, a dark floor -- no sky, no sun disc.
-function buildEnvironment(renderer, LOOK) {
+function buildEnvironment(renderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
   const c = document.createElement('canvas');
   c.width = 2; c.height = 256;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 0, 256);
-  grad.addColorStop(0, LOOK.env.mid);
-  grad.addColorStop(0.5, LOOK.env.mid);
-  grad.addColorStop(1, LOOK.env.low);
+  grad.addColorStop(0, STUDIO.mid);
+  grad.addColorStop(0.5, STUDIO.mid);
+  grad.addColorStop(1, STUDIO.low);
   g.fillStyle = grad;
   g.fillRect(0, 0, 2, 256);
   const map = new THREE.CanvasTexture(c);
   map.colorSpace = THREE.SRGBColorSpace;
-  const f = LOOK.env.fill;
+  const f = STUDIO.fill;
   env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ side: THREE.BackSide, map, color: new THREE.Color(f, f, f) })));
-  const box = new THREE.Mesh(new THREE.PlaneGeometry(46, 30), new THREE.MeshBasicMaterial({ color: new THREE.Color(...LOOK.env.top), side: THREE.DoubleSide }));
+  const box = new THREE.Mesh(new THREE.PlaneGeometry(46, 30), new THREE.MeshBasicMaterial({ color: new THREE.Color(...STUDIO.top), side: THREE.DoubleSide }));
   box.rotation.x = Math.PI / 2;
   box.position.set(-6, 40, 8);
   env.add(box);
@@ -94,7 +97,14 @@ function uvOffset(x, y, z) {
   return [hash3(y - 5.3, z, x) * 4, hash3(x + 2.9, y, z - 7.1) * 4];
 }
 
-export function createShowroomScene(canvas, { House, Photos, zones = [], look = 'morning', onChange }) {
+// How long one light takes to flow into the other.
+const LOOK_FADE_MS = 1000;
+const smooth = t => t * t * (3 - 2 * t);
+
+// `onChange`: something about the picture changed (a photo arrived, the cut-away
+// moved) -- the view asks the markers about occlusion again. `onRedraw`: only a
+// new frame is wanted (the light flowing from one look to the other).
+export function createShowroomScene(canvas, { House, Photos, zones = [], look = 'morning', onChange, onRedraw = onChange }) {
   let current = LOOKS[look] ? look : 'morning';
   const LOOK = LOOKS[current];
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -111,9 +121,10 @@ export function createShowroomScene(canvas, { House, Photos, zones = [], look = 
   const scene = new THREE.Scene();
   const background = lookBackground();
   scene.background = background;
-  // Each light's studio is built once, when it is first needed.
-  const environments = new Map([[current, buildEnvironment(renderer, LOOK)]]);
-  scene.environment = environments.get(current);
+  // One studio for both lights: the evening takes less of it (every material's envMapIntensity),
+  // which can flow from one to the other without a step.
+  const studio = buildEnvironment(renderer);
+  scene.environment = studio;
 
   const materials = createMaterials({
     Photos, anisotropy: renderer.capabilities.getMaxAnisotropy(), onChange,
@@ -144,19 +155,65 @@ export function createShowroomScene(canvas, { House, Photos, zones = [], look = 
     return light;
   });
 
-  // The other light: colours and strengths only, so no shader changes and
-  // the shadows stay as they are.
+  // The other light flows in over LOOK_FADE_MS: the fill, the key, the lamps, the exposure and
+  // the strength of the studio's reflections all move from where they stand to the other look's,
+  // every frame a little (a press in mid-flow starts from where everything is, so it never
+  // jumps). Colours and strengths only: no shader changes and the shadows stay as they are.
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const shown = {
+    hemiColor: new THREE.Color(LOOK.hemi[0]), hemiGround: new THREE.Color(LOOK.hemi[1]), hemiI: LOOK.hemi[2],
+    keyColor: new THREE.Color(LOOK.key.color), keyI: LOOK.key.intensity, lamps: LOOK.lamps, exposure: LOOK.exposure, envScale: LOOK.envScale,
+  };
+  let fade = null;       // { from, to, start }
+  let reflecting = null; // the materials that take the studio's light
+  function reflectors() {
+    if (!reflecting) {
+      reflecting = new Set();
+      scene.traverse(o => {
+        [].concat(o.material || []).forEach(m => {
+          if (m.envMapIntensity === undefined) return;
+          if (m.userData.envBase === undefined) m.userData.envBase = m.envMapIntensity;
+          reflecting.add(m);
+        });
+      });
+    }
+    return reflecting;
+  }
+  function paintLook() {
+    hemi.color.copy(shown.hemiColor); hemi.groundColor.copy(shown.hemiGround); hemi.intensity = shown.hemiI;
+    sun.color.copy(shown.keyColor); sun.intensity = shown.keyI;
+    lamps.forEach(light => { light.intensity = light.userData.base * shown.lamps; });
+    renderer.toneMappingExposure = shown.exposure;
+    reflectors().forEach(m => { m.envMapIntensity = m.userData.envBase * shown.envScale; });
+  }
+  function lookStep(now) {
+    if (!fade) return;
+    const t = Math.min(1, (now - fade.start) / LOOK_FADE_MS), k = smooth(t), { from, to } = fade;
+    shown.hemiColor.copy(from.hemiColor).lerp(to.hemiColor, k); shown.hemiGround.copy(from.hemiGround).lerp(to.hemiGround, k);
+    shown.keyColor.copy(from.keyColor).lerp(to.keyColor, k);
+    ['hemiI', 'keyI', 'lamps', 'exposure', 'envScale'].forEach(key => { shown[key] = from[key] + (to[key] - from[key]) * k; });
+    paintLook();
+    onRedraw();
+    if (t < 1) requestAnimationFrame(lookStep); else fade = null;
+  }
   function setLook(name) {
     if (!LOOKS[name] || name === current) return;
     current = name;
     const L = LOOKS[name];
-    if (!environments.has(name)) environments.set(name, buildEnvironment(renderer, L));
-    scene.environment = environments.get(name);
-    hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); hemi.intensity = L.hemi[2];
-    sun.color.set(L.key.color); sun.intensity = L.key.intensity;
-    lamps.forEach(light => { light.intensity = light.userData.base * L.lamps; });
-    renderer.toneMappingExposure = L.exposure;
-    onChange();
+    const target = {
+      hemiColor: new THREE.Color(L.hemi[0]), hemiGround: new THREE.Color(L.hemi[1]), hemiI: L.hemi[2],
+      keyColor: new THREE.Color(L.key.color), keyI: L.key.intensity, lamps: L.lamps, exposure: L.exposure, envScale: L.envScale,
+    };
+    if (reducedMotion) {
+      Object.assign(shown, target);
+      paintLook();
+      onRedraw();
+      return;
+    }
+    const running = !!fade;
+    const from = { hemiColor: shown.hemiColor.clone(), hemiGround: shown.hemiGround.clone(), hemiI: shown.hemiI, keyColor: shown.keyColor.clone(), keyI: shown.keyI, lamps: shown.lamps, exposure: shown.exposure, envScale: shown.envScale };
+    fade = { from, to: target, start: performance.now() };
+    if (!running) requestAnimationFrame(lookStep);
   }
 
   // ---- house -----------------------------------------------------------------
@@ -491,10 +548,11 @@ export function createShowroomScene(canvas, { House, Photos, zones = [], look = 
     scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     materials.dispose();
     background.dispose();
-    environments.forEach(t => t.dispose());
+    studio.dispose();
     renderer.dispose();
   }
 
+  paintLook();
   refreshOccluders();
   return {
     renderer, scene, ready, setHiddenGroups, setHighlight, isOccluded, resize, render, dispose, setLook, look: () => current,

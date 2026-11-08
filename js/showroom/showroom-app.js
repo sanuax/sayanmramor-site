@@ -38,7 +38,7 @@ function start() {
   try { if (localStorage.getItem(LIGHT_KEY) === 'evening') look = 'evening'; } catch (e) { /* no storage */ }
 
   // A stone photograph arriving re-renders the view (the scene renders on demand).
-  const view3d = createShowroomScene(canvas, { House, Photos, zones: Data.ZONES, look, onChange: () => { occlusionDue = true; requestRender(); } });
+  const view3d = createShowroomScene(canvas, { House, Photos, zones: Data.ZONES, look, onChange: () => { occlusionDue = true; requestRender(); }, onRedraw: () => requestRender() });
   const lightButtons = Array.from(doc.querySelectorAll('#srLight [data-look]'));
   const showLook = name => lightButtons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.look === name)));
   showLook(look);

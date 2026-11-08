@@ -841,3 +841,16 @@ test('«Утро | Вечер»: two lights to choose from in the showroom\'s he
   const app = fs.readFileSync(path.join(__dirname, '..', 'js', 'showroom', 'showroom-app.js'), 'utf8');
   assert.match(app, /localStorage\.getItem\(LIGHT_KEY\) === 'evening'/, 'the last choice is remembered');
 });
+
+test('«Утро» and «Вечер» flow into each other (2026-11-08): everything moves a little every frame, the reflections too -- one studio for both, no step', () => {
+  const scene = fs.readFileSync(path.join(__dirname, '..', 'js', 'showroom', 'showroom-scene.js'), 'utf8');
+  assert.match(scene, /const LOOK_FADE_MS = \d{3,4};/);
+  assert.match(scene, /envScale: 1,[^]*envScale: ENV_EVENING,/, 'the evening is the same studio, dimmer');
+  assert.equal((scene.match(/= buildEnvironment\(/g) || []).length, 1, 'one studio is built, not one per look or per step');
+  assert.doesNotMatch(scene, /scene\.environment = studio\w*\(/, 'the studio is never swapped');
+  assert.match(scene, /prefers-reduced-motion: reduce/, 'a visitor who asks for less motion gets the change at once');
+  assert.match(scene, /requestAnimationFrame\(lookStep\)/);
+  // The flow asks for frames only; the markers are not asked about occlusion on every frame of it.
+  const app = fs.readFileSync(path.join(__dirname, '..', 'js', 'showroom', 'showroom-app.js'), 'utf8');
+  assert.match(app, /onRedraw: \(\) => requestRender\(\)/);
+});
