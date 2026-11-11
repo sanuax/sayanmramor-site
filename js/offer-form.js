@@ -273,18 +273,21 @@
     phoneCalc: 'Мастер проверит размеры и подтвердит цену.',
     phoneKatalog: 'Мастер подтвердит, что изделие ждёт вас, и расскажет о доставке.',
   };
+  // The calculator's price holds for Moscow and the Moscow region only: the same note as under its total.
+  const REGION_NOTE = '* Расчёт указан для объектов, находящихся в Москве и Московской области';
   // What the card over the questions says: the calculator's price is an estimate, the catalogue's exact.
   function pieceCard(piece) {
     if (piece.kind === 'katalog') {
       return {
-        kicker: 'Из каталога', title: piece.name || '', meta: '', price: Handoff.formatRub(piece.price), note: '', image: piece.photo || '',
+        kicker: 'Из каталога', title: piece.name || '', meta: '', price: Handoff.formatRub(piece.price), note: '', footnote: '', image: piece.photo || '',
         actions: [{ label: 'Выбрать другое', kind: 'other' }, { label: 'Убрать изделие', kind: 'drop' }],
       };
     }
+    // Unpriced, the calculator says «Стоимость уточнит менеджер»: here a small line, not a price.
+    const price = piece.priced && piece.price ? String(piece.price).replace(/\*+$/, '') + '*' : '';
     return {
       kicker: 'Из калькулятора', title: [piece.product, piece.stone].filter(Boolean).join(' · '), meta: piece.sizes || '',
-      // Unpriced, the calculator says «Стоимость уточнит менеджер»: here a small line, not a price.
-      price: piece.priced ? piece.price || '' : '', note: piece.priced ? 'ориентировочно' : 'цену уточнит мастер', image: piece.stoneImage || '',
+      price, note: piece.priced ? 'ориентировочно' : 'цену уточнит мастер', footnote: price ? REGION_NOTE : '', image: piece.stoneImage || '',
       actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
     };
   }
@@ -386,6 +389,7 @@
           else { state.piece = null; render(); persist(); }
         }))));
       }
+      if (card.footnote) parts.push(el(doc, 'p', { className: 'talk-piece-footnote', textContent: card.footnote }));
       pieceSlot.replaceChildren(el(doc, 'div', { className: 'talk-piece' + (card.image ? '' : ' is-bare') }, parts));
     }
 

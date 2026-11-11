@@ -1493,21 +1493,27 @@ test('home hero CSS: the held height first, the large viewport where nothing hol
 test('the piece in the request (2026-10-26, the owner): a card over the questions, the request summed up with it', () => {
   const OfferForm = require('../js/offer-form.js');
   const calc = { kind: 'calc', query: 'product=stoleshnitsa_kuhnya&stone=s1&pv=1', product: 'Столешницы на кухню', stone: 'Taj Mahal', stoneImage: '/sayanmramor-calculator/data/images/s1.webp', sizes: '2400 × 600 мм', price: '≈ 186 400 ₽', priced: true };
+  // The calculator's price carries an asterisk and the calculator's own Moscow note (the owner, 2026-11-11).
   assert.deepEqual(OfferForm.pieceCard(calc), {
-    kicker: 'Из калькулятора', title: 'Столешницы на кухню · Taj Mahal', meta: '2400 × 600 мм', price: '≈ 186 400 ₽', note: 'ориентировочно',
+    kicker: 'Из калькулятора', title: 'Столешницы на кухню · Taj Mahal', meta: '2400 × 600 мм', price: '≈ 186 400 ₽*', note: 'ориентировочно',
+    footnote: '* Расчёт указан для объектов, находящихся в Москве и Московской области',
     image: '/sayanmramor-calculator/data/images/s1.webp', actions: [{ label: 'Изменить в калькуляторе', kind: 'edit' }, { label: 'Убрать изделие', kind: 'drop' }],
   });
+  // A price that already ends in an asterisk never gets a second one.
+  assert.equal(OfferForm.pieceCard(Object.assign({}, calc, { price: '≈ 186 400 ₽*' })).price, '≈ 186 400 ₽*');
   // Unpriced (every fireplace, a stone short of slabs): the calculator's «Стоимость уточнит менеджер» never
   // takes the price's place -- a long sentence in the price's type broke the card (final review, 2026-10-26).
   const unpriced = OfferForm.pieceCard(Object.assign({}, calc, { price: 'Стоимость уточнит менеджер', priced: false }));
   assert.equal(unpriced.price, '');
   assert.equal(unpriced.note, 'цену уточнит мастер');
+  assert.equal(unpriced.footnote, '');
   const shell = { kind: 'katalog', id: 'rakushka-01', name: 'Ракушка', price: 37000, photo: '/sayanmramor-site/assets/products/rakushka-01/1.webp' };
   const card = OfferForm.pieceCard(shell);
   assert.equal(card.kicker, 'Из каталога');
   assert.equal(card.title, 'Ракушка');
   assert.equal(card.price, '37 000 ₽');
   assert.equal(card.note, '');
+  assert.equal(card.footnote, '');   // the catalogue's price is exact, not a calculation
   assert.equal(card.image, shell.photo);
   assert.deepEqual(card.actions, [{ label: 'Выбрать другое', kind: 'other' }, { label: 'Убрать изделие', kind: 'drop' }]);
   assert.equal(OfferForm.pieceCard(Object.assign({}, shell, { price: null })).price, 'Цена по запросу');

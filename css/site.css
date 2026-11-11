@@ -1421,6 +1421,8 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 .talk-piece-price small { display: block; font-family: var(--font); font-size: 11px; font-weight: 500; color: var(--on-dark-muted); }
 .talk-piece-actions { grid-column: 2 / -1; margin-top: 0; }
 .talk-piece.is-bare .talk-piece-actions { grid-column: 1 / -1; }
+/* The calculator's Moscow note under its piece, across the whole card (the owner, 2026-11-11). */
+.talk-piece-footnote { grid-column: 1 / -1; font-size: 11px; line-height: 1.4; color: var(--on-dark-muted); }
 /* The passport at the end of the request: a small sheet, its name, and the download. */
 .talk-passport {
   display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; align-items: center; gap: var(--s-4);
