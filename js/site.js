@@ -663,10 +663,11 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') holdHeroHeight(document, window);
 
-  // Safari on iOS 26 paints the strip under the clock in the page's own background colour (the
-  // canvas, <html>'s background), not with the photo under it: over the dark hammam it was a light
+  // Safari on iOS 26 tints the strip under the clock from a fixed element on the screen's top edge,
+  // else from the light page, never with the photo under it: over the dark hammam it was a light
   // band (2026-11-12, the owner: «нельзя поменять на тёмную?»). While the hero is under the clock
-  // <html> wears the hammam's darkness (index.html starts with .hero-top, so it is dark from the
+  // .hero-top shows the dark .top-cap there (css/site.css) and darkens <html> (index.html starts
+  // with .hero-top, so it is dark from the
   // first frame); once the hero has gone up past the clock, the page's light again.
   function safeTop(doc) {
     const probe = doc.createElement('div');

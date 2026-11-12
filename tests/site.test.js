@@ -1497,7 +1497,7 @@ test('home hero on an iPhone (Safari, Telegram): at least the whole screen, sinc
   assert.deepEqual(chrome.props, { '--hero-h': '700px', '--screen-h': '852px' });
 });
 
-test('home page: the page is dark under the iPhone clock while the hammam is there, light past it (Safari paints that strip in the page colour; 2026-11-12, the owner)', () => {
+test('home page: the page is dark under the iPhone clock while the hammam is there, light past it (Safari tints that strip from a fixed element on the top edge; 2026-11-12, the owner)', () => {
   let bottom = 900, onScroll = null;
   const classes = new Set(['hero-top']);
   const doc = {
@@ -1513,6 +1513,8 @@ test('home page: the page is dark under the iPhone clock while the hammam is the
   assert.ok(classes.has('hero-top'), 'and back');
   const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
   assert.match(html, /<html lang="ru" class="hero-top">/, 'dark from the first frame');
+  assert.match(html, /<body>\n<div class="top-cap" aria-hidden="true"><\/div>/, 'Safari tints the strip from a fixed element on the top edge, not from the page colour');
+  assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /html\.hero-top \.top-cap \{\s*display: block; position: fixed; z-index: 19; top: 0; left: 0; right: 0;\s*height: env\(safe-area-inset-top, 0px\); background: #0c0908;/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /\nhtml\.hero-top \{ background: #0c0908; \}/);
 });
 
