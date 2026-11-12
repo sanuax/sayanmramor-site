@@ -17,13 +17,15 @@ const sha256 = file => crypto.createHash('sha256').update(fs.readFileSync(file))
 
 // Photos per direction, from photo_classification.csv (confirmed, use_on_site=yes,
 // portfolio_keys), plus the owner's photos from the Yandex Maps card
-// (assets/portfolio-yandex: pol 2, stena 2, panno 2, stoleshnitsa_kuhnya 1).
+// (assets/portfolio-yandex: pol 1, stena 2, panno 2, stoleshnitsa_kuhnya 1).
 // A photo may belong to several directions.
 // 2026-11-07 (the owner, after the «что дешевит» audit: «сделай»): the best 5-9 per direction,
 // one or two frames per project, no near-twins side by side.
+// (experiment, round 2: «Полы» showed mostly bathrooms and the same bathroom as «Стены» (ya-06);
+// it now shows the archive's own «Полы» folder plus ya-01 -- 8 floors, ya-06 stays on «Стены».)
 const EXPECTED_COUNTS = {
   lestnitsa: 7, stupeni: 5, stoleshnitsa_kuhnya: 8, stoleshnitsa_vannaya: 9, podokonnik: 2,
-  pol: 9, stena: 9, fasad: 5, panno: 9, kaminy: 5,
+  pol: 8, stena: 9, fasad: 5, panno: 9, kaminy: 5,
 };
 const YANDEX_DIR = path.join(site, 'assets', 'portfolio-yandex');
 
@@ -126,7 +128,7 @@ test('the owner\'s photos from the Yandex Maps card: their own folder and SOURCE
     assert.equal((block.match(/SHA-256 `([0-9a-f]{64})`/) || [])[1], sha256(path.join(YANDEX_DIR, f)), f);
   });
   const first = key => portfolio[key].filter(i => i.image.includes('/portfolio-yandex/')).map(i => path.basename(i.image));
-  assert.deepEqual(first('pol'), ['ya-01.webp', 'ya-06.webp']);
+  assert.deepEqual(first('pol'), ['ya-01.webp']);   // (experiment, round 2: ya-06 is a bathroom, kept on «Стены» only)
   assert.deepEqual(first('stena'), ['ya-06.webp', 'ya-07.webp']);
   assert.deepEqual(first('panno'), ['ya-03.webp', 'ya-08.webp']);
   assert.deepEqual(first('stoleshnitsa_kuhnya'), ['ya-05.webp']);

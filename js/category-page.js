@@ -60,6 +60,22 @@
       .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
   }
 
+  // Natural stone and the man-made one (experiment, round 2: a designer could not tell them apart in
+  // the catalogue). The index's own types; the card and the stone's view say «Искусственный камень».
+  const ARTIFICIAL_TYPES = ['Кварцевый агломерат', 'Искусственный мрамор', 'Спеченный камень'];
+  const isArtificial = stone => ARTIFICIAL_TYPES.includes(stone && stone.type);
+
+  // The search a link brings (kamen.html?q=<name>, from a photo's caption in a gallery's viewer).
+  function linkedQuery(search) {
+    try { return (new URLSearchParams(search || '').get('q') || '').trim().slice(0, 80); } catch (e) { return ''; }
+  }
+  // The one stone of that very name, if there is exactly one: it opens at once.
+  function exactStone(stones, query) {
+    const norm = s => s.toLowerCase().replace(/ё/g, 'е');
+    const same = query ? stones.filter(s => norm(s.name) === norm(query)) : [];
+    return same.length === 1 ? same[0] : null;
+  }
+
   // A filter's choices: every value the stones have, in alphabetical order (as the configurator lists them).
   function listOptions(stones, field) {
     const values = new Set();
@@ -180,6 +196,100 @@
       });
     }
 
+    // ---- The stone, large (experiment, round 2) ----
+    // A designer could not open a stone: the card showed a square of its photo and only chose it.
+    // Now a press opens the stone over the page: its photo whole, as the index has it, what the
+    // index says of it (type, country, colour, the price «от …»), the way to «Моя подборка» and to
+    // the configurator with this stone. Nothing else is known here: the slabs' sizes, thickness and
+    // finish are not in the index, and the view says so instead of guessing.
+    let view = null;
+    const canView = () => typeof HTMLDialogElement !== 'undefined' && typeof document.createElement('dialog').showModal === 'function';
+    function buildView() {
+      const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+      const dialog = el('dialog', 'stone-view');
+      dialog.setAttribute('aria-labelledby', 'stoneViewName');
+      const media = el('div', 'stone-view-media');
+      const img = el('img');
+      img.decoding = 'async';
+      media.appendChild(img);
+      const text = el('div', 'stone-view-text');
+      const kind = el('p', 'stone-view-kind');
+      const name = el('h2', 'stone-view-name');
+      name.id = 'stoneViewName';
+      const facts = el('dl', 'stone-view-facts');
+      const note = el('p', 'stone-view-note');
+      note.append(
+        'Цена - за квадратный метр самого камня, без изготовления и работ. Размеров плит, толщины и фактуры в каталоге нет - спросите о них ',
+        Object.assign(el('a', null, 'в заявке'), { href: '#offer' }),
+        ' или по телефону ',
+        Object.assign(el('a', null, '+7 (495) 215-51-45'), { href: 'tel:+74952155145' }),
+        '.');
+      const actions = el('div', 'stone-view-actions');
+      const configure = el('a', 'btn btn-primary', 'Рассчитать в конфигураторе');
+      const pick = el('button', 'btn btn-secondary stone-view-pick');
+      pick.type = 'button';
+      actions.append(configure);
+      if (window.Picks) actions.append(pick);
+      text.append(kind, name, facts, note, actions);
+      const close = el('button', 'stone-view-close');
+      close.type = 'button';
+      close.setAttribute('aria-label', 'Закрыть');
+      close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+      dialog.append(media, text, close);
+      document.body.appendChild(dialog);
+
+      let stone = null;
+      const paintPick = () => {
+        if (!window.Picks || !stone) return;
+        const on = window.Picks.has(window.Picks.read(window.Picks.storage(window)), window.Picks.STONES, stone.id);
+        pick.textContent = on ? 'В подборке' : 'В подборку';
+        pick.setAttribute('aria-pressed', String(on));
+      };
+      pick.addEventListener('click', () => {
+        window.Picks.toggle(window.Picks.storage(window), window.Picks.STONES, stone.id);
+        window.Picks.sync(document);   // the hearts on the cards and «Моя подборка» follow
+      });
+      document.addEventListener('picks-change', paintPick);
+      close.addEventListener('click', () => dialog.close());
+      // A press on the veil around the stone closes it; the page under it holds still meanwhile.
+      dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+      dialog.addEventListener('close', () => { document.documentElement.classList.remove('viewer-open'); document.body.style.paddingRight = ''; });
+      note.querySelector('a[href="#offer"]').addEventListener('click', () => dialog.close());
+
+      function fact(term, value) {
+        if (!value) return;
+        const row = el('div');
+        row.append(el('dt', null, term), el('dd', null, value));
+        facts.appendChild(row);
+      }
+      return {
+        dialog,
+        fill(s) {
+          stone = s;
+          img.removeAttribute('src');
+          img.hidden = !s.image;
+          if (s.image) { img.src = s.image; img.alt = 'Камень ' + s.name; }
+          kind.replaceChildren(s.type || '');
+          if (isArtificial(s)) kind.appendChild(el('span', 'stone-view-made', 'Искусственный камень'));
+          name.textContent = s.name;
+          facts.replaceChildren();
+          fact(s.countries.length > 1 ? 'Страны' : 'Страна', s.countries.join(', '));
+          fact('Цвет', s.colors.join(', '));
+          fact('Цена камня', s.price != null ? 'от ' + PriceFilter.formatRub(s.price) + ' ₽/м²' : '');
+          configure.href = buildUrl(s.id);
+          paintPick();
+        },
+      };
+    }
+    function openView(stone) {
+      if (!view) view = buildView();
+      view.fill(stone);
+      const gutter = window.innerWidth - document.documentElement.clientWidth;   // the page must not jump when its scrollbar goes
+      document.documentElement.classList.add('viewer-open');
+      document.body.style.paddingRight = gutter > 0 ? gutter + 'px' : '';
+      view.dialog.showModal();
+    }
+
     function cardFor(stone) {
       const li = document.createElement('li');
       const card = document.createElement('button');
@@ -198,6 +308,12 @@
         img.addEventListener('error', () => img.remove());
         media.appendChild(img);
       }
+      if (isArtificial(stone)) {
+        const made = document.createElement('span');
+        made.className = 'stone-card-made';
+        made.textContent = 'Искусственный камень';
+        media.appendChild(made);
+      }
       const name = document.createElement('span');
       name.className = 'stone-card-name';
       name.textContent = stone.name;
@@ -212,7 +328,11 @@
         price.textContent = 'от ' + PriceFilter.formatRub(stone.price) + ' ₽/м²';
         card.appendChild(price);
       }
+      if (canView()) card.setAttribute('aria-haspopup', 'dialog');
       card.addEventListener('click', () => {
+        // The stone is chosen (the bar below) and opens large; where a dialog cannot open,
+        // a second press lets it go, as before.
+        if (canView()) { selected = stone; renderSelection(); openView(stone); return; }
         selected = selected && selected.id === stone.id ? null : stone;
         renderSelection();
       });
@@ -425,8 +545,14 @@
         stones = normalizeStones(data);
         search.disabled = false;
         renderFilters();
+        // A link from a photo's caption brings the stone's name: it stands in the search, and the
+        // one stone of that very name opens at once (experiment, round 2).
+        const query = linkedQuery(window.location && window.location.search);
+        if (query) search.value = query;
         apply();
         ready();
+        const linked = exactStone(stones, query);
+        if (linked && canView()) { selected = linked; renderSelection(); openView(linked); }
       })
       .catch(() => {
         grid.innerHTML = '';
@@ -437,5 +563,5 @@
       });
   }
 
-  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, SORT_LABELS, normalizeStones, listOptions, filterStones, sortStones, hasActiveFilters, stoneOnlyUrl, init };
+  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, SORT_LABELS, ARTIFICIAL_TYPES, isArtificial, linkedQuery, exactStone, normalizeStones, listOptions, filterStones, sortStones, hasActiveFilters, stoneOnlyUrl, init };
 });

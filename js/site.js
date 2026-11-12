@@ -127,6 +127,9 @@
     items = items || [];
     const h1 = document.querySelector ? document.querySelector('h1') : null;
     const pageTitle = h1 ? h1.textContent.trim() : '';
+    // A gallery with captions gives every photo its caption line, an empty one too: the photos of a
+    // row stay one height (experiment, round 2: what stone, what was made -- from the owner's archive).
+    const captioned = items.some(item => item.caption);
     items.forEach((item, i) => {
       const figure = document.createElement('figure');
       figure.className = 'portfolio-item';
@@ -154,9 +157,11 @@
       img.addEventListener('error', () => { figure.classList.add('image-broken'); img.remove(); });
       shot.appendChild(img);
       figure.appendChild(shot);
-      if (item.caption) {
+      if (captioned) {
         const caption = document.createElement('figcaption');
-        caption.textContent = item.caption;
+        caption.textContent = item.caption || '';
+        if (item.caption) caption.title = item.caption;   // two lines at most under the photo; the viewer shows it whole
+        else caption.setAttribute('aria-hidden', 'true');
         figure.appendChild(caption);
       }
       container.appendChild(figure);
@@ -213,6 +218,7 @@
   // is open and returns to the photo it came from.
   const VIEWER_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';   // quick to answer, soft to land
   const SLIDE_EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  const STONE_PAGE = '/sayanmramor-site/kamen.html';   // «Камень»: ?q=<name> fills its search (js/category-page.js)
   const FADE_MS = 200;   // reduced motion: the photo fades in and out where it stands, it never grows or travels
   // Firefox draws a moving photograph on whole pixels (css/site.css, «Firefox and a moving
   // photograph»): there every transform of the viewer's photograph ends in a 3D one that changes nothing.
@@ -245,7 +251,7 @@
     const RADIUS = parts && parts.radius ? parts.radius : 20;   // the frame's corners, as it grows from it and goes back
     const imgOf = f => (f.tagName === 'IMG' ? f : f.querySelector('img'));
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let lb = null, stage, count, strip, veil, index = -1, img = null, opener = null, opening = false;
+    let lb = null, stage, count, caption, strip, veil, index = -1, img = null, opener = null, opening = false;
     // The move under way: its animations and what is left to do when they end. A press never waits
     // for it (2026-10-24, the owner: quick clicks and Esc were lost): it is brought to its end at
     // once -- what it was leaving goes, what it was bringing stands -- and then the press acts.
@@ -291,7 +297,14 @@
       count.className = 'viewer-count';
       count.setAttribute('aria-live', 'polite');
       const close = iconButton(doc, 'viewer-close', 'Закрыть', 'close');
-      top.append(count, close);
+      // The photo's caption next to the count, and the stones it names in the catalogue
+      // («Камень», kamen.html?q=<name>) -- experiment, round 2.
+      const said = doc.createElement('div');
+      said.className = 'viewer-said';
+      caption = doc.createElement('p');
+      caption.className = 'viewer-caption';
+      said.append(count, caption);
+      top.append(said, close);
       stage = doc.createElement('div');
       stage.className = 'viewer-stage';
       const prev = iconButton(doc, 'viewer-prev', 'Предыдущее фото', 'prev');
@@ -353,6 +366,19 @@
     function setCurrent(i) {
       index = i;
       count.innerHTML = '<b>' + (i + 1) + '</b> / ' + items.length;
+      const it = items[i];
+      caption.replaceChildren();
+      if (it.caption) {
+        caption.appendChild(doc.createTextNode(it.caption));
+        (it.stones || []).forEach((name, n) => {
+          caption.appendChild(doc.createTextNode(n ? ', ' : ' · В каталоге: '));
+          const a = doc.createElement('a');
+          a.href = STONE_PAGE + '?q=' + encodeURIComponent(name);
+          a.textContent = name;
+          caption.appendChild(a);
+        });
+      }
+      caption.hidden = !it.caption;
       Array.from(strip.children).forEach((b, n) => b.setAttribute('aria-current', String(n === i)));
       strip.children[i].scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' });
     }
@@ -441,7 +467,7 @@
       else if (e.key === 'ArrowRight') go(index + 1, 1, true);
       else if (e.key === 'ArrowLeft') go(index - 1, -1, true);
       else if (e.key === 'Tab') {   // the focus stays inside the viewer
-        const all = Array.from(lb.querySelectorAll('button')).filter(b => b.offsetParent !== null);
+        const all = Array.from(lb.querySelectorAll('button, a[href]')).filter(b => b.offsetParent !== null);
         const first = all[0], last = all[all.length - 1];
         if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }

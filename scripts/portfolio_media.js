@@ -64,7 +64,8 @@ const lines = ['{'];
 Object.entries(data).forEach(([key, items], k, all) => {
   lines.push('  ' + JSON.stringify(key) + ': [');
   items.forEach((item, i) => {
-    const out = Object.assign({ image: item.image, caption: item.caption }, media(item.image));
+    // stones (optional): the stones the caption names, as the stone catalogue calls them (experiment, round 2).
+    const out = Object.assign({ image: item.image, caption: item.caption }, item.stones ? { stones: item.stones } : {}, media(item.image));
     lines.push('    { ' + Object.entries(out).map(([n, v]) => JSON.stringify(n) + ': ' + JSON.stringify(v)).join(', ') + ' }' + (i < items.length - 1 ? ',' : ''));
   });
   lines.push('  ]' + (k < all.length - 1 ? ',' : ''));

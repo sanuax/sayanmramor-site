@@ -187,3 +187,34 @@ test('each stone card shows «от … ₽/м²» under the type, as the configu
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
   assert.match(css, /\.stone-card-price \{[^}]*color: var\(--accent\);[^}]*white-space: nowrap;/);
 });
+
+// (experiment, round 2: a designer could not open a stone, nor tell natural stone from man-made)
+test('natural and man-made stone: the index types that are made by hand are marked', () => {
+  assert.deepEqual(CategoryPage.ARTIFICIAL_TYPES, ['Кварцевый агломерат', 'Искусственный мрамор', 'Спеченный камень']);
+  assert.equal(CategoryPage.isArtificial({ type: 'Кварцевый агломерат' }), true);
+  assert.equal(CategoryPage.isArtificial({ type: 'Мрамор' }), false);
+  assert.equal(CategoryPage.isArtificial({ type: 'Кварцит' }), false);
+  assert.equal(CategoryPage.isArtificial(null), false);
+});
+
+test('a link from a caption: ?q= fills the search, the one stone of that very name opens', () => {
+  assert.equal(CategoryPage.linkedQuery('?q=Sesame%20Black'), 'Sesame Black');
+  assert.equal(CategoryPage.linkedQuery(''), '');
+  assert.equal(CategoryPage.linkedQuery('?product=pol'), '');
+  const stones = [{ name: 'Volakas', type: 'Мрамор' }, { name: 'Volakas', type: 'Кварцевый агломерат' }, { name: 'Sesame Black', type: 'Гранит' }, { name: 'Calacatta Volakas', type: 'Мрамор' }];
+  assert.equal(CategoryPage.exactStone(stones, 'sesame black').name, 'Sesame Black');
+  assert.equal(CategoryPage.exactStone(stones, 'Volakas'), null, 'two stones of that name: none opens, the search shows both');
+  assert.equal(CategoryPage.exactStone(stones, ''), null);
+});
+
+test('a press on a stone opens it large: the photo whole, what the index knows, «В подборку» and the configurator; the rest is asked for, not guessed', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8');
+  assert.match(src, /if \(canView\(\)\) \{ selected = stone; renderSelection\(\); openView\(stone\); return; \}/);
+  assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
+  assert.match(src, /Размеров плит, толщины и фактуры в каталоге нет/);
+  assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);
+  assert.match(src, /configure\.href = buildUrl\(s\.id\);/);
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.stone-view-media img \{[^}]*object-fit: contain;/, 'the photo is shown whole');
+  assert.match(css, /\.stone-view-actions \.btn \{ border-radius: var\(--radius-btn\); \}/, 'the buttons stay rectangles');
+});

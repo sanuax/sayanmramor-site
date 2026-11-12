@@ -1724,3 +1724,32 @@ test('a direction page fetches its first four photos at once, the first one firs
   assert.match(js, /if \(i < EAGER_PHOTOS\) \{ img\.loading = 'eager'; if \(i === 0\) img\.fetchPriority = 'high'; \}\n\s*else img\.loading = 'lazy';/);
 });
 
+
+// (experiment, round 2: the photos of works had no captions -- what stone, what was made)
+test('the galleries\' photos carry captions from the owner\'s archive; the viewer shows them with the stones in the catalogue', () => {
+  const portfolio = JSON.parse(fs.readFileSync(path.join(site, 'data', 'portfolio.json'), 'utf8'));
+  ['pol', 'stena', 'stoleshnitsa_vannaya'].forEach(key => {
+    const captioned = portfolio[key].filter(i => i.caption).length;
+    assert.ok(captioned >= portfolio[key].length - 1, key + ': captions');
+  });
+  Object.values(portfolio).flat().forEach(i => {
+    assert.doesNotMatch(i.caption, /—|!/, i.image);
+    if (i.stones) assert.ok(Array.isArray(i.stones) && i.stones.every(s => typeof s === 'string' && s), i.image);
+  });
+  const pol = portfolio.pol.map(i => i.image.split('/').pop());
+  assert.ok(!pol.includes('ya-06.webp'), '«Полы» does not repeat the bathroom of «Стены»');
+  const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
+  assert.match(js, /const STONE_PAGE = '\/sayanmramor-site\/kamen\.html';/);
+  assert.match(js, /a\.href = STONE_PAGE \+ '\?q=' \+ encodeURIComponent\(name\);/);
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.portfolio-grid \.portfolio-item figcaption \{[^}]*min-height: 2\.8em;/, 'every caption keeps its two lines: a row stays one height');
+});
+
+test('«Ванная» and «Полы» say which stone suits them, with ways into the catalogue by type', () => {
+  [['stoleshnitsy-vannaya', 'Какой камень выбрать для ванной'], ['poly', 'Какой камень выбрать для пола']].forEach(([slug, title]) => {
+    const html = fs.readFileSync(path.join(site, 'categories', slug + '.html'), 'utf8');
+    assert.ok(html.includes('<h3 class="stone-advice-title">' + title + '</h3>'), slug);
+    assert.ok(html.indexOf('stone-advice') < html.indexOf('stone-controls'), slug);
+    assert.doesNotMatch(html.slice(html.indexOf('stone-advice'), html.indexOf('stone-controls')), /—|!/, slug);
+  });
+});
