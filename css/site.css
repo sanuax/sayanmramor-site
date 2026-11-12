@@ -1169,6 +1169,26 @@ h3 { font-size: var(--fs-h3); }
   box-shadow: 0 1px 2px rgba(28, 29, 27, 0.12); pointer-events: none;
 }
 
+/* The stone opens large only by this button on its photo, top left (the heart is top right); drawn
+   like the heart, no plate: white lines with a soft shadow read on pale and dark stone alike
+   (the owner, 2026-11-12). */
+.stone-open {
+  position: absolute; top: 4px; left: 4px; z-index: 2;
+  display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  border: 0; border-radius: 50%; background: none; cursor: pointer; color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+.stone-open svg {
+  display: block; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.42));
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) { .stone-open:hover svg { transform: scale(1.1); } }
+.stone-open:active svg { transform: scale(0.9); }
+.stone-open:focus-visible { outline: 2px solid #fff; outline-offset: -2px; box-shadow: 0 0 0 4px var(--accent) inset; }
+@media (prefers-reduced-motion: reduce) { .stone-open:active svg { transform: none; } }
+@media (hover: hover) and (prefers-reduced-motion: reduce) { .stone-open:hover svg { transform: none; } }
+
 /* ---- The stone, large (js/category-page.js, experiment, round 2) ----------------
    Over the page on a dark veil: the stone's photo whole (the card shows a square of it) and,
    beside it, what the catalogue knows of the stone and the two ways on. */

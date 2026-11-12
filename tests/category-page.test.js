@@ -208,9 +208,10 @@ test('a link from a caption: ?q= fills the search, the one stone of that very na
   assert.equal(CategoryPage.exactStone(stones, ''), null);
 });
 
-test('a press on a stone opens it large: the photo whole, what the index knows, «В подборку» and the configurator; the rest is asked for, not guessed', () => {
+test('a stone opens large by its own button on the photo (a press on the card only chooses it, the owner 2026-11-12): the photo whole, what the index knows, «В подборку» and the configurator; the rest is asked for, not guessed', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8');
-  assert.match(src, /if \(canView\(\)\) \{ selected = stone; renderSelection\(\); openView\(stone\); return; \}/);
+  assert.match(src, /card\.addEventListener\('click', \(\) => \{[^}]*selected = selected && selected\.id === stone\.id \? null : stone;\s*renderSelection\(\);\s*\}\);/, 'the card only chooses and lets go');
+  assert.match(src, /open\.className = 'stone-open';[^]*open\.addEventListener\('click', \(\) => \{ selected = stone; renderSelection\(\); openView\(stone\); \}\);/, 'the button opens it large');
   assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
   assert.match(src, /Размеров плит, толщины и фактуры в каталоге нет/);
   assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);

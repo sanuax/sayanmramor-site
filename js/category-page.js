@@ -339,15 +339,24 @@
         price.textContent = 'от ' + PriceFilter.formatRub(stone.price) + ' ₽/м²';
         card.appendChild(price);
       }
-      if (canView()) card.setAttribute('aria-haspopup', 'dialog');
       card.addEventListener('click', () => {
-        // The stone is chosen (the bar below) and opens large; where a dialog cannot open,
-        // a second press lets it go, as before.
-        if (canView()) { selected = stone; renderSelection(); openView(stone); return; }
+        // A press chooses the stone (the bar below), a second press lets it go, as before. The stone
+        // opens large only by its own button on the photo (the owner, 2026-11-12: a dialog on every
+        // press got in the way of choosing).
         selected = selected && selected.id === stone.id ? null : stone;
         renderSelection();
       });
       li.appendChild(card);
+      if (canView()) {
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'stone-open';
+        open.setAttribute('aria-haspopup', 'dialog');
+        open.setAttribute('aria-label', 'Открыть крупно: ' + stone.name);
+        open.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg>';
+        open.addEventListener('click', () => { selected = stone; renderSelection(); openView(stone); });
+        li.appendChild(open);
+      }
       const picks = window.Picks;
       if (picks) li.appendChild(picks.heart(document, picks.STONES, stone.id, stone.name));
       return li;
