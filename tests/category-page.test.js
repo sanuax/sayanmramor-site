@@ -216,7 +216,18 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.match(src, /\(viaKeys \? view\.close : view\.dialog\)\.focus\(\{ preventScroll: true \}\);/);
   const siteCss = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
   assert.match(siteCss, /\.stone-view:focus \{ outline: none; \}/);
-  assert.match(siteCss, /\.stone-view-media img \{ display: block; width: 100%; height: 100%; object-fit: cover; \}/, 'the photo in the flow: placed absolutely, iOS Safari left it over the scrolling text');
+  // The window is not a scroller (iOS Safari left the photo standing over the scrolling text and lost it
+  // from screenshots): the text scrolls in its own box, the photo has a box of its own and fades in.
+  const windowRule = siteCss.match(/\n\.stone-view \{[^}]*\}/)[0];
+  assert.match(windowRule, /overflow: hidden;/, 'the window does not scroll');
+  assert.doesNotMatch(windowRule, /overflow: auto/);
+  assert.match(siteCss, /\.stone-view-text \{[^}]*min-height: 0; overflow-y: auto;/, 'the text scrolls in its own box');
+  assert.match(siteCss, /\.stone-view-media img \{ position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0\.25s ease; \}/);
+  assert.match(siteCss, /\.stone-view-media img\.is-loaded \{ opacity: 1; \}/);
+  assert.match(siteCss, /@keyframes stone-view-in \{ from \{ opacity: 0; \} \}/, 'opening is a fade: nothing moves or scales');
+  assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a phone the photo has a set height: nothing shifts when it arrives');
+  assert.match(src, /img\.addEventListener\('load', \(\) => img\.classList\.add\('is-loaded'\)\);/);
+  assert.match(src, /view\.text\.scrollTop = 0;/);
   assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
   assert.match(src, /Размеров плит, толщины и фактуры в каталоге нет/);
   assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);

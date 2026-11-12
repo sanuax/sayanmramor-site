@@ -1196,20 +1196,27 @@ h3 { font-size: var(--fs-h3); }
 .stone-view {
   width: min(1120px, calc(100vw - 48px)); max-width: none; max-height: calc(100dvh - 48px); margin: auto; padding: 0;
   border: 0; border-radius: var(--radius); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-2);
-  overflow: auto; overscroll-behavior: contain;
+  overflow: hidden;   /* the window itself never scrolls: only its text does (below), the photo holds still (2026-11-12) */
 }
-.stone-view[open] { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); animation: stone-view-in 0.24s var(--ease-out); }
+.stone-view[open] { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); grid-template-rows: minmax(0, 1fr); animation: stone-view-in 0.2s ease; }
 .stone-view::backdrop { background: rgba(18, 20, 18, 0.62); animation: stone-view-veil 0.24s ease; }
-@keyframes stone-view-in { from { opacity: 0; transform: translateY(8px) scale(0.985); } }
+/* A fade, nothing moves or scales (2026-11-12, the owner: it jerked on an iPhone): a big layer
+   that moves while its photo is still being decoded is what made it. */
+@keyframes stone-view-in { from { opacity: 0; } }
 @keyframes stone-view-veil { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .stone-view[open] { animation: stone-view-veil 0.2s ease; } }
 /* The stone fills its whole side of the window, no coloured margin around it (the owner, 2026-11-12).
-   The photo stays in the flow: placed absolutely, iOS Safari left it standing while the window's text
-   scrolled under it (the owner, 2026-11-12). The window holds the focus itself when opened by a tap: no ring. */
+   The photo's box has a size of its own (a grid cell on a computer, a set height on a phone), so
+   nothing shifts when the picture arrives; the picture lies in it and fades in once it is loaded.
+   The window is not a scroller: in one, iOS Safari left the photo standing while the text scrolled
+   under it, and lost it from screenshots (the owner, 2026-11-12). The text scrolls in its own box
+   below it. The window holds the focus itself when opened by a tap: no ring. */
 .stone-view:focus { outline: none; }
-.stone-view-media { overflow: hidden; min-height: 280px; background: var(--surface-sunk); }
-.stone-view-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.stone-view-text { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-6) var(--s-5) var(--s-5); }
+.stone-view-media { position: relative; overflow: hidden; min-height: 280px; background: var(--surface-sunk); }
+.stone-view-media img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.25s ease; }
+.stone-view-media img.is-loaded { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .stone-view-media img { transition: none; } }
+.stone-view-text { display: flex; flex-direction: column; gap: var(--s-3); min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-6) var(--s-5) var(--s-5); }
 .stone-view-kind { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0; padding-right: 40px; font-size: var(--fs-small); color: var(--muted); }
 .stone-view-made { padding: 2px 8px; border-radius: var(--radius-btn); background: var(--surface-sunk); color: var(--ink); font-weight: 500; }
 .stone-view-name { margin: 0; font-size: var(--fs-h3); line-height: 1.2; }
@@ -1231,8 +1238,9 @@ h3 { font-size: var(--fs-h3); }
 @media (hover: hover) { .stone-view-close:hover { border-color: var(--ink); } }
 @media screen and (max-width: 900px) {   /* the stone large on a tablet and a phone («screen and»: the first plain 900 px block is the rows' own) */
   .stone-view { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
-  .stone-view[open] { grid-template-columns: minmax(0, 1fr); }
-  .stone-view-media { min-height: 0; aspect-ratio: 17 / 10; }   /* the slab photos are 850 x 500 */
+  .stone-view[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  /* The slab photos are 850 x 500 (17:10); on a short screen the photo gives way a little so the text keeps its room. */
+  .stone-view-media { min-height: 0; height: calc((100vw - 24px) * 10 / 17); height: min(calc((100vw - 24px) * 10 / 17), 34vh); height: min(calc((100vw - 24px) * 10 / 17), 34dvh); }
   .stone-view-text { padding: var(--s-4); }
   .stone-view-close { top: 8px; right: 8px; background: rgba(248, 247, 244, 0.92); }
   .stone-view-actions .btn { flex: 1 1 auto; }

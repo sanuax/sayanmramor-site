@@ -223,6 +223,7 @@
       const media = el('div', 'stone-view-media');
       const img = el('img');
       img.decoding = 'async';
+      img.addEventListener('load', () => img.classList.add('is-loaded'));   // it fades in once it is ready, never pops in
       media.appendChild(img);
       const text = el('div', 'stone-view-text');
       const kind = el('p', 'stone-view-kind');
@@ -277,11 +278,17 @@
       return {
         dialog,
         close,
+        text,
         fill(s) {
           stone = s;
+          img.classList.remove('is-loaded');
           img.removeAttribute('src');
           img.hidden = !s.image;
-          if (s.image) { img.src = s.image; img.alt = 'Камень ' + s.name; }
+          if (s.image) {
+            img.src = s.image;
+            img.alt = 'Камень ' + s.name;
+            if (img.complete && img.naturalWidth) img.classList.add('is-loaded');   // already in the browser's memory: no fade
+          }
           kind.replaceChildren(s.type || '');
           if (isArtificial(s)) kind.appendChild(el('span', 'stone-view-made', 'Искусственный камень'));
           name.textContent = s.name;
@@ -304,7 +311,7 @@
       document.documentElement.classList.add('viewer-open');
       document.body.style.paddingRight = gutter > 0 ? gutter + 'px' : '';
       view.dialog.showModal();
-      view.dialog.scrollTop = 0;
+      view.text.scrollTop = 0;   // the text scrolls in its own box; the window and its photo hold still
       (viaKeys ? view.close : view.dialog).focus({ preventScroll: true });
     }
 
