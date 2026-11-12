@@ -61,7 +61,13 @@
       "category": "stoly",
       "price_rub": 3177000,
       "description": null,
-      "photos": ["/sayanmramor-site/assets/products/stol-01/1.jpg"],
+      "photos": [
+        "/sayanmramor-site/assets/products/stol-01/1.webp",
+        "/sayanmramor-site/assets/products/stol-01/2.webp",
+        "/sayanmramor-site/assets/products/stol-01/3.webp",
+        "/sayanmramor-site/assets/products/stol-01/4.webp",
+        "/sayanmramor-site/assets/products/stol-01/5.webp"
+      ],
       "available": true
     },
     {
