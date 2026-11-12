@@ -762,6 +762,7 @@ h3 { font-size: var(--fs-h3); }
    pixels (position: fixed + transform) so it can grow out of its frame. */
 .viewer-open { overflow: hidden; }
 .viewer { position: fixed; inset: 0; z-index: 1000; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; color: #f3f1ec; }
+.viewer:focus { outline: none; }   /* opened by a tap it holds the focus itself, no ring (2026-11-12) */
 .viewer[hidden] { display: none; }
 .viewer-veil {
   position: absolute; inset: 0; background: rgba(18, 20, 18, 0.72); opacity: 0; transition: opacity 0.28s ease;
@@ -1202,9 +1203,12 @@ h3 { font-size: var(--fs-h3); }
 @keyframes stone-view-in { from { opacity: 0; transform: translateY(8px) scale(0.985); } }
 @keyframes stone-view-veil { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .stone-view[open] { animation: stone-view-veil 0.2s ease; } }
-/* The stone fills its whole side of the window, no coloured margin around it (the owner, 2026-11-12). */
-.stone-view-media { position: relative; overflow: hidden; min-height: 280px; background: var(--surface-sunk); }
-.stone-view-media img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+/* The stone fills its whole side of the window, no coloured margin around it (the owner, 2026-11-12).
+   The photo stays in the flow: placed absolutely, iOS Safari left it standing while the window's text
+   scrolled under it (the owner, 2026-11-12). The window holds the focus itself when opened by a tap: no ring. */
+.stone-view:focus { outline: none; }
+.stone-view-media { overflow: hidden; min-height: 280px; background: var(--surface-sunk); }
+.stone-view-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .stone-view-text { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-6) var(--s-5) var(--s-5); }
 .stone-view-kind { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0; padding-right: 40px; font-size: var(--fs-small); color: var(--muted); }
 .stone-view-made { padding: 2px 8px; border-radius: var(--radius-btn); background: var(--surface-sunk); color: var(--ink); font-weight: 500; }

@@ -696,7 +696,8 @@
       if (focus === false) return;
       const target = i === 0 ? (options.find(o => o.getAttribute('aria-pressed') === 'true') || options[0])
         : i === 'fork' ? toCalc : i === 'katalog' ? toKatalog : i === 1 ? name : i === 2 ? phone : done.querySelector('.talk-next');
-      if (target && target.focus) target.focus({ preventScroll: true });
+      const field = target === name || target === phone;
+      if (target && target.focus && (field || viaKeys)) target.focus({ preventScroll: true });
     }
 
     form.addEventListener('submit', e => {

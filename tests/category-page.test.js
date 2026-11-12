@@ -211,7 +211,12 @@ test('a link from a caption: ?q= fills the search, the one stone of that very na
 test('a stone opens large by its own button on the photo (a press on the card only chooses it, the owner 2026-11-12): the photo whole, what the index knows, «В подборку» and the configurator; the rest is asked for, not guessed', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8');
   assert.match(src, /card\.addEventListener\('click', \(\) => \{[^}]*selected = selected && selected\.id === stone\.id \? null : stone;\s*renderSelection\(\);\s*\}\);/, 'the card only chooses and lets go');
-  assert.match(src, /open\.className = 'stone-open';[^]*open\.addEventListener\('click', \(\) => \{ selected = stone; renderSelection\(\); openView\(stone\); \}\);/, 'the button opens it large');
+  assert.match(src, /open\.className = 'stone-open';[^]*open\.addEventListener\('click', e => \{ selected = stone; renderSelection\(\); openView\(stone, e\.detail === 0\); \}\);/, 'the button opens it large');
+  // Opened by a tap the window holds the focus itself: no ring round its first link «в заявке» (2026-11-12, the owner).
+  assert.match(src, /\(viaKeys \? view\.close : view\.dialog\)\.focus\(\{ preventScroll: true \}\);/);
+  const siteCss = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
+  assert.match(siteCss, /\.stone-view:focus \{ outline: none; \}/);
+  assert.match(siteCss, /\.stone-view-media img \{ display: block; width: 100%; height: 100%; object-fit: cover; \}/, 'the photo in the flow: placed absolutely, iOS Safari left it over the scrolling text');
   assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
   assert.match(src, /Размеров плит, толщины и фактуры в каталоге нет/);
   assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);

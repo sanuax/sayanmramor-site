@@ -106,7 +106,9 @@
     // Phone: the rows and the groups' screens.
     const nav = header.querySelector('.site-nav');
     let open = -1, backTimer = null;
-    function openGroup(k) {
+    // Focus moves into a group's screen and back only for the keyboard: after a tap Safari drew it
+    // as the keyboard ring (2026-11-12, the owner).
+    function openGroup(k, focus) {
       open = k;
       if (backTimer) { win.clearTimeout(backTimer); backTimer = null; }
       drop.classList.remove('is-back');
@@ -115,9 +117,9 @@
       groups[k].row.setAttribute('aria-expanded', 'true');
       if (nav) nav.scrollTop = 0;
       const back = groups[k].el.querySelector('.nav-group-back');
-      if (back) back.focus({ preventScroll: true });
+      if (back && focus) back.focus({ preventScroll: true });
     }
-    function closeGroup(returnFocus) {
+    function closeGroup(returnFocus, focus) {
       if (open < 0) return;
       const g = groups[open];
       open = -1;
@@ -127,7 +129,7 @@
       if (!returnFocus) return;
       drop.classList.add('is-back');
       backTimer = win.setTimeout(() => { drop.classList.remove('is-back'); backTimer = null; }, BACK_MS);
-      g.row.focus({ preventScroll: true });
+      if (focus !== false) g.row.focus({ preventScroll: true });
     }
 
     groups.forEach((g, k) => {
@@ -149,7 +151,7 @@
       } else {
         row.type = 'button';
         row.setAttribute('aria-expanded', 'false');
-        row.addEventListener('click', () => openGroup(k));
+        row.addEventListener('click', e => openGroup(k, e.detail === 0));
       }
       const text = make('span');
       text.append(make('span', 'nav-group-row-name', g.name), make('span', 'nav-group-row-note', noteOf(g)));
@@ -160,7 +162,7 @@
       const head = make('div', 'nav-group-head');
       const back = make('button', 'nav-group-back', 'Все изделия');
       back.type = 'button';
-      back.addEventListener('click', () => closeGroup(true));
+      back.addEventListener('click', e => closeGroup(true, e.detail === 0));
       const hero = make('figure', 'nav-group-hero'), heroCaption = make('figcaption');
       heroCaption.append(make('p', 'nav-group-hero-title', g.name), make('p', 'nav-group-hero-note', directions(g.links.length)));
       hero.append(photo('w-' + g.slug + '.webp', 800, 500), heroCaption);
@@ -175,7 +177,7 @@
       nav.addEventListener('touchend', e => {
         if (sx === null) return;
         const t = e.changedTouches[0];
-        if (t.clientX - sx > 70 && Math.abs(t.clientY - sy) < 40) closeGroup(true);
+        if (t.clientX - sx > 70 && Math.abs(t.clientY - sy) < 40) closeGroup(true, false);
         sx = null;
       }, { passive: true });
     }

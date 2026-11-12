@@ -219,6 +219,7 @@
       const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
       const dialog = el('dialog', 'stone-view');
       dialog.setAttribute('aria-labelledby', 'stoneViewName');
+      dialog.tabIndex = -1;   // opened by a tap it takes the focus itself, see openView
       const media = el('div', 'stone-view-media');
       const img = el('img');
       img.decoding = 'async';
@@ -275,6 +276,7 @@
       }
       return {
         dialog,
+        close,
         fill(s) {
           stone = s;
           img.removeAttribute('src');
@@ -292,13 +294,18 @@
         },
       };
     }
-    function openView(stone) {
+    // A modal dialog puts the focus on its first link («в заявке»), and after a tap Safari drew it as
+    // the keyboard ring (2026-11-12, the owner): opened by a tap (or a link) the dialog holds the focus
+    // itself, no ring; opened from the keyboard the close button has it.
+    function openView(stone, viaKeys) {
       if (!view) view = buildView();
       view.fill(stone);
       const gutter = window.innerWidth - document.documentElement.clientWidth;   // the page must not jump when its scrollbar goes
       document.documentElement.classList.add('viewer-open');
       document.body.style.paddingRight = gutter > 0 ? gutter + 'px' : '';
       view.dialog.showModal();
+      view.dialog.scrollTop = 0;
+      (viaKeys ? view.close : view.dialog).focus({ preventScroll: true });
     }
 
     function cardFor(stone) {
@@ -354,7 +361,7 @@
         open.setAttribute('aria-haspopup', 'dialog');
         open.setAttribute('aria-label', 'Открыть крупно: ' + stone.name);
         open.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg>';
-        open.addEventListener('click', () => { selected = stone; renderSelection(); openView(stone); });
+        open.addEventListener('click', e => { selected = stone; renderSelection(); openView(stone, e.detail === 0); });
         li.appendChild(open);
       }
       const picks = window.Picks;

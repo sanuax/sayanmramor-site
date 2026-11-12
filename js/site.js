@@ -252,6 +252,12 @@
     const imgOf = f => (f.tagName === 'IMG' ? f : f.querySelector('img'));
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let lb = null, stage, count, caption, strip, veil, index = -1, img = null, opener = null, opening = false;
+    // Whether the last press was a key. Opened by a tap the viewer takes the focus itself (no ring),
+    // and on closing it is not handed back to the photo: Safari drew both as the keyboard ring
+    // (2026-11-12, the owner). From the keyboard the cross has it and the photo gets it back.
+    let viaKeys = false;
+    doc.addEventListener('keydown', () => { viaKeys = true; }, true);
+    doc.addEventListener('pointerdown', () => { viaKeys = false; }, true);
     // The move under way: its animations and what is left to do when they end. A press never waits
     // for it (2026-10-24, the owner: quick clicks and Esc were lost): it is brought to its end at
     // once -- what it was leaving goes, what it was bringing stands -- and then the press acts.
@@ -288,6 +294,7 @@
       lb.setAttribute('role', 'dialog');
       lb.setAttribute('aria-modal', 'true');
       lb.setAttribute('aria-label', 'Просмотр фото');
+      lb.tabIndex = -1;
       lb.hidden = true;
       veil = doc.createElement('div');
       veil.className = 'viewer-veil';
@@ -402,7 +409,7 @@
         place(img, to);
         shotOf(i).style.visibility = 'hidden';
         opening = false;
-        begin([flip(img, from, to, 440)], () => lb.querySelector('.viewer-close').focus({ preventScroll: true }));
+        begin([flip(img, from, to, 440)], () => (viaKeys ? lb.querySelector('.viewer-close') : lb).focus({ preventScroll: true }));
       });
     }
 
@@ -434,7 +441,7 @@
         lb.hidden = true;
         doc.documentElement.classList.remove('viewer-open');
         doc.body.style.paddingRight = '';
-        opener.focus({ preventScroll: true });
+        if (viaKeys) opener.focus({ preventScroll: true });
       });
     }
 
@@ -469,7 +476,8 @@
       else if (e.key === 'Tab') {   // the focus stays inside the viewer
         const all = Array.from(lb.querySelectorAll('button, a[href]')).filter(b => b.offsetParent !== null);
         const first = all[0], last = all[all.length - 1];
-        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        if (doc.activeElement === lb) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }   // opened by a tap: the viewer itself had it
+        else if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     }
