@@ -163,7 +163,8 @@ h3 { font-size: var(--fs-h3); }
   /* On an iPhone the home page reaches the screen's edges (viewport-fit=cover, 2026-11-12, the owner: light
      strips under the clock and under Safari's and Telegram's bottom bar): the photo goes on under the
      bottom edge too. Elsewhere the inset is 0. */
-  .home-hero { min-height: calc(var(--hero-h, 100lvh) + 2px + env(safe-area-inset-bottom, 0px)); }
+  .home-hero { min-height: max(calc(var(--hero-h, 100lvh) + 2px + env(safe-area-inset-bottom, 0px)), calc(var(--screen-h, 0px) + 2px)); }
+  /* --screen-h (js/site.js, iPhone / iPad only): the whole screen, since there the page goes on under the bottom bar. */
   .home-hero-picture::after { background: linear-gradient(180deg, rgba(12, 9, 8, 0.9) 0, rgba(12, 9, 8, 0.78) 40%, rgba(12, 9, 8, 0.3) 58%, rgba(12, 9, 8, 0) 72%); }
   .home-hero-content { padding-top: calc(66px + env(safe-area-inset-top, 0px) + var(--s-6)); padding-bottom: var(--s-6); }
   .home-hero h1 { font-size: 32px; }

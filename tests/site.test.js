@@ -1483,6 +1483,28 @@ test('home hero: where the bars resize the page (Chrome on an iPhone) its height
   assert.equal(w.props['--hero-h'], '360px');
 });
 
+test('home hero on an iPhone (Safari, Telegram): at least the whole screen, since the page goes on under the bottom bar (2026-11-12, the owner)', () => {
+  const w = heroWorld({ width: 393, height: 740 });
+  w.win.CSS = { supports: (p, v) => p === '-webkit-touch-callout' && v === 'none' };
+  w.win.screen = { width: 393, height: 852 };
+  SiteCommon.holdHeroHeight(w.doc, w.win, () => true);
+  assert.deepEqual(w.props, { '--screen-h': '852px' }, '100lvh is steady there, so only the screen is added');
+  w.win.innerWidth = 852; w.win.innerHeight = 340; w.listeners.resize();   // on its side: screen.* does not turn on iOS
+  assert.equal(w.props['--screen-h'], '393px');
+  const chrome = heroWorld({ width: 393, height: 700 });              // Chrome on an iPhone: held height and the screen
+  chrome.win.CSS = w.win.CSS; chrome.win.screen = w.win.screen;
+  SiteCommon.holdHeroHeight(chrome.doc, chrome.win, () => false);
+  assert.deepEqual(chrome.props, { '--hero-h': '700px', '--screen-h': '852px' });
+});
+
+test('home hero: Android and a desktop never get the screen height', () => {
+  const w = heroWorld();
+  w.win.CSS = { supports: () => false };
+  w.win.screen = { width: 412, height: 915 };
+  SiteCommon.holdHeroHeight(w.doc, w.win, () => true);
+  assert.deepEqual(w.props, {});
+});
+
 test('home hero: a mouse and a desktop window are left to the CSS', () => {
   const w = heroWorld({ coarse: false });
   SiteCommon.holdHeroHeight(w.doc, w.win, () => false);
@@ -1493,7 +1515,7 @@ test('home hero CSS: the held height first, the large viewport where nothing hol
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
   assert.match(phone, /@supports \(height: 100lvh\) \{ \.home-hero \{ min-height: calc\(var\(--hero-h, 100lvh\) \+ 2px\); \} \}/);
-  assert.match(phone, /\.home-hero \{ min-height: calc\(var\(--hero-h, 100lvh\) \+ 2px \+ env\(safe-area-inset-bottom, 0px\)\); \}/, 'on an iPhone the photo goes on under the bottom edge (2026-11-12)');
+  assert.match(phone, /\.home-hero \{ min-height: max\(calc\(var\(--hero-h, 100lvh\) \+ 2px \+ env\(safe-area-inset-bottom, 0px\)\), calc\(var\(--screen-h, 0px\) \+ 2px\)\); \}/, 'on an iPhone the photo goes on under the bottom edge, at least the whole screen (2026-11-12)');
 });
 
 test('the piece in the request (2026-10-26, the owner): a card over the questions, the request summed up with it', () => {

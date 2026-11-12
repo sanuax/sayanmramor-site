@@ -636,15 +636,27 @@
     probe.remove();
     return large > small;
   }
+  // On an iPhone or iPad (Safari, Telegram, any WebKit there) the page's viewport ends above the
+  // browser's bottom bar, yet the page is drawn on under it: a hero of 100lvh left the next, light
+  // section showing under the bar (2026-11-12, the owner). There the hero is at least the whole
+  // screen -- its long side upright, its short side on its side (screen.* never turns on iOS).
+  function screenLength(win) {
+    const s = win.screen;
+    if (!s || !s.width || !s.height) return 0;
+    return win.innerWidth > win.innerHeight ? Math.min(s.width, s.height) : Math.max(s.width, s.height);
+  }
   function holdHeroHeight(doc, win, steady) {
     const hero = doc.querySelector('.home-hero');
     if (!hero || !win.matchMedia || !win.matchMedia('(pointer: coarse)').matches) return;
-    if ((steady || viewportUnitsSteady)(doc)) return;
+    const apple = !!(win.CSS && win.CSS.supports && win.CSS.supports('-webkit-touch-callout', 'none'));
+    const held = !(steady || viewportUnitsSteady)(doc);
+    if (!held && !apple) return;
     let width = -1;
     const hold = () => {
       if (win.innerWidth === width) return;
       width = win.innerWidth;
-      hero.style.setProperty('--hero-h', win.innerHeight + 'px');
+      if (held) hero.style.setProperty('--hero-h', win.innerHeight + 'px');
+      if (apple) hero.style.setProperty('--screen-h', screenLength(win) + 'px');
     };
     hold();
     win.addEventListener('resize', hold);
@@ -755,5 +767,5 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') landOnOffer(document, window);
 
-  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, trustSite, holdHeroHeight, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, trustSite, holdHeroHeight, screenLength, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
 });
