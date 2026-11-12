@@ -50,15 +50,18 @@ html {
 }
 /* Under the iPhone's clock (2026-11-12, the owner: «сверху белое»): Safari on iOS 26 tints that strip
    from a fixed element standing on the screen's top edge (the intro's dark slab got it dark), else
-   from the light page. While the hammam is under the clock (js/site.js darkTopOverHero) a dark cap
-   as tall as the clock stands there; elsewhere its height is 0. <html> goes dark too, for the
-   pull-down at the top. */
+   from the light page -- the BODY's background (<html>'s alone did nothing). While the hammam is
+   under the clock (js/site.js darkTopOverHero) the body is dark (the page itself keeps its light
+   ground: main.home paints it) and a dark cap stands on the top edge -- as tall as the clock, on an
+   iPhone at least 6 px (shorter ones are not taken); elsewhere its height is 0. */
 .top-cap { display: none; }
 html.hero-top .top-cap {
   display: block; position: fixed; z-index: 19; top: 0; left: 0; right: 0;
   height: env(safe-area-inset-top, 0px); background: #0c0908; pointer-events: none;
 }
-html.hero-top { background: #0c0908; }
+@supports (-webkit-touch-callout: none) { html.hero-top .top-cap { height: max(6px, env(safe-area-inset-top, 0px)); } }
+html.hero-top, html.hero-top body { background: #0c0908; }
+main.home { background: var(--page); }
 body {
   /* A phone on its side with viewport-fit=cover (the home page): nothing under the notch. */
   padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);

@@ -1515,7 +1515,10 @@ test('home page: the page is dark under the iPhone clock while the hammam is the
   assert.match(html, /<html lang="ru" class="hero-top">/, 'dark from the first frame');
   assert.match(html, /<body>\n<div class="top-cap" aria-hidden="true"><\/div>/, 'Safari tints the strip from a fixed element on the top edge, not from the page colour');
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /html\.hero-top \.top-cap \{\s*display: block; position: fixed; z-index: 19; top: 0; left: 0; right: 0;\s*height: env\(safe-area-inset-top, 0px\); background: #0c0908;/);
-  assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /\nhtml\.hero-top \{ background: #0c0908; \}/);
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\nhtml\.hero-top, html\.hero-top body \{ background: #0c0908; \}/, 'Safari takes the body\'s background, not <html>\'s alone');
+  assert.match(css, /\nmain\.home \{ background: var\(--page\); \}/, 'the page itself stays light over the dark body');
+  assert.match(css, /@supports \(-webkit-touch-callout: none\) \{ html\.hero-top \.top-cap \{ height: max\(6px, env\(safe-area-inset-top, 0px\)\); \} \}/, 'on an iPhone the cap is never shorter than 6 px');
 });
 
 test('home hero: Android and a desktop never get the screen height', () => {
