@@ -94,8 +94,10 @@
   --glass-edge: rgba(255, 255, 255, 0.6);
   --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 0.5px rgba(28, 29, 27, 0.1), 0 12px 32px -14px rgba(28, 29, 27, 0.4);
   --glass-fill: rgba(28, 29, 27, 0.06);         /* a pressed or current place */
-  position: sticky; top: 12px; z-index: 20;
-  width: min(1120px, calc(100% - 2 * var(--gutter))); margin: 12px auto 0;
+  /* Under the clock (2026-11-12, the owner): where a page reaches the screen's top edge on an iPhone
+     (viewport-fit=cover, the home page), the capsule stands that much lower; elsewhere the inset is 0. */
+  position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); z-index: 20;
+  width: min(1120px, calc(100% - 2 * var(--gutter))); margin: calc(12px + env(safe-area-inset-top, 0px)) auto 0;
   border-radius: 999px; background: var(--capsule-bg);
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-edge);
@@ -285,7 +287,7 @@
   .js .site-header.menu-open div.site-header-actions { flex-direction: column; align-items: stretch; }
   .js .site-header.menu-open .site-header-actions > a.btn { flex: none; }
   /* The list a row shorter, so both actions stay in view under it. */
-  .js .site-header.menu-open nav.site-nav { max-height: calc(100vh - 228px); max-height: calc(100dvh - 228px); }
+  .js .site-header.menu-open nav.site-nav { max-height: calc(100vh - 228px); max-height: calc(100dvh - 228px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
   /* The tiles' columns are narrower: «Открыть шоурум» a size smaller, so it still fits its column. */
   .js .site-header .nav-showroom-enter { padding: 0 6px; font-size: 12px; }
   .js .site-header .is-tile .nav-place-text { padding: 32px 12px 10px; }
@@ -344,7 +346,7 @@ html.menu-lock { overflow: hidden; }
    the name and the menu button. Opened, the capsule itself grows downward into
    the menu: the directions, the places, and «Создать изделие» at its foot. */
 @media (max-width: 1000px) {
-  .site-header { --header-h: 56px; top: 8px; margin-top: 8px; border-radius: 28px; }
+  .site-header { --header-h: 56px; top: calc(8px + env(safe-area-inset-top, 0px)); margin-top: calc(8px + env(safe-area-inset-top, 0px)); border-radius: 28px; }
   .site-header-inner { display: flex; align-items: center; gap: var(--s-3); padding: 0 6px 0 20px; }
   .site-header .site-logo { margin-left: 0; }
   /* Without JavaScript: the capsule wraps -- the name and the action, the links under them. */
@@ -363,7 +365,7 @@ html.menu-lock { overflow: hidden; }
   .js .site-nav { display: none; }
   .js .site-header.tone-ready { transition: background-color 0.3s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease); }
   .js .site-header.menu-open {
-    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px);   /* the same glass as closed (2026-11-07) */
+    max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));   /* the same glass as closed (2026-11-07) */
   }
   /* The capsule opens smoothly (the owner, 2026-10-19): js/header.js uncovers it down into
      the menu and covers it back up with a clip in the capsule's own curve -- no height moves
@@ -376,7 +378,7 @@ html.menu-lock { overflow: hidden; }
     order: 3; flex: 1 0 100%; display: flex; flex-flow: row wrap; align-items: flex-start; align-content: flex-start; justify-content: flex-start; gap: 0 10px;
     margin: 6px 14px 0 0; padding: var(--s-4) 0 0; border-top: 1px solid var(--line);
     /* Only the list scrolls: the name and the close button above it, the action under it, stay in view. */
-    max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+    max-height: calc(100vh - 176px); max-height: calc(100dvh - 176px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
   }
   .js .site-header.menu-open .site-header-cta { order: 4; display: inline-flex; flex: 1 0 auto; margin: var(--s-5) 14px var(--s-3) 0; }
   /* Both actions at the menu's foot, side by side, as wide as the menu. */

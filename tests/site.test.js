@@ -435,8 +435,9 @@ test('the header is a floating capsule: sticky, never full width, fully rounded,
   const header = headerSection();
   const start = header.indexOf('\n.site-header {');
   const rule = header.slice(start, header.indexOf('}', start));
-  assert.match(rule, /position: sticky; top: 12px;/);
-  assert.match(rule, /width: min\(1120px, calc\(100% - 2 \* var\(--gutter\)\)\); margin: 12px auto 0;/);
+  // Lower by the iPhone's clock where a page reaches the screen's top (viewport-fit=cover, the home page; the owner, 2026-11-12).
+  assert.match(rule, /position: sticky; top: calc\(12px \+ env\(safe-area-inset-top, 0px\)\);/);
+  assert.match(rule, /width: min\(1120px, calc\(100% - 2 \* var\(--gutter\)\)\); margin: calc\(12px \+ env\(safe-area-inset-top, 0px\)\) auto 0;/);
   assert.match(rule, /border-radius: 999px;/);
   // Glass since 2026-11-07 (the owner: «как в Telegram»): more see-through, a stronger blur, richer colour.
   assert.match(rule, /--capsule-bg: rgba\(255, 255, 255, 0\.56\);/);
@@ -922,8 +923,8 @@ test('the home hero: the headline, one line and two plain actions on a real phot
   [...hero.matchAll(/\/sayanmramor-site\/(assets\/hero\/[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
   assert.doesNotMatch(hero, /home-hero-note|визуализация/, 'a real photo needs no caption');
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
-  assert.match(css, /\.home-hero \{\s*display: grid;[^}]*margin-top: -74px;/, 'the picture runs under the floating header');
-  assert.match(css, /\.js \.home-hero \{ margin-top: -66px; \}/);
+  assert.match(css, /\.home-hero \{\s*display: grid;[^}]*margin-top: calc\(-74px - env\(safe-area-inset-top, 0px\)\);/, 'the picture runs under the floating header, and under the iPhone clock');
+  assert.match(css, /\.js \.home-hero \{ margin-top: calc\(-66px - env\(safe-area-inset-top, 0px\)\); \}/);
   assert.match(css, /html:not\(\.js\) \.home-hero \{ margin-top: 0; \}/);
   assert.match(css, /\.home-hero \.lead \{[^}]*color: var\(--on-dark\);/, 'the lead in full light on the veil');
   assert.match(css, /\.home-hero-picture::after \{[^}]*linear-gradient\(90deg, rgba\(12, 9, 8, 0\.88\)/, 'a dark veil under the words');
@@ -1370,10 +1371,10 @@ test('buttons in the page are rectangles with slightly rounded corners, as befor
   const h = fs.readFileSync(path.join(site, 'css', 'header.css'), 'utf8');
   // The header changes only on the owner's word (2026-10-14: as in master; 2026-10-15: the group titles
   // of «Изделия» as large as their links; the phone menu's «Готовые изделия» and «Контакты» with the
-  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s; 2026-11-02: «Камень» in the header, the places closer-set at 1001..1080 px so the five fit; «Создать изделие» kept inside the capsule -- each side at least what it holds, the closer set on every desktop; 2026-11-03: the phone menu's «Камень» and «Готовые изделия» as two tiles, «Контакты» with the green strip, the showroom on the tiles' columns; 2026-11-07: the capsule as glass, as in Telegram, dark glass over dark places of the page, «переноси»; the panels and the phone menu the same glass). Any other edit fails here -- update the fingerprint only
+  // arrow; 2026-10-19: no zoom on a double tap, the phone menu opening smoothly; «Заказать» the green main button; 2026-10-20: «Изделия» with the groups' photographs, «переноси на сайт»; its photograph without the tremble; «Фасады» with the rows' chevron; no tremble in Firefox, filmed in a real window; «Изделия» compact, the directions at an even step, «Интерьер» on one line; on a phone the capsule and its menu hold still -- no pinch, no sideways pan; 2026-10-24: the phone menu uncovered by a clip, no height animated; the «Изделия» underline in 0.2 s; 2026-11-02: «Камень» in the header, the places closer-set at 1001..1080 px so the five fit; «Создать изделие» kept inside the capsule -- each side at least what it holds, the closer set on every desktop; 2026-11-03: the phone menu's «Камень» and «Готовые изделия» as two tiles, «Контакты» with the green strip, the showroom on the tiles' columns; 2026-11-07: the capsule as glass, as in Telegram, dark glass over dark places of the page, «переноси»; the panels and the phone menu the same glass; 2026-11-12: lower by the iPhone clock where a page reaches the top of the screen, «да, делай»). Any other edit fails here -- update the fingerprint only
   // together with such a word.
   const print = require('crypto').createHash('sha256').update(h.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(print, 'ea5c76b7c32e35b00d9d617c4d754826184b0b5b41b7a60ef8789b85522a1179', 'css/header.css as the owner approved it');
+  assert.equal(print, '5685842d8dce94afd1b993b0c70860bf6e8c4e340cbed6353e72aae89b976dcb', 'css/header.css as the owner approved it');
   const btn = h.slice(h.indexOf('\n.btn {'), h.indexOf('}', h.indexOf('\n.btn {')));
   assert.match(btn, /border-radius: var\(--radius-s\);/);
   assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /--radius-s: 6px;/);
@@ -1423,6 +1424,8 @@ test('every page: the viewport is fixed at the phone\'s width -- no zoom', () =>
     assert.ok(meta, page);
     assert.match(meta[1], /^width=device-width, initial-scale=1\.0, maximum-scale=1\.0, user-scalable=no(, viewport-fit=cover)?$/, page);
   });
+  // The home page reaches the iPhone's screen edges: its dark photo under the clock and the bottom bar, no light strips (the owner, 2026-11-12).
+  assert.match(fs.readFileSync(path.join(site, 'index.html'), 'utf8'), /<meta name="viewport" content="[^"]*, viewport-fit=cover">/);
 });
 
 test('the page itself only scrolls up and down: no pinch, no double-tap zoom, no sideways pan (iOS ignores user-scalable)', () => {
@@ -1490,6 +1493,7 @@ test('home hero CSS: the held height first, the large viewport where nothing hol
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   const phone = css.slice(css.indexOf('@media (max-aspect-ratio: 1/1), (max-width: 900px) {'));
   assert.match(phone, /@supports \(height: 100lvh\) \{ \.home-hero \{ min-height: calc\(var\(--hero-h, 100lvh\) \+ 2px\); \} \}/);
+  assert.match(phone, /\.home-hero \{ min-height: calc\(var\(--hero-h, 100lvh\) \+ 2px \+ env\(safe-area-inset-bottom, 0px\)\); \}/, 'on an iPhone the photo goes on under the bottom edge (2026-11-12)');
 });
 
 test('the piece in the request (2026-10-26, the owner): a card over the questions, the request summed up with it', () => {

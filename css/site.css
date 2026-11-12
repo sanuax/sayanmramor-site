@@ -45,10 +45,12 @@
 html {
   touch-action: pan-y;
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: var(--sticky-top, 0px);
+  scroll-padding-top: calc(var(--sticky-top, 0px) + env(safe-area-inset-top, 0px));
   scroll-padding-bottom: var(--fixed-bottom, 0px);
 }
 body {
+  /* A phone on its side with viewport-fit=cover (the home page): nothing under the notch. */
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
   overflow-x: clip;   /* nothing wider than the screen drags the page sideways; clip keeps sticky working */
   font-family: var(--font);
   font-size: var(--fs-body);
@@ -100,7 +102,7 @@ h3 { font-size: var(--fs-h3); }
 .home-hero {
   display: grid; position: relative; isolation: isolate; overflow: hidden;
   /* The picture runs under the floating header: pulled up by its margin, height and border (12 + 60 + 2 px). */
-  margin-top: -74px;
+  margin-top: calc(-74px - env(safe-area-inset-top, 0px));   /* and under the iPhone's clock (viewport-fit=cover, 2026-11-12) */
   /* 2 px past the screen: with the browser zoomed (130 %) the capsule's hairline edge is drawn on a
      fraction of a pixel, the hero starts that fraction higher, and a hairline of the next section
      showed under it (the owner, 2026-11-07). */
@@ -117,14 +119,14 @@ h3 { font-size: var(--fs-h3); }
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(90deg, rgba(12, 9, 8, 0.88) 0, rgba(12, 9, 8, 0.7) 28%, rgba(12, 9, 8, 0.25) 50%, rgba(12, 9, 8, 0) 66%);
 }
-.home-hero-content { position: relative; z-index: 1; padding-top: calc(74px + clamp(40px, 12vh, 140px)); padding-bottom: var(--s-8); }
+.home-hero-content { position: relative; z-index: 1; padding-top: calc(74px + env(safe-area-inset-top, 0px) + clamp(40px, 12vh, 140px)); padding-bottom: var(--s-8); }
 .home-hero h1 { max-width: 460px; font-size: clamp(36px, 3.4vw, 52px); line-height: 1.06; letter-spacing: -0.03em; margin-bottom: var(--s-5); text-wrap: balance; color: var(--on-dark); }
 .home-hero .lead { max-width: 420px; margin-bottom: var(--s-6); color: var(--on-dark); }   /* full light, not the muted grey, on the veil */
 .home-hero .btn-secondary { color: var(--on-dark); border-color: rgba(233, 231, 225, 0.42); }
 @media (hover: hover) { .home-hero .btn-secondary:hover { border-color: var(--on-dark); } }
 .home-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 @media (max-width: 1000px) {
-  .js .home-hero { margin-top: -66px; }          /* the phone capsule: 8 + 56 + 2 px */
+  .js .home-hero { margin-top: calc(-66px - env(safe-area-inset-top, 0px)); }   /* the phone capsule: 8 + 56 + 2 px, and the clock above it */
   html:not(.js) .home-hero { margin-top: 0; }    }
 /* The desktop (2026-11-08, the owner: «перенеси надпись посередине, чтобы на лежак не наезжала»): the words
    stand in the middle of the screen, in the dark above the lounger, never over it. The photo is cropped
@@ -133,7 +135,7 @@ h3 { font-size: var(--fs-h3); }
    the headline gives way on a short screen (5vh) so the whole box still fits under the header. */
 @media (min-width: 901px) and (min-aspect-ratio: 101/100) {
   .home-hero-content {
-    position: absolute; left: 0; right: 0; top: 74px; bottom: max(24px, calc(50% - 3.75vw + 24px));
+    position: absolute; left: 0; right: 0; top: calc(74px + env(safe-area-inset-top, 0px)); bottom: max(24px, calc(50% - 3.75vw + 24px));
     display: flex; flex-direction: column; align-items: center; justify-content: safe center;
     padding-top: 0; padding-bottom: 0; text-align: center;
   }
@@ -158,8 +160,12 @@ h3 { font-size: var(--fs-h3); }
   .home-hero { display: block; min-height: calc(100vh + 2px); min-height: calc(100lvh + 2px); }
   /* Where the bars resize the page (Chrome on an iPhone) js/site.js holds the first height in --hero-h. */
   @supports (height: 100lvh) { .home-hero { min-height: calc(var(--hero-h, 100lvh) + 2px); } }
+  /* On an iPhone the home page reaches the screen's edges (viewport-fit=cover, 2026-11-12, the owner: light
+     strips under the clock and under Safari's and Telegram's bottom bar): the photo goes on under the
+     bottom edge too. Elsewhere the inset is 0. */
+  .home-hero { min-height: calc(var(--hero-h, 100lvh) + 2px + env(safe-area-inset-bottom, 0px)); }
   .home-hero-picture::after { background: linear-gradient(180deg, rgba(12, 9, 8, 0.9) 0, rgba(12, 9, 8, 0.78) 40%, rgba(12, 9, 8, 0.3) 58%, rgba(12, 9, 8, 0) 72%); }
-  .home-hero-content { padding-top: calc(66px + var(--s-6)); padding-bottom: var(--s-6); }
+  .home-hero-content { padding-top: calc(66px + env(safe-area-inset-top, 0px) + var(--s-6)); padding-bottom: var(--s-6); }
   .home-hero h1 { font-size: 32px; }
 }
 
