@@ -363,6 +363,18 @@ test('header.js, mobile: the button opens the menu with the products listed, loc
   assert.equal(d.summary.attrs.tabindex, undefined);
 });
 
+test('header.js, mobile: opened by a tap the menu leaves focus alone (Safari drew a ring round the first row until the next touch, 2026-11-12); opened from the keyboard, focus goes to the first row', () => {
+  const tapped = fakeHeaderDom(true);
+  SiteHeader.init(tapped.doc, tapped.win);
+  tapped.fire(tapped.toggle, 'click', { detail: 1 });
+  assert.ok(tapped.header.classList.contains('menu-open'));
+  assert.notEqual(tapped.doc.activeElement, tapped.link, 'a tap: no focus moved into the menu');
+  const keyed = fakeHeaderDom(true);
+  SiteHeader.init(keyed.doc, keyed.win);
+  keyed.fire(keyed.toggle, 'click', { detail: 0 });
+  assert.equal(keyed.doc.activeElement, keyed.link, 'Enter / Space: the first row has focus');
+});
+
 test('header.js, wide screen: a panel folds up before it closes (caught while folding, it stays); opening one folds the other away; no fold under reduced motion', () => {
   const timers = [];
   const listen = o => Object.assign(o, { listeners: {}, addEventListener(t, fn) { (this.listeners[t] = this.listeners[t] || []).push(fn); } });

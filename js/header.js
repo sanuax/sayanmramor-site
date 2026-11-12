@@ -337,10 +337,13 @@
       });
     });
     if (toggle) {
-      toggle.addEventListener('click', () => {
+      toggle.addEventListener('click', e => {
         const open = !menuOpen();
         setMenu(open);
-        if (open) {
+        // Focus goes to the first row only when the menu was opened from the keyboard (a key press
+        // clicks with detail 0). After a tap Safari drew that focus as the keyboard ring around
+        // «Лестницы и ступени» until the next touch (2026-11-12, the owner).
+        if (open && e.detail === 0) {
           const first = header.querySelector('.nav-group-row') || header.querySelector('.nav-group a');
           if (first) first.focus({ preventScroll: true });
         }
