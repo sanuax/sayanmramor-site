@@ -266,6 +266,11 @@
       close.addEventListener('click', () => dialog.close());
       // A press on the veil around the stone closes it; the page under it holds still meanwhile.
       dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+      // The page behind is not locked on a phone: a swipe that is not scrolling the text (on the veil, on
+      // the photo, or in a text that fits) must not scroll it.
+      dialog.addEventListener('touchmove', e => {
+        if (!text.contains(e.target) || text.scrollHeight <= text.clientHeight + 1) e.preventDefault();
+      }, { passive: false });
       dialog.addEventListener('close', () => { document.documentElement.classList.remove('viewer-open'); document.body.style.paddingRight = ''; });
       note.querySelector('a[href="#offer"]').addEventListener('click', () => dialog.close());
 
@@ -307,9 +312,15 @@
     function openView(stone, viaKeys) {
       if (!view) view = buildView();
       view.fill(stone);
-      const gutter = window.innerWidth - document.documentElement.clientWidth;   // the page must not jump when its scrollbar goes
-      document.documentElement.classList.add('viewer-open');
-      document.body.style.paddingRight = gutter > 0 ? gutter + 'px' : '';
+      // On a computer the page is locked (overflow hidden) with its scrollbar's room kept. On a phone
+      // it is NOT: overflow hidden on the whole page makes iOS Safari resize its visible area and the
+      // page behind jumps (2026-11-12, the owner); there the window's backdrop swallows the swipes instead.
+      const touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      if (!touch) {
+        const gutter = window.innerWidth - document.documentElement.clientWidth;   // the page must not jump when its scrollbar goes
+        document.documentElement.classList.add('viewer-open');
+        document.body.style.paddingRight = gutter > 0 ? gutter + 'px' : '';
+      }
       view.dialog.showModal();
       view.text.scrollTop = 0;   // the text scrolls in its own box; the window and its photo hold still
       (viaKeys ? view.close : view.dialog).focus({ preventScroll: true });
@@ -368,7 +379,9 @@
         open.setAttribute('aria-haspopup', 'dialog');
         open.setAttribute('aria-label', 'Открыть крупно: ' + stone.name);
         open.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg>';
-        open.addEventListener('click', e => { selected = stone; renderSelection(); openView(stone, e.detail === 0); });
+        // It only opens: choosing the stone would change the bottom bar behind the window (2026-11-12,
+        // the owner: the background jerked on a phone); the window has its own «Рассчитать» and «В подборку».
+        open.addEventListener('click', e => openView(stone, e.detail === 0));
         li.appendChild(open);
       }
       const picks = window.Picks;
@@ -587,7 +600,7 @@
         apply();
         ready();
         const linked = exactStone(stones, query);
-        if (linked && canView()) { selected = linked; renderSelection(); openView(linked); }
+        if (linked && canView()) openView(linked);
       })
       .catch(() => {
         grid.innerHTML = '';

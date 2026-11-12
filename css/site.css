@@ -1194,7 +1194,7 @@ h3 { font-size: var(--fs-h3); }
    Over the page on a dark veil: the stone's photo whole (the card shows a square of it) and,
    beside it, what the catalogue knows of the stone and the two ways on. */
 .stone-view {
-  width: min(1120px, calc(100vw - 48px)); max-width: none; max-height: calc(100dvh - 48px); margin: auto; padding: 0;
+  width: min(1120px, calc(100vw - 48px)); max-width: none; max-height: calc(100vh - 48px); max-height: calc(100svh - 48px); margin: auto; padding: 0;
   border: 0; border-radius: var(--radius); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-2);
   overflow: hidden;   /* the window itself never scrolls: only its text does (below), the photo holds still (2026-11-12) */
 }
@@ -1237,10 +1237,10 @@ h3 { font-size: var(--fs-h3); }
 .stone-view-close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 @media (hover: hover) { .stone-view-close:hover { border-color: var(--ink); } }
 @media screen and (max-width: 900px) {   /* the stone large on a tablet and a phone («screen and»: the first plain 900 px block is the rows' own) */
-  .stone-view { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
+  .stone-view { width: calc(100vw - 24px); max-height: calc(100vh - 24px); max-height: calc(100svh - 24px); }   /* svh: the height with Safari's bars out, it does not move when they do (2026-11-12) */
   .stone-view[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   /* The slab photos are 850 x 500 (17:10); on a short screen the photo gives way a little so the text keeps its room. */
-  .stone-view-media { min-height: 0; height: calc((100vw - 24px) * 10 / 17); height: min(calc((100vw - 24px) * 10 / 17), 34vh); height: min(calc((100vw - 24px) * 10 / 17), 34dvh); }
+  .stone-view-media { min-height: 0; height: calc((100vw - 24px) * 10 / 17); height: min(calc((100vw - 24px) * 10 / 17), 34vh); height: min(calc((100vw - 24px) * 10 / 17), 34svh); }
   .stone-view-text { padding: var(--s-4); }
   .stone-view-close { top: 8px; right: 8px; background: rgba(248, 247, 244, 0.92); }
   .stone-view-actions .btn { flex: 1 1 auto; }

@@ -211,7 +211,12 @@ test('a link from a caption: ?q= fills the search, the one stone of that very na
 test('a stone opens large by its own button on the photo (a press on the card only chooses it, the owner 2026-11-12): the photo whole, what the index knows, «В подборку» and the configurator; the rest is asked for, not guessed', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8');
   assert.match(src, /card\.addEventListener\('click', \(\) => \{[^}]*selected = selected && selected\.id === stone\.id \? null : stone;\s*renderSelection\(\);\s*\}\);/, 'the card only chooses and lets go');
-  assert.match(src, /open\.className = 'stone-open';[^]*open\.addEventListener\('click', e => \{ selected = stone; renderSelection\(\); openView\(stone, e\.detail === 0\); \}\);/, 'the button opens it large');
+  // It only opens: choosing the stone changed the bottom bar behind the window and the page jerked on a phone.
+  assert.match(src, /open\.className = 'stone-open';[^]*open\.addEventListener\('click', e => openView\(stone, e\.detail === 0\)\);/, 'the button opens it large, and only that');
+  assert.doesNotMatch(src, /renderSelection\(\); openView\(/, 'opening never chooses the stone');
+  // No page lock on a phone (overflow hidden on the whole page resizes iOS Safari\'s visible area); the veil swallows swipes instead.
+  assert.match(src, /const touch = !!\(window\.matchMedia && window\.matchMedia\('\(pointer: coarse\)'\)\.matches\);\s*if \(!touch\) \{[^}]*viewer-open/);
+  assert.match(src, /dialog\.addEventListener\('touchmove', e => \{\s*if \(!text\.contains\(e\.target\) \|\| text\.scrollHeight <= text\.clientHeight \+ 1\) e\.preventDefault\(\);\s*\}, \{ passive: false \}\);/);
   // Opened by a tap the window holds the focus itself: no ring round its first link «в заявке» (2026-11-12, the owner).
   assert.match(src, /\(viaKeys \? view\.close : view\.dialog\)\.focus\(\{ preventScroll: true \}\);/);
   const siteCss = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
@@ -226,6 +231,10 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.match(siteCss, /\.stone-view-media img\.is-loaded \{ opacity: 1; \}/);
   assert.match(siteCss, /@keyframes stone-view-in \{ from \{ opacity: 0; \} \}/, 'opening is a fade: nothing moves or scales');
   assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a phone the photo has a set height: nothing shifts when it arrives');
+  // svh, not dvh: the window and its photo must not resize when Safari's bars move.
+  assert.match(windowRule, /max-height: calc\(100svh - 48px\)/);
+  assert.match(siteCss, /34svh\); \}/);
+  assert.doesNotMatch(siteCss.slice(siteCss.indexOf('.stone-view {'), siteCss.indexOf('.stone-more {')), /dvh/, 'no dvh anywhere in the stone window');
   assert.match(src, /img\.addEventListener\('load', \(\) => img\.classList\.add\('is-loaded'\)\);/);
   assert.match(src, /view\.text\.scrollTop = 0;/);
   assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
