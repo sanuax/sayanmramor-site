@@ -129,7 +129,7 @@
       el(doc, 'div', { className: 'offer-consent' }, [
         consent,
         el(doc, 'label', { htmlFor: id('consent') }, [
-          doc.createTextNode('даю свое согласие на обработку моих персональных данных ('),
+          doc.createTextNode('Даю своё согласие на обработку моих персональных данных ('),
           el(doc, 'a', { href: '/sayanmramor-site/privacy.html', textContent: 'политика конфиденциальности' }),
           doc.createTextNode(')'),
         ]),
@@ -249,6 +249,17 @@
     const n = current === 0 ? 1 : current === 'fork' || current === 'katalog' ? 2 : current + (four ? 2 : 1);
     return 'Вопрос ' + n + ' из ' + (four ? 4 : 3);
   }
+  // The receipt's chip for the question between the first answer and the name (experiment, round 1:
+  // the count said «Вопрос 2 из 4» over three chips): «Расчёт» for the fork, «Каталог» for the
+  // catalogue; once passed, the way taken. null where no such question stands.
+  const BETWEEN_CHIP = { fork: 'Расчёт', katalog: 'Каталог' };
+  function betweenChip(state) {
+    const step = state.direction ? afterDirection(state.direction) : 1;
+    if (step === 1) return null;
+    const passed = state.current !== 0 && state.current !== step;
+    const value = !passed ? '' : step === 'fork' ? (state.piece ? 'Калькулятор' : 'Мастер') : (state.piece ? 'Из каталога' : '');
+    return { step, label: BETWEEN_CHIP[step], value };
+  }
   // A direction page names its direction: the talk starts after the first question.
   function startStep(key) {
     return key ? afterDirection(key) : 0;
@@ -366,8 +377,11 @@
       chip.addEventListener('click', () => { if (reachable(i)) go(i); });
       return chip;
     });
+    // The fork or the catalogue between the first answer and the name has its chip too.
+    const midChip = el(doc, 'button', { type: 'button', className: 'talk-chip', hidden: '' });
+    midChip.addEventListener('click', () => { if (state.direction) go(afterDirection(state.direction)); });
     const count = el(doc, 'span', { className: 'talk-count', 'aria-live': 'polite' });
-    const receipt = el(doc, 'div', { className: 'talk-receipt' }, chips.concat([count]));
+    const receipt = el(doc, 'div', { className: 'talk-receipt' }, [chips[0], midChip].concat(chips.slice(1), [count]));
 
     // The piece from the calculator or the catalogue, over the questions.
     const pieceSlot = el(doc, 'div', { className: 'talk-piece-slot' });
@@ -472,7 +486,7 @@
         el(doc, 'div', { className: 'offer-consent talk-consent' }, [
           consent,
           el(doc, 'label', { htmlFor: id('consent') }, [
-            doc.createTextNode('даю свое согласие на обработку моих персональных данных ('),
+            doc.createTextNode('Даю своё согласие на обработку моих персональных данных ('),
             el(doc, 'a', { href: '/sayanmramor-site/privacy.html', textContent: 'политика конфиденциальности' }),
             doc.createTextNode(')'),
           ]),
@@ -593,6 +607,14 @@
         chip.classList.toggle('is-current', i === state.current);
         chip.disabled = !reachable(i) || state.current === 3;
       });
+      const mid = betweenChip(state);
+      midChip.hidden = !mid;
+      if (mid) {
+        midChip.textContent = mid.value ? '✓ ' + mid.value : mid.label;
+        midChip.classList.toggle('is-done', !!mid.value);
+        midChip.classList.toggle('is-current', state.current === mid.step);
+        midChip.disabled = state.current === 3;
+      }
       count.textContent = countLabel(state.current, state.direction);
       const piece = state.piece;
       nameHint.textContent = piece ? PIECE_HINTS.name : STEPS[1].hint;
@@ -684,7 +706,7 @@
   if (typeof document !== 'undefined') mountAll(document);
 
   return {
-    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, BOOKING, phoneOk, afterDirection, countLabel, startStep, chooseDirection,
+    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, BOOKING, phoneOk, afterDirection, countLabel, betweenChip, startStep, chooseDirection,
     pieceCard, summaryLine,
     mount, mountSteps, mountAll, enhanceBand,
   };

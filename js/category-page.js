@@ -145,15 +145,27 @@
     // visitor has scrolled past most of the first screen, or has chosen a stone, and it says nothing
     // about the stone until one is chosen. css/site.css hides it under .js until .is-shown.
     const bar = cta.closest ? cta.closest('.configure-bar') : null;
+    // It steps aside (.is-aside) while the request form or the footer is on screen (experiment,
+    // round 1: on a phone it lay over the name and phone fields with their buttons, and over the
+    // footer's phone and e-mail -- right where the visitor writes or looks for a way to call).
+    const aside = new Set();
     const showBar = () => {
       if (!bar) return;
       const far = (window.scrollY || 0) > (window.innerHeight || 800) * 0.6;
       bar.classList.toggle('is-shown', far || !!selected);
+      bar.classList.toggle('is-aside', aside.size > 0);
       bar.classList.toggle('has-stone', !!selected);
     };
     if (bar && window.addEventListener) {
       let raf = 0;
       window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; showBar(); }); }, { passive: true });
+      if (typeof IntersectionObserver !== 'undefined') {
+        const io = new IntersectionObserver(entries => {
+          entries.forEach(e => { if (e.isIntersecting) aside.add(e.target); else aside.delete(e.target); });
+          showBar();
+        });
+        [document.getElementById('offer'), document.querySelector('.site-footer')].forEach(t => { if (t) io.observe(t); });
+      }
       showBar();
     }
 
@@ -227,6 +239,7 @@
       shown = 0;
       status.textContent = filtered.length ? 'Камней: ' + filtered.length : 'Ничего не найдено';
       if (resetBtn) resetBtn.hidden = !hasActiveFilters(Object.assign({ query }, state));
+      paintWays();
       showMore();
     }
 
@@ -286,6 +299,7 @@
       return {
         box: dd.box,
         reset() { dd.box.querySelectorAll('input').forEach(i => { i.checked = false; }); state[key] = []; update(); dd.close(); },
+        set(chosen) { dd.box.querySelectorAll('input').forEach(i => { i.checked = chosen.includes(i.value); }); state[key] = values.filter(v => chosen.includes(v)); update(); dd.close(); },
       };
     }
 
@@ -342,11 +356,40 @@
       return box;
     }
 
+    // A page's own ways into the gallery by type (the kitchen's advice, experiment, round 1):
+    // <button data-stone-types="Гранит|Кварцит"> ticks exactly those types in «Тип»; again, it unticks
+    // them. A type the catalogue does not hold today is left out; a button with none left stays hidden.
+    const ways = [...document.querySelectorAll('[data-stone-types]')];
+    const sameTypes = types => types.length > 0 && types.length === state.types.length && types.every(t => state.types.includes(t));
+    const wayTypes = new Map();
+    function paintWays() {
+      wayTypes.forEach((types, b) => b.setAttribute('aria-pressed', String(sameTypes(types))));
+    }
+    function enableWays(typeFilter, typeOptions) {
+      ways.forEach(b => {
+        const types = b.dataset.stoneTypes.split('|').filter(t => typeOptions.includes(t));
+        if (!types.length) return;
+        wayTypes.set(b, types);
+        b.hidden = false;
+        b.addEventListener('click', () => {
+          typeFilter.set(sameTypes(types) ? [] : types);
+          apply();
+          const controls = filtersBox && filtersBox.closest('.stone-controls');
+          if (controls && controls.getBoundingClientRect().top > window.innerHeight * 0.5) controls.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        });
+      });
+      const box = ways.length ? ways[0].closest('.stone-ways') : null;
+      if (box) box.hidden = ways.every(b => b.hidden);
+    }
+
     function renderFilters() {
       if (!filtersBox) return;
+      const typeOptions = listOptions(stones, 'type');
+      const typeFilter = listFilter('category', 'Тип', 'types', typeOptions);
+      enableWays(typeFilter, typeOptions);
       const parts = [
         listFilter('country', 'Страна', 'countries', listOptions(stones, 'countries')),
-        listFilter('category', 'Тип', 'types', listOptions(stones, 'type')),
+        typeFilter,
         listFilter('color', 'Цвет', 'colors', listOptions(stones, 'colors')),
         priceFilter(),
       ].filter(Boolean);

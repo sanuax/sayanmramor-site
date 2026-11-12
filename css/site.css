@@ -944,6 +944,29 @@ h3 { font-size: var(--fs-h3); }
 .stone-section { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter) var(--section); }
 .stone-head h2 { margin-bottom: var(--s-2); }
 .stone-head p { color: var(--ink-soft); line-height: 1.5; max-width: 620px; margin-bottom: var(--s-5); }
+/* The kitchen's advice on the stone (experiment, round 1): three plain lines on what each kind
+   asks of a kitchen, and ways into the gallery by type (js/category-page.js, [data-stone-types]),
+   drawn as the filter pills they set. */
+.stone-advice {
+  max-width: 880px; margin-bottom: var(--s-6); padding: var(--s-5) var(--s-5) var(--s-4);
+  border-radius: 16px; background: var(--surface-sunk);
+}
+.stone-advice-title { margin-bottom: var(--s-3); }
+.stone-advice-list { display: grid; gap: var(--s-2); margin: 0 0 var(--s-4); padding: 0; list-style: none; }
+.stone-advice-list li { color: var(--ink-soft); line-height: 1.5; }
+.stone-advice-list b { color: var(--ink); font-weight: 600; }
+.stone-ways { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.stone-ways[hidden], .stone-way[hidden] { display: none; }
+.stone-ways-label { margin-right: var(--s-1); font-size: var(--fs-small); color: var(--muted); }
+.stone-way {
+  min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-control);
+  background: var(--surface); color: var(--ink-soft); font: inherit; font-size: var(--fs-small); cursor: pointer;
+  transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+@media (hover: hover) { .stone-way:hover { border-color: var(--ink); color: var(--ink); } }
+.stone-way[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
+/* What the price on a stone card is (experiment, round 1: «цена плиты или уже столешницы?»). */
+.stone-price-note { max-width: 620px; margin: 0 0 var(--s-2); font-size: var(--fs-small); line-height: 1.5; color: var(--muted); }
 .stone-controls { display: grid; gap: var(--s-3); margin-bottom: var(--s-4); }
 #stoneSearch {
   width: 100%; max-width: 520px; min-height: var(--control-h); padding: 0 16px;
@@ -1148,7 +1171,10 @@ h3 { font-size: var(--fs-h3); }
 .configure-bar { transition: translate 0.4s var(--ease-out), opacity 0.25s ease; }
 .js .configure-bar:not(.is-shown):not(:focus-within) { translate: -50% calc(100% + 24px); opacity: 0; pointer-events: none; }
 .js .configure-bar:not(.has-stone) .configure-choice { display: none; }
-.js .configure-bar:not(.has-stone) { padding-left: 8px; }
+.js .configure-bar:not(.has-stone) { padding-left: 8px; width: max-content; }   /* no empty strip on its left (experiment, round 1) */
+/* Over the request form and the footer it steps aside (js/category-page.js puts .is-aside; experiment,
+   round 1: on a phone it lay over the name and phone fields and over the footer's contacts). */
+.js .configure-bar.is-aside:not(:focus-within) { translate: -50% calc(100% + 24px); opacity: 0; pointer-events: none; }
 .js .configure-bar:not(.has-stone) .configure-bar-inner { justify-content: flex-end; }   /* ---- Коммерческое предложение (js/offer-form.js) ----------------------------
    The closing band of the home page and every direction page, built from the
    same parts as the header's panel and the list of directions: a quiet label
@@ -1511,6 +1537,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .talk-input { flex: none; }
   .talk-input, .talk-next, .talk-ghost { height: 56px; }
   .talk-count { margin-left: 0; width: 100%; order: -1; }
+  .talk-chip { padding: 0 11px; }   /* four chips in one row on a phone where they fit (experiment, round 1) */
 }
 
 /* ---- Footer ------------------------------------------------------------------
@@ -1523,6 +1550,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   font-size: var(--fs-small); line-height: 1.5;
   padding: var(--s-8) 0 calc(var(--s-6) + var(--fixed-bottom, 0px));
 }
+.js .site-footer { padding-bottom: var(--s-6); }   /* the configure bar steps aside over the footer (experiment, round 1) */
 .site-footer-inner, .site-footer-bottom { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter); }
 .site-footer-inner {
   display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 3fr); gap: var(--s-7) var(--s-6);
@@ -1624,6 +1652,7 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .contacts-map-frame { min-height: 340px; }
   .page-head { padding-top: var(--s-6); }
   .portfolio-grid { --row-h: 200px; gap: var(--s-2); }
+  .stone-advice { padding: var(--s-4) var(--s-4) var(--s-3); }
   .stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4) var(--s-3); }
   .configure-bar-inner { gap: var(--s-3); }
   .configure-stone.is-empty { font-size: 13px; }

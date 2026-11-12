@@ -1679,6 +1679,45 @@ test('the configure bar waits: up only after a scroll or a chosen stone, no «Н
   assert.match(js, /bar\.classList\.toggle\('has-stone', !!selected\);/);
 });
 
+// (experiment, round 1: the customer on an iPhone -- the bar lay over the form's fields and buttons and the footer's contacts)
+test('the configure bar steps aside over the request form and the footer, and hugs its two ways until a stone is chosen', () => {
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.js \.configure-bar\.is-aside:not\(:focus-within\) \{ translate: -50% calc\(100% \+ 24px\); opacity: 0; pointer-events: none; \}/);
+  assert.match(css, /\.js \.configure-bar:not\(\.has-stone\) \{ padding-left: 8px; width: max-content; \}/);
+  const js = fs.readFileSync(path.join(site, 'js', 'category-page.js'), 'utf8');
+  assert.match(js, /bar\.classList\.toggle\('is-aside', aside\.size > 0\);/);
+  assert.match(js, /\[document\.getElementById\('offer'\), document\.querySelector\('\.site-footer'\)\]\.forEach\(t => \{ if \(t\) io\.observe\(t\); \}\);/);
+});
+
+// (experiment, round 1: «Вопрос 2 из 4» stood over three chips; the consent line began with a small letter)
+test('the receipt has a chip for the fork or the catalogue, so the chips match «Вопрос N из 4»; the consent begins with a capital', () => {
+  const OfferForm = require('../js/offer-form.js');
+  assert.equal(OfferForm.betweenChip({ direction: 'basseyny', current: 1 }), null);
+  assert.equal(OfferForm.betweenChip({ direction: '', current: 0 }), null);
+  assert.deepEqual(OfferForm.betweenChip({ direction: 'kuhnya', current: 'fork' }), { step: 'fork', label: 'Расчёт', value: '' });
+  assert.equal(OfferForm.betweenChip({ direction: 'kuhnya', current: 1, piece: null }).value, 'Мастер');
+  assert.equal(OfferForm.betweenChip({ direction: 'kuhnya', current: 2, piece: { kind: 'calc' } }).value, 'Калькулятор');
+  assert.equal(OfferForm.betweenChip({ direction: 'gotovye-izdeliya', current: 'katalog' }).label, 'Каталог');
+  assert.equal(OfferForm.betweenChip({ direction: 'gotovye-izdeliya', current: 1, piece: { kind: 'katalog' } }).value, 'Из каталога');
+  const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  assert.equal(src.split("'Даю своё согласие на обработку моих персональных данных ('").length - 1, 2);
+  assert.doesNotMatch(src, /'даю свое согласие/);
+});
+
+// (experiment, round 1: «от 7 591 ₽/м²» -- the price of a slab or of a finished countertop?)
+test('every stone gallery says what «от … ₽/м²» is: the stone itself, without making and work', () => {
+  const pages = ['kamen.html'].concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f));
+  pages.forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    const n = html.split('<p class="stone-price-note">Цена «от … ₽/м²» на карточке - это цена самого камня за квадратный метр, без изготовления и работ.').length - 1;
+    assert.equal(n, html.includes('id="stoneGrid"') ? 1 : 0, page);
+  });
+  const kitchen = fs.readFileSync(path.join(site, 'categories', 'stoleshnitsy-kuhnya.html'), 'utf8');
+  assert.match(kitchen, /<h3 class="stone-advice-title">Какой камень выбрать для кухни<\/h3>/);
+  ['Гранит', 'Кварцит', 'Кварцевый агломерат', 'Мрамор|Оникс'].forEach(t => assert.ok(kitchen.includes('data-stone-types="' + t + '"'), t));
+  assert.doesNotMatch(kitchen.slice(kitchen.indexOf('stone-advice'), kitchen.indexOf('stone-controls')), /—|!/);
+});
+
 test('a direction page fetches its first four photos at once, the first one first', () => {
   const js = fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8');
   assert.match(js, /const EAGER_PHOTOS = 4;/);
