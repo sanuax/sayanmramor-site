@@ -217,7 +217,7 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);
   assert.match(src, /configure\.href = buildUrl\(s\.id\);/);
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
-  assert.match(css, /\.stone-view-media img \{[^}]*object-fit: contain;/, 'the photo is shown whole');
+  assert.match(css, /\.stone-view-media img \{[^}]*object-fit: cover;/, 'the stone fills its whole side, no coloured margin (the owner, 2026-11-12)');
   assert.match(css, /\.stone-view-actions \.btn \{ border-radius: var\(--radius-btn\); \}/, 'the buttons stay rectangles');
 });
 
