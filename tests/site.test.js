@@ -57,7 +57,7 @@ test('between pages: without them only a plain press on a link to another page o
   assert.equal(fades(press(), link('https://a.example/site/index.html?x=1#offer')), false, 'an anchor on this page');
   assert.equal(fades(press(), link('https://b.example/')), false, 'another site');
   assert.equal(fades(press(), link('tel:+74952155145')), false);
-  assert.equal(fades(press(), link('mailto:info@sayanmramor.ru')), false);
+  assert.equal(fades(press(), link('mailto:sayan-mramor@yandex.ru')), false);
   assert.equal(fades(press(), link('https://a.example/x.html', { target: '_blank' })), false);
   assert.equal(fades(press(), link('https://a.example/x.pdf', { download: '' })), false);
   ['ctrlKey', 'metaKey', 'shiftKey', 'altKey', 'defaultPrevented'].forEach(k => assert.equal(fades(press({ [k]: true }), link('https://a.example/x.html')), false, k));
@@ -577,7 +577,7 @@ test('the offer band on the 13 direction pages: the home page\'s «Получи�
     assert.doesNotMatch(band, /offer-kicker/, page + ': no «Проект» above the heading (2026-10-15, the owner)');
     assert.match(band, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/, page);
     // (2026-10-14, the owner: the same words as on the home page in every «Получить расчёт»)
-    assert.match(band, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/, page);
+    assert.match(band, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон или почту\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/, page);
     assert.match(band, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: <a href="tel:\+74952155145">\+7 \(495\) 215-51-45<\/a><\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor<\/a><\/p>\s*<\/div>/, page + ': Telegram under the phone');
     assert.match(band, /<div class="offer-talk-main">\s*<div data-offer-form data-offer-steps data-preselect="[a-z-]+"><\/div>\s*<noscript><p class="offer-noscript">/, page);
     assert.doesNotMatch(band, /offer-reveal|offer-needs|Получите коммерческое предложение/, page + ': no trace of the old form');
@@ -594,9 +594,10 @@ test('the offer form: fields in the order they are filled in, written lines (lab
   assert.match(src, /'aria-expanded': 'false'/);
   assert.match(src, /first\.focus\(\{ preventScroll: true \}\)/);
   assert.doesNotMatch(src, /<dialog|showModal|window\.open/);
-  // The sending is unchanged: no request leaves the page, the message says so.
-  assert.doesNotMatch(src, /XMLHttpRequest|sendBeacon|method: 'POST'/);
-  [...src.matchAll(/fetch\(([^)]*)\)/g)].forEach(m => assert.equal(m[1], 'url', 'fetch only reads the site\'s own JSON (fetchJson)'));
+  // Since 2026-11-12 the request is e-mailed through server/lead.php: one POST, nothing else leaves the page.
+  assert.doesNotMatch(src, /XMLHttpRequest|sendBeacon/);
+  assert.equal((src.match(/method: 'POST'/g) || []).length, 1);
+  [...src.matchAll(/fetch\(([^)]*)\)/g)].forEach(m => assert.ok(m[1] === 'url' || m[1] === "LEAD_URL, { method: 'POST', body: data }", 'fetch reads the site\'s own JSON (fetchJson) or sends the request: ' + m[1]));
   assert.match(OfferForm.NOT_SENT, /Заявки с сайта пока не отправляются/);
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /\.offer-band\.is-collapsible \.offer-reveal \{[^}]*grid-template-rows: 0fr; visibility: hidden;/);
@@ -807,13 +808,15 @@ test('the privacy policy: e-mails, site addresses and phones are links, as on th
   const article = html.slice(html.indexOf('<article'), html.indexOf('</article>'));
   const links = [...article.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map(m => [m[1], m[2]]);
   const by = prefix => links.filter(([href]) => href.startsWith(prefix));
-  assert.equal(by('mailto:').length, 7);
-  by('mailto:').forEach(([href, text]) => assert.equal(href, 'mailto:' + text));
+  // One mailbox since 2026-11-12 (the owner): sayan-mramor@yandex.ru instead of info@ and sales@sayanmramor.ru.
+  assert.equal(by('mailto:').length, 5);
+  by('mailto:').forEach(([href, text]) => assert.equal(href, 'mailto:sayan-mramor@yandex.ru', text));
   assert.equal(by('https://sayanmramor.ru/').length, 7);
   assert.equal(by('tel:+74952155145').length, 2);
-  assert.equal(links.length, 16);
+  assert.equal(links.length, 14);
   // No other text became a link.
-  links.forEach(([, text]) => assert.match(text, /@sayanmramor\.ru$|^https:\/\/sayanmramor\.ru\/?$|^\+ ?7\(495\)215-51-45$/));
+  links.forEach(([, text]) => assert.match(text, /^sayan-mramor@yandex\.ru$|^https:\/\/sayanmramor\.ru\/?$|^\+ ?7\(495\)215-51-45$/));
+  assert.doesNotMatch(html, /(info|sales)@sayanmramor\.ru/, 'the old addresses are gone');
 });
 
 test('hover only where there is a pointer: every :hover rule sits in @media (hover: hover); focus keeps its own rules', () => {
@@ -1062,7 +1065,7 @@ test('the home request is three questions to a master: a workshop photo, the hea
   assert.doesNotMatch(sec, /offer-kicker/, 'no «Проект» above the heading (2026-10-15, the owner)');
   assert.match(sec, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/);
   // (2026-10-14, the owner after stage 2: the agreed words under the heading)
-  assert.match(sec, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/);
+  assert.match(sec, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон или почту\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/);
   // The photo: a real one from the workshop (assets/home/SOURCES.md), two sizes, lazy, described.
   const img = (sec.match(/<img class="offer-talk-photo"[^>]*>/) || [''])[0];
   assert.match(img, /srcset="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp 480w, \/sayanmramor-site\/assets\/home\/offer-master-040-960\.webp 960w"/);
@@ -1076,19 +1079,75 @@ test('the home request is three questions to a master: a workshop photo, the hea
 
 test('three questions (offer-form.js): what, how to address you, where to call; a phone has ten digits; the end says honestly that nothing is sent yet', () => {
   const OfferForm = require('../js/offer-form.js');
-  assert.deepEqual(OfferForm.STEPS.map(s => s.chip), ['Изделие', 'Имя', 'Телефон']);
-  assert.deepEqual(OfferForm.STEPS.map(s => s.q.join('')), ['Что будем делать из камня?', 'Как к вам обращаться?', 'Куда позвонить с расчётом?']);
+  assert.deepEqual(OfferForm.STEPS.map(s => s.chip), ['Изделие', 'Имя', 'Контакт']);
+  assert.deepEqual(OfferForm.STEPS.map(s => s.q.join('')), ['Что будем делать из камня?', 'Как к вам обращаться?', 'Куда ответить с расчётом?']);
   ['+7 999 123-45-67', '89991234567', '+7 (495) 215-51-45'].forEach(v => assert.ok(OfferForm.phoneOk(v), v));
   ['', '123', '+7 999', 'abc'].forEach(v => assert.ok(!OfferForm.phoneOk(v), v));
-  assert.match(OfferForm.DONE_NOTE, /ещё настраивается/);
+  // A phone or an e-mail, at least one; what is filled in must be right (2026-11-12, the owner).
+  ['name@mail.ru', ' anna.k@yandex.ru ', 'a@b.co'].forEach(v => assert.ok(OfferForm.emailOk(v), v));
+  ['', 'name', 'name@mail', '@mail.ru', 'na me@mail.ru'].forEach(v => assert.ok(!OfferForm.emailOk(v), v));
+  assert.equal(OfferForm.contactProblem('+7 999 123-45-67', ''), null, 'a phone alone will do');
+  assert.equal(OfferForm.contactProblem('', 'name@mail.ru'), null, 'an e-mail alone will do');
+  assert.equal(OfferForm.contactProblem('+7 999 123-45-67', 'name@mail.ru'), null, 'both');
+  assert.equal(OfferForm.contactProblem('', '').field, 'phone', 'neither: asked for one');
+  assert.match(OfferForm.contactProblem('', '').message, /телефон или почту/);
+  assert.equal(OfferForm.contactProblem('+7 999', 'name@mail.ru').field, 'phone', 'a broken phone is pointed out even beside a good e-mail');
+  assert.equal(OfferForm.contactProblem('', 'name@mail').field, 'email');
+  // Sent by e-mail since 2026-11-12 (the owner): the last screen says it was received.
+  assert.match(OfferForm.DONE_NOTE, /Мы получили вашу заявку/);
+  assert.doesNotMatch(OfferForm.DONE_NOTE + OfferForm.BOOKING.done, /настраивается/);
   const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
   // Every direction of the site is an answer, and «Пока не знаю»; the name may be skipped; the phone and the consent are required.
   assert.match(src, /DIRECTIONS\.map\(d => d\.label\)\.concat\(\[UNSURE\]\)/);
   assert.match(src, /linkButton\('Можно без имени'/);
-  assert.match(src, /if \(!phoneOk\(phone\.value\)\)/);
+  assert.match(src, /const problem = contactProblem\(phone\.value, email\.value\);/);
+  assert.match(src, /type: 'email', id: id\('email'\), name: 'email'/);
+  assert.doesNotMatch(src, /type: 'tel', id: id\('phone'\), name: 'phone', className: 'talk-input'[^}]*required/, 'the phone alone is no longer required');
   assert.match(src, /if \(!consent\.checked\)/);
   assert.match(src, /c\.hasAttribute\('data-offer-steps'\) \? mountSteps\(c\) : mount\(c\)/);
-  assert.doesNotMatch(src, /XMLHttpRequest|sendBeacon|method: 'POST'/, 'nothing leaves the page yet (it only reads its own JSON files)');
+  // The one thing that leaves the page: the request, to the handler on the old site's hosting.
+  assert.equal(OfferForm.LEAD_URL, 'https://sayanmramor.ru/lead.php');
+  assert.equal((src.match(/method: 'POST'/g) || []).length, 1, 'one POST: the request');
+  assert.doesNotMatch(src, /XMLHttpRequest|sendBeacon/);
+  assert.match(src, /if \(!ok\) \{ status\.textContent = SEND_FAILED; return; \}/, 'a failed send says so and stays on the question');
+});
+
+test('the request as the letter gets it (server/lead.php): the direction, the name, phone and e-mail, the piece with its link, the picks, the page; the trap for bots empty', async () => {
+  const OfferForm = require('../js/offer-form.js');
+  const calc = { kind: 'calc', query: 'product=stoleshnitsa_kuhnya&stone=s1&pv=1', product: 'Столешницы на кухню', stone: 'Taj Mahal', sizes: '2400 × 600 мм', price: '≈ 186 400 ₽', priced: true };
+  const fields = OfferForm.leadFields({ direction: 'kuhnya', name: 'Анна', phone: '', email: 'anna@mail.ru', piece: calc },
+    { origin: 'https://sanuax.github.io', page: 'https://sanuax.github.io/sayanmramor-site/', picks: 'https://sanuax.github.io/sayanmramor-site/podborka.html?s=a' });
+  assert.equal(fields.direction, 'Кухня');
+  assert.equal(fields.email, 'anna@mail.ru');
+  assert.equal(fields.consent, '1');
+  assert.equal(fields.website, '');
+  assert.match(fields.piece, /^Столешницы на кухню · Taj Mahal\n2400 × 600 мм\n≈ 186 400 ₽\* \(ориентировочно\)\nОткрыть в калькуляторе: https:\/\/sanuax\.github\.io\/sayanmramor-calculator\/[^?]+\?product=stoleshnitsa_kuhnya/);
+  assert.equal(OfferForm.pieceText(null), '');
+  // Sending: a FormData POST to the handler; true only when it answers {ok: true}.
+  const calls = [];
+  class FormData { constructor() { this.parts = []; } append(...a) { this.parts.push(a); } }
+  const win = ok => ({ FormData, fetch: (url, init) => { calls.push([url, init]); return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok }) }); } });
+  assert.equal(await OfferForm.sendLead(win(true), fields, [{ key: 'attachment', blob: { size: 1 }, name: 'plan.pdf' }, { key: 'passport', blob: null }]), true);
+  assert.equal(calls[0][0], 'https://sayanmramor.ru/lead.php');
+  assert.equal(calls[0][1].method, 'POST');
+  assert.deepEqual(calls[0][1].body.parts.find(p => p[0] === 'attachment'), ['attachment', { size: 1 }, 'plan.pdf']);
+  assert.ok(!calls[0][1].body.parts.some(p => p[0] === 'passport'), 'no passport, no part');
+  assert.equal(await OfferForm.sendLead(win(false), fields, []), false);
+  assert.equal(await OfferForm.sendLead({ FormData, fetch: () => Promise.reject(new Error('offline')) }, fields, []), false, 'offline: false, never a throw');
+  assert.equal(await OfferForm.sendLead({}, fields, []), false, 'no fetch: false');
+});
+
+test('server/lead.php: mails sayan-mramor@yandex.ru from the hosting domain, only for the site\'s own pages, with a trap and a limit for bots', () => {
+  const php = fs.readFileSync(path.join(site, 'server', 'lead.php'), 'utf8');
+  assert.match(php, /const TO = 'sayan-mramor@yandex\.ru';/);
+  assert.match(php, /const FROM = 'noreply@sayanmramor\.ru';/);
+  assert.match(php, /const ALLOWED_ORIGINS = \['https:\/\/sanuax\.github\.io', 'https:\/\/sayanmramor\.ru', 'https:\/\/www\.sayanmramor\.ru'\];/);
+  assert.match(php, /if \(field\('website'\) !== ''\)/, 'the trap');
+  assert.match(php, /if \(!\$phoneOk && !\$emailOk\) answer\(422/, 'a phone or an e-mail, at least one');
+  assert.match(php, /if \(field\('consent'\) !== '1'\) answer\(422/);
+  assert.match(php, /RATE_LIMIT/);
+  assert.match(php, /if \(\$emailOk\) \$headers\[\] = 'Reply-To: ' \. \$email;/);
+  assert.doesNotMatch(php, /—/, 'no long dash');
 });
 
 test('the fork (2026-10-26, the owner): a piece the calculator builds asks «сами или мастер?», ready pieces open the catalogue, the rest go on to the name', () => {
@@ -1121,7 +1180,7 @@ test('the fork (2026-10-26, the owner): a piece the calculator builds asks «с�
   assert.deepEqual(OfferForm.FORK.q, ['Посчитаете ', 'сами', ' или доверите мастеру?']);
   assert.equal(OfferForm.FORK.hint('Кухня'), 'Кухня есть в нашем калькуляторе: выберите камень и размеры, изделие появится в 3D с ценой. Потом вернётесь сюда.');
   assert.deepEqual(OfferForm.FORK.go, ['Собрать в калькуляторе', 'Камень из каталога, размеры, 3D. Цена сразу.']);
-  assert.deepEqual(OfferForm.FORK.master, ['Пусть посчитает мастер', 'Оставите имя и телефон, мастер перезвонит и всё уточнит.']);
+  assert.deepEqual(OfferForm.FORK.master, ['Пусть посчитает мастер', 'Оставите имя и телефон или почту, мастер свяжется и всё уточнит.']);
   assert.deepEqual(OfferForm.KATALOG_STEP.q, ['Выберите ', 'готовое', ' изделие']);
   assert.equal(OfferForm.KATALOG_STEP.hint, 'Ванны из оникса, раковины, вазы и столы, которые уже сделаны в нашем цеху и ждут хозяина. Выберите то, что нравится, и мы вернём вас сюда.');
   assert.equal(OfferForm.KATALOG_STEP.go, 'Посмотреть каталог');
@@ -1585,7 +1644,7 @@ test('the piece in the request (2026-10-26, the owner): a card over the question
   assert.equal(OfferForm.summaryLine({ direction: 'gotovye-izdeliya', name: '', phone: '+7 999 123-45-67', piece: shell }), 'Ракушка · +7 999 123-45-67');
   assert.equal(OfferForm.summaryLine({ direction: 'hammamy', name: 'Анна', phone: '+7 999', piece: null }), 'Хаммамы · Анна · +7 999');
   assert.deepEqual(OfferForm.PIECE_HINTS, {
-    name: 'Изделие уже в заявке. Осталось имя и телефон.',
+    name: 'Изделие уже в заявке. Осталось имя и телефон или почта.',
     phoneCalc: 'Мастер проверит размеры и подтвердит цену.',
     phoneKatalog: 'Мастер подтвердит, что изделие ждёт вас, и расскажет о доставке.',
   });

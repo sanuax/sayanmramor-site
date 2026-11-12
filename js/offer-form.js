@@ -41,7 +41,7 @@
   ];
 
   const PHONE = '+7 (495) 215-51-45';
-  const EMAIL = 'info@sayanmramor.ru';
+  const EMAIL = 'sayan-mramor@yandex.ru';
   const NOT_SENT = 'Заявки с сайта пока не отправляются. Позвоните нам: ' + PHONE +
     ' или напишите на ' + EMAIL + ' - файл с техническим заданием можно приложить к письму.';
   const NO_FILE = 'Файл не выбран';
@@ -191,11 +191,12 @@
 
   // ---- Three questions (the home page and every direction page: <div data-offer-form data-offer-steps>) ----
   // The same request as a short talk: one question at a time -- what to make,
-  // how to address you, where to call -- and the answers gather above as a
-  // receipt (each chip takes you back to its question). The phone and the
-  // consent are required, as in the form; the name is not; a drawing or a
-  // photo can be attached at the last question. There is no backend yet: the
-  // last screen says so, sums the request up and gives the phone and Telegram.
+  // how to address you, where to answer -- and the answers gather above as a
+  // receipt (each chip takes you back to its question). A phone or an e-mail
+  // (at least one) and the consent are required; the name is not; a drawing or a
+  // photo can be attached at the last question. The request goes by e-mail through
+  // server/lead.php (2026-11-12); the last screen says it was sent, sums it up and
+  // gives the phone and Telegram too. If sending fails, the last question says so.
   //
   // Between the first answer and the name (2026-10-26, the owner): a piece the
   // calculator builds asks «сами или мастер?» (the fork), and «Готовые изделия»
@@ -204,13 +205,14 @@
   const STEPS = [
     { chip: 'Изделие', q: ['Что будем делать ', 'из камня?'], hint: 'Выберите направление - его можно будет поменять.' },
     { chip: 'Имя', q: ['Как к вам ', 'обращаться?'], hint: 'Чтобы мастер знал, кому звонить с расчётом.' },
-    { chip: 'Телефон', q: ['Куда позвонить ', 'с расчётом?'], hint: 'Мастер перезвонит, уточнит детали и подготовит расчёт.' },
+    // A phone or an e-mail, at least one of them (2026-11-12, the owner).
+    { chip: 'Контакт', q: ['Куда ответить ', 'с расчётом?'], hint: 'Телефон или почта - достаточно чего-то одного. Мастер позвонит или напишет, уточнит детали и подготовит расчёт.' },
   ];
   const FORK = {
     q: ['Посчитаете ', 'сами', ' или доверите мастеру?'],
     hint: label => label + ' есть в нашем калькуляторе: выберите камень и размеры, изделие появится в 3D с ценой. Потом вернётесь сюда.',
     go: ['Собрать в калькуляторе', 'Камень из каталога, размеры, 3D. Цена сразу.'],
-    master: ['Пусть посчитает мастер', 'Оставите имя и телефон, мастер перезвонит и всё уточнит.'],
+    master: ['Пусть посчитает мастер', 'Оставите имя и телефон или почту, мастер свяжется и всё уточнит.'],
   };
   const KATALOG_STEP = {
     q: ['Выберите ', 'готовое', ' изделие'],
@@ -220,21 +222,38 @@
   const UNSURE = 'Пока не знаю';
   const UNSURE_KEY = 'unsure';
   const TELEGRAM = 'https://t.me/TeaN_SayanMramor';
-  const DONE_NOTE = 'Отправка заявок с сайта ещё настраивается. Позвоните или напишите нам в Telegram и назовите вашу заявку - мастер сразу возьмётся за расчёт.';
+  // The request goes by e-mail to sayan-mramor@yandex.ru (2026-11-12, the owner) through server/lead.php,
+  // which lives on the old site's hosting: GitHub Pages has no server of its own.
+  const LEAD_URL = 'https://sayanmramor.ru/lead.php';
+  const DONE_NOTE = 'Мы получили вашу заявку. Мастер свяжется с вами, уточнит детали и подготовит расчёт. Если удобнее, позвоните или напишите нам в Telegram.';
+  const SEND_FAILED = 'Не получилось отправить заявку. Попробуйте ещё раз или позвоните нам: ' + PHONE + '.';
   // A ready piece from the catalogue has its price: it is booked, not priced (2026-11-02, the owner:
   // the page promised «без ожидания расчёта» and «Запросить» led to «Получить расчёт»). The band's
   // heading and lead, the last button and the closing note say so while such a piece is in the request.
   const BOOKING = {
     title: 'Забронировать',
     titleSoft: 'готовое изделие',
-    lead: 'Оставьте имя и телефон. Мастер подтвердит, что изделие в наличии, и договорится о доставке.',
+    lead: 'Оставьте имя и телефон или почту. Мастер подтвердит, что изделие в наличии, и договорится о доставке.',
     submit: 'Забронировать',
-    done: 'Отправка заявок с сайта ещё настраивается. Позвоните или напишите нам в Telegram и назовите изделие - мастер подтвердит, что оно ждёт вас.',
+    done: 'Мы получили вашу заявку. Мастер подтвердит, что изделие ждёт вас, и договорится о доставке.',
   };
 
   // A phone is a phone with at least ten digits («+7 999 123-45-67», «89991234567»).
   function phoneOk(value) {
     return String(value || '').replace(/\D/g, '').length >= 10;
+  }
+  // An e-mail is something@something.zone, no spaces.
+  function emailOk(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || '').trim());
+  }
+  // The last question wants a phone or an e-mail, at least one; a field that is filled must be right.
+  // null when the answer will do, else the field to fix and what to say.
+  function contactProblem(phoneValue, emailValue) {
+    const p = String(phoneValue || '').trim(), m = String(emailValue || '').trim();
+    if (!p && !m) return { field: 'phone', message: 'Укажите телефон или почту, чтобы мастер мог связаться с вами.' };
+    if (p && !phoneOk(p)) return { field: 'phone', message: 'Проверьте телефон: в номере должно быть не меньше 10 цифр.' };
+    if (m && !emailOk(m)) return { field: 'email', message: 'Проверьте почту: она пишется как name@mail.ru.' };
+    return null;
   }
 
   // Where the talk goes after the first answer: the fork, the catalogue, or the name.
@@ -280,7 +299,7 @@
 
   // The hints of the name and the phone while a piece is in the request.
   const PIECE_HINTS = {
-    name: 'Изделие уже в заявке. Осталось имя и телефон.',
+    name: 'Изделие уже в заявке. Осталось имя и телефон или почта.',
     phoneCalc: 'Мастер проверит размеры и подтвердит цену.',
     phoneKatalog: 'Мастер подтвердит, что изделие ждёт вас, и расскажет о доставке.',
   };
@@ -305,10 +324,47 @@
   // The calculator's passport at the end of the request.
   const PASSPORT = { title: 'Паспорт изделия', button: 'Скачать паспорт' };
 
-  // The request in one line: the piece (or the direction), the name, the phone.
+  // The request in one line: the piece (or the direction), the name, the phone, the e-mail.
   function summaryLine(state) {
     const lead = state.piece ? pieceCard(state.piece).title : directionLabel(state.direction);
-    return [lead, state.name, state.phone].filter(Boolean).join(' · ');
+    return [lead, state.name, state.phone, state.email].filter(Boolean).join(' · ');
+  }
+
+  // What the letter says about the piece: its name, sizes and price, and the link that reopens it.
+  function pieceText(piece, origin) {
+    if (!piece) return '';
+    const card = pieceCard(piece);
+    const lines = [card.title, card.meta, card.price ? card.price + (card.note ? ' (' + card.note + ')' : '') : card.note];
+    if (piece.kind === 'calc' && piece.query) lines.push('Открыть в калькуляторе: ' + (origin || '') + Handoff.editUrl(piece.query));
+    if (piece.kind === 'katalog') lines.push('Из каталога готовых изделий');
+    return lines.filter(Boolean).join('\n');
+  }
+  // The request's fields as the letter's handler (server/lead.php) reads them. «website» is the
+  // trap for bots: a person never sees it, so it stays empty.
+  function leadFields(state, extra) {
+    const x = extra || {};
+    return {
+      direction: directionLabel(state.direction),
+      name: state.name || '',
+      phone: state.phone || '',
+      email: state.email || '',
+      piece: pieceText(state.piece, x.origin),
+      picks: x.picks || '',
+      page: x.page || '',
+      consent: '1',
+      website: '',
+    };
+  }
+  // Sends the request; resolves true when the handler took it.
+  function sendLead(win, fields, files) {
+    if (!win.fetch || !win.FormData) return Promise.resolve(false);
+    const data = new win.FormData();
+    Object.keys(fields).forEach(k => data.append(k, fields[k]));
+    (files || []).forEach(f => { if (f && f.blob) data.append(f.key, f.blob, f.name || f.key); });
+    return win.fetch(LEAD_URL, { method: 'POST', body: data })
+      .then(r => (r.ok ? r.json() : null))
+      .then(json => !!(json && json.ok))
+      .catch(() => false);
   }
 
   // A new first answer: the piece stays only with its own direction (then the fork is behind it).
@@ -336,7 +392,7 @@
       else where.replaceChildren(...ownWords.title.map(c => c.cloneNode(true)));
       bandLead.textContent = booking ? BOOKING.lead : ownWords.lead;
     }
-    let state = { direction: '', name: '', nameSkipped: false, phone: '', current: 0, piece: null, attachmentName: '', draftName: '', draftPhone: '', picksOff: false };
+    let state = { direction: '', name: '', nameSkipped: false, phone: '', email: '', draftEmail: '', current: 0, piece: null, attachmentName: '', draftName: '', draftPhone: '', picksOff: false };
     const labelOf = directionLabel;
     const keyOf = label => (label === UNSURE ? UNSURE_KEY : DIRECTIONS.find(d => d.label === label).key);
 
@@ -459,8 +515,9 @@
       ]),
     ]);
 
-    // 3. The phone, a drawing or photo if there is one, the consent, and the request.
-    const phone = el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'talk-input', autocomplete: 'tel', inputmode: 'tel', placeholder: '+7 (___) ___-__-__', required: '', 'aria-labelledby': id('q2') });
+    // 3. The phone or the e-mail (at least one), a drawing or photo if there is one, the consent, and the request.
+    const phone = el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'talk-input', autocomplete: 'tel', inputmode: 'tel', placeholder: '+7 (___) ___-__-__', 'aria-label': 'Телефон' });
+    const email = el(doc, 'input', { type: 'email', id: id('email'), name: 'email', className: 'talk-input', autocomplete: 'email', inputmode: 'email', placeholder: 'Или почта', 'aria-label': 'Электронная почта' });
     const file = el(doc, 'input', { type: 'file', id: id('file'), name: 'file', className: 'offer-file-input' });
     const fileName = el(doc, 'span', { className: 'talk-file-name', textContent: 'Есть чертёж или фото? Прикрепите файл' });
     file.addEventListener('change', () => {
@@ -474,12 +531,16 @@
     const consent = el(doc, 'input', { type: 'checkbox', id: id('consent'), name: 'consent', required: '' });
     const status = el(doc, 'p', { className: 'offer-status talk-status', role: 'status' });
     // A hint goes as soon as the field it was about is put right.
-    phone.addEventListener('input', () => { if (phoneOk(phone.value)) status.textContent = ''; state.draftPhone = phone.value; persist(); });
+    phone.addEventListener('input', () => { if (!contactProblem(phone.value, email.value)) status.textContent = ''; state.draftPhone = phone.value; persist(); });
+    email.addEventListener('input', () => { if (!contactProblem(phone.value, email.value)) status.textContent = ''; state.draftEmail = email.value; persist(); });
     consent.addEventListener('change', () => { if (consent.checked) status.textContent = ''; });
     const phoneHint = hint(STEPS[2].hint);
     const submit = nextButton('Получить расчёт', 'submit');
     const step3 = question(2, phoneHint, [
-      el(doc, 'div', { className: 'talk-answer' }, [phone, submit]),
+      el(doc, 'div', { className: 'talk-answer talk-answer-contacts', role: 'group', 'aria-labelledby': id('q2') }, [
+        el(doc, 'div', { className: 'talk-contacts' }, [phone, email]),
+        submit,
+      ]),
       el(doc, 'div', { className: 'talk-extra' }, [
         file,
         el(doc, 'label', { className: 'talk-file', htmlFor: id('file') }, [el(doc, 'span', { className: 'talk-file-icon' }, [icon(doc, 'clip')]), fileName]),
@@ -575,7 +636,7 @@
     }
     const doneNote = el(doc, 'p', { className: 'talk-hint', textContent: DONE_NOTE });
     const done = el(doc, 'section', { className: 'talk-step talk-done', 'data-step': '3', 'aria-labelledby': id('q3') }, [
-      el(doc, 'p', { className: 'talk-q', id: id('q3') }, [doc.createTextNode('Заявка '), el(doc, 'em', { textContent: 'собрана' })]),
+      el(doc, 'p', { className: 'talk-q', id: id('q3') }, [doc.createTextNode('Заявка '), el(doc, 'em', { textContent: 'отправлена' })]),
       summary,
       passportSlot,
       picksSlot,
@@ -599,7 +660,7 @@
       forkHint.textContent = state.direction ? FORK.hint(labelOf(state.direction)) : '';
       // An answered question shows its answer («✓ Кухня», «✓ Анна»; a skipped
       // name, once passed, «✓ Без имени»); the others their question's name.
-      const values = [labelOf(state.direction), state.name || (state.nameSkipped ? 'Без имени' : ''), state.phone];
+      const values = [labelOf(state.direction), state.name || (state.nameSkipped ? 'Без имени' : ''), state.phone || state.email];
       chips.forEach((chip, i) => {
         const answered = !!values[i] && i !== state.current;
         chip.textContent = answered ? '✓ ' + values[i] : STEPS[i].chip;
@@ -641,9 +702,10 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       if (state.current !== 2) return;
-      if (!phoneOk(phone.value)) {
-        status.textContent = 'Укажите телефон, чтобы мастер мог перезвонить вам.';
-        phone.focus();
+      const problem = contactProblem(phone.value, email.value);
+      if (problem) {
+        status.textContent = problem.message;
+        (problem.field === 'email' ? email : phone).focus();
         return;
       }
       if (!consent.checked) {
@@ -651,10 +713,41 @@
         consent.focus();
         return;
       }
+      if (sending) return;
       state.phone = phone.value.trim();
-      summary.textContent = summaryLine(state);
-      go(3);
+      state.email = email.value.trim();
+      // The request goes by e-mail (server/lead.php): the client's file and, for a calculator piece,
+      // its passport go along. Until the handler answers the button says so and waits.
+      sending = true;
+      const label = submit.firstChild.textContent;
+      submit.disabled = true;
+      submit.firstChild.textContent = 'Отправляем…';
+      status.textContent = '';
+      const piece = state.piece;
+      const picks = win.Picks && !state.picksOff ? win.Picks.forRequest(win.location, local()) : null;
+      const extra = {
+        origin: win.location ? win.location.origin : '',
+        page: win.location ? win.location.href : '',
+        picks: picks ? win.location.origin + win.Picks.sharePath(picks) : '',
+      };
+      const chosen = file.files && file.files.length ? file.files[0] : null;
+      Promise.all([
+        chosen ? Promise.resolve(chosen) : (state.attachmentName ? Handoff.blobs.get('attachment') : Promise.resolve(null)),
+        piece && piece.kind === 'calc' ? Handoff.blobs.get('passport') : Promise.resolve(null),
+      ]).then(([attachment, passport]) => {
+        const files = [{ key: 'attachment', blob: attachment, name: state.attachmentName || (attachment && attachment.name) }];
+        if (passport && passport.file && passport.query === piece.query) files.push({ key: 'passport', blob: passport.file, name: passport.file.name || 'passport.pdf' });
+        return sendLead(win, leadFields(state, extra), files);
+      }).then(ok => {
+        sending = false;
+        submit.disabled = false;
+        submit.firstChild.textContent = label;
+        if (!ok) { status.textContent = SEND_FAILED; return; }
+        summary.textContent = summaryLine(state);
+        go(3);
+      });
     });
+    let sending = false;
 
     // A page may name its direction (data-preselect): then the talk starts after the first question.
     const preselect = DIRECTIONS.find(d => d.key === container.getAttribute('data-preselect'));
@@ -666,11 +759,12 @@
     const page = win.location ? win.location.pathname : '';
     const saved = Handoff.loadTalk(session());
     if (saved && saved.page === page) {
-      ['direction', 'name', 'nameSkipped', 'phone', 'current', 'piece', 'attachmentName', 'draftName', 'draftPhone', 'picksOff'].forEach(k => {
+      ['direction', 'name', 'nameSkipped', 'phone', 'email', 'current', 'piece', 'attachmentName', 'draftName', 'draftPhone', 'draftEmail', 'picksOff'].forEach(k => {
         if (saved[k] !== undefined) state[k] = saved[k];
       });
       name.value = state.name || state.draftName || '';
       phone.value = state.phone || state.draftPhone || '';
+      email.value = state.email || state.draftEmail || '';
       if (state.attachmentName) fileName.textContent = state.attachmentName;
       if (state.current === 3) summary.textContent = summaryLine(state);
     }
@@ -706,7 +800,7 @@
   if (typeof document !== 'undefined') mountAll(document);
 
   return {
-    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, BOOKING, phoneOk, afterDirection, countLabel, betweenChip, startStep, chooseDirection,
+    DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, BOOKING, phoneOk, emailOk, contactProblem, LEAD_URL, SEND_FAILED, pieceText, leadFields, sendLead, afterDirection, countLabel, betweenChip, startStep, chooseDirection,
     pieceCard, summaryLine,
     mount, mountSteps, mountAll, enhanceBand,
   };
