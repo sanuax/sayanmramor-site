@@ -614,7 +614,7 @@
         el(doc, 'p', { className: 'talk-piece-kicker', textContent: state.picksOff ? 'Подборка не приложена' : 'Моя подборка' }),
         el(doc, 'p', { className: 'talk-piece-title', textContent: Picks.label(picks) }),
       ].concat(state.picksOff ? [] : [el(doc, 'p', { className: 'talk-piece-meta', textContent: 'Ссылка на неё уже в сообщении для Telegram.' })]));
-      const parts = (image ? [el(doc, 'img', { className: 'talk-piece-image', src: image, alt: '', width: '64', height: '64', decoding: 'async' })] : [])
+      const parts = (image ? [el(doc, 'img', { className: 'talk-piece-image', loading: 'lazy', src: image, alt: '', width: '64', height: '64', decoding: 'async' })] : [])
         .concat([words, el(doc, 'div', { className: 'talk-links talk-piece-actions' }, [see, choice])]);
       picksSlot.replaceChildren(el(doc, 'div', { className: 'talk-piece talk-picks-card' + (image ? '' : ' is-bare') + (state.picksOff ? ' is-off' : '') }, parts));
     }
