@@ -663,6 +663,31 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') holdHeroHeight(document, window);
 
+  // Safari on iOS 26 paints the strip under the clock in the page's own background colour (the
+  // canvas, <html>'s background), not with the photo under it: over the dark hammam it was a light
+  // band (2026-11-12, the owner: «нельзя поменять на тёмную?»). While the hero is under the clock
+  // <html> wears the hammam's darkness (index.html starts with .hero-top, so it is dark from the
+  // first frame); once the hero has gone up past the clock, the page's light again.
+  function safeTop(doc) {
+    const probe = doc.createElement('div');
+    probe.style.cssText = 'position:fixed;visibility:hidden;top:0;height:env(safe-area-inset-top, 0px)';
+    doc.body.appendChild(probe);
+    const h = probe.offsetHeight;
+    probe.remove();
+    return h;
+  }
+  function darkTopOverHero(doc, win, top) {
+    const hero = doc.querySelector('.home-hero');
+    const root = doc.documentElement;
+    if (!hero) { root.classList.remove('hero-top'); return; }
+    const line = top == null ? safeTop(doc) : top;
+    let queued = false;
+    const check = () => { queued = false; root.classList.toggle('hero-top', hero.getBoundingClientRect().bottom > line); };
+    win.addEventListener('scroll', () => { if (!queued) { queued = true; win.requestAnimationFrame(check); } }, { passive: true });
+    check();
+  }
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') darkTopOverHero(document, window);
+
   // Between pages (css/tokens.css): the photo of the pressed card goes along, it grows and melts
   // into the next page. The name is given on the press and to one frame only: two frames with one
   // name would cancel the whole transition. A frame under the header or off the screen stays out,
@@ -767,5 +792,5 @@
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') landOnOffer(document, window);
 
-  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, trustSite, holdHeroHeight, screenLength, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
+  return { renderPortfolio, loadPortfolio, enableViewer, portfolioAlt, photoRatio, photoSources, rowPlan, layoutRows, revealOrder, fitRect, revealActiveNav, reserveFixedUi, trustSite, holdHeroHeight, screenLength, darkTopOverHero, pressedCardPhoto, photoGoesAlong, leavesWithFade, fadeOutOnLeaving, offerTarget, landOnOffer };
 });

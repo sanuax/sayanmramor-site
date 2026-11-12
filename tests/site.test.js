@@ -1497,6 +1497,25 @@ test('home hero on an iPhone (Safari, Telegram): at least the whole screen, sinc
   assert.deepEqual(chrome.props, { '--hero-h': '700px', '--screen-h': '852px' });
 });
 
+test('home page: the page is dark under the iPhone clock while the hammam is there, light past it (Safari paints that strip in the page colour; 2026-11-12, the owner)', () => {
+  let bottom = 900, onScroll = null;
+  const classes = new Set(['hero-top']);
+  const doc = {
+    querySelector: sel => (sel === '.home-hero' ? { getBoundingClientRect: () => ({ bottom }) } : null),
+    documentElement: { classList: { toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)), remove: c => classes.delete(c) } },
+  };
+  const win = { addEventListener: (type, fn) => { if (type === 'scroll') onScroll = fn; }, requestAnimationFrame: fn => fn() };
+  SiteCommon.darkTopOverHero(doc, win, 59);
+  assert.ok(classes.has('hero-top'));
+  bottom = 40; onScroll();
+  assert.ok(!classes.has('hero-top'), 'the hero has gone up past the clock: the light page');
+  bottom = 300; onScroll();
+  assert.ok(classes.has('hero-top'), 'and back');
+  const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
+  assert.match(html, /<html lang="ru" class="hero-top">/, 'dark from the first frame');
+  assert.match(fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8'), /\nhtml\.hero-top \{ background: #0c0908; \}/);
+});
+
 test('home hero: Android and a desktop never get the screen height', () => {
   const w = heroWorld();
   w.win.CSS = { supports: () => false };
