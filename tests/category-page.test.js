@@ -233,7 +233,7 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a phone the photo has a set height: nothing shifts when it arrives');
   // svh, not dvh: the window and its photo must not resize when Safari's bars move.
   assert.match(windowRule, /max-height: calc\(100svh - 48px\)/);
-  assert.match(siteCss, /34svh\); \}/);
+  assert.match(siteCss, /28svh\); \}/, 'on a short phone screen the photo gives way so the text needs no scrolling');
   assert.doesNotMatch(siteCss.slice(siteCss.indexOf('.stone-view {'), siteCss.indexOf('.stone-more {')), /dvh/, 'no dvh anywhere in the stone window');
   assert.match(src, /img\.addEventListener\('load', \(\) => img\.classList\.add\('is-loaded'\)\);/);
   assert.match(src, /view\.text\.scrollTop = 0;/);

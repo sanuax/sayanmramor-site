@@ -967,6 +967,12 @@ h3 { font-size: var(--fs-h3); }
   border-radius: 16px; background: var(--surface-sunk);
 }
 .stone-advice-title { margin-bottom: var(--s-3); }
+/* The spa pages, hammams and pools have no stone catalogue: the same block stands alone, above the request. */
+.advice-section { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter) var(--section); }
+.advice-section .stone-advice { margin-bottom: 0; }
+h2.stone-advice-title { font-size: var(--fs-h3); }   /* it has no «Камень» heading above it, so it is an h2 at the h3's size */
+.stone-advice-note a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+@media (hover: hover) { .stone-advice-note a:hover { text-decoration-color: currentColor; } }
 .stone-advice-list { display: grid; gap: var(--s-2); margin: 0 0 var(--s-4); padding: 0; list-style: none; }
 .stone-advice-list li { color: var(--ink-soft); line-height: 1.5; }
 .stone-advice-list b { color: var(--ink); font-weight: 600; }
@@ -1240,7 +1246,7 @@ h3 { font-size: var(--fs-h3); }
   .stone-view { width: calc(100vw - 24px); max-height: calc(100vh - 24px); max-height: calc(100svh - 24px); }   /* svh: the height with Safari's bars out, it does not move when they do (2026-11-12) */
   .stone-view[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   /* The slab photos are 850 x 500 (17:10); on a short screen the photo gives way a little so the text keeps its room. */
-  .stone-view-media { min-height: 0; height: calc((100vw - 24px) * 10 / 17); height: min(calc((100vw - 24px) * 10 / 17), 34vh); height: min(calc((100vw - 24px) * 10 / 17), 34svh); }
+  .stone-view-media { min-height: 0; height: calc((100vw - 24px) * 10 / 17); height: min(calc((100vw - 24px) * 10 / 17), 28vh); height: min(calc((100vw - 24px) * 10 / 17), 28svh); }
   .stone-view-text { padding: var(--s-4); }
   .stone-view-close { top: 8px; right: 8px; background: rgba(248, 247, 244, 0.92); }
   .stone-view-actions .btn { flex: 1 1 auto; }

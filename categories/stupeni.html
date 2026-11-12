@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
 <link rel="stylesheet" href="/sayanmramor-site/css/consent.css?v=f7d8bfe7">
 <link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=5685842d">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=3bc9e0a8">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=27d73e96">
 <link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=da2f2640">
 <script src="/sayanmramor-site/js/header.js?v=7b5f2f0c" defer></script>
 <script src="/sayanmramor-site/js/consent.js?v=64c0d004" defer></script>
@@ -118,6 +118,21 @@
     <h2 id="stoneTitle">Камень</h2>
     <p>Выберите камень - он будет выбран в конфигураторе. Размеры, форму, кромку и стоимость вы зададите там.</p>
   </div>
+  <div class="stone-advice">
+    <h3 class="stone-advice-title">Какой камень выбрать для ступеней</h3>
+    <ul class="stone-advice-list">
+      <li><b>Гранит и кварцит</b> - самые твёрдые, медленнее всего истираются: для ступеней, по которым много ходят, для крыльца и уличных лестниц.</li>
+      <li><b>Мрамор</b> - классическая ступень в доме. Он мягче гранита, и у края ступени полировка со временем тускнеет.</li>
+      <li><b>Фактура</b> - полированная ступень скользкая, особенно мокрая. На улице и у входа обычно выбирают матовую или шероховатую поверхность: какие фактуры возможны для выбранного камня, спросите в заявке.</li>
+      <li><b>Хватит ли камня</b> - ступени режут из нескольких плит, а у части камней в каталоге всего одна-две плиты. Хватит ли выбранного камня на ваши ступени, конфигуратор покажет в итоге расчёта.</li>
+    </ul>
+    <div class="stone-ways" role="group" aria-label="Показать в каталоге" hidden>
+      <span class="stone-ways-label">Показать в каталоге:</span>
+      <button type="button" class="stone-way" data-stone-types="Гранит" hidden>Гранит</button>
+      <button type="button" class="stone-way" data-stone-types="Кварцит" hidden>Кварцит</button>
+      <button type="button" class="stone-way" data-stone-types="Мрамор" hidden>Мрамор</button>
+    </div>
+  </div>
   <div class="stone-controls">
     <input type="search" id="stoneSearch" placeholder="Поиск по названию или типу камня" aria-label="Поиск камня" autocomplete="off" disabled>
     <div class="stone-filters" id="stoneFilters" role="group" aria-label="Фильтры камня" hidden></div>
@@ -216,7 +231,7 @@
 
 <script src="/sayanmramor-site/js/showroom/showroom-data.js?v=b1abdd4b"></script>
 <script src="/sayanmramor-site/js/price-filter.js?v=def91123"></script>
-<script src="/sayanmramor-site/js/category-page.js?v=08920c2a"></script>
+<script src="/sayanmramor-site/js/category-page.js?v=c1db05b9"></script>
 <script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
 <script src="/sayanmramor-site/js/offer-form.js?v=f6136ecf"></script>

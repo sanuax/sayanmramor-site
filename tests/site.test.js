@@ -1845,3 +1845,43 @@ test('«Лестницы» and «Фасады» say which stone suits them; the 
     assert.ok(html.includes('<p class="stone-supplier">Мы обрабатываем камень на своём производстве <a href="/sayanmramor-site/index.html#contacts">в Ивантеевке</a>, Московская область, с 2014 года. Камень в нашей коллекции закупается у Venezia Stone.'), page);
   });
 });
+
+// (2026-11-12, the owner: «вставки про какой камень подходит ко всем изделиям»; spa, hammams and pools:
+// some stones as natural antiseptics; the stone window without the price sentence; the staircase's buttons swapped)
+test('every direction page says which stone suits it; the spa, hammams and pools also name the natural antiseptics', () => {
+  const dir = path.join(site, 'categories');
+  const pages = fs.readdirSync(dir);
+  assert.equal(pages.length, 13);
+  pages.forEach(f => {
+    const html = fs.readFileSync(path.join(dir, f), 'utf8');
+    assert.equal((html.match(/class="stone-advice"/g) || []).length, 1, f);
+    assert.match(html, /<h[23] class="stone-advice-title"[^>]*>Какой камень выбрать для [^<]+<\/h[23]>/, f);
+    const block = html.slice(html.indexOf('class="stone-advice"'), html.indexOf('</div>', html.indexOf('class="stone-advice"')));
+    assert.doesNotMatch(block, /—|!/, f + ': no long dash, no exclamation mark');
+    assert.ok((block.match(/<li>/g) || []).length >= 3, f + ': at least three plain lines');
+  });
+  ['hammamy', 'spa-zony', 'basseyny'].forEach(slug => {
+    const html = fs.readFileSync(path.join(dir, slug + '.html'), 'utf8');
+    assert.match(html, /<li><b>Природные антисептики<\/b> - Часть камней принято считать природными антисептиками\. Талькохлорит/, slug);
+    assert.match(html, /<section class="advice-section" aria-labelledby="adviceTitle">/, slug + ': no stone catalogue here, the block has a section of its own');
+    assert.doesNotMatch(html, /class="stone-section/, slug + ': and is not taken for a gallery');
+    assert.match(html, /kamen\.html\?q=Талькохлорит/, slug + ': a way to the stone');
+  });
+  ['stupeni', 'podokonniki', 'steny', 'panno', 'kaminy'].forEach(slug => {
+    const html = fs.readFileSync(path.join(dir, slug + '.html'), 'utf8');
+    assert.ok(html.indexOf('stone-advice') < html.indexOf('stone-controls'), slug);
+    assert.match(html, /<button type="button" class="stone-way" data-stone-types="[^"]+" hidden>/, slug + ': ways into the catalogue by type');
+  });
+  const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(css, /\.advice-section \{ max-width: var\(--measure\); margin: 0 auto; padding: 0 var\(--gutter\) var\(--section\); \}/);
+});
+
+test('the stone window does not repeat the price sentence (it has the price row); the staircase block leads with «Рассчитать свою лестницу»', () => {
+  const src = fs.readFileSync(path.join(site, 'js', 'category-page.js'), 'utf8');
+  assert.doesNotMatch(src, /Цена - за квадратный метр самого камня/);
+  assert.match(src, /'Размеров плит, толщины и фактуры в каталоге нет - спросите о них '/);
+  const stairs = fs.readFileSync(path.join(site, 'categories', 'lestnitsy.html'), 'utf8');
+  const ways = stairs.slice(stairs.indexOf('<div class="price-path-ways">'), stairs.indexOf('</div>', stairs.indexOf('<div class="price-path-ways">')));
+  const links = [...ways.matchAll(/<a class="btn (btn-primary|btn-secondary)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => [m[1], m[3], m[2].includes('&amp;stone=volakas')]);
+  assert.deepEqual(links, [['btn-primary', 'Рассчитать свою лестницу', false], ['btn-secondary', 'Открыть пример расчёта', true]]);
+});
