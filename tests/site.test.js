@@ -870,6 +870,8 @@ test('who trusts us as passes: the back of each tile says only what the link alr
   const css = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
   assert.match(css, /@media \(hover: hover\) \{\n  \.trust-motion \.trust-pass:hover \.trust-flip \{ transform: rotateY\(180deg\);/, 'turned over by hover only where there is a pointer');
   assert.match(css, /\.trust-motion \.trust-pass:focus-visible \.trust-flip \{ transform: rotateY\(180deg\); \}/, 'and by keyboard focus');
+  assert.doesNotMatch(mount, /IntersectionObserver|is-in/, 'no entrance as the wall comes up the screen (2026-11-12, the owner)');
+  assert.doesNotMatch(css, /trust-lay|trust-stamp|\.trust-motion(:not\()?\.is-in/, 'and no rules for one');
 });
 
 test('about, why us, who trusts us: the old site\'s three blocks -- its words and figures, the six companies each a link to its site, the logos on disk', () => {

@@ -546,8 +546,8 @@
   if (typeof document !== 'undefined') reserveFixedUi(document);
 
   // «Нам доверяют» as passes (2026-10-11, the owner: the motion of the 21st.dev «Lunar Boarding
-  // Pass», ported without React): each tile becomes a two-sided pass in a 3D stage. As the wall
-  // comes up the screen the logos are stamped onto their tiles one after another; under a mouse
+  // Pass», ported without React): each tile becomes a two-sided pass in a 3D stage. The wall has
+  // no entrance (2026-11-12, the owner: the logos' stamp as it came up was taken out); under a mouse
   // the pass leans towards the pointer and a band of foil light follows it; on hover or keyboard
   // focus it turns over to its dark stub -- the company's name and its site typed out. Nothing
   // on the back is new: the name is the logo's own alt (or the ministry's caption), the site the
@@ -557,7 +557,7 @@
   }
   function mountTrustMotion(doc, win) {
     const wall = doc.querySelector('.home-trust-wall');
-    if (!wall || !win.IntersectionObserver) return;
+    if (!wall) return;
     if (win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const make = (tag, cls, text) => { const el = doc.createElement(tag); el.className = cls; if (text) el.textContent = text; return el; };
     Array.from(wall.querySelectorAll('.home-trust-item')).forEach((a, n) => {
@@ -587,12 +587,6 @@
       a.addEventListener('pointerleave', () => { a.style.setProperty('--rx', '0deg'); a.style.setProperty('--ry', '0deg'); });
     });
     wall.classList.add('trust-motion');
-    const io = new win.IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      io.disconnect();
-      wall.classList.add('is-in');
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.25 });
-    io.observe(wall);
   }
   if (typeof document !== 'undefined' && typeof window !== 'undefined') mountTrustMotion(document, window);
 
