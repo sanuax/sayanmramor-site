@@ -146,7 +146,8 @@ test('every category page hands off to the canonical configurator URL for its ow
   assert.equal(files.length, ShowroomData.PRODUCTS.length);
   files.forEach(file => {
     const html = fs.readFileSync(path.join(dir, file), 'utf8');
-    const key = (html.match(/CategoryPage\.init\('([a-z_]+)'\)/) || [])[1];
+    // (experiment, round 3: «Фасады» passes its outdoor types first as a second argument)
+    const key = (html.match(/CategoryPage\.init\('([a-z_]+)'(?:, \{[^)]*\})?\)/) || [])[1];
     const product = ShowroomData.productByKey(key);
     assert.ok(product, file + ': unknown product key ' + key);
     assert.equal(product.categoryHref, '/sayanmramor-site/categories/' + file);
@@ -217,4 +218,18 @@ test('a press on a stone opens it large: the photo whole, what the index knows, 
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
   assert.match(css, /\.stone-view-media img \{[^}]*object-fit: contain;/, 'the photo is shown whole');
   assert.match(css, /\.stone-view-actions \.btn \{ border-radius: var\(--radius-btn\); \}/, 'the buttons stay rectangles');
+});
+
+// (experiment, round 3: «Фасады» opened on white marble and quartz agglomerate)
+test('a page can lead its gallery with its own kinds of stone: nothing hidden, each group keeps its order', () => {
+  const stones = [
+    { name: 'A', type: 'Мрамор' }, { name: 'B', type: 'Гранит' }, { name: 'C', type: 'Кварцевый агломерат' },
+    { name: 'D', type: 'Травертин' }, { name: 'E', type: 'Гранит' },
+  ];
+  assert.deepEqual(CategoryPage.typesFirst(stones, ['Гранит', 'Травертин']).map(s => s.name), ['B', 'D', 'E', 'A', 'C']);
+  assert.equal(CategoryPage.typesFirst(stones, []), stones);
+  const fasady = fs.readFileSync(path.join(__dirname, '..', 'categories', 'fasady.html'), 'utf8');
+  assert.ok(fasady.includes("CategoryPage.init('fasad', { firstTypes: ['Гранит', 'Кварцит', 'Травертин', 'Известняк', 'Песчаник', 'Сланец'] });"));
+  const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8');
+  assert.ok(src.includes("if (state.sort.startsWith('tone-')) filtered = typesFirst(filtered, firstTypes);"), 'only the colour order; «A-Z» and «Цена» stay plain');
 });

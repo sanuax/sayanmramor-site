@@ -110,6 +110,15 @@
       : (a, b) => byName(a, b) * k);
   }
 
+  // A page's own kinds of stone first (experiment, round 3: «Фасады» opened on white marble and
+  // quartz agglomerate; the stone for outdoors comes first there). Nothing is hidden: the stones of
+  // those types keep their order and lead, the rest follow in theirs.
+  function typesFirst(stones, firstTypes) {
+    if (!firstTypes || !firstTypes.length) return stones;
+    const lead = stones.filter(s => firstTypes.includes(s.type));
+    return lead.concat(stones.filter(s => !firstTypes.includes(s.type)));
+  }
+
   // Whether «Сбросить» shows: any search text, any ticked value, any price end.
   function hasActiveFilters({ query, types, countries, colors, price } = {}) {
     return !!(query && query.trim()) || [types, countries, colors].some(l => l && l.length > 0) || PriceFilter.isActive(price);
@@ -122,8 +131,10 @@
   const CONFIGURATOR = '/sayanmramor-calculator/sayanmramor-calculator.html';
   const stoneOnlyUrl = stoneId => CONFIGURATOR + (stoneId ? '?stone=' + encodeURIComponent(stoneId) : '');
 
-  // productKey: the direction page's product, or null on «Камень».
-  function init(productKey) {
+  // productKey: the direction page's product, or null on «Камень». options.firstTypes: the types
+  // that lead the gallery in its colour order (the default); «A-Z» and «Цена» stay plain.
+  function init(productKey, options) {
+    const firstTypes = (options && options.firstTypes) || [];
     const buildUrl = stoneId => (productKey ? ShowroomData.buildConfiguratorUrl(productKey, stoneId) : stoneOnlyUrl(stoneId));
     const search = document.getElementById('stoneSearch');
     const filtersBox = document.getElementById('stoneFilters');
@@ -355,6 +366,7 @@
     function apply() {
       const query = search.value;
       filtered = sortStones(filterStones(stones, Object.assign({ query }, state)), state.sort);
+      if (state.sort.startsWith('tone-')) filtered = typesFirst(filtered, firstTypes);
       grid.innerHTML = '';
       shown = 0;
       status.textContent = filtered.length ? 'Камней: ' + filtered.length : 'Ничего не найдено';
@@ -563,5 +575,5 @@
       });
   }
 
-  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, SORT_LABELS, ARTIFICIAL_TYPES, isArtificial, linkedQuery, exactStone, normalizeStones, listOptions, filterStones, sortStones, hasActiveFilters, stoneOnlyUrl, init };
+  return { STONE_INDEX_URL, STONE_IMAGE_BASE, PAGE_SIZE, SORT_LABELS, ARTIFICIAL_TYPES, isArtificial, linkedQuery, exactStone, normalizeStones, listOptions, filterStones, sortStones, typesFirst, hasActiveFilters, stoneOnlyUrl, init };
 });

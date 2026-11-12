@@ -1753,3 +1753,24 @@ test('«Ванная» and «Полы» say which stone suits them, with ways in
     assert.doesNotMatch(html.slice(html.indexOf('stone-advice'), html.indexOf('stone-controls')), /—|!/, slug);
   });
 });
+
+// (experiment, round 3: a country house -- a staircase and a facade; «перекупщики?»)
+test('«Лестницы» and «Фасады» say which stone suits them; the staircase opens a worked example in the configurator, no price on the page', () => {
+  [['lestnitsy', 'Какой камень выбрать для лестницы'], ['fasady', 'Какой камень выбрать для фасада']].forEach(([slug, title]) => {
+    const html = fs.readFileSync(path.join(site, 'categories', slug + '.html'), 'utf8');
+    assert.ok(html.includes('<h3 class="stone-advice-title">' + title + '</h3>'), slug);
+    assert.ok(html.indexOf('stone-advice') < html.indexOf('stone-controls'), slug);
+    assert.doesNotMatch(html.slice(html.indexOf('stone-advice'), html.indexOf('stone-controls')), /—|!/, slug);
+  });
+  const stairs = fs.readFileSync(path.join(site, 'categories', 'lestnitsy.html'), 'utf8');
+  const block = stairs.slice(stairs.indexOf('<section class="price-path"'), stairs.indexOf('</section>', stairs.indexOf('<section class="price-path"')));
+  assert.ok(block.includes('href="/sayanmramor-calculator/sayanmramor-calculator.html?product=lestnitsa&amp;stone=volakas&amp;pv=1&amp;'), 'the example is the configurator\'s own passport link');
+  assert.ok(block.includes('href="/sayanmramor-calculator/sayanmramor-calculator.html?product=lestnitsa"'));
+  assert.doesNotMatch(block, /—|!/);
+  assert.ok(!block.includes('₽ ') && !/\d\s?000\s?₽/.test(block), 'the page writes no price of its own');
+  ['kamen.html'].concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f)).forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    if (!html.includes('id="stoneGrid"')) return;
+    assert.ok(html.includes('<p class="stone-supplier">Мы обрабатываем камень на своём производстве <a href="/sayanmramor-site/index.html#contacts">в Ивантеевке</a>, Московская область, с 2014 года. Камень в нашей коллекции закупается у Venezia Stone.'), page);
+  });
+});

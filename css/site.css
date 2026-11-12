@@ -979,6 +979,17 @@ h3 { font-size: var(--fs-h3); }
 }
 @media (hover: hover) { .stone-way:hover { border-color: var(--ink); color: var(--ink); } }
 .stone-way[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-dark); }
+.stone-advice-note { margin: calc(-1 * var(--s-2)) 0 var(--s-4); font-size: var(--fs-small); line-height: 1.5; color: var(--muted); }
+/* The way to the price of a whole piece (experiment, round 3: «цену лестницы нашёл только в
+   конфигураторе, и то не сразу»): what the configurator counts, and a worked example opened
+   straight on its result (its own passport link). No price is written on the page. */
+.price-path { max-width: var(--measure); margin: 0 auto var(--section); padding: 0 var(--gutter); }
+.price-path-inner { max-width: 880px; padding: var(--s-6); border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.price-path-title { margin-bottom: var(--s-3); }
+.price-path-inner > p { max-width: 680px; color: var(--ink-soft); line-height: 1.5; }
+.price-path-ways { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-5) 0 var(--s-3); }
+.price-path-ways .btn { border-radius: var(--radius-btn); }
+.price-path-inner > .price-path-note { font-size: var(--fs-small); color: var(--muted); }
 /* What the price on a stone card is (experiment, round 1: «цена плиты или уже столешницы?»). */
 .stone-price-note { max-width: 620px; margin: 0 0 var(--s-2); font-size: var(--fs-small); line-height: 1.5; color: var(--muted); }
 .stone-controls { display: grid; gap: var(--s-3); margin-bottom: var(--s-4); }
@@ -1719,6 +1730,11 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
   .page-head { padding-top: var(--s-6); }
   .portfolio-grid { --row-h: 200px; gap: var(--s-2); }
   .stone-advice { padding: var(--s-4) var(--s-4) var(--s-3); }
+  .price-path-inner { padding: var(--s-5) var(--s-4); }
+  .price-path-ways .btn { flex: 1 1 auto; }
+  /* Three photos to a row leave a caption a third of the phone: a third line keeps the stone's
+     name («Лестница, мрамор Volakas» stopped at «мрамор…»; experiment, round 3). */
+  .portfolio-grid .portfolio-item figcaption { -webkit-line-clamp: 3; line-clamp: 3; }
   .stone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4) var(--s-3); }
   .configure-bar-inner { gap: var(--s-3); }
   .configure-stone.is-empty { font-size: 13px; }
