@@ -791,7 +791,7 @@ test('the offer band: on the home page and all 13 direction pages, each preselec
     const active = (html.match(/<a class="active"[^>]*>([^<]+)<\/a>/) || [])[1];
     assert.equal(labelOf[key], active, page + ': the form picks the page\'s own direction');
     assert.ok(unstamp(html).includes('<script src="/sayanmramor-site/js/offer-form.js"></script>'), page);
-    assert.match(unstamp(html), /<script src="\/sayanmramor-site\/js\/offer-handoff\.js"><\/script>\s*<script src="\/sayanmramor-site\/js\/offer-form\.js">/, page + ': the hand-off right before the request');
+    assert.match(unstamp(html), /<script src="\/sayanmramor-site\/js\/offer-handoff\.js"><\/script>\s*<script src="\/sayanmramor-site\/js\/phone-field\.js"><\/script>\s*<script src="\/sayanmramor-site\/js\/offer-form\.js">/, page + ': the hand-off, the phone field, then the request');
     assert.ok(html.indexOf('class="offer-band offer-talk"') > 0 && html.indexOf('class="offer-band offer-talk"') < html.indexOf('</main>'), page + ': inside main, before the footer');
   });
   const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
@@ -855,7 +855,7 @@ test('the home page is static: header, hero, from stone to object, what can be o
   assert.deepEqual(order, ['home-hero', 'wrap home-s2o', 'wrap home-products', 'home-showroom', 'wrap home-about', 'wrap home-trust', 'offer-band offer-talk', 'wrap home-contacts']);
   assert.match(html, /<main class="home" id="main">/);
   const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace('/sayanmramor-site/', '').replace(/\?v=[0-9a-f]{8}$/, ''));
-  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'js/consent.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/offer-form.js', 'js/site.js']);
+  assert.deepEqual(scripts, ['js/intro.js', 'js/header.js', 'js/consent.js', 'js/contacts-map.js', 'js/picks.js', 'js/offer-handoff.js', 'js/phone-field.js', 'js/offer-form.js', 'js/site.js']);
   assert.doesNotMatch(html, /data-(hero|wall|portal|mast|dock)\b|class="mast|home-main|night-hero|wall-slab|offer-drawing|portal-veil/);
   // The redesign's modules were removed in the clean-up (2026-10-14): no page loaded them.
   ['masthead.js', 'home-hero.js', 'home-wall.js', 'home-portal.js', 'home-request.js'].forEach(f =>
@@ -1083,6 +1083,11 @@ test('three questions (offer-form.js): what, how to address you, where to call; 
   assert.deepEqual(OfferForm.STEPS.map(s => s.q.join('')), ['Что будем делать из камня?', 'Как к вам обращаться?', 'Куда ответить с расчётом?']);
   ['+7 999 123-45-67', '89991234567', '+7 (495) 215-51-45'].forEach(v => assert.ok(OfferForm.phoneOk(v), v));
   ['', '123', '+7 999', 'abc'].forEach(v => assert.ok(!OfferForm.phoneOk(v), v));
+  // The phone field (js/phone-field.js, 2026-11-13): a number of another country counts, a short one says how short.
+  assert.ok(OfferForm.phoneOk('+375 29 123 45 67'));
+  assert.match(OfferForm.contactProblem('+7 999', '').message, /не хватает 7 цифр/);
+  assert.equal(OfferForm.contactProblem('+7 999', '').field, 'phone');
+  assert.match(fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8'), /let viaKeys = false;/, 'the keyboard flag the focus rule reads is declared (a ReferenceError after every step, 2026-11-13)');
   // A phone or an e-mail, at least one; what is filled in must be right (2026-11-12, the owner).
   ['name@mail.ru', ' anna.k@yandex.ru ', 'a@b.co'].forEach(v => assert.ok(OfferForm.emailOk(v), v));
   ['', 'name', 'name@mail', '@mail.ru', 'na me@mail.ru'].forEach(v => assert.ok(!OfferForm.emailOk(v), v));
@@ -1100,7 +1105,8 @@ test('three questions (offer-form.js): what, how to address you, where to call; 
   // Every direction of the site is an answer, and «Пока не знаю»; the name may be skipped; the phone and the consent are required.
   assert.match(src, /DIRECTIONS\.map\(d => d\.label\)\.concat\(\[UNSURE\]\)/);
   assert.match(src, /linkButton\('Можно без имени'/);
-  assert.match(src, /const problem = contactProblem\(phone\.value, email\.value\);/);
+  assert.match(src, /const problem = contactProblem\(phoneField\.value\(\), email\.value\);/);
+  assert.match(src, /const phoneField = PhoneField\.mount\(doc, \{ id: id\('phone'\) \}\);/);
   assert.match(src, /type: 'email', id: id\('email'\), name: 'email'/);
   assert.doesNotMatch(src, /type: 'tel', id: id\('phone'\), name: 'phone', className: 'talk-input'[^}]*required/, 'the phone alone is no longer required');
   assert.match(src, /if \(!consent\.checked\)/);
@@ -1197,7 +1203,7 @@ test('three questions in CSS: scoped to the home page\'s band, hover only where 
   // Every selector belongs to the home page's band (or its keyframes).
   const noComments = block.replace(/\/\*[\s\S]*?\*\//g, '');
   [...noComments.matchAll(/([^{}]+)\{/g)].map(m => m[1].trim()).filter(sel => !sel.startsWith('@')).forEach(sel => {
-    sel.replace(/\([^)]*\)/g, '()').split(',').forEach(s => assert.match(s.trim(), /^(main \.offer-talk|\.offer-talk|\.talk-|\.offer-file-input:focus-visible \+ \.talk-file|from|to)\b/, s.trim()));
+    sel.replace(/\([^)]*\)/g, '()').split(',').forEach(s => assert.match(s.trim(), /^(main \.offer-talk|\.offer-talk|\.talk-|\.phf|\.pk|\.offer-file-input:focus-visible \+ \.talk-file|from|to)\b/, s.trim()));
   });
   assert.match(block, /@media \(prefers-reduced-motion: reduce\) \{ \.talk-step \{ animation: none; \} \}/);
   assert.match(block, /@media \(max-width: 560px\) \{[\s\S]*\.talk-answer \{ flex-direction: column; \}/);

@@ -16,11 +16,11 @@
 // folded: the form stands open under its heading.
 (function (root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = factory(require('./offer-handoff.js'));
+    module.exports = factory(require('./offer-handoff.js'), require('./phone-field.js'));
   } else {
-    root.OfferForm = factory(root.OfferHandoff);
+    root.OfferForm = factory(root.OfferHandoff, root.PhoneField);
   }
-})(typeof window !== 'undefined' ? window : globalThis, function (Handoff) {
+})(typeof window !== 'undefined' ? window : globalThis, function (Handoff, PhoneField) {
 
   // Every direction of the site, in the order of the header menu.
   const DIRECTIONS = [
@@ -238,9 +238,10 @@
     done: 'Мы получили вашу заявку. Мастер подтвердит, что изделие ждёт вас, и договорится о доставке.',
   };
 
-  // A phone is a phone with at least ten digits («+7 999 123-45-67», «89991234567»).
+  // A phone is a whole number of its country («+7 999 123-45-67», «89991234567», «+375 29 123 45 67»):
+  // js/phone-field.js knows the lengths.
   function phoneOk(value) {
-    return String(value || '').replace(/\D/g, '').length >= 10;
+    return !!String(value || '').trim() && PhoneField.problemOf(value) === '';
   }
   // An e-mail is something@something.zone, no spaces.
   function emailOk(value) {
@@ -251,7 +252,7 @@
   function contactProblem(phoneValue, emailValue) {
     const p = String(phoneValue || '').trim(), m = String(emailValue || '').trim();
     if (!p && !m) return { field: 'phone', message: 'Укажите телефон или почту, чтобы мастер мог связаться с вами.' };
-    if (p && !phoneOk(p)) return { field: 'phone', message: 'Проверьте телефон: в номере должно быть не меньше 10 цифр.' };
+    if (p && !phoneOk(p)) return { field: 'phone', message: PhoneField.problemOf(p) };
     if (m && !emailOk(m)) return { field: 'email', message: 'Проверьте почту: она пишется как name@mail.ru.' };
     return null;
   }
@@ -516,7 +517,9 @@
     ]);
 
     // 3. The phone or the e-mail (at least one), a drawing or photo if there is one, the consent, and the request.
-    const phone = el(doc, 'input', { type: 'tel', id: id('phone'), name: 'phone', className: 'talk-input', autocomplete: 'tel', inputmode: 'tel', placeholder: '+7 (___) ___-__-__', 'aria-label': 'Телефон' });
+    // The country on its own button (+7 from the start) and the number beside it (js/phone-field.js).
+    const phoneField = PhoneField.mount(doc, { id: id('phone') });
+    const phone = phoneField.input;
     const email = el(doc, 'input', { type: 'email', id: id('email'), name: 'email', className: 'talk-input', autocomplete: 'email', inputmode: 'email', placeholder: 'Или почта', 'aria-label': 'Электронная почта' });
     const file = el(doc, 'input', { type: 'file', id: id('file'), name: 'file', className: 'offer-file-input' });
     const fileName = el(doc, 'span', { className: 'talk-file-name', textContent: 'Есть чертёж или фото? Прикрепите файл' });
@@ -531,14 +534,14 @@
     const consent = el(doc, 'input', { type: 'checkbox', id: id('consent'), name: 'consent', required: '' });
     const status = el(doc, 'p', { className: 'offer-status talk-status', role: 'status' });
     // A hint goes as soon as the field it was about is put right.
-    phone.addEventListener('input', () => { if (!contactProblem(phone.value, email.value)) status.textContent = ''; state.draftPhone = phone.value; persist(); });
-    email.addEventListener('input', () => { if (!contactProblem(phone.value, email.value)) status.textContent = ''; state.draftEmail = email.value; persist(); });
+    phoneField.onChange(() => { if (!contactProblem(phoneField.value(), email.value)) status.textContent = ''; state.draftPhone = phoneField.value(); persist(); });
+    email.addEventListener('input', () => { if (!contactProblem(phoneField.value(), email.value)) status.textContent = ''; state.draftEmail = email.value; persist(); });
     consent.addEventListener('change', () => { if (consent.checked) status.textContent = ''; });
     const phoneHint = hint(STEPS[2].hint);
     const submit = nextButton('Получить расчёт', 'submit');
     const step3 = question(2, phoneHint, [
       el(doc, 'div', { className: 'talk-answer talk-answer-contacts', role: 'group', 'aria-labelledby': id('q2') }, [
-        el(doc, 'div', { className: 'talk-contacts' }, [phone, email]),
+        el(doc, 'div', { className: 'talk-contacts' }, [phoneField.el, email]),
         submit,
       ]),
       el(doc, 'div', { className: 'talk-extra' }, [
@@ -688,6 +691,11 @@
       renderPassport();
       renderPicks();
     }
+    // Where the focus goes after a step: onto a button only when the keyboard was the last thing used
+    // (a tap leaves no focus ring, 2026-11-12); into a field always.
+    let viaKeys = false;
+    doc.addEventListener('keydown', () => { viaKeys = true; }, true);
+    doc.addEventListener('pointerdown', () => { viaKeys = false; }, true);
     function go(i, focus) {
       state.current = i;
       status.textContent = '';
@@ -703,9 +711,10 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       if (state.current !== 2) return;
-      const problem = contactProblem(phone.value, email.value);
+      const problem = contactProblem(phoneField.value(), email.value);
       if (problem) {
         status.textContent = problem.message;
+        if (problem.field === 'phone') phoneField.markError();
         (problem.field === 'email' ? email : phone).focus();
         return;
       }
@@ -715,7 +724,7 @@
         return;
       }
       if (sending) return;
-      state.phone = phone.value.trim();
+      state.phone = phoneField.value();
       state.email = email.value.trim();
       // The request goes by e-mail (server/lead.php): the client's file and, for a calculator piece,
       // its passport go along. Until the handler answers the button says so and waits.
@@ -764,7 +773,7 @@
         if (saved[k] !== undefined) state[k] = saved[k];
       });
       name.value = state.name || state.draftName || '';
-      phone.value = state.phone || state.draftPhone || '';
+      phoneField.set(state.phone || state.draftPhone || '');
       email.value = state.email || state.draftEmail || '';
       if (state.attachmentName) fileName.textContent = state.attachmentName;
       if (state.current === 3) summary.textContent = summaryLine(state);

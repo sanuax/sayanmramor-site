@@ -1536,6 +1536,99 @@ main .offer-talk .offer-noscript a { color: var(--on-dark); }
 }
 .talk-input::placeholder { color: rgba(233, 231, 225, 0.42); opacity: 1; }
 .talk-input:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent-on-dark); }
+/* ---- The phone: the country on its own button, the number beside it (js/phone-field.js, 2026-11-13, the owner) ----
+   In the request's last question, in the size of the fields round it (64 px, 56 px on a phone). */
+.phf { --phf-h: 64px; --phf-line: rgba(233, 231, 225, 0.25); --phf-fill: rgba(233, 231, 225, 0.08); position: relative; min-width: 0; }
+@media (max-width: 560px) { .phf { --phf-h: 56px; } }
+.phf-row { display: flex; gap: 8px; }
+.phf-box {
+  position: relative; display: flex; flex: 1; align-items: stretch; height: var(--phf-h); min-width: 0; border-radius: 10px;
+  background: var(--phf-fill); box-shadow: inset 0 0 0 1px var(--phf-line); transition: box-shadow var(--dur-fast);
+}
+.phf-box:focus-within { box-shadow: inset 0 0 0 2px var(--accent-on-dark); }
+.phf.is-error .phf-box { box-shadow: inset 0 0 0 2px #d9826b; }
+.phf-num { position: relative; flex: 1; min-width: 0; }
+.phf-input, .phf-ghost {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0 44px 0 20px; border: 0;
+  font: inherit; font-size: 20px; letter-spacing: 0.01em; font-variant-numeric: tabular-nums;
+  line-height: var(--phf-h); white-space: pre; overflow: hidden;
+}
+.phf-input { background: transparent; color: #f1efe9; caret-color: var(--accent-on-dark); outline: none; }
+.phf-ghost { pointer-events: none; color: transparent; }
+.phf-ghost-rest { color: rgba(233, 231, 225, 0.3); }
+/* The tick: the number is whole. */
+.phf-ok {
+  position: absolute; right: 16px; top: 50%; width: 20px; height: 20px; margin-top: -10px; pointer-events: none;
+  fill: none; stroke: var(--accent-on-dark); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  opacity: 0; transform: scale(0.6); transition: opacity 0.18s, transform 0.25s var(--ease-out);
+}
+.phf.is-whole .phf-ok { opacity: 1; transform: none; }
+.phf-country {
+  display: inline-flex; align-items: center; gap: 6px; flex: none; height: var(--phf-h); margin: 0; padding: 0 14px 0 16px;
+  border: 0; border-radius: 10px; background: var(--phf-fill); box-shadow: inset 0 0 0 1px var(--phf-line); cursor: pointer;
+  font: inherit; font-size: 20px; font-variant-numeric: tabular-nums; color: #f1efe9; -webkit-tap-highlight-color: transparent;
+}
+.phf-country[aria-expanded="true"] { box-shadow: inset 0 0 0 2px var(--accent-on-dark); }
+.phf-country:focus-visible { outline: 2px solid var(--accent-on-dark); outline-offset: -4px; }
+@media (hover: hover) { .phf-country:hover { background: rgba(233, 231, 225, 0.12); } }
+.phf-caret { width: 10px; height: 10px; fill: none; stroke: var(--on-dark-muted); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--dur-fast); }
+.phf-country[aria-expanded="true"] .phf-caret { transform: rotate(180deg); }
+.phf-flag { font-size: 22px; line-height: 1; }
+/* A three-digit code (+375) or a long number (Germany, China): smaller type and tighter padding, so the whole number shows in the narrow column. */
+.phf.is-compact .phf-input, .phf.is-compact .phf-ghost { font-size: 17px; padding: 0 36px 0 14px; }
+.phf.is-compact .phf-country { gap: 4px; padding: 0 10px 0 12px; font-size: 17px; }
+.phf.is-compact .phf-flag { font-size: 20px; }
+.phf.is-compact .phf-ok { right: 12px; }
+
+/* The country list: floats under the field on a computer, a sheet from below on a phone. */
+.pk {
+  position: fixed; z-index: 1011; display: flex; flex-direction: column; overflow: hidden; color-scheme: dark;
+  background: var(--graphite-2); color: var(--on-dark); box-shadow: 0 0 0 1px rgba(233, 231, 225, 0.14), 0 24px 48px -16px rgba(0, 0, 0, 0.6);
+  font-size: 15px;
+}
+.pk.is-pop { border-radius: 12px; transform-origin: top left; animation: pk-pop 0.18s var(--ease-out); }
+.pk.is-pop.is-up { transform-origin: bottom left; }
+.pk.is-pop.is-out { animation: pk-pop-out 0.14s ease-in forwards; }
+@keyframes pk-pop { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@keyframes pk-pop-out { to { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+.pk-veil { position: fixed; inset: 0; z-index: 1010; background: rgba(10, 12, 11, 0.55); animation: pk-fade 0.2s; }
+.pk-veil.is-out { animation: pk-fade-out 0.18s forwards; }
+@keyframes pk-fade { from { opacity: 0; } }
+@keyframes pk-fade-out { to { opacity: 0; } }
+.pk.is-sheet {
+  left: 0; right: 0; bottom: 0; height: min(78svh, 620px); border-radius: 18px 18px 0 0;
+  padding-bottom: env(safe-area-inset-bottom); animation: pk-up 0.32s var(--ease-out);
+}
+.pk.is-sheet.is-out { animation: pk-down 0.2s ease-in forwards; }
+@keyframes pk-up { from { transform: translateY(100%); } }
+@keyframes pk-down { to { transform: translateY(100%); } }
+.pk-head { position: relative; display: flex; align-items: center; justify-content: center; padding: 18px 16px 6px; }
+.pk-grip { position: absolute; top: 7px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: rgba(233, 231, 225, 0.24); }
+.pk-title { margin: 0; font-weight: 600; font-size: 16px; }
+.pk-x { position: absolute; right: 8px; top: 10px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--on-dark-muted); font-size: 16px; cursor: pointer; }
+.pk-search { position: relative; flex: none; margin: 10px 10px 4px; }
+.pk-search svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; margin-top: -8px; fill: none; stroke: var(--on-dark-muted); stroke-width: 1.8; stroke-linecap: round; }
+.pk-search input {
+  width: 100%; height: 44px; padding: 0 12px 0 36px; border: 0; border-radius: 8px; background: rgba(233, 231, 225, 0.08);
+  font: inherit; font-size: 16px; color: var(--on-dark); outline: none; -webkit-appearance: none; appearance: none;
+}
+.pk-search input::placeholder { color: rgba(233, 231, 225, 0.42); }
+.pk-search input:focus { box-shadow: inset 0 0 0 2px var(--accent-on-dark); }
+.pk-list { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 6px 8px; }
+.pk-label { margin: 12px 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-dark-muted); }
+.pk-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 0 10px; border: 0; border-radius: 8px;
+  background: none; text-align: left; font: inherit; color: var(--on-dark); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) { .pk-row:hover { background: rgba(233, 231, 225, 0.07); } }
+.pk-row:focus-visible { outline: none; background: rgba(233, 231, 225, 0.1); }
+.pk-row[aria-selected="true"] { color: #fff; font-weight: 600; }
+.pk-flag { font-size: 20px; line-height: 1; }
+.pk-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-code { color: var(--on-dark-muted); font-variant-numeric: tabular-nums; }
+.pk-tick { width: 16px; height: 16px; fill: none; stroke: var(--accent-on-dark); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pk-empty { margin: 16px 12px; line-height: 1.5; color: var(--on-dark-muted); }
+@media (prefers-reduced-motion: reduce) { .pk, .pk-veil, .phf-ok { animation: none !important; transition: none !important; } }
 .talk-next {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 64px; padding: 0 26px;
   border: 0; border-radius: 10px; background: var(--on-dark); color: var(--graphite); white-space: nowrap;
