@@ -120,6 +120,6 @@ test('the legal address is not shown as a place to visit', () => {
   const contacts = index.slice(index.indexOf('id="contacts"'), index.indexOf('</section>', index.indexOf('id="contacts"')));
   assert.ok(!/Складочная/.test(contacts));
   const footer = index.slice(index.indexOf('<footer'));
-  assert.match(footer, /Юридический адрес: г\.Москва, Складочная/);
+  assert.match(footer, /Юридический адрес: 127018, г\. Москва, вн\.тер\.г\. Муниципальный Округ Бутырский, ул Складочная, д\. 3, стр\. 5, помещ\. 1\/1/);
   assert.equal((index.match(/Складочная/g) || []).length, 1);
 });
