@@ -594,7 +594,7 @@
     if (!wall) return;
     if (win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const make = (tag, cls, text) => { const el = doc.createElement(tag); el.className = cls; if (text) el.textContent = text; return el; };
-    Array.from(wall.querySelectorAll('.home-trust-item')).forEach((a, n) => {
+    Array.from(wall.querySelectorAll('a.home-trust-item')).forEach((a, n) => {
       const caption = a.querySelector('.home-trust-mcx-name'), logo = a.querySelector('.home-trust-logo');
       const name = (caption && caption.textContent) || (logo && logo.alt) || '';
       const said = a.querySelector('.visually-hidden');

@@ -911,8 +911,18 @@ test('about, why us, who trusts us: the old site\'s three blocks -- its words an
   assert.doesNotMatch(trustPanel, /background/, 'no ground of its own: between the two dark cards it stays on the limestone, so light and dark take turns');
   assert.doesNotMatch(trust, /2&#8239;301|home-trust-num/, 'no figure and no numbers on the tiles');
   const links = [...trust.matchAll(/<a class="home-trust-item" href="([^"]+)" target="_blank" rel="noopener">/g)].map(m => m[1]);
-  assert.deepEqual(links, ['https://resobank.com/', 'https://www.rshb.ru/', 'https://bamboobar.su/', 'https://www.vtb.ru/', 'https://mcx.gov.ru/', 'https://hlebnasushny.ru/']);
-  assert.equal((trust.match(/откроется в новой вкладке/g) || []).length, 6, 'each outside link says it opens a new tab');
+  // The three banks' own sites carry certificates of the Russian Trusted CA (the Ministry of Digital Development), which
+  // Firefox and Chrome do not trust by default: a click showed a security warning (2026-11-14, the owner: first option).
+  // Their tiles are logos only; the others still link out.
+  assert.deepEqual(links, ['https://bamboobar.su/', 'https://mcx.gov.ru/', 'https://hlebnasushny.ru/']);
+  ['trust-reso', 'trust-rshb', 'trust-vtb'].forEach(c => assert.match(trust, new RegExp('<li><span class="home-trust-item is-static"><img class="home-trust-logo ' + c + '"'), c + ' is a plain tile'));
+  assert.doesNotMatch(trust, /resobank|rshb\.ru|vtb\.ru/, 'no address of those banks is left in the block');
+  assert.equal((trust.match(/откроется в новой вкладке/g) || []).length, 3, 'each outside link says it opens a new tab');
+  const trustCss = fs.readFileSync(path.join(site, 'css', 'site.css'), 'utf8');
+  assert.match(trustCss, /\.home-trust-item\.is-static::after \{ display: none; \}/, 'a plain tile has no arrow');
+  assert.match(trustCss, /a\.home-trust-item:hover \{ box-shadow/, 'only a link answers the pointer');
+  assert.doesNotMatch(trustCss, /\n  \.home-trust-item:hover/, 'no hover rule left that a plain tile would also get');
+  assert.match(fs.readFileSync(path.join(site, 'js', 'site.js'), 'utf8'), /wall\.querySelectorAll\('a\.home-trust-item'\)/, 'only the links turn over to their stub');
   [...html.matchAll(/\/sayanmramor-site\/(assets\/(?:home\/trust\/|home\/about-|portfolio\/035)[^ "]+)/g)].forEach(m => assert.ok(fs.existsSync(path.join(site, m[1])), m[1]));
 });
 
