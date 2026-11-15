@@ -235,13 +235,17 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a tablet the photo has a set height: nothing shifts when it arrives');
   // svh, not dvh: the window and its photo must not resize when Safari's bars move.
   assert.match(windowRule, /max-height: calc\(100svh - 48px\)/);
+  // A height of its own, never its content's: content-sized, iOS Safari shrank it turning from stone to
+  // stone and did not grow it back (the owner's film, 2026-11-15).
+  assert.match(windowRule, /height: min\(calc\(100svh - 48px\), 640px\);/);
+  assert.match(siteCss, /\.stone-view \{ width: calc\(100vw - 24px\);[^}]*height: min\(calc\(100svh - 24px\), 780px\); \}/);
   assert.match(siteCss, /28svh\); \}/, 'on a short screen the photo gives way so the text keeps its room');
   const block = siteCss.slice(siteCss.indexOf('.stone-view {'), siteCss.indexOf('.stone-more {'));
   assert.doesNotMatch(block, /dvh/, 'no dvh anywhere in the stone window');
   // A phone: a sheet from below (the owner chose concept «Б. Шторка», 2026-11-15), its photo the full
   // width and of a set height, pulled down by the photo it goes.
   const phone = block.slice(block.indexOf('@media screen and (max-width: 640px)'));
-  assert.match(phone, /\.stone-view \{ width: 100%;[^}]*max-height: calc\(100svh - 36px\); margin: auto 0 0; border-radius: 20px 20px 0 0;/);
+  assert.match(phone, /\.stone-view \{ width: 100%;[^}]*max-height: calc\(100svh - 36px\); height: calc\(100vh - 36px\); height: calc\(100svh - 36px\); margin: auto 0 0; border-radius: 20px 20px 0 0;/);
   assert.match(phone, /\.stone-view\[open\] \{ animation: stone-sheet-in 0\.42s var\(--ease-drawer\); \}/);
   assert.match(phone, /\.stone-view-media \{[^}]*min\(calc\(100vw \* 10 \/ 17\), 34svh\);/);
   assert.match(block, /@keyframes stone-sheet-in \{ from \{ transform: translateY\(100%\); \} \}/);
