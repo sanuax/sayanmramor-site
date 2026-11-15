@@ -112,11 +112,11 @@ test('every page with the stone gallery has the filter row, and loads js/price-f
     .forEach(part => assert.ok(src.includes(part), part));
 });
 
-test('the page reads stone data only from the light stone index, never the full slabs.json', () => {
+test('the page reads stone data only from the light stone index (and the stone window from the light slab list), never the full slabs.json', () => {
   assert.equal(CategoryPage.STONE_INDEX_URL, '/sayanmramor-calculator/data/stone-index.json');
   assert.equal(CategoryPage.STONE_IMAGE_BASE, '/sayanmramor-calculator/data/');
   const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'category-page.js'), 'utf8').replace(/^\s*\/\/.*$/gm, '');
-  assert.doesNotMatch(src, /slabs\.json/, 'no code path fetches the 8.9 MB catalog');
+  assert.doesNotMatch(src, /(?<!stone-)slabs\.json/, 'no code path fetches the 8.9 MB catalog');
 });
 
 test('the index shape (seven fields as scripts/build_stone_index.py writes them: price_from, countries / colors with their labels only; only orderable stones) gives the same gallery as slabs.json', () => {
@@ -216,7 +216,9 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.doesNotMatch(src, /renderSelection\(\); openView\(/, 'opening never chooses the stone');
   // No page lock on a phone (overflow hidden on the whole page resizes iOS Safari\'s visible area); the veil swallows swipes instead.
   assert.match(src, /const touch = !!\(window\.matchMedia && window\.matchMedia\('\(pointer: coarse\)'\)\.matches\);\s*if \(!touch\) \{[^}]*viewer-open/);
-  assert.match(src, /dialog\.addEventListener\('touchmove', e => \{\s*if \(!text\.contains\(e\.target\) \|\| text\.scrollHeight <= text\.clientHeight \+ 1\) e\.preventDefault\(\);\s*\}, \{ passive: false \}\);/);
+  // A swipe outside the scrolling text never scrolls the page; the row of slabs scrolls sideways by itself.
+  assert.match(src, /if \(g && g\.inRow && g\.axis === 'x'\) return;/);
+  assert.match(src, /if \(!text\.contains\(e\.target\) \|\| text\.scrollHeight <= text\.clientHeight \+ 1 \|\| \(g && g\.axis === 'x'\)\) e\.preventDefault\(\);\s*\}, \{ passive: false \}\);/);
   // Opened by a tap the window holds the focus itself: no ring round its first link «в заявке» (2026-11-12, the owner).
   assert.match(src, /\(viaKeys \? view\.close : view\.dialog\)\.focus\(\{ preventScroll: true \}\);/);
   const siteCss = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
@@ -229,21 +231,66 @@ test('a stone opens large by its own button on the photo (a press on the card on
   assert.match(siteCss, /\.stone-view-text \{[^}]*min-height: 0; overflow-y: auto;/, 'the text scrolls in its own box');
   assert.match(siteCss, /\.stone-view-media img \{ position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0\.25s ease; \}/);
   assert.match(siteCss, /\.stone-view-media img\.is-loaded \{ opacity: 1; \}/);
-  assert.match(siteCss, /@keyframes stone-view-in \{ from \{ opacity: 0; \} \}/, 'opening is a fade: nothing moves or scales');
-  assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a phone the photo has a set height: nothing shifts when it arrives');
+  assert.match(siteCss, /@keyframes stone-view-in \{ from \{ opacity: 0; \} \}/, 'on a computer opening is a fade: nothing moves or scales');
+  assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a tablet the photo has a set height: nothing shifts when it arrives');
   // svh, not dvh: the window and its photo must not resize when Safari's bars move.
   assert.match(windowRule, /max-height: calc\(100svh - 48px\)/);
-  assert.match(siteCss, /28svh\); \}/, 'on a short phone screen the photo gives way so the text needs no scrolling');
-  assert.doesNotMatch(siteCss.slice(siteCss.indexOf('.stone-view {'), siteCss.indexOf('.stone-more {')), /dvh/, 'no dvh anywhere in the stone window');
+  assert.match(siteCss, /28svh\); \}/, 'on a short screen the photo gives way so the text keeps its room');
+  const block = siteCss.slice(siteCss.indexOf('.stone-view {'), siteCss.indexOf('.stone-more {'));
+  assert.doesNotMatch(block, /dvh/, 'no dvh anywhere in the stone window');
+  // A phone: a sheet from below (the owner chose concept «Б. Шторка», 2026-11-15), its photo the full
+  // width and of a set height, pulled down by the photo it goes.
+  const phone = block.slice(block.indexOf('@media screen and (max-width: 640px)'));
+  assert.match(phone, /\.stone-view \{ width: 100%;[^}]*max-height: calc\(100svh - 36px\); margin: auto 0 0; border-radius: 20px 20px 0 0;/);
+  assert.match(phone, /\.stone-view\[open\] \{ animation: stone-sheet-in 0\.42s var\(--ease-drawer\); \}/);
+  assert.match(phone, /\.stone-view-media \{[^}]*min\(calc\(100vw \* 10 \/ 17\), 34svh\);/);
+  assert.match(block, /@keyframes stone-sheet-in \{ from \{ transform: translateY\(100%\); \} \}/);
+  assert.match(block, /prefers-reduced-motion: reduce\) \{ \.stone-view\[open\] \{ animation: stone-view-veil 0\.2s ease; \}[^@]*\.stone-view \{ transition: none; \}/, 'no sliding under reduced motion');
   assert.match(src, /img\.addEventListener\('load', \(\) => img\.classList\.add\('is-loaded'\)\);/);
   assert.match(src, /view\.text\.scrollTop = 0;/);
   assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
-  assert.match(src, /Размеров плит, толщины и фактуры в каталоге нет/);
+  // Every slab in stock (the configurator's data/stone-slabs.json, loaded when a window first opens):
+  // its size and price, in a row that scrolls sideways; the thickness and finish are asked for.
+  assert.match(src, /fetch\(STONE_SLABS_URL\)/);
+  assert.match(src, /const row = el\('ul', 'stone-view-slabs'\);/);
+  assert.match(src, /Толщину и фактуру поверхности подберём под изделие/);
+  assert.doesNotMatch(src, /Размеров плит, толщины и фактуры в каталоге нет/);
+  // The next stone of the gallery: arrows on the photo, a swipe, the keyboard's arrows.
+  assert.match(src, /neighbour\(filtered, stone, step\)/);
+  assert.match(src, /e\.key === 'ArrowRight'/);
   assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);
   assert.match(src, /configure\.href = buildUrl\(s\.id\);/);
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
   assert.match(css, /\.stone-view-media img \{[^}]*object-fit: cover;/, 'the stone fills its whole side, no coloured margin (the owner, 2026-11-12)');
   assert.match(css, /\.stone-view-actions \.btn \{ border-radius: var\(--radius-btn\); \}/, 'the buttons stay rectangles');
+});
+
+test('the stone window turns to the next stone of the gallery as it is filtered and sorted, round the ends (the owner, 2026-11-15)', () => {
+  const list = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  assert.equal(CategoryPage.neighbour(list, { id: 'b' }, 1).id, 'c');
+  assert.equal(CategoryPage.neighbour(list, { id: 'b' }, -1).id, 'a');
+  assert.equal(CategoryPage.neighbour(list, { id: 'c' }, 1).id, 'a', 'after the last comes the first');
+  assert.equal(CategoryPage.neighbour(list, { id: 'a' }, -1).id, 'c');
+  assert.equal(CategoryPage.neighbour(list, { id: 'x' }, 1), null, 'a stone the gallery does not show has no neighbours');
+  assert.equal(CategoryPage.neighbour([{ id: 'a' }], { id: 'a' }, 1), null, 'one stone: nothing to turn to');
+  assert.equal(CategoryPage.neighbour(list, null, 1), null);
+});
+
+test('the stone window says how many slabs are in stock, their prices and the date of the list', () => {
+  assert.equal(CategoryPage.inStock(1), '1 плита в наличии');
+  assert.equal(CategoryPage.inStock(3), '3 плиты в наличии');
+  assert.equal(CategoryPage.inStock(11), '11 плит в наличии');
+  assert.equal(CategoryPage.inStock(22), '22 плиты в наличии');
+  assert.equal(CategoryPage.inStock(36), '36 плит в наличии');
+  assert.equal(CategoryPage.inStock(112), '112 плит в наличии');
+  assert.deepEqual(CategoryPage.priceSpan([[300, 190, 44288], [289, 168, 61151], [200, 100, null]]), { from: 44288, to: 61151 });
+  assert.equal(CategoryPage.priceSpan([[200, 100, null]]), null);
+  assert.equal(CategoryPage.priceSpan([]), null);
+  assert.equal(CategoryPage.stockDate('2026-09-15T23:53:23+03:00'), 'Наличие и цены на 15 сентября 2026');
+  assert.equal(CategoryPage.stockDate('2026-01-02'), 'Наличие и цены на 2 января 2026');
+  assert.equal(CategoryPage.stockDate(null), '');
+  assert.equal(CategoryPage.stockDate('soon'), '');
+  assert.equal(CategoryPage.STONE_SLABS_URL, '/sayanmramor-calculator/data/stone-slabs.json');
 });
 
 // (experiment, round 3: «Фасады» opened on white marble and quartz agglomerate)

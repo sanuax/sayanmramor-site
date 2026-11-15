@@ -1200,17 +1200,20 @@ h2.stone-advice-title { font-size: var(--fs-h3); }   /* it has no «Камень
 @media (hover: hover) and (prefers-reduced-motion: reduce) { .stone-open:hover svg { transform: none; } }
 
 /* ---- The stone, large (js/category-page.js, experiment, round 2) ----------------
-   Over the page on a dark veil: the stone's photo whole (the card shows a square of it) and,
-   beside it, what the catalogue knows of the stone and the two ways on. */
+   Over the page on a dark veil: the stone's photo whole (the card shows a square of it) and, beside
+   it, what the catalogue knows of the stone, every slab in stock and the two ways on. Arrows on the
+   photo turn to the next stone. On a phone it is a sheet from below (the owner chose concept
+   «Б. Шторка», 2026-11-15). */
 .stone-view {
   width: min(1120px, calc(100vw - 48px)); max-width: none; max-height: calc(100vh - 48px); max-height: calc(100svh - 48px); margin: auto; padding: 0;
   border: 0; border-radius: var(--radius); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-2);
   overflow: hidden;   /* the window itself never scrolls: only its text does (below), the photo holds still (2026-11-12) */
 }
-.stone-view[open] { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); grid-template-rows: minmax(0, 1fr); animation: stone-view-in 0.2s ease; }
+.stone-view[open] { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: 'media text' 'media actions'; animation: stone-view-in 0.2s ease; }
 .stone-view::backdrop { background: rgba(18, 20, 18, 0.62); animation: stone-view-veil 0.24s ease; }
 /* A fade, nothing moves or scales (2026-11-12, the owner: it jerked on an iPhone): a big layer
-   that moves while its photo is still being decoded is what made it. */
+   that moves while its photo is still being decoded is what made it. The phone's sheet slides in
+   whole (below); its photo has its own box and fades in once decoded, so nothing in it moves. */
 @keyframes stone-view-in { from { opacity: 0; } }
 @keyframes stone-view-veil { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .stone-view[open] { animation: stone-view-veil 0.2s ease; } }
@@ -1221,24 +1224,68 @@ h2.stone-advice-title { font-size: var(--fs-h3); }   /* it has no «Камень
    under it, and lost it from screenshots (the owner, 2026-11-12). The text scrolls in its own box
    below it. The window holds the focus itself when opened by a tap: no ring. */
 .stone-view:focus { outline: none; }
-.stone-view-media { position: relative; overflow: hidden; min-height: 280px; background: var(--surface-sunk); }
+.stone-view svg { display: block; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.stone-view-media { grid-area: media; position: relative; overflow: hidden; min-height: 280px; background: var(--surface-sunk); }
 .stone-view-media img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.25s ease; }
 .stone-view-media img.is-loaded { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .stone-view-media img { transition: none; } }
-.stone-view-text { display: flex; flex-direction: column; gap: var(--s-3); min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-6) var(--s-5) var(--s-5); }
-.stone-view-kind { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0; padding-right: 40px; font-size: var(--fs-small); color: var(--muted); }
+.stone-view-grab { display: none; }
+/* The next stone of the gallery: two round buttons on the photo's sides. */
+.stone-view-step {
+  position: absolute; top: 50%; display: grid; place-items: center; width: 40px; height: 40px; margin-top: -20px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(248, 247, 244, 0.88); color: var(--ink); box-shadow: 0 2px 10px -3px rgba(28, 29, 27, 0.4); cursor: pointer;
+}
+.stone-view-step.is-prev { left: 12px; }
+.stone-view-step.is-next { right: 12px; }
+.stone-view-step[hidden] { display: none; }
+.stone-view-step:active { transform: scale(0.94); }
+@media (hover: hover) { .stone-view-step:hover { background: var(--surface); } }
+.stone-view-text { grid-area: text; display: flex; flex-direction: column; gap: var(--s-3); min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-6) var(--s-5) var(--s-4); }
+@keyframes stone-turn-next { from { opacity: 0; transform: translateX(24px); } }
+@keyframes stone-turn-prev { from { opacity: 0; transform: translateX(-24px); } }
+.stone-view.turn-next .stone-view-text { animation: stone-turn-next 0.28s var(--ease-out); }
+.stone-view.turn-prev .stone-view-text { animation: stone-turn-prev 0.28s var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .stone-view.turn-next .stone-view-text, .stone-view.turn-prev .stone-view-text { animation: none; } }
+.stone-view-kind { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: 0; padding-right: 40px; font-size: 13px; color: var(--muted); }
 .stone-view-made { padding: 2px 8px; border-radius: var(--radius-btn); background: var(--surface-sunk); color: var(--ink); font-weight: 500; }
-.stone-view-name { margin: 0; font-size: var(--fs-h3); line-height: 1.2; }
-.stone-view-facts { display: grid; gap: var(--s-2); margin: var(--s-1) 0 0; }
-.stone-view-facts > div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: var(--s-3); padding-bottom: var(--s-2); border-bottom: 1px solid var(--line); }
-.stone-view-facts dt { color: var(--muted); font-size: var(--fs-small); }
-.stone-view-facts dd { margin: 0; font-size: var(--fs-small); font-weight: 500; font-variant-numeric: tabular-nums; }
-.stone-view-note { margin: 0; font-size: var(--fs-small); line-height: 1.5; color: var(--ink-soft); }
+.stone-view-name { margin: calc(-1 * var(--s-2)) 0 0; font-family: var(--font); font-size: 26px; font-weight: 600; line-height: 1.15; letter-spacing: -0.02em; text-wrap: balance; }
+.stone-view-sum { margin: 0; font-size: 19px; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; }
+.stone-view-sum span { font-size: 15px; font-weight: 400; color: var(--muted); }
+.stone-view-sub { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.stone-view-sub[hidden] { display: none; }
+/* Every slab in stock: each drawn in its own proportions with the stone in it, standing on one line,
+   its size and price under it; the row scrolls sideways (a computer has its own arrows for it). */
+.stone-view-stock { padding-top: var(--s-4); border-top: 1px solid var(--line); }
+.stone-view-stock[hidden] { display: none; }
+.stone-view-stock-head { display: flex; align-items: center; gap: var(--s-2); margin-bottom: 14px; }
+.stone-view-stock-title { flex: 1 1 auto; margin: 0; font-family: var(--font); font-size: 15px; font-weight: 600; }
+.stone-view-scroll { display: none; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; color: var(--ink); cursor: pointer; }
+.stone-view-scroll svg { width: 16px; height: 16px; }
+.stone-view-scroll:disabled { opacity: 0.35; cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  .stone-view-scroll { display: grid; }
+  .stone-view-scroll:not(:disabled):hover { border-color: var(--ink); }
+}
+.stone-view-slabs {
+  display: flex; gap: 12px; margin: 0 calc(-1 * var(--s-5)); padding: 0 var(--s-5) 4px; list-style: none;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: var(--s-5);
+}
+.stone-view-slabs::-webkit-scrollbar { display: none; }
+.stone-view-slabs li { flex: none; display: grid; gap: 2px; width: 76px; scroll-snap-align: start; }
+.stone-view-slab-box { display: flex; align-items: flex-end; height: 64px; margin-bottom: 6px; }
+.stone-view-slab-pic { display: block; border-radius: 2px; background: center / cover no-repeat var(--surface-sunk); box-shadow: 0 0 0 1px rgba(28, 29, 27, 0.06), 0 8px 10px -8px rgba(28, 29, 27, 0.5); }
+.stone-view-slab-size { font-size: 13px; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.stone-view-slab-price { font-size: 12px; color: var(--muted); font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.stone-view-date { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
+.stone-view-note { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
 .stone-view-note a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-strong); white-space: nowrap; }
 @media (hover: hover) { .stone-view-note a:hover { text-decoration-color: currentColor; } }
-.stone-view-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: auto; padding-top: var(--s-3); }
+.stone-view-actions { grid-area: actions; display: flex; flex-wrap: wrap; gap: var(--s-2); padding: var(--s-3) var(--s-5) var(--s-5); border-top: 1px solid var(--line); }
 .stone-view-actions .btn { border-radius: var(--radius-btn); }
+.stone-view-actions .btn-primary { flex: 1 1 auto; }
+.stone-view-pick { display: inline-flex; align-items: center; gap: var(--s-2); }
 .stone-view-pick[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.stone-view-pick[aria-pressed="true"] svg { fill: currentColor; }
 .stone-view-close {
   position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
   border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--ink); cursor: pointer;
@@ -1247,13 +1294,35 @@ h2.stone-advice-title { font-size: var(--fs-h3); }   /* it has no «Камень
 @media (hover: hover) { .stone-view-close:hover { border-color: var(--ink); } }
 @media screen and (max-width: 900px) {   /* the stone large on a tablet and a phone («screen and»: the first plain 900 px block is the rows' own) */
   .stone-view { width: calc(100vw - 24px); max-height: calc(100vh - 24px); max-height: calc(100svh - 24px); }   /* svh: the height with Safari's bars out, it does not move when they do (2026-11-12) */
-  .stone-view[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .stone-view[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: 'media' 'text' 'actions'; }
   /* The slab photos are 850 x 500 (17:10); on a short screen the photo gives way a little so the text keeps its room. */
   .stone-view-media { min-height: 0; height: calc((100vw - 24px) * 10 / 17); height: min(calc((100vw - 24px) * 10 / 17), 28vh); height: min(calc((100vw - 24px) * 10 / 17), 28svh); }
   .stone-view-text { padding: var(--s-4); }
+  .stone-view-slabs { margin: 0 calc(-1 * var(--s-4)); padding: 0 var(--s-4) 4px; scroll-padding-inline: var(--s-4); }
+  .stone-view-actions { padding: var(--s-3) var(--s-4) var(--s-4); }
   .stone-view-close { top: 8px; right: 8px; background: rgba(248, 247, 244, 0.92); }
-  .stone-view-actions .btn { flex: 1 1 auto; }
 }
+@media screen and (max-width: 640px) {   /* a phone: a sheet from below, the photo the full width; pulled down by the photo it goes */
+  .stone-view { width: 100%; max-height: calc(100vh - 36px); max-height: calc(100svh - 36px); margin: auto 0 0; border-radius: 20px 20px 0 0; transition: transform 0.3s var(--ease-drawer); }
+  .stone-view[open] { animation: stone-sheet-in 0.42s var(--ease-drawer); }
+  .stone-view.is-dragging { transition: none; }
+  .stone-view.is-leaving::backdrop { opacity: 0; transition: opacity 0.28s ease; }
+  .stone-view-media { height: calc(100vw * 10 / 17); height: min(calc(100vw * 10 / 17), 34vh); height: min(calc(100vw * 10 / 17), 34svh); touch-action: none; }
+  .stone-view-grab { position: absolute; top: 8px; left: 50%; display: block; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+  .stone-view-step { width: 36px; height: 36px; margin-top: -18px; }
+  .stone-view-step.is-prev { left: 8px; }
+  .stone-view-step.is-next { right: 8px; }
+  .stone-view-close { top: 12px; right: 12px; width: 36px; height: 36px; border: 0; }
+  .stone-view-kind { padding-right: 0; }
+  .stone-view-text { padding: 18px 20px 12px; }
+  .stone-view-slabs { margin: 0 -20px; padding: 0 20px 4px; scroll-padding-inline: 20px; }
+  .stone-view-actions { display: grid; grid-template-columns: minmax(0, 1fr) 52px; padding: 12px 16px 16px; }
+  .stone-view-actions .btn { min-height: 52px; }
+  .stone-view-pick { justify-content: center; padding: 0; }
+  .stone-view-pick-word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media screen and (max-width: 640px) and (prefers-reduced-motion: reduce) { .stone-view[open] { animation: stone-view-veil 0.2s ease; } .stone-view { transition: none; } }
+@keyframes stone-sheet-in { from { transform: translateY(100%); } }
 .stone-more { display: flex; margin: var(--s-6) auto 0; }
 .stone-more[hidden] { display: none; }
 /* While the stones are on their way (the page's inline script, js/category-page.js): the plates'
