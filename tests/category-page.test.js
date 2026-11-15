@@ -214,59 +214,69 @@ test('a stone opens large by its own button on the photo (a press on the card on
   // It only opens: choosing the stone changed the bottom bar behind the window and the page jerked on a phone.
   assert.match(src, /open\.className = 'stone-open';[^]*open\.addEventListener\('click', e => openView\(stone, e\.detail === 0\)\);/, 'the button opens it large, and only that');
   assert.doesNotMatch(src, /renderSelection\(\); openView\(/, 'opening never chooses the stone');
+  // The window itself is js/stone-view.js, shared with the configurator's stone picker (the owner, 2026-11-15):
+  // here it turns through this gallery as filtered and sorted, leads to the configurator, and its note to the request.
+  assert.match(src, /StoneView\.create\(\{ list: \(\) => filtered, action: \{ label: 'Рассчитать в конфигураторе', href: s => buildUrl\(s\.id\) \}, offer: true \}\)/);
+  const view = fs.readFileSync(path.join(__dirname, '..', 'js', 'stone-view.js'), 'utf8');
   // No page lock on a phone (overflow hidden on the whole page resizes iOS Safari\'s visible area); the veil swallows swipes instead.
-  assert.match(src, /const touch = !!\(window\.matchMedia && window\.matchMedia\('\(pointer: coarse\)'\)\.matches\);\s*if \(!touch\) \{[^}]*viewer-open/);
+  assert.match(view, /const touch = !!\(window\.matchMedia && window\.matchMedia\('\(pointer: coarse\)'\)\.matches\);\s*if \(!touch\) \{[^}]*viewer-open/);
   // A swipe outside the scrolling text never scrolls the page; the row of slabs scrolls sideways by itself.
-  assert.match(src, /if \(g && g\.inRow && g\.axis === 'x'\) return;/);
-  assert.match(src, /if \(!text\.contains\(e\.target\) \|\| text\.scrollHeight <= text\.clientHeight \+ 1 \|\| \(g && g\.axis === 'x'\)\) e\.preventDefault\(\);\s*\}, \{ passive: false \}\);/);
+  assert.match(view, /if \(g && g\.inRow && g\.axis === 'x'\) return;/);
+  assert.match(view, /if \(!text\.contains\(e\.target\) \|\| text\.scrollHeight <= text\.clientHeight \+ 1 \|\| \(g && g\.axis === 'x'\)\) e\.preventDefault\(\);\s*\}, \{ passive: false \}\);/);
   // Opened by a tap the window holds the focus itself: no ring round its first link «в заявке» (2026-11-12, the owner).
-  assert.match(src, /\(viaKeys \? view\.close : view\.dialog\)\.focus\(\{ preventScroll: true \}\);/);
-  const siteCss = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
-  assert.match(siteCss, /\.stone-view:focus \{ outline: none; \}/);
+  assert.match(view, /\(viaKeys \? close : dialog\)\.focus\(\{ preventScroll: true \}\);/);
+  assert.match(view, /img\.addEventListener\('load', \(\) => img\.classList\.add\('is-loaded'\)\);/);
+  assert.match(view, /text\.scrollTop = 0;/);
+  assert.match(view, /const dialog = el\('dialog', 'stone-view'\);/);
+  // Every slab in stock (the configurator's data/stone-slabs.json, loaded when a window first opens):
+  // its size and price, in a row that scrolls sideways; the thickness and finish are asked for.
+  assert.match(view, /fetch\(STONE_SLABS_URL\)/);
+  assert.match(view, /const row = el\('ul', 'stone-view-slabs'\);/);
+  assert.match(view, /Толщину и фактуру поверхности подберём под изделие/);
+  assert.doesNotMatch(view + src, /Размеров плит, толщины и фактуры в каталоге нет/);
+  // The next stone of the list: arrows on the photo, a swipe, the keyboard's arrows.
+  assert.match(view, /neighbour\(list\(\), stone, step\)/);
+  assert.match(view, /e\.key === 'ArrowRight'/);
+  assert.match(view, /if \(action\.href\) go\.href = action\.href\(s\);/);
+
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'stone-view.css'), 'utf8');
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8'), /\.stone-view[ {-]/, 'the window\'s styles live in css/stone-view.css only');
+  assert.match(css, /\.stone-view:focus \{ outline: none; \}/);
   // The window is not a scroller (iOS Safari left the photo standing over the scrolling text and lost it
   // from screenshots): the text scrolls in its own box, the photo has a box of its own and fades in.
-  const windowRule = siteCss.match(/\n\.stone-view \{[^}]*\}/)[0];
+  const windowRule = css.match(/\n\.stone-view \{[^}]*\}/)[0];
   assert.match(windowRule, /overflow: hidden;/, 'the window does not scroll');
   assert.doesNotMatch(windowRule, /overflow: auto/);
-  assert.match(siteCss, /\.stone-view-text \{[^}]*min-height: 0; overflow-y: auto;/, 'the text scrolls in its own box');
-  assert.match(siteCss, /\.stone-view-media img \{ position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0\.25s ease; \}/);
-  assert.match(siteCss, /\.stone-view-media img\.is-loaded \{ opacity: 1; \}/);
-  assert.match(siteCss, /@keyframes stone-view-in \{ from \{ opacity: 0; \} \}/, 'on a computer opening is a fade: nothing moves or scales');
-  assert.match(siteCss, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a tablet the photo has a set height: nothing shifts when it arrives');
+  assert.match(css, /\.stone-view-text \{[^}]*min-height: 0; overflow-y: auto;/, 'the text scrolls in its own box');
+  assert.match(css, /\.stone-view-media img \{ position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0\.25s ease; \}/, 'the stone fills its whole side, no coloured margin (the owner, 2026-11-12)');
+  assert.match(css, /\.stone-view-media img\.is-loaded \{ opacity: 1; \}/);
+  assert.match(css, /@keyframes stone-view-in \{ from \{ opacity: 0; \} \}/, 'on a computer opening is a fade: nothing moves or scales');
+  assert.match(css, /\.stone-view-media \{ min-height: 0; height: calc\(\(100vw - 24px\) \* 10 \/ 17\);/, 'on a tablet the photo has a set height: nothing shifts when it arrives');
   // svh, not dvh: the window and its photo must not resize when Safari's bars move.
   assert.match(windowRule, /max-height: calc\(100svh - 48px\)/);
   // A height of its own, never its content's: content-sized, iOS Safari shrank it turning from stone to
   // stone and did not grow it back (the owner's film, 2026-11-15).
   assert.match(windowRule, /height: min\(calc\(100svh - 48px\), 640px\);/);
-  assert.match(siteCss, /\.stone-view \{ width: calc\(100vw - 24px\);[^}]*height: min\(calc\(100svh - 24px\), 780px\); \}/);
-  assert.match(siteCss, /28svh\); \}/, 'on a short screen the photo gives way so the text keeps its room');
-  const block = siteCss.slice(siteCss.indexOf('.stone-view {'), siteCss.indexOf('.stone-more {'));
-  assert.doesNotMatch(block, /dvh/, 'no dvh anywhere in the stone window');
+  assert.match(css, /\.stone-view \{ width: calc\(100vw - 24px\);[^}]*height: min\(calc\(100svh - 24px\), 780px\); \}/);
+  assert.match(css, /28svh\); \}/, 'on a short screen the photo gives way so the text keeps its room');
+  assert.doesNotMatch(css, /dvh/, 'no dvh anywhere in the stone window');
   // A phone: a sheet from below (the owner chose concept «Б. Шторка», 2026-11-15), its photo the full
   // width and of a set height, pulled down by the photo it goes.
-  const phone = block.slice(block.indexOf('@media screen and (max-width: 640px)'));
+  const phone = css.slice(css.indexOf('@media screen and (max-width: 640px)'));
   assert.match(phone, /\.stone-view \{ width: 100%;[^}]*max-height: calc\(100svh - 36px\); height: calc\(100vh - 36px\); height: calc\(100svh - 36px\); margin: auto 0 0; border-radius: 20px 20px 0 0;/);
-  assert.match(phone, /\.stone-view\[open\] \{ animation: stone-sheet-in 0\.42s var\(--ease-drawer\); \}/);
+  assert.match(phone, /\.stone-view\[open\] \{ animation: stone-sheet-in 0\.42s var\(--ease-drawer, [^)]*\)\); \}/);
   assert.match(phone, /\.stone-view-media \{[^}]*min\(calc\(100vw \* 10 \/ 17\), 34svh\);/);
-  assert.match(block, /@keyframes stone-sheet-in \{ from \{ transform: translateY\(100%\); \} \}/);
-  assert.match(block, /prefers-reduced-motion: reduce\) \{ \.stone-view\[open\] \{ animation: stone-view-veil 0\.2s ease; \}[^@]*\.stone-view \{ transition: none; \}/, 'no sliding under reduced motion');
-  assert.match(src, /img\.addEventListener\('load', \(\) => img\.classList\.add\('is-loaded'\)\);/);
-  assert.match(src, /view\.text\.scrollTop = 0;/);
-  assert.match(src, /const dialog = el\('dialog', 'stone-view'\);/);
-  // Every slab in stock (the configurator's data/stone-slabs.json, loaded when a window first opens):
-  // its size and price, in a row that scrolls sideways; the thickness and finish are asked for.
-  assert.match(src, /fetch\(STONE_SLABS_URL\)/);
-  assert.match(src, /const row = el\('ul', 'stone-view-slabs'\);/);
-  assert.match(src, /Толщину и фактуру поверхности подберём под изделие/);
-  assert.doesNotMatch(src, /Размеров плит, толщины и фактуры в каталоге нет/);
-  // The next stone of the gallery: arrows on the photo, a swipe, the keyboard's arrows.
-  assert.match(src, /neighbour\(filtered, stone, step\)/);
-  assert.match(src, /e\.key === 'ArrowRight'/);
-  assert.match(src, /el\('a', 'btn btn-primary', 'Рассчитать в конфигураторе'\)/);
-  assert.match(src, /configure\.href = buildUrl\(s\.id\);/);
-  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'site.css'), 'utf8');
-  assert.match(css, /\.stone-view-media img \{[^}]*object-fit: cover;/, 'the stone fills its whole side, no coloured margin (the owner, 2026-11-12)');
-  assert.match(css, /\.stone-view-actions \.btn \{ border-radius: var\(--radius-btn\); \}/, 'the buttons stay rectangles');
+  assert.match(css, /@keyframes stone-sheet-in \{ from \{ transform: translateY\(100%\); \} \}/);
+  assert.match(css, /prefers-reduced-motion: reduce\) \{ \.stone-view\[open\] \{ animation: stone-view-veil 0\.2s ease; \}[^@]*\.stone-view \{ transition: none; \}/, 'no sliding under reduced motion');
+  assert.match(css, /\.stone-view-actions \.btn \{ border-radius: var\(--radius-btn, 6px\); \}/, 'the buttons stay rectangles');
+  // The configurator does not load css/tokens.css: every token carries its value as a fallback.
+  assert.doesNotMatch(css, /var\(--[a-z0-9-]+\)/, 'no token without a fallback');
+  // Every page with a stone gallery loads the window (its script before category-page.js).
+  ['kamen.html', 'categories/poly.html', 'categories/stoleshnitsy-kuhnya.html'].forEach(page => {
+    const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
+    assert.match(html, /<link rel="stylesheet" href="\/sayanmramor-site\/css\/stone-view\.css\?v=[0-9a-f]{8}">/, page);
+    assert.match(html, /<script src="\/sayanmramor-site\/js\/stone-view\.js\?v=[0-9a-f]{8}"><\/script>\s*<script src="\/sayanmramor-site\/js\/category-page\.js/, page);
+  });
 });
 
 test('the stone window turns to the next stone of the gallery as it is filtered and sorted, round the ends (the owner, 2026-11-15)', () => {

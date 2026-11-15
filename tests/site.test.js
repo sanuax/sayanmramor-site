@@ -1893,7 +1893,7 @@ test('every direction page says which stone suits it; the spa, hammams and pools
 });
 
 test('the stone window does not repeat the price sentence (it has the price row); the staircase block leads with «Рассчитать свою лестницу»', () => {
-  const src = fs.readFileSync(path.join(site, 'js', 'category-page.js'), 'utf8');
+  const src = fs.readFileSync(path.join(site, 'js', 'stone-view.js'), 'utf8');   // the window itself, since 2026-11-15
   assert.doesNotMatch(src, /Цена - за квадратный метр самого камня/);
   assert.match(src, /'Толщину и фактуру поверхности подберём под изделие - '/);   // the slabs and their sizes are shown since 2026-11-15
   const stairs = fs.readFileSync(path.join(site, 'categories', 'lestnitsy.html'), 'utf8');
