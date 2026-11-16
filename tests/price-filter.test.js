@@ -66,7 +66,7 @@ test('inRange and summary: an unset end is open; a stone without a price passes 
   assert.equal(PriceFilter.summary({ from: null, to: null }), '');
   assert.equal(plain(PriceFilter.summary({ from: 10000, to: null })), 'от 10 тыс.');
   assert.equal(plain(PriceFilter.summary({ from: null, to: 50000 })), 'до 50 тыс.');
-  assert.equal(plain(PriceFilter.summary({ from: 10000, to: 50000 })), '10 тыс. – 50 тыс.');
+  assert.equal(plain(PriceFilter.summary({ from: 10000, to: 50000 })), '10 тыс. - 50 тыс.');
 });
 
 test('the site and the configurator carry the same file', () => {

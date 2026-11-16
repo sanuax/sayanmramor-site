@@ -764,8 +764,10 @@ test('the privacy policy page: the old site text, from «Город Москва
   assert.ok(html.includes('<h2>9. Заключительные положения</h2>'));
   assert.ok(html.includes('<p>Дата размещения: 17.01.2022</p>'));
   const article = html.slice(html.indexOf('<article'), html.indexOf('</article>'));
-  assert.ok(html.includes('<p>Редакция от 08.11.2026</p>'));
-  assert.equal((article.match(/<(p|h2)>/g) || []).length, 58);
+  assert.ok(html.includes('<p>Редакция от 16.11.2026</p>'));
+  // 8.6 (2026-11-16, the owner): AR uses the camera inside the browser or the system, the site never gets it
+  assert.ok(html.includes('<p>8.6. Режим дополненной реальности (AR)'));
+  assert.equal((article.match(/<(p|h2)>/g) || []).length, 59);
 });
 
 test('the offer form lists every direction of the site, the three new ones included', () => {
