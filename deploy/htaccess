@@ -1,0 +1,93 @@
+# sayanmramor.ru on the reg.ru hosting. Copied into the build as .htaccess by
+# scripts/build_domain.js. Site at the root, the configurator at /studio/.
+
+Options -Indexes
+DirectoryIndex index.html
+AddDefaultCharset utf-8
+ErrorDocument 404 /index.html
+
+AddType application/javascript .js .mjs
+AddType application/json .json
+AddType image/webp .webp
+AddType image/svg+xml .svg
+AddType font/woff2 .woff2
+AddType model/vnd.usdz+zip .usdz
+AddType model/gltf-binary .glb
+AddType application/manifest+json .webmanifest
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # www and plain http -> https://sayanmramor.ru
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # one address per page
+    RewriteRule ^index\.html$ / [R=301,L]
+    RewriteRule ^studio/index\.html$ /studio/ [R=301,L]
+    RewriteRule ^studio$ /studio/ [R=301,L]
+
+    # addresses of the GitHub Pages copy, if anyone links them here
+    RewriteRule ^sayanmramor-calculator/(sayanmramor-calculator\.html)?$ /studio/ [R=301,L,QSA]
+    RewriteRule ^sayanmramor-site/(.*)$ /$1 [R=301,L,QSA]
+
+    # the old Bitrix site (until 2026-11): sections -> the new pages
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(lestnits[^/]*)$ /categories/lestnitsy.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(stupen[^/]*)$ /categories/stupeni.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(podokonnik[^/]*)$ /categories/podokonniki.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(poly[^/]*)$ /categories/poly.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(sten[^/]*)$ /categories/steny.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(vannye[^/]*)$ /categories/stoleshnitsy-vannaya.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(kukhni[^/]*|stoleshnits[^/]*)$ /categories/stoleshnitsy-kuhnya.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(kamin[^/]*)$ /categories/kaminy.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(fasad[^/]*)$ /categories/fasady.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(panno[^/]*|barelef[^/]*)$ /categories/panno.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(spa-zon[^/]*)$ /categories/spa-zony.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(hammam[^/]*)$ /categories/hammamy.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(basseyn[^/]*)$ /categories/basseyny.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(eksklyuzivn[^/]*|svetilnik[^/]*)$ /katalog.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?(/.*)?$ / [R=301,L,NC]
+    RewriteRule ^(catalog|products|import-stones)(/.*)?$ /kamen.html [R=301,L,NC]
+    RewriteRule ^privacy-policy\.php$ /privacy.html [R=301,L,NC]
+    RewriteRule ^contacts(/.*)?$ /#contacts [R=301,L,NE,NC]
+    RewriteRule ^about(/.*)?$ /#about [R=301,L,NE,NC]
+    RewriteRule ^(portfolio|blog|qr|search|personal|auth|test)(/.*)?$ / [R=301,L,NC]
+    RewriteRule ^(index|auth|404)\.php$ / [R=301,L,NC]
+</IfModule>
+
+# HTML and data always fresh (the parser updates the stone data);
+# own CSS/JS carry ?v=<hash> and may be kept for a year; photos and fonts a month.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|json)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    <FilesMatch "\.(js|mjs|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    <If "%{QUERY_STRING} =~ /(^|&)v=/">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+    <FilesMatch "\.(webp|jpe?g|png|gif|svg|ico|woff2?|ttf|glb|usdz|hdr|ktx2)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # browsers come back only over https for a year (the domain alone: the owner's
+    # other subdomains may have no certificate)
+    Header always set Strict-Transport-Security "max-age=31536000"
+    # no showing the pages inside someone else's site (clickjacking)
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Content-Security-Policy "frame-ancestors 'self'"
+    # features the site never uses; camera and xr-spatial-tracking stay open for the
+    # configurator's AR (WebXR immersive-ar in visualizer/three-scene.js)
+    Header always set Permissions-Policy "microphone=(), geolocation=(), payment=(), usb=()"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml application/xml
+</IfModule>
+
+# lead.php: the request form handler (server/lead.php). Nothing else here runs PHP.

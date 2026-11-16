@@ -19,6 +19,10 @@ const ALLOWED_ORIGINS = ['https://sanuax.github.io', 'https://sayanmramor.ru', '
 const MAX_FILE = 15 * 1024 * 1024;          // один файл, байт
 const RATE_LIMIT = 5;                        // заявок с одного адреса
 const RATE_WINDOW = 600;                     // за столько секунд
+// Со всех адресов вместе (2026-11-16): сеть ботов с разных адресов не завалит почту.
+// Живых заявок в час на порядок меньше.
+const TOTAL_LIMIT = 30;
+const TOTAL_WINDOW = 3600;
 
 date_default_timezone_set('Europe/Moscow');
 header('Content-Type: application/json; charset=utf-8');
@@ -39,6 +43,28 @@ function field($key, $max = 500) {
 }
 function oneLine($v) { return trim(preg_replace('/[\r\n]+/', ' ', $v)); }
 function mimeWord($text) { return '=?UTF-8?B?' . base64_encode($text) . '?='; }
+// Счётчик в файле: true и отметка, если за $window секунд было меньше $limit отметок.
+// Файл держится под замком, чтобы одновременные запросы не проскочили лимит.
+// Не удалось открыть файл -- пропускаем (лучше лишнее письмо, чем потерянная заявка).
+function underLimit($file, $limit, $window) {
+    $fh = @fopen($file, 'c+');
+    if (!$fh) return true;
+    flock($fh, LOCK_EX);
+    $now = time();
+    $recent = array_filter(explode("\n", (string) stream_get_contents($fh)), function ($t) use ($now, $window) {
+        return $t !== '' && (int) $t > $now - $window;
+    });
+    $ok = count($recent) < $limit;
+    if ($ok) {
+        $recent[] = $now;
+        ftruncate($fh, 0);
+        rewind($fh);
+        fwrite($fh, implode("\n", $recent));
+    }
+    flock($fh, LOCK_UN);
+    fclose($fh);
+    return $ok;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') answer(405, ['ok' => false, 'error' => 'method']);
 if (!in_array($origin, ALLOWED_ORIGINS, true)) answer(403, ['ok' => false, 'error' => 'origin']);
@@ -59,12 +85,8 @@ if (field('consent') !== '1') answer(422, ['ok' => false, 'error' => 'consent'])
 
 // Не больше RATE_LIMIT заявок с одного адреса за RATE_WINDOW секунд.
 $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
-$stamps = sys_get_temp_dir() . '/sayan-lead-' . md5($ip);
-$now = time();
-$recent = array_filter(@file($stamps, FILE_IGNORE_NEW_LINES) ?: [], function ($t) use ($now) { return (int) $t > $now - RATE_WINDOW; });
-if (count($recent) >= RATE_LIMIT) answer(429, ['ok' => false, 'error' => 'rate']);
-$recent[] = $now;
-@file_put_contents($stamps, implode("\n", $recent));
+if (!underLimit(sys_get_temp_dir() . '/sayan-lead-' . md5($ip), RATE_LIMIT, RATE_WINDOW)) answer(429, ['ok' => false, 'error' => 'rate']);
+if (!underLimit(sys_get_temp_dir() . '/sayan-lead-all', TOTAL_LIMIT, TOTAL_WINDOW)) answer(429, ['ok' => false, 'error' => 'busy']);
 
 // Файлы: файл клиента и паспорт изделия из калькулятора.
 $files = [];
