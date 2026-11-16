@@ -310,7 +310,9 @@ h3 { font-size: var(--fs-h3); }
 .home-group-shot { width: 100%; height: auto; aspect-ratio: 12 / 5; object-fit: cover; }
 .home-group-title {
   margin: var(--s-4) 0 var(--s-1); padding-bottom: var(--s-3); border-bottom: 1px solid var(--order-rule);
-  font-size: clamp(16px, 1.3vw, 18px); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--order-ink);
+  /* one line on desktops: «Лестницы и ступени» fits a 158-190 px card only up to ~17 px
+     (it ran 6-16 px past the rule at 18 px, 2026-11-16) */
+  font-size: clamp(14px, 1.2vw, 17px); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--order-ink);
   white-space: nowrap;   }
 .home-group ul { list-style: none; }
 .home-group li + li { border-top: 1px solid rgba(246, 242, 236, 0.12); }
@@ -593,6 +595,14 @@ h3 { font-size: var(--fs-h3); }
   .home-about-shot-tall .home-about-chip { display: none; }   /* too narrow for its words; the photograph keeps its alt */
   .home-about-chip { left: 10px; top: 10px; height: 26px; padding: 0 10px; font-size: 12px; }
   .home-trust-item { height: 120px; padding: var(--s-3); }
+  /* The stub of a 138 px pass (320 px screens): the ministry's name took five lines and pushed
+     «Открыть сайт» out under the edge (2026-11-16) -- tighter room and smaller words here. */
+  .trust-back { padding: 12px 10px 10px 20px; }
+  .trust-back::before { left: 9px; top: 10px; bottom: 10px; }
+  .trust-back-name { font-size: 13px; hyphens: auto; }
+  .trust-back-name.is-long { font-size: 10px; }
+  .trust-back-site { margin-top: 4px; font-size: 11px; letter-spacing: 0.02em; }
+  .trust-back-go { font-size: 11px; }
   .trust-reso { height: 50px; }
   .trust-rshb { height: 22px; }
   .trust-bamboo { height: 62px; }
