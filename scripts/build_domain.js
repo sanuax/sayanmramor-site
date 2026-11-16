@@ -18,7 +18,7 @@ const ORIGIN = 'https://sayanmramor.ru';
 const BUILD_TAIL = 'd1';
 
 const SITE_SKIP = new Set(['.gitignore', '.claude', '.superpowers', '.impeccable', '.worktrees', 'node_modules',
-  'docs', 'scripts', 'tests', 'server', 'deploy', 'package.json', 'package-lock.json']);
+  'docs', 'scripts', 'tests', 'server', 'deploy', 'dist-domain', 'package.json', 'package-lock.json']);
 const CALC_SKIP = new Set(['.gitignore', '.claude', '.superpowers', '.worktrees', 'node_modules', '__pycache__',
   'docs', 'scripts', 'tests', 'backups', 'package.json', 'package-lock.json']);
 const TEXT = /\.(html|js|mjs|css|json|xml|txt|webmanifest)$/i;
@@ -75,6 +75,9 @@ function fixHead(html, url, file) {
   // GitHub Pages copy is closed to search engines; the domain is open.
   html = html.replace(/[ \t]*<!-- test hosting \(GitHub Pages\)[^\n]*-->\r?\n/g, '');
   html = html.replace(/[ \t]*<meta name="robots" content="noindex, nofollow" data-test-hosting>\r?\n/g, '');
+  // the GitHub Pages copy's jump to the domain: the domain itself has no use for it
+  html = html.replace(/[ \t]*<!-- the GitHub Pages copy sends visitors[^\n]*-->\r?\n/g, '');
+  html = html.replace(/[ \t]*<script data-pages-redirect>[^\n]*<\/script>\r?\n/g, '');
   const ownNoindex = /<meta name="robots" content="noindex/.test(html);
   if (!ownNoindex && !/<link rel="canonical"/.test(html)) {
     const at = html.indexOf('<link rel="icon"');

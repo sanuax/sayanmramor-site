@@ -1903,3 +1903,17 @@ test('the stone window does not repeat the price sentence (it has the price row)
   const links = [...ways.matchAll(/<a class="btn (btn-primary|btn-secondary)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => [m[1], m[3], m[2].includes('&amp;stone=volakas')]);
   assert.deepEqual(links, [['btn-primary', 'Рассчитать свою лестницу', false], ['btn-secondary', 'Открыть пример расчёта', true]]);
 });
+
+test('the GitHub Pages copy sends visitors to sayanmramor.ru (2026-11-16, the owner): every page, first thing after the charset; the domain build strips it', () => {
+  const all = fs.readdirSync(site).filter(f => f.endsWith('.html'))
+    .concat(fs.readdirSync(path.join(site, 'categories')).filter(f => f.endsWith('.html')).map(f => 'categories/' + f));
+  assert.equal(all.length, 19);
+  all.forEach(page => {
+    const html = fs.readFileSync(path.join(site, page), 'utf8');
+    const head = html.slice(0, html.indexOf('<style>'));
+    assert.match(head, /<script data-pages-redirect>if \(location\.hostname === 'sanuax\.github\.io'\)/, page);
+    assert.match(head, /location\.replace\('https:\/\/sayanmramor\.ru\/' \+ p \+ location\.search \+ location\.hash\)/, page);
+  });
+  const build = fs.readFileSync(path.join(site, 'scripts', 'build_domain.js'), 'utf8');
+  assert.match(build, /data-pages-redirect/, 'scripts/build_domain.js strips the line');
+});
