@@ -25,8 +25,10 @@ AddType application/manifest+json .webmanifest
     RewriteCond %{HTTP:X-Forwarded-Proto} !=https
     RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 
-    # one address per page
+    # one address per page (only for what the browser asked: the 404 page is /index.html too)
+    RewriteCond %{THE_REQUEST} \s/index\.html[\s?]
     RewriteRule ^index\.html$ / [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/studio/index\.html[\s?]
     RewriteRule ^studio/index\.html$ /studio/ [R=301,L]
     RewriteRule ^studio$ /studio/ [R=301,L]
 
@@ -35,20 +37,20 @@ AddType application/manifest+json .webmanifest
     RewriteRule ^sayanmramor-site/(.*)$ /$1 [R=301,L,QSA]
 
     # the old Bitrix site (until 2026-11): sections -> the new pages
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(lestnits[^/]*)$ /categories/lestnitsy.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(stupen[^/]*)$ /categories/stupeni.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(podokonnik[^/]*)$ /categories/podokonniki.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(poly[^/]*)$ /categories/poly.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(sten[^/]*)$ /categories/steny.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(vannye[^/]*)$ /categories/stoleshnitsy-vannaya.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(kukhni[^/]*|stoleshnits[^/]*)$ /categories/stoleshnitsy-kuhnya.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(kamin[^/]*)$ /categories/kaminy.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(fasad[^/]*)$ /categories/fasady.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(panno[^/]*|barelef[^/]*)$ /categories/panno.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(spa-zon[^/]*)$ /categories/spa-zony.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(hammam[^/]*)$ /categories/hammamy.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(basseyn[^/]*)$ /categories/basseyny.html [R=301,L,NC]
-    RewriteRule ^izdeliya-iz-kamnya(-2)?/(eksklyuzivn[^/]*|svetilnik[^/]*)$ /katalog.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(lestnits[^/]*)/?$ /categories/lestnitsy.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(stupen[^/]*)/?$ /categories/stupeni.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(podokonnik[^/]*)/?$ /categories/podokonniki.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(poly[^/]*)/?$ /categories/poly.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(sten[^/]*)/?$ /categories/steny.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(vannye[^/]*)/?$ /categories/stoleshnitsy-vannaya.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(kukhni[^/]*|stoleshnits[^/]*)/?$ /categories/stoleshnitsy-kuhnya.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(kamin[^/]*)/?$ /categories/kaminy.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(fasad[^/]*)/?$ /categories/fasady.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(panno[^/]*|barelef[^/]*)/?$ /categories/panno.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(spa-zon[^/]*)/?$ /categories/spa-zony.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(hammam[^/]*)/?$ /categories/hammamy.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(basseyn[^/]*)/?$ /categories/basseyny.html [R=301,L,NC]
+    RewriteRule ^izdeliya-iz-kamnya(-2)?/(eksklyuzivn[^/]*|svetilnik[^/]*)/?$ /katalog.html [R=301,L,NC]
     RewriteRule ^izdeliya-iz-kamnya(-2)?(/.*)?$ / [R=301,L,NC]
     RewriteRule ^(catalog|products|import-stones)(/.*)?$ /kamen.html [R=301,L,NC]
     RewriteRule ^privacy-policy\.php$ /privacy.html [R=301,L,NC]

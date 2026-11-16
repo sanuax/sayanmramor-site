@@ -120,6 +120,22 @@ function main() {
     if (LEFTOVER.test(t)) leftovers.push(path.relative(out, f));
   }
 
+  // The hosting's nginx serves CSS/JS itself, with no Cache-Control of ours, so browsers guess
+  // how long to keep them. Own files linked WITHOUT ?v= (the configurator links the site's
+  // header.css/js plainly) get one here: the hash of the built file.
+  let stamped = 0;
+  for (const f of pages) {
+    const src = fs.readFileSync(f, 'utf8');
+    const t = src.replace(/(\s(?:src|href)=")([^"?#:]+\.(?:css|js|mjs))"/g, (all, lead, ref) => {
+      const file = ref.startsWith('/') ? path.join(out, ref) : path.join(path.dirname(f), ref);
+      if (!fs.existsSync(file)) return all;
+      stamped++;
+      const hash = require('crypto').createHash('sha256').update(fs.readFileSync(file)).digest('hex').slice(0, 8);
+      return lead + ref + '?v=' + hash + BUILD_TAIL + '"';
+    });
+    if (t !== src) fs.writeFileSync(f, t);
+  }
+
   const cats = fs.readdirSync(path.join(out, 'categories')).filter((n) => n.endsWith('.html')).sort().map((n) => 'categories/' + n);
   const today = new Date().toISOString().slice(0, 10);
   const urls = PAGES.slice(0, 3).concat(cats, PAGES.slice(3));
@@ -131,7 +147,7 @@ function main() {
     'User-agent: *\nDisallow: /lead.php\nDisallow: /podborka.html\n\nHost: ' + ORIGIN + '\nSitemap: ' + ORIGIN + '/sitemap.xml\n');
 
   const noindex = pages.filter((p) => /<meta name="robots" content="noindex/.test(fs.readFileSync(p, 'utf8'))).map((p) => path.relative(out, p));
-  console.log(`built ${out}: ${files.length + 2} files, ${changed} rewritten, ${pages.length} pages, ${urls.length} in sitemap`);
+  console.log(`built ${out}: ${files.length + 2} files, ${changed} rewritten, ${stamped} plain links stamped, ${pages.length} pages, ${urls.length} in sitemap`);
   console.log('noindex pages: ' + (noindex.join(', ') || 'none'));
   if (leftovers.length) {
     console.error('old addresses left in:\n  ' + leftovers.join('\n  '));
