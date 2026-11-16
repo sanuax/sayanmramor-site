@@ -51,7 +51,9 @@ function args() {
 function copyTree(from, to, skip) {
   fs.mkdirSync(to, { recursive: true });
   for (const name of fs.readdirSync(from)) {
-    if (skip.has(name) || /\.md$/i.test(name)) continue; // notes and handoffs at the root are not for visitors
+    // notes and handoffs at the root are not for visitors, nor any dot folder (.github held the
+    // weekly workflow with the hosting's account and path, 2026-11-16)
+    if (skip.has(name) || /\.md$/i.test(name) || name.startsWith('.')) continue;
     fs.cpSync(path.join(from, name), path.join(to, name), { recursive: true });
   }
 }
