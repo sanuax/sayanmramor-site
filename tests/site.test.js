@@ -577,7 +577,7 @@ test('the offer band on the 13 direction pages: the home page\'s «Получи�
     assert.doesNotMatch(band, /offer-kicker/, page + ': no «Проект» above the heading (2026-10-15, the owner)');
     assert.match(band, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/, page);
     // (2026-10-14, the owner: the same words as on the home page in every «Получить расчёт»)
-    assert.match(band, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон или почту\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/, page);
+    assert.match(band, /<p class="offer-lead">Оставьте телефон или почту - мастер свяжется и подготовит расчёт\.<\/p>/, page);
     assert.match(band, /<div class="offer-contact">\s*<p class="offer-phone">Или позвоните: <a href="tel:\+74952155145">\+7 \(495\) 215-51-45<\/a><\/p>\s*<p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https:\/\/t\.me\/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor<\/a><\/p>\s*<\/div>/, page + ': Telegram under the phone');
     assert.match(band, /<div class="offer-talk-main">\s*<div data-offer-form data-offer-steps data-preselect="[a-z-]+"><\/div>\s*<noscript><p class="offer-noscript">/, page);
     assert.doesNotMatch(band, /offer-reveal|offer-needs|Получите коммерческое предложение/, page + ': no trace of the old form');
@@ -931,7 +931,7 @@ test('about, why us, who trusts us: the old site\'s three blocks -- its words an
 test('the home hero: the headline, one line and two plain actions on a real photo of our work -- the hammam, on the whole screen under a dark veil; no caption; nothing moves', () => {
   const hero = sectionOf(homeHtml(), '<section class="home-hero"');
   assert.match(hero, /<h1 id="heroTitle">Изделия из натурального камня на заказ<\/h1>/);
-  assert.match(hero, /<p class="lead">Лестницы, столешницы, полы, стены и фасады/);
+  assert.match(hero, /<p class="lead">Мрамор, оникс, кварцит и гранит\./);
   const actions = [...hero.matchAll(/<a class="btn (btn-\w+)" href="([^"]+)">([^<]+)<\/a>/g)].map(m => m.slice(1));
   assert.deepEqual(actions, [
     ['btn-primary', '#offer', 'Заказать'],   // to the request, as the header's, the main action (2026-10-19, the owner: in place of «Открыть шоурум», then first and green)
@@ -1077,7 +1077,7 @@ test('the home request is three questions to a master: a workshop photo, the hea
   assert.doesNotMatch(sec, /offer-kicker/, 'no «Проект» above the heading (2026-10-15, the owner)');
   assert.match(sec, /<h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту<\/span><\/h2>/);
   // (2026-10-14, the owner after stage 2: the agreed words under the heading)
-  assert.match(sec, /<p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон или почту\. Мастер свяжется с вами и подготовит расчёт\.<\/p>/);
+  assert.match(sec, /<p class="offer-lead">Оставьте телефон или почту - мастер свяжется и подготовит расчёт\.<\/p>/);
   // The photo: a real one from the workshop (assets/home/SOURCES.md), two sizes, lazy, described.
   const img = (sec.match(/<img class="offer-talk-photo"[^>]*>/) || [''])[0];
   assert.match(img, /srcset="\/sayanmramor-site\/assets\/home\/offer-master-040-480\.webp 480w, \/sayanmramor-site\/assets\/home\/offer-master-040-960\.webp 960w"/);
@@ -1227,6 +1227,31 @@ test('back from the calculator or the catalogue a phone is taken to the question
   assert.match(src, /scrollToQuestion\(win, steps\[state\.current\]\)/);
 });
 
+// 2026-11-22 (the owner: «много лишнего текста»): on a catalogue page the stone advice is folded under its heading.
+test('the stone advice is folded on the catalogue pages and open where it is the page\'s content; the texts around it are short', () => {
+  const dir = path.join(site, 'categories');
+  fs.readdirSync(dir).forEach(f => {
+    const html = fs.readFileSync(path.join(dir, f), 'utf8');
+    const catalogue = html.includes('id="stoneGrid"');
+    assert.equal(html.includes('<details class="stone-advice-fold">'), catalogue, f + ': folded exactly where there is a catalogue');
+    assert.doesNotMatch(html, /<details class="stone-advice-fold" open/, f + ': closed at first');
+    if (catalogue) {
+      assert.match(html, /<summary><h3 class="stone-advice-title">Какой камень выбрать для [^<]+<\/h3><\/summary>/, f);
+      assert.ok(html.indexOf('<details class="stone-advice-fold">') < html.indexOf('class="stone-ways"'), f + ': the ways into the catalogue stay in view, outside the fold');
+      assert.match(html, /<p>Выберите камень, а размеры и стоимость изделия посчитает конфигуратор\.<\/p>/, f);
+      assert.doesNotMatch(html, /Размеры, форму, кромку и стоимость вы зададите там/, f);
+    }
+  });
+  const home = fs.readFileSync(path.join(site, 'index.html'), 'utf8');
+  assert.match(home, /<p class="lead">Мрамор, оникс, кварцит и гранит\. Выберите камень и посчитайте изделие онлайн\.<\/p>/);
+  assert.doesNotMatch(home, /Маршрут и карта откроются в Яндекс Картах/);
+  assert.match(fs.readFileSync(path.join(site, 'kamen.html'), 'utf8'), /<p class="subtitle">Выберите камень и рассчитайте изделие\.<\/p>/);
+  const form = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  assert.doesNotMatch(form, /его можно будет поменять/, 'the chips already say the answer can be changed');
+  assert.doesNotMatch(form, /FORK\.hint/, 'the fork\'s two answers say what each does; no line over them repeats it');
+  assert.match(form, /\{ hidden: '' \}/, 'a question without a hint shows no empty line');
+});
+
 test('the fork (2026-10-26, the owner): a piece the calculator builds asks «сами или мастер?», ready pieces open the catalogue, the rest go on to the name', () => {
   const OfferForm = require('../js/offer-form.js');
   assert.equal(OfferForm.afterDirection('kuhnya'), 'fork');
@@ -1255,11 +1280,10 @@ test('the fork (2026-10-26, the owner): a piece the calculator builds asks «с�
   assert.equal(OfferForm.chooseDirection({ direction: 'gotovye-izdeliya', piece: shell }, 'kuhnya').piece, null);
   // The words, as the owner accepted them.
   assert.deepEqual(OfferForm.FORK.q, ['Посчитаете ', 'сами', ' или доверите мастеру?']);
-  assert.equal(OfferForm.FORK.hint('Кухня'), 'Кухня есть в нашем калькуляторе: выберите камень и размеры, изделие появится в 3D с ценой. Потом вернётесь сюда.');
   assert.deepEqual(OfferForm.FORK.go, ['Собрать в калькуляторе', 'Камень из каталога, размеры, 3D. Цена сразу.']);
   assert.deepEqual(OfferForm.FORK.master, ['Пусть посчитает мастер', 'Оставите имя и телефон или почту, мастер свяжется и всё уточнит.']);
   assert.deepEqual(OfferForm.KATALOG_STEP.q, ['Выберите ', 'готовое', ' изделие']);
-  assert.equal(OfferForm.KATALOG_STEP.hint, 'Ванны из оникса, раковины, вазы и столы, которые уже сделаны в нашем цеху и ждут хозяина. Выберите то, что нравится, и мы вернём вас сюда.');
+  assert.equal(OfferForm.KATALOG_STEP.hint, 'Готовые ванны из оникса, раковины, вазы и столы. Выберите, и мы вернём вас сюда.');
   assert.equal(OfferForm.KATALOG_STEP.go, 'Посмотреть каталог');
   const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
   assert.doesNotMatch(src, /—/, 'no long dash in the words');
@@ -1857,7 +1881,7 @@ test('every stone gallery says what «от … ₽/м²» is: the stone itself, 
   const pages = ['kamen.html'].concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f));
   pages.forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
-    const n = html.split('<p class="stone-price-note">Цена «от … ₽/м²» на карточке - это цена самого камня за квадратный метр, без изготовления и работ.').length - 1;
+    const n = html.split('<p class="stone-price-note">Цена «от … ₽/м²» - цена самого камня, без изготовления и работ.</p>').length - 1;
     assert.equal(n, html.includes('id="stoneGrid"') ? 1 : 0, page);
   });
   const kitchen = fs.readFileSync(path.join(site, 'categories', 'stoleshnitsy-kuhnya.html'), 'utf8');
@@ -1919,7 +1943,7 @@ test('«Лестницы» and «Фасады» say which stone suits them; the 
   ['kamen.html'].concat(fs.readdirSync(path.join(site, 'categories')).map(f => 'categories/' + f)).forEach(page => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     if (!html.includes('id="stoneGrid"')) return;
-    assert.ok(html.includes('<p class="stone-supplier">Мы обрабатываем камень на своём производстве <a href="/sayanmramor-site/index.html#contacts">в Ивантеевке</a>, Московская область, с 2014 года. Камень в нашей коллекции закупается у Venezia Stone.'), page);
+    assert.ok(html.includes('<p class="stone-supplier">Камень закупаем у Venezia Stone, обрабатываем на своём производстве <a href="/sayanmramor-site/index.html#contacts">в Ивантеевке</a> с 2014 года. <a href="https://veneziastone.com/" target="_blank" rel="noopener">Подробнее о коллекции - на сайте Venezia Stone</a></p>'), page);
   });
 });
 

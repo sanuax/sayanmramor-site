@@ -22,7 +22,7 @@
   const KEY = 'sayan-consent';
   const VERSION = '1';
   const POLICY = '/sayanmramor-site/privacy.html';
-  const TEXT_BEFORE = 'Сайт использует файлы cookie. Оставаясь на сайте, вы соглашаетесь с их использованием и с ';
+  const TEXT_BEFORE = 'Сайт использует cookie. Оставаясь на сайте, вы соглашаетесь с этим и с ';
   const LINK_TEXT = 'политикой конфиденциальности';
   const BUTTON = 'Принять';
 

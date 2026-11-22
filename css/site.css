@@ -980,6 +980,16 @@ h3 { font-size: var(--fs-h3); }
   border-radius: 16px; background: var(--surface-sunk);
 }
 .stone-advice-title { margin-bottom: var(--s-3); }
+/* On a catalogue page the advice is folded (2026-11-22, the owner: too much to read on a phone): the heading is
+   the button, the list opens under it. The spa pages, hammams and pools keep it open: it is their content. */
+.stone-advice-fold { margin-bottom: var(--s-3); }
+.stone-advice-fold > summary { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 44px; cursor: pointer; list-style: none; -webkit-tap-highlight-color: transparent; }
+.stone-advice-fold > summary::-webkit-details-marker { display: none; }
+.stone-advice-fold > summary .stone-advice-title { margin: 0; }
+.stone-advice-fold > summary::after { content: ""; flex: none; width: 9px; height: 9px; margin-right: 4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform var(--dur-fast); }
+.stone-advice-fold[open] > summary::after { transform: rotate(-135deg); }
+.stone-advice-fold[open] > summary { margin-bottom: var(--s-3); }
+.stone-advice-fold > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 8px; }
 /* The spa pages, hammams and pools have no stone catalogue: the same block stands alone, above the request. */
 .advice-section { max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter) var(--section); }
 .advice-section .stone-advice { margin-bottom: 0; }

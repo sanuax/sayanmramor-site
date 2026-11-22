@@ -28,11 +28,11 @@
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
 <link rel="stylesheet" href="/sayanmramor-site/css/consent.css?v=f7d8bfe7">
 <link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=5685842d">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=afc6c852">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=ea66d88f">
 <link rel="stylesheet" href="/sayanmramor-site/css/stone-view.css?v=ebf816b3">
 <link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=da2f2640">
 <script src="/sayanmramor-site/js/header.js?v=7b5f2f0c" defer></script>
-<script src="/sayanmramor-site/js/consent.js?v=64c0d004" defer></script>
+<script src="/sayanmramor-site/js/consent.js?v=31a54574" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Перейти к содержимому</a>
@@ -131,15 +131,17 @@
 <section class="stone-section" aria-labelledby="stoneTitle">
   <div class="stone-head">
     <h2 id="stoneTitle">Камень</h2>
-    <p>Выберите камень - он будет выбран в конфигураторе. Размеры, форму, кромку и стоимость вы зададите там.</p>
+    <p>Выберите камень, а размеры и стоимость изделия посчитает конфигуратор.</p>
   </div>
   <div class="stone-advice">
-    <h3 class="stone-advice-title">Какой камень выбрать для ванной</h3>
-    <ul class="stone-advice-list">
-      <li><b>Кварцит и гранит</b> - плотный природный камень, мало впитывает воду и не боится ежедневной уборки: подходит для столешницы у раковины, пола и стен душевой.</li>
-      <li><b>Мрамор и оникс</b> - самые выразительные, но мягче и чувствительнее. Кислотные чистящие средства оставляют на полировке матовые следы, поэтому такой камень обычно пропитывают защитным составом и протирают насухо. Оникс просвечивает, его часто ставят на стену с подсветкой.</li>
-      <li><b>Кварцевый агломерат</b> - искусственный камень из кварцевой крошки на связующем. Ровный по цвету и почти не впитывает влагу: спокойный выбор для столешницы с раковиной.</li>
-    </ul>
+    <details class="stone-advice-fold">
+      <summary><h3 class="stone-advice-title">Какой камень выбрать для ванной</h3></summary>
+      <ul class="stone-advice-list">
+        <li><b>Кварцит и гранит</b> - плотный природный камень, мало впитывает воду и не боится ежедневной уборки: подходит для столешницы у раковины, пола и стен душевой.</li>
+        <li><b>Мрамор и оникс</b> - самые выразительные, но мягче и чувствительнее. Кислотные чистящие средства оставляют на полировке матовые следы, поэтому такой камень обычно пропитывают защитным составом и протирают насухо. Оникс просвечивает, его часто ставят на стену с подсветкой.</li>
+        <li><b>Кварцевый агломерат</b> - искусственный камень из кварцевой крошки на связующем. Ровный по цвету и почти не впитывает влагу: спокойный выбор для столешницы с раковиной.</li>
+      </ul>
+    </details>
     <div class="stone-ways" role="group" aria-label="Показать в каталоге" hidden>
       <span class="stone-ways-label">Показать в каталоге:</span>
       <button type="button" class="stone-way" data-stone-types="Кварцит|Гранит" hidden>Кварцит и гранит</button>
@@ -151,7 +153,7 @@
     <input type="search" id="stoneSearch" placeholder="Поиск по названию или типу камня" aria-label="Поиск камня" autocomplete="off" disabled>
     <div class="stone-filters" id="stoneFilters" role="group" aria-label="Фильтры камня" hidden></div>
   </div>
-  <p class="stone-price-note">Цена «от … ₽/м²» на карточке - это цена самого камня за квадратный метр, без изготовления и работ. Ориентировочную стоимость готового изделия по вашим размерам покажет конфигуратор.</p>
+  <p class="stone-price-note">Цена «от … ₽/м²» - цена самого камня, без изготовления и работ.</p>
   <p class="stone-status" id="stoneStatus" aria-live="polite">Загрузка камня…</p>
   <ul class="stone-grid" id="stoneGrid"></ul>
   <button type="button" class="btn btn-secondary stone-more" id="stoneMore" hidden>Показать ещё</button>
@@ -168,7 +170,7 @@
     g.innerHTML = new Array(25).join('<li aria-hidden="true"><span class="stone-card"><span class="stone-card-media"></span><span class="stone-card-name">&nbsp;</span><span class="stone-card-type">&nbsp;</span><span class="stone-card-price">&nbsp;</span></span></li>');
     s.querySelector('.stone-more').hidden = false;
   })(document.currentScript.closest('.stone-section'));</script>
-  <p class="stone-supplier">Мы обрабатываем камень на своём производстве <a href="/sayanmramor-site/index.html#contacts">в Ивантеевке</a>, Московская область, с 2014 года. Камень в нашей коллекции закупается у Venezia Stone. <a href="https://veneziastone.com/" target="_blank" rel="noopener">Подробнее о коллекции и материалах - на сайте Venezia Stone</a></p>
+  <p class="stone-supplier">Камень закупаем у Venezia Stone, обрабатываем на своём производстве <a href="/sayanmramor-site/index.html#contacts">в Ивантеевке</a> с 2014 года. <a href="https://veneziastone.com/" target="_blank" rel="noopener">Подробнее о коллекции - на сайте Venezia Stone</a></p>
 </section>
 
 <section class="offer-band offer-talk" id="offer" aria-labelledby="offerTitle" data-offer-open>
@@ -177,7 +179,7 @@
       <img class="offer-talk-photo" src="/sayanmramor-site/assets/home/offer-master-040-480.webp" srcset="/sayanmramor-site/assets/home/offer-master-040-480.webp 480w, /sayanmramor-site/assets/home/offer-master-040-960.webp 960w" sizes="(max-width: 899px) 100vw, 380px" alt="Мастер обрабатывает каменную плиту на станке" width="480" height="600" loading="lazy" decoding="async">
       <div class="offer-talk-words">
         <h2 class="offer-title" id="offerTitle">Получить расчёт <span class="offer-title-soft">по вашему проекту</span></h2>
-        <p class="offer-lead">Расскажите, что хотите сделать, и оставьте телефон или почту. Мастер свяжется с вами и подготовит расчёт.</p>
+        <p class="offer-lead">Оставьте телефон или почту - мастер свяжется и подготовит расчёт.</p>
         <div class="offer-contact">
           <p class="offer-phone">Или позвоните: <a href="tel:+74952155145">+7 (495) 215-51-45</a></p>
           <p class="offer-phone offer-tg">Или напишите в Telegram: <a href="https://t.me/TeaN_SayanMramor" target="_blank" rel="noopener">@TeaN_SayanMramor</a></p>
@@ -250,7 +252,7 @@
 <script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
 <script src="/sayanmramor-site/js/phone-field.js?v=94fdd16a"></script>
-<script src="/sayanmramor-site/js/offer-form.js?v=73b87f33"></script>
+<script src="/sayanmramor-site/js/offer-form.js?v=ea7b5dba"></script>
 <script>
   CategoryPage.init('stoleshnitsa_vannaya');
 </script>

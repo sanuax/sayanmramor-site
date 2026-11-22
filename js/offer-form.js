@@ -203,20 +203,19 @@
   // opens the catalogue -- both in this tab; js/offer-handoff.js brings the
   // piece back. The other directions go straight on to the name.
   const STEPS = [
-    { chip: 'Изделие', q: ['Что будем делать ', 'из камня?'], hint: 'Выберите направление - его можно будет поменять.' },
+    { chip: 'Изделие', q: ['Что будем делать ', 'из камня?'], hint: '' },
     { chip: 'Имя', q: ['Как к вам ', 'обращаться?'], hint: 'Чтобы мастер знал, кому звонить с расчётом.' },
     // A phone or an e-mail, at least one of them (2026-11-12, the owner).
-    { chip: 'Контакт', q: ['Куда ответить ', 'с расчётом?'], hint: 'Телефон или почта - достаточно чего-то одного. Мастер позвонит или напишет, уточнит детали и подготовит расчёт.' },
+    { chip: 'Контакт', q: ['Куда ответить ', 'с расчётом?'], hint: 'Телефон или почта - достаточно одного.' },
   ];
   const FORK = {
     q: ['Посчитаете ', 'сами', ' или доверите мастеру?'],
-    hint: label => label + ' есть в нашем калькуляторе: выберите камень и размеры, изделие появится в 3D с ценой. Потом вернётесь сюда.',
     go: ['Собрать в калькуляторе', 'Камень из каталога, размеры, 3D. Цена сразу.'],
     master: ['Пусть посчитает мастер', 'Оставите имя и телефон или почту, мастер свяжется и всё уточнит.'],
   };
   const KATALOG_STEP = {
     q: ['Выберите ', 'готовое', ' изделие'],
-    hint: 'Ванны из оникса, раковины, вазы и столы, которые уже сделаны в нашем цеху и ждут хозяина. Выберите то, что нравится, и мы вернём вас сюда.',
+    hint: 'Готовые ванны из оникса, раковины, вазы и столы. Выберите, и мы вернём вас сюда.',
     go: 'Посмотреть каталог',
   };
   const UNSURE = 'Пока не знаю';
@@ -454,7 +453,7 @@
 
     const talkQ = (qid, parts) => el(doc, 'p', { className: 'talk-q', id: qid },
       [doc.createTextNode(parts[0]), el(doc, 'em', { textContent: parts[1] })].concat(parts[2] ? [doc.createTextNode(parts[2])] : []));
-    const hint = text => el(doc, 'p', { className: 'talk-hint', textContent: text || '' });
+    const hint = text => el(doc, 'p', Object.assign({ className: 'talk-hint', textContent: text || '' }, text ? {} : { hidden: '' }));
     const section = (step, parts, hintEl, extra) => el(doc, 'section', { className: 'talk-step', 'data-step': step, 'aria-labelledby': id('q' + step) },
       [talkQ(id('q' + step), parts), hintEl].concat(extra));
     const question = (i, hintEl, extra) => section(String(i), STEPS[i].q, hintEl, extra);
@@ -515,7 +514,6 @@
     const back = () => go(state.piece ? 0 : startStep(state.direction) === 1 ? 0 : startStep(state.direction));
 
     // The fork: build it in the calculator, or leave it to the master.
-    const forkHint = hint('');
     const forkButton = (words, main) => el(doc, 'button', { type: 'button', className: 'talk-fork-btn' + (main ? ' is-main' : '') }, [
       el(doc, 'span', { className: 'talk-fork-title' }, [doc.createTextNode(words[0])].concat(main ? [icon(doc, 'arrow')] : [])),
       el(doc, 'span', { className: 'talk-fork-text', textContent: words[1] }),
@@ -524,7 +522,7 @@
     const toMaster = forkButton(FORK.master, false);
     toCalc.addEventListener('click', () => leave(Handoff.calcUrl(state.direction)));
     toMaster.addEventListener('click', () => go(1));
-    const forkStep = section('fork', FORK.q, forkHint, [
+    const forkStep = section('fork', FORK.q, hint(''), [
       el(doc, 'div', { className: 'talk-fork' }, [toCalc, toMaster]),
       el(doc, 'div', { className: 'talk-links' }, [linkButton('← Изменить изделие', () => go(0))]),
     ]);
@@ -697,7 +695,6 @@
     function render() {
       Object.keys(steps).forEach(k => { steps[k].hidden = k !== String(state.current); });
       options.forEach(o => o.setAttribute('aria-pressed', String(keyOf(o.textContent) === state.direction)));
-      forkHint.textContent = state.direction ? FORK.hint(labelOf(state.direction)) : '';
       // An answered question shows its answer («✓ Кухня», «✓ Анна»; a skipped
       // name, once passed, «✓ Без имени»); the others their question's name.
       const values = [labelOf(state.direction), state.name || (state.nameSkipped ? 'Без имени' : ''), state.phone || state.email];
