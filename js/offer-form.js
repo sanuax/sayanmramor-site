@@ -356,6 +356,18 @@
       website: '',
     };
   }
+  // Back from the calculator or the catalogue the page comes to the request's block with the chips and the
+  // piece's card (its picture) above the question, and the question the client left off at -- the name,
+  // the phone -- under the screen's edge (2026-11-22, the owner: «кидало не выше, где картинка»). On a phone
+  // the question itself is brought to the top, under the header (the page's scroll-padding). A wider screen
+  // shows the whole block and keeps its place.
+  const PHONE_WIDTH = '(max-width: 760px)';
+  function scrollToQuestion(win, step) {
+    if (!step || step.hidden || !step.scrollIntoView || !win.matchMedia || !win.matchMedia(PHONE_WIDTH).matches) return false;
+    step.scrollIntoView({ block: 'start', behavior: 'instant' });
+    return true;
+  }
+
   // A file of the request read into memory first (2026-11-22). The calculator's passport (and a file
   // attached before a trip out) waits in IndexedDB, and on an iPhone WebKit may no longer read such a
   // stored Blob from another page: Safari then sent the request with nothing in it, and the handler
@@ -805,6 +817,7 @@
     }
     // And the piece the address brings back: from the catalogue (?piece=) or the calculator (a passport link).
     const arrival = win.location ? Handoff.readArrival(win.location.search) : null;
+    let arrivalScroll = null;   // set when the piece is still to come (a fetch): its placing then brings the question
     if (arrival) {
       const place = piece => {
         if (!piece || (piece.kind === 'calc' && !piece.product)) return;
@@ -813,6 +826,7 @@
         state.current = state.name || state.nameSkipped ? 2 : 1;
         render();
         persist();
+        if (arrivalScroll) arrivalScroll();
       };
       if (arrival.kind === 'katalog') {
         fetchJson('/sayanmramor-site/data/products.json').then(data => place(Handoff.catalogPiece(data && data.products, arrival.id)));
@@ -825,6 +839,20 @@
     }
     render();
     container.replaceChildren(form);
+    // Coming back with a piece: the question, not the block's top. The page above it settles afterwards
+    // (fonts, pictures; Safari has no scroll anchoring to hold a place), so the scroll is repeated until
+    // the client touches the page himself.
+    function bringToQuestion() {
+      let touched = false;
+      const stop = () => { touched = true; };
+      ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(ev => win.addEventListener(ev, stop, { once: true, passive: true, capture: true }));
+      const again = () => { if (!touched && form.isConnected) scrollToQuestion(win, steps[state.current]); };
+      if (win.requestAnimationFrame) win.requestAnimationFrame(() => win.requestAnimationFrame(again)); else again();
+      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(again);
+      if (doc.readyState !== 'complete') win.addEventListener('load', again, { once: true });
+    }
+    if (arrival && state.piece) bringToQuestion();
+    else if (arrival) arrivalScroll = bringToQuestion;
     return form;
   }
 
@@ -836,7 +864,7 @@
 
   return {
     DIRECTIONS, FIELDS, NOT_SENT, STEPS, FORK, KATALOG_STEP, PIECE_HINTS, PASSPORT, DONE_NOTE, BOOKING, phoneOk, emailOk, contactProblem, LEAD_URL, SEND_FAILED, pieceText, leadFields, sendLead, afterDirection, countLabel, betweenChip, startStep, chooseDirection,
-    pieceCard, summaryLine,
+    pieceCard, summaryLine, scrollToQuestion,
     mount, mountSteps, mountAll, enhanceBand,
   };
 });

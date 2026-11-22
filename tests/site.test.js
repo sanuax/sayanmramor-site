@@ -1202,6 +1202,31 @@ test('server/lead.php: mails sayan-mramor@yandex.ru from the hosting domain, onl
   assert.doesNotMatch(php, /—/, 'no long dash');
 });
 
+// 2026-11-22 (the owner): back from the calculator the page showed the chips and the piece's card with its
+// picture, and the question the client left off at (the name, the phone) hung under the screen's edge.
+test('back from the calculator or the catalogue a phone is taken to the question, under the header; a wider screen keeps its place', () => {
+  const OfferForm = require('../js/offer-form.js');
+  const calls = [];
+  const step = { hidden: false, scrollIntoView: o => calls.push(o) };
+  const win = matches => ({ matchMedia: q => ({ matches: matches && q === '(max-width: 760px)' }) });
+  assert.equal(OfferForm.scrollToQuestion(win(true), step), true);
+  assert.deepEqual(calls, [{ block: 'start', behavior: 'instant' }], 'the question to the top, at once (the header is the page\'s scroll-padding)');
+  assert.equal(OfferForm.scrollToQuestion(win(false), step), false, 'a wider screen shows the whole block');
+  assert.equal(OfferForm.scrollToQuestion(win(true), { hidden: true, scrollIntoView() { throw new Error('a hidden step is not scrolled to'); } }), false);
+  assert.equal(OfferForm.scrollToQuestion(win(true), null), false);
+  assert.equal(OfferForm.scrollToQuestion({}, step), false, 'no matchMedia: left alone');
+  assert.equal(calls.length, 1);
+  // The form does it only for a client who came back with a piece (the address brings it), once the form stands on the
+  // page and again as the page above settles, never over the client's own scrolling.
+  const src = fs.readFileSync(path.join(site, 'js', 'offer-form.js'), 'utf8');
+  assert.match(src, /if \(arrival && state\.piece\) bringToQuestion\(\);/);
+  assert.match(src, /else if \(arrival\) arrivalScroll = bringToQuestion;/, 'a piece still to be fetched: its placing brings the question');
+  assert.match(src, /\['touchstart', 'wheel', 'keydown', 'mousedown'\]\.forEach/);
+  assert.match(src, /doc\.fonts\.ready\.then\(again\)/);
+  assert.match(src, /win\.addEventListener\('load', again/);
+  assert.match(src, /scrollToQuestion\(win, steps\[state\.current\]\)/);
+});
+
 test('the fork (2026-10-26, the owner): a piece the calculator builds asks «сами или мастер?», ready pieces open the catalogue, the rest go on to the name', () => {
   const OfferForm = require('../js/offer-form.js');
   assert.equal(OfferForm.afterDirection('kuhnya'), 'fork');
