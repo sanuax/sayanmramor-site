@@ -356,13 +356,38 @@
       website: '',
     };
   }
-  // Sends the request; resolves true when the handler took it.
+  // A file of the request read into memory first (2026-11-22). The calculator's passport (and a file
+  // attached before a trip out) waits in IndexedDB, and on an iPhone WebKit may no longer read such a
+  // stored Blob from another page: Safari then sent the request with nothing in it, and the handler
+  // refused every one (422: no phone). A file that cannot be read (or not within READ_WAIT) is left out.
+  const READ_WAIT = 8000;
+  const FILE_WORDS = { passport: 'Паспорт изделия', attachment: 'Файл клиента' };
+  function inMemory(win, f) {
+    const blob = f.blob;
+    let timer = null;
+    const read = Promise.resolve().then(() => (typeof blob.arrayBuffer === 'function' ? blob.arrayBuffer()
+      : win.Response ? new win.Response(blob).arrayBuffer() : null));
+    const late = new Promise(resolve => { timer = setTimeout(() => resolve(null), READ_WAIT); });
+    return Promise.race([read, late]).then(buf => {
+      if (!buf || !buf.byteLength) return null;
+      const B = win.Blob || Blob;
+      return { key: f.key, blob: new B([buf], { type: blob.type || 'application/octet-stream' }), name: f.name || f.key };
+    }, () => null).then(out => { clearTimeout(timer); return out; });
+  }
+  // Sends the request; resolves true when the handler took it. A file that cannot be read stays out and
+  // the letter says so (the piece's link to the calculator is in it anyway).
   function sendLead(win, fields, files) {
     if (!win.fetch || !win.FormData) return Promise.resolve(false);
-    const data = new win.FormData();
-    Object.keys(fields).forEach(k => data.append(k, fields[k]));
-    (files || []).forEach(f => { if (f && f.blob) data.append(f.key, f.blob, f.name || f.key); });
-    return win.fetch(LEAD_URL, { method: 'POST', body: data })
+    const wanted = (files || []).filter(f => f && f.blob);
+    return Promise.all(wanted.map(f => inMemory(win, f))).then(read => {
+      const all = Object.assign({}, fields);
+      const lost = wanted.filter((f, i) => !read[i]).map(f => (FILE_WORDS[f.key] || f.key) + ' не приложен: браузер не смог прочитать файл');
+      if (lost.length) all.piece = [all.piece].concat(lost).filter(Boolean).join('\n');
+      const data = new win.FormData();
+      Object.keys(all).forEach(k => data.append(k, all[k]));
+      read.forEach(f => { if (f) data.append(f.key, f.blob, f.name); });
+      return win.fetch(LEAD_URL, { method: 'POST', body: data });
+    })
       .then(r => (r.ok ? r.json() : null))
       .then(json => !!(json && json.ok))
       .catch(() => false);

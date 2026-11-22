@@ -1145,14 +1145,48 @@ test('the request as the letter gets it (server/lead.php): the direction, the na
   const calls = [];
   class FormData { constructor() { this.parts = []; } append(...a) { this.parts.push(a); } }
   const win = ok => ({ FormData, fetch: (url, init) => { calls.push([url, init]); return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok }) }); } });
-  assert.equal(await OfferForm.sendLead(win(true), fields, [{ key: 'attachment', blob: { size: 1 }, name: 'plan.pdf' }, { key: 'passport', blob: null }]), true);
+  const plan = new Blob(['plan'], { type: 'application/pdf' });
+  assert.equal(await OfferForm.sendLead(win(true), fields, [{ key: 'attachment', blob: plan, name: 'plan.pdf' }, { key: 'passport', blob: null }]), true);
   assert.equal(calls[0][0], 'https://sayanmramor.ru/lead.php');
   assert.equal(calls[0][1].method, 'POST');
-  assert.deepEqual(calls[0][1].body.parts.find(p => p[0] === 'attachment'), ['attachment', { size: 1 }, 'plan.pdf']);
+  const sent = calls[0][1].body.parts.find(p => p[0] === 'attachment');
+  assert.equal(sent[2], 'plan.pdf');
+  assert.equal(await sent[1].text(), 'plan', 'the same bytes');
+  assert.equal(sent[1].type, 'application/pdf');
   assert.ok(!calls[0][1].body.parts.some(p => p[0] === 'passport'), 'no passport, no part');
   assert.equal(await OfferForm.sendLead(win(false), fields, []), false);
   assert.equal(await OfferForm.sendLead({ FormData, fetch: () => Promise.reject(new Error('offline')) }, fields, []), false, 'offline: false, never a throw');
   assert.equal(await OfferForm.sendLead({}, fields, []), false, 'no fetch: false');
+});
+
+// 2026-11-22: on iPhones a request with the calculator's passport never arrived. The hosting's log: every
+// such request from Safari, the Google app or Yandex Browser on iOS reached lead.php without its fields
+// (422: no phone), and a small one -- the 195 KB passport was not in it; from Windows the same request went.
+// The passport waits in IndexedDB from the calculator's page to the site's, and WebKit may no longer read
+// such a stored Blob in another page: the whole body is then lost. Now every file is read into memory
+// first; one that cannot be read stays out, and the request goes -- with a word in the letter.
+test('a stored file that cannot be read (an iPhone) is left out: the request still goes, with its fields and a word that the file is missing', async () => {
+  const OfferForm = require('../js/offer-form.js');
+  const fields = OfferForm.leadFields({ direction: 'kuhnya', name: 'Анна', phone: '+7 999 123 45 67', email: '',
+    piece: { kind: 'calc', query: 'product=stoleshnitsa_kuhnya&pv=1', product: 'Столешницы на кухню', stone: 'Taj Mahal', sizes: '2400 × 600 мм', price: '≈ 186 400 ₽', priced: true } }, { origin: 'https://sayanmramor.ru' });
+  const calls = [];
+  class FormData { constructor() { this.parts = []; } append(...a) { this.parts.push(a); } }
+  const win = { FormData, Blob, fetch: (url, init) => { calls.push([url, init]); return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true }) }); } };
+  const unreadable = { size: 195244, type: 'application/pdf', arrayBuffer: () => Promise.reject(new Error('WebKitBlobResource error 1')) };
+  assert.equal(await OfferForm.sendLead(win, fields, [{ key: 'attachment', blob: null }, { key: 'passport', blob: unreadable, name: 'Паспорт.pdf' }]), true);
+  const parts = calls[0][1].body.parts;
+  assert.ok(!parts.some(p => p[0] === 'passport'), 'the unreadable file stays out');
+  assert.equal(parts.find(p => p[0] === 'phone')[1], '+7 999 123 45 67', 'the fields go');
+  assert.match(parts.find(p => p[0] === 'piece')[1], /^Столешницы на кухню · Taj Mahal\n[^]*\nПаспорт изделия не приложен/, 'the letter says the passport is missing (its link is above)');
+  // A readable passport goes as a new Blob read into memory, never the stored object itself.
+  calls.length = 0;
+  const pdf = new Blob(['%PDF-1.7 passport'], { type: 'application/pdf' });
+  assert.equal(await OfferForm.sendLead(win, fields, [{ key: 'passport', blob: pdf, name: 'Паспорт.pdf' }]), true);
+  const passport = calls[0][1].body.parts.find(p => p[0] === 'passport');
+  assert.notEqual(passport[1], pdf);
+  assert.equal(await passport[1].text(), '%PDF-1.7 passport');
+  assert.equal(passport[2], 'Паспорт.pdf');
+  assert.doesNotMatch(calls[0][1].body.parts.find(p => p[0] === 'piece')[1], /не приложен/);
 });
 
 test('server/lead.php: mails sayan-mramor@yandex.ru from the hosting domain, only for the site\'s own pages, with a trap and a limit for bots', () => {
