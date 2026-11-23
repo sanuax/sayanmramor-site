@@ -37,7 +37,7 @@
   // Built inside the links themselves, so the wide capsule still shows just their names.
   const NAV_PLACES = {
     'Камень': { photo: 't-kamen.webp', note: 'Мрамор, оникс, кварцит, гранит' },
-    'Готовые изделия': { photo: 't-katalog.webp', note: 'Ванны, столы, вазы, светильники' },
+    'Готовые изделия': { photo: 't-katalog.webp', note: 'Ванны, столы, консоли, вазы' },
     'Контакты': { note: 'Ивантеевка, +7 (495) 215-51-45' },
   };
   // The bottom inset of a computed inset() clip: «inset(0px 0px 312.5px round 28px)» -> 312.5.

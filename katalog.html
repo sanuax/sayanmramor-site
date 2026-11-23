@@ -9,14 +9,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Готовые изделия - Саянмрамор</title>
 <link rel="icon" href="/sayanmramor-site/assets/brand/favicon.ico">
-<meta name="description" content="Готовые изделия из натурального камня в наличии: столы, ваза, статуя, светильник, ванна из оникса. Фиксированная цена, без ожидания расчёта.">
+<meta name="description" content="Готовые изделия из натурального камня в наличии: столы, консоль, ваза, статуя, ванна из оникса. Фиксированная цена, без ожидания расчёта.">
 <!-- test hosting (GitHub Pages): remove this line when the site moves to its own domain, see docs/move-to-hosting.md -->
 <meta name="robots" content="noindex, nofollow" data-test-hosting>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Саянмрамор">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:title" content="Готовые изделия - Саянмрамор">
-<meta property="og:description" content="Готовые изделия из натурального камня в наличии: столы, ваза, статуя, светильник, ванна из оникса. Фиксированная цена, без ожидания расчёта.">
+<meta property="og:description" content="Готовые изделия из натурального камня в наличии: столы, консоль, ваза, статуя, ванна из оникса. Фиксированная цена, без ожидания расчёта.">
 <meta property="og:image" content="https://sanuax.github.io/sayanmramor-site/assets/og/sayanmramor-1200x630.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,9 +28,10 @@
 <link rel="stylesheet" href="/sayanmramor-site/css/tokens.css?v=e0b292d7">
 <link rel="stylesheet" href="/sayanmramor-site/css/consent.css?v=f7d8bfe7">
 <link rel="stylesheet" href="/sayanmramor-site/css/header.css?v=5685842d">
-<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=ea66d88f">
+<link rel="stylesheet" href="/sayanmramor-site/css/site.css?v=3279371e">
+<link rel="stylesheet" href="/sayanmramor-site/css/model-view.css?v=cdd7fcc5">
 <link rel="stylesheet" href="/sayanmramor-site/css/picks.css?v=da2f2640">
-<script src="/sayanmramor-site/js/header.js?v=7b5f2f0c" defer></script>
+<script src="/sayanmramor-site/js/header.js?v=eef09265" defer></script>
 <script src="/sayanmramor-site/js/consent.js?v=31a54574" defer></script>
 </head>
 <body>
@@ -119,7 +120,7 @@
   <p class="catalog-lead">Изделия из натурального камня в наличии: фиксированная цена, без ожидания расчёта.</p>
   <!-- Until products.json answers, the head and the grid hold the room of what comes (no jump):
        the same parts, unseen; the catalogue's script puts the real ones in their place. -->
-  <p class="catalog-meta" id="catalogMeta" data-waiting><b>8 изделий</b> от 20 000 до 3 977 000 ₽<span class="pick-link-wait"><span class="pick-link">Моя подборка</span></span></p>
+  <p class="catalog-meta" id="catalogMeta" data-waiting><b>8 изделий</b> от 37 000 до 3 977 000 ₽<span class="pick-link-wait"><span class="pick-link">Моя подборка</span></span></p>
   <div class="catalog-filter" id="catalogFilter" data-waiting><div class="stock-filter"><span class="stock-chip">Все</span></div></div>
 </header>
 
@@ -181,13 +182,18 @@
 <script src="/sayanmramor-site/js/site.js?v=b988f956"></script>
 <script src="/sayanmramor-site/js/picks.js?v=be3bfb99"></script>
 <script src="/sayanmramor-site/js/offer-handoff.js?v=a896728f"></script>
-<script src="/sayanmramor-site/js/catalog.js?v=6b9c5bf8"></script>
+<script src="/sayanmramor-site/js/catalog.js?v=b3a0232d"></script>
+<script type="module" src="/sayanmramor-site/js/model-view.js?v=0a258bf8"></script>
 <script>
   fetch('/sayanmramor-site/data/products.json')
     .then(r => r.json())
     .then(data => {
       Catalog.renderCatalog(document.getElementById('catalogGrid'), data.products || [],
         { meta: document.getElementById('catalogMeta'), filter: document.getElementById('catalogFilter') });
+      // ?3d=<id>: the piece's 3D window at once (the QR code a computer shows for AR leads here)
+      const want = new URLSearchParams(location.search).get('3d');
+      const piece = want && (data.products || []).find(p => p.id === want && p.model);
+      if (piece) Catalog.openModel(piece);
     })
     .catch(() => {
       ['catalogMeta', 'catalogFilter'].forEach(id => { const n = document.getElementById(id); n.replaceChildren(); n.removeAttribute('data-waiting'); });

@@ -1,0 +1,51 @@
+/* The piece in 3D (js/model-view.js, 2026-11-23): a light window over the page, so black
+   Nero Marquino and white Carrara both read; the name and size on top, «Поставить у себя» below. */
+.model-view { position: fixed; inset: 0; z-index: 1000; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; color: var(--ink, #1c1d1b); }
+.model-view[hidden] { display: none; }
+.model-view:focus { outline: none; }
+.model-view-veil {
+  position: absolute; inset: 0; background: rgba(239, 237, 232, 0.9); opacity: 0; transition: opacity 0.28s ease;
+  -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2);
+}
+.model-view.is-open .model-view-veil { opacity: 1; }
+.model-view-top, .model-view-stage, .model-view-foot { position: relative; z-index: 1; opacity: 0; transition: opacity 0.24s ease; }
+.model-view.is-open .model-view-top, .model-view.is-open .model-view-stage, .model-view.is-open .model-view-foot { opacity: 1; transition-delay: 0.08s; }
+.model-view-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 16px clamp(16px, 3vw, 32px); }
+.model-view-said { min-width: 0; }
+.model-view-name { margin: 0; font-size: 17px; font-weight: 500; line-height: 1.3; letter-spacing: -0.01em; text-wrap: pretty; }
+.model-view-size { margin: 2px 0 0; font-size: 13px; color: var(--muted, #63645b); font-variant-numeric: tabular-nums; }
+.model-view-btn {
+  flex: none; display: grid; place-items: center; width: var(--control-h, 48px); height: var(--control-h, 48px); padding: 0; border: 0; border-radius: 50%;
+  background: rgba(28, 29, 27, 0.06); color: inherit; cursor: pointer; transition: background-color 0.18s ease, transform 0.16s ease;
+}
+.model-view-btn:active { transform: scale(0.95); }
+@media (hover: hover) and (pointer: fine) { .model-view-btn:hover { background-color: rgba(28, 29, 27, 0.12); } }
+.model-view svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.model-view :focus-visible { outline: 2px solid var(--accent, #2a5446); outline-offset: 3px; }
+.model-view-stage { touch-action: none; cursor: grab; }
+.model-view-stage:active { cursor: grabbing; }
+.model-view-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.model-view-note { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font-size: 14px; color: var(--muted, #63645b); pointer-events: none; }
+.model-view-foot { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px 16px max(20px, env(safe-area-inset-bottom)); }
+.model-view-hint { margin: 0; font-size: 13px; color: var(--muted, #63645b); }
+.model-view-arbtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 24px; border: 0; border-radius: var(--radius-btn, 6px);
+  background: var(--accent, #2a5446); color: #fff; font: inherit; font-size: 15px; font-weight: 500; text-decoration: none; cursor: pointer;
+  transition: background-color 0.18s ease, transform 0.16s ease;
+}
+.model-view-arbtn:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .model-view-arbtn:hover { background: var(--accent-hover, #1f4036); } }
+.model-view-arbtn img { width: 20px; height: 20px; filter: invert(1); }
+/* The QR plate (a computer has no AR): over the window, the code and one line. */
+.model-view-qr { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 16px; background: rgba(239, 237, 232, 0.7); }
+.model-view-qr[hidden] { display: none; }
+.model-view-qr-card {
+  display: grid; justify-items: center; gap: 14px; max-width: 320px; padding: 24px; border-radius: 14px; background: #fff;
+  box-shadow: 0 24px 60px -24px rgba(28, 29, 27, 0.35); text-align: center;
+}
+.model-view-qr-card canvas { width: 200px; height: 200px; image-rendering: pixelated; }
+.model-view-qr-card p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-soft, #474944); }
+.model-view-qr-close { min-height: 44px; padding: 0 20px; border: 0; border-radius: var(--radius-btn, 6px); background: rgba(42, 84, 70, 0.08); color: var(--accent, #2a5446); font: inherit; font-weight: 500; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .model-view-veil, .model-view-top, .model-view-stage, .model-view-foot { transition-duration: 0.01s; }
+}

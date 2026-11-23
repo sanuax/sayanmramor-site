@@ -79,7 +79,7 @@ test('a ready piece from data/products.json; a missing or sold one gives no card
   const products = JSON.parse(fs.readFileSync(path.join(site, 'data', 'products.json'), 'utf8')).products;
   const shell = OfferHandoff.catalogPiece(products, 'rakushka-01');
   assert.equal(shell.kind, 'katalog');
-  assert.equal(shell.name, 'Ракушка');
+  assert.equal(shell.name, 'Ракушка из мрамора Nero Marquino');
   assert.equal(shell.price, 37000);
   assert.equal(shell.photo, '/sayanmramor-site/assets/products/rakushka-01/1.webp');
   assert.equal(OfferHandoff.catalogPiece(products, 'no-such-piece'), null);

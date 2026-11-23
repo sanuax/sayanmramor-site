@@ -38,7 +38,7 @@
   // What kind of piece it is, by its category in data/products.json, and the filter it falls under.
   const KINDS = {
     vanny: ['Ванная', 'bath'], stoly: ['Стол', 'tables'], rakushki: ['Декор', 'decor'], vazy: ['Декор', 'decor'],
-    skulptury: ['Скульптура', 'decor'], svetilniki: ['Свет', 'light'],
+    skulptury: ['Скульптура', 'decor'], svetilniki: ['Свет', 'light'], konsoli: ['Консоль', 'tables'],
   };
   const GROUPS = [['tables', 'Столы'], ['decor', 'Скульптура и декор'], ['bath', 'Ванная'], ['light', 'Свет']];
   const kindOf = product => KINDS[product.category] || null;
@@ -104,6 +104,25 @@
     return count;
   }
 
+  // «3D» (2026-11-23, the owner): a piece with a model turns in 3D and stands in the room in AR
+  // (js/model-view.js, a small module the page loads beside this file). A press before the module
+  // is there waits for it.
+  function modelButton(product) {
+    const b = el('button', 'stock-3d');
+    b.type = 'button';
+    b.dataset.model = product.id || '';
+    b.setAttribute('aria-label', '3D и примерка: ' + (product.name || ''));
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg>';
+    b.appendChild(document.createTextNode('3D'));
+    b.addEventListener('click', () => openModel(product, b));
+    return b;
+  }
+  function openModel(product, from) {
+    if (typeof window === 'undefined') return;
+    if (window.ModelView) window.ModelView.open(product, from);
+    else window.addEventListener('modelview-ready', () => window.ModelView.open(product, from), { once: true });
+  }
+
   // «Запросить»: the site's main button, naming the piece for screen readers.
   function askButton(product) {
     const a = el('a', 'btn btn-primary stock-ask', 'Запросить');
@@ -134,6 +153,7 @@
       shot.appendChild(photoPlaceholder());
     }
     if (!isAvailable(product)) shot.appendChild(el('span', 'stock-badge', 'Нет в наличии'));
+    if (product.model && product.model.glb) shot.appendChild(modelButton(product));
     const picks = typeof window !== 'undefined' && window.Picks;
     if (picks && product.id) shot.appendChild(picks.heart(document, picks.PIECES, product.id, product.name));
     card.appendChild(shot);
@@ -256,5 +276,5 @@
     return { grid, cards, filter, shots };
   }
 
-  return { NO_PHOTO_TEXT, KINDS, askUrl, formatProductPrice, countLabel, priceRange, isAvailable, kindFromSearch, searchWithKind, buildProductCard, buildFilter, renderCatalog };
+  return { NO_PHOTO_TEXT, KINDS, askUrl, openModel, formatProductPrice, countLabel, priceRange, isAvailable, kindFromSearch, searchWithKind, buildProductCard, buildFilter, renderCatalog };
 });

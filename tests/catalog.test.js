@@ -232,14 +232,17 @@ test('products.json: the 8 finished goods with the owner prices, real photo file
   const site = path.join(__dirname, '..');
   const { products } = JSON.parse(fs.readFileSync(path.join(site, 'data', 'products.json'), 'utf8'));
   assert.deepEqual(products.map(p => [p.id, p.name, p.price_rub]), [
-    ['vanna-oniks-01', 'Ванная из оникса', 3977000],   // the first one shown (2026-10-15, the owner)
-    ['rakushka-01', 'Ракушка', 37000],
-    ['vaza-01', 'Ваза настольная', 177000],
-    ['art-stol-belyy-01', 'Арт-стол (белый)', 2377000],   // (2026-10-15, the owner: the colour in brackets, no long dash)
-    ['art-stol-chernyy-01', 'Арт-стол (чёрный)', 3077000],
-    ['statuya-01', 'Статуя', 3377000],
-    ['stol-01', 'Стол', 3177000],
-    ['svetilnik-01', 'Светильник', 20000],
+    // the order (2026-11-23, the owner: by the background, each photo passing gently into the next):
+    // warm light, light with black stone, white with the blue carpet, dark last
+    // names with their stone (2026-11-23, the owner: «по аналогии с консолью»)
+    ['vanna-oniks-01', 'Ванная из оникса Orange', 3977000],
+    ['vaza-01', 'Ваза настольная из оникса Orange', 177000],
+    ['konsol-01', 'Консоль из мрамора Nero Marquino', 600000],
+    ['art-stol-chernyy-01', 'Арт-стол из мрамора Nero Marquino', 3077000],
+    ['statuya-01', 'Статуя из мрамора Bianco Carrara', 3377000],
+    ['stol-01', 'Стол из мрамора Bianco Carrara', 3177000],
+    ['rakushka-01', 'Ракушка из мрамора Nero Marquino', 37000],
+    ['art-stol-belyy-01', 'Арт-стол из мрамора Bianco Carrara', 2377000],
   ]);
   products.forEach(p => {
     assert.equal(p.description, null, p.id);
@@ -249,8 +252,42 @@ test('products.json: the 8 finished goods with the owner prices, real photo file
       assert.ok(fs.existsSync(path.join(site, src.replace('/sayanmramor-site/', ''))), src);
     });
   });
-  assert.equal(products.find(p => p.id === 'svetilnik-01').photos.length, 5);
+  assert.equal(products.find(p => p.id === 'konsol-01').photos.length, 4);
 });
+
+test('products.json: every piece but the console has its 3D model, files in its own folder, real size in mm', () => {
+  const site = path.join(__dirname, '..');
+  const { products } = JSON.parse(fs.readFileSync(path.join(site, 'data', 'products.json'), 'utf8'));
+  assert.deepEqual(products.filter(p => !p.model).map(p => p.id), ['konsol-01'], 'the console waits for its STL');
+  products.filter(p => p.model).forEach(p => {
+    ['glb', 'usdz'].forEach(k => {
+      assert.equal(p.model[k], '/sayanmramor-site/assets/products/' + p.id + '/model.' + k);
+      assert.ok(fs.existsSync(path.join(site, p.model[k].replace('/sayanmramor-site/', ''))), p.model[k]);
+    });
+    assert.equal(p.model.size_mm.length, 3, p.id);
+    p.model.size_mm.forEach(n => assert.ok(Number.isInteger(n) && n > 0, p.id));
+  });
+  assert.deepEqual(products.find(p => p.id === 'stol-01').model.size_mm, [1900, 950, 750]);
+});
+
+test('«3D»: a card whose piece has a model gets the chip (sold too); without a model none; a press opens the window', () => withDocument(() => {
+  const model = { glb: '/m.glb', usdz: '/m.usdz', size_mm: [1, 2, 3] };
+  const chips = card => shotOf(card).children.filter(c => c.className === 'stock-3d');
+  const piece = { id: 'p', name: 'Стол', category: 'stoly', price_rub: 1, photos: ['/a.webp'], model };
+  const card = Catalog.buildProductCard(piece);
+  assert.equal(chips(card).length, 1);
+  assert.equal(chips(card)[0].tagName, 'BUTTON');
+  assert.equal(chips(card)[0].attrs['aria-label'], '3D и примерка: Стол');
+  assert.equal(chips(Catalog.buildProductCard({ ...piece, available: false })).length, 1);
+  assert.equal(chips(Catalog.buildProductCard({ ...piece, model: undefined })).length, 0);
+  const saved = global.window;
+  const opened = [];
+  global.window = { ModelView: { open: (p, from) => opened.push([p, from]) } };
+  try { chips(card)[0].listeners.click(); } finally { global.window = saved; }
+  assert.equal(opened.length, 1);
+  assert.equal(opened[0][0], piece);
+  assert.equal(opened[0][1], chips(card)[0]);
+}));
 
 test('the count: «1 изделие», «3 изделия», «8 изделий», «11 изделий», «21 изделие»', () => {
   assert.deepEqual([1, 3, 8, 11, 21, 22, 25].map(Catalog.countLabel),
